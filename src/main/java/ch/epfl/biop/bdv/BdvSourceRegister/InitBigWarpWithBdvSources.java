@@ -13,7 +13,11 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
+import ch.epfl.biop.bdv.commands.BDVSlicesToImgPlus;
 import mpicbg.spim.data.SpimDataException;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
@@ -21,40 +25,43 @@ import org.scijava.plugin.Plugin;
 
 
 @Plugin(type = Command.class,menuPath = "Plugins>BigDataViewer>SciJava>BigWarp (SciJava)")
-
 public class InitBigWarpWithBdvSources implements Command {
+
+    private static final Logger LOGGER = Logger.getLogger( InitBigWarpWithBdvSources.class.getName() );
 
     @Parameter
     BdvHandle bdv_h;
 
-    @Parameter
-    int idx_src_moving;
+    @Parameter(label="Moving source indexes ('2,3-5'), starts at 0")
+    String idx_src_moving;
 
-    @Parameter
-    int idx_src_fixed;
+    @Parameter(label="Fixed source indexes ('2,3-5'), starts at 0")
+    String idx_src_fixed;
 
     @Override
     public void run() {
-        //try {
-            //Path tempDir = Files.createTempDirectory("testSpimdata");
 
-            //final SequenceDescriptionMinimal seq = new SequenceDescriptionMinimal( new TimePoints( timepointMap ), setupMap, null, null );
+            Source<?> [] mvSrcs  =
+                    commaSeparatedListToArray(idx_src_moving)
+                    .stream()
+                    .map(idx -> bdv_h.getViewerPanel().getState().getSources().get(idx).getSpimSource())
+                    .collect(Collectors.toList())
+                    .toArray(new Source<?>[]{});
 
-            //BigWarpInit
-            //BigWarpInit.initSetups()
-            //BigWarpInit
+            Source<?> [] fxSrcs  =
+                    commaSeparatedListToArray(idx_src_fixed)
+                    .stream()
+                    .map(idx -> bdv_h.getViewerPanel().getState().getSources().get(idx).getSpimSource())
+                    .collect(Collectors.toList())
+                    .toArray(new Source<?>[]{});
 
-            Source<?> movingSrc = bdv_h.getViewerPanel().getState().getSources().get(idx_src_moving).getSpimSource();
-            Source<?> fixedSrc = bdv_h.getViewerPanel().getState().getSources().get(idx_src_fixed).getSpimSource();
+            String[] dummyNames = new String[mvSrcs.length+fxSrcs.length];
 
-            Source<?> [] mvSrcs = new Source[1];
-            mvSrcs[0]=movingSrc;
+            for (int i=0;i<dummyNames.length;i++) {
+                dummyNames[i]="Src "+i;
+            }
 
-            Source<?> [] fxSrcs = new Source[1];
-            fxSrcs[0]=fixedSrc;
-
-
-            BigWarp.BigWarpData<?> bwd = BigWarpInit.createBigWarpData(mvSrcs,fxSrcs, new String[]{"MOVING", "SRC"});
+            BigWarp.BigWarpData<?> bwd = BigWarpInit.createBigWarpData(mvSrcs,fxSrcs, dummyNames);
 
             try {
                 BigWarp<?> bw = new BigWarp(bwd, "Big Warp",  null);
@@ -63,10 +70,53 @@ public class InitBigWarpWithBdvSources implements Command {
             } catch (SpimDataException e) {
                 e.printStackTrace();
             }
-        /*} catch (IOException e) {
-            e.printStackTrace();
-        }*/
 
+    }
+
+    /**
+     * Convert a comma separated list of indexes into an arraylist of integer
+     *
+     * For instance 1,2,5-7,10-12,14 returns an ArrayList containing
+     * [1,2,5,6,7,10,11,12,14]
+     *
+     * Invalid format are ignored and an error message is displayed
+     *
+     * @param expression
+     * @return list of indexes in ArrayList
+     */
+
+    static public ArrayList<Integer> commaSeparatedListToArray(String expression) {
+        String[] splitIndexes = expression.split(",");
+        ArrayList<java.lang.Integer> arrayOfIndexes = new ArrayList<>();
+        for (String str : splitIndexes) {
+            str.trim();
+            if (str.contains("-")) {
+                // Array of source, like 2-5 = 2,3,4,5
+                String[] boundIndex = str.split("-");
+                if (boundIndex.length==2) {
+                    try {
+                        int binf = java.lang.Integer.valueOf(boundIndex[0].trim());
+                        int bsup = java.lang.Integer.valueOf(boundIndex[1].trim());
+                        for (int index = binf; index <= bsup; index++) {
+                            arrayOfIndexes.add(index);
+                        }
+                    } catch (NumberFormatException e) {
+                        LOGGER.warning("Number format problem with expression:"+str+" - Expression ignored");
+                    }
+                } else {
+                    LOGGER.warning("Cannot parse expression "+str+" to pattern 'begin-end' (2-5) for instance, omitted");
+                }
+            } else {
+                // Single source
+                try {
+                    int index = java.lang.Integer.valueOf(str.trim());
+                    arrayOfIndexes.add(index);
+                } catch (NumberFormatException e) {
+                    LOGGER.warning("Number format problem with expression:"+str+" - Expression ignored");
+                }
+            }
+        }
+        return arrayOfIndexes;
     }
 
 }
