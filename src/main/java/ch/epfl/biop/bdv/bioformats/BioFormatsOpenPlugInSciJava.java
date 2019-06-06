@@ -1,4 +1,4 @@
-package ch.epfl.biop.bdv.vsiopener;
+package ch.epfl.biop.bdv.bioformats;
 
 import java.io.File;
 
@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.concurrent.Future;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 // Have a look at:
@@ -38,10 +37,10 @@ import java.util.logging.Logger;
 // TODO : add lookuptable
 
 @Plugin(type = Command.class,menuPath = "Plugins>BigDataViewer>SciJava>Open VSI (experimental) (SciJava)")
-public class OpenVSIPlugInSciJava implements Command
+public class BioFormatsOpenPlugInSciJava implements Command
 {
 
-    private static final Logger LOGGER = Logger.getLogger( OpenVSIPlugInSciJava.class.getName() );
+    private static final Logger LOGGER = Logger.getLogger( BioFormatsOpenPlugInSciJava.class.getName() );
 
     @Parameter(label = "VSI Image File")
     public File inputFile;
@@ -99,7 +98,7 @@ public class OpenVSIPlugInSciJava implements Command
                         LOGGER.info("omeMetaOmeXml.getChannelCount("+p.getLeft()+")="+omeMetaOmeXml.getChannelCount(p.getLeft()));
                         CommandModule cm;
                         if (!appendMode.equals("Volatile + Standard")) {
-                            Future<CommandModule> module = cs.run(OpenVSIPlugInSingleSourceSciJava.class, false,
+                            Future<CommandModule> module = cs.run(BioFormatsOpenPlugInSingleSourceSciJava.class, false,
                                     "sourceIndex", p.getLeft(),
                                     "channelIndex", idCh,
                                     "bdv_h", bdv_h,
@@ -110,7 +109,7 @@ public class OpenVSIPlugInSciJava implements Command
                                     "appendMode", appendMode);
                             cm = module.get();
                         } else {
-                            Future<CommandModule> module = cs.run(OpenVSIPlugInSingleSourceSciJava.class, false,
+                            Future<CommandModule> module = cs.run(BioFormatsOpenPlugInSingleSourceSciJava.class, false,
                                     "sourceIndex", p.getLeft(),
                                     "channelIndex", idCh,
                                     "bdv_h", bdv_h,
@@ -120,7 +119,7 @@ public class OpenVSIPlugInSciJava implements Command
                                     "autoscale", autoscale,
                                     "appendMode", "Volatile");
                             module.get();
-                            module = cs.run(OpenVSIPlugInSingleSourceSciJava.class, false,
+                            module = cs.run(BioFormatsOpenPlugInSingleSourceSciJava.class, false,
                                     "sourceIndex", p.getLeft(),
                                     "channelIndex", idCh,
                                     "bdv_h", bdv_h,
@@ -293,7 +292,7 @@ public class OpenVSIPlugInSciJava implements Command
         //  create the ImageJ application context with all available services
         final ImageJ ij = new ImageJ();
         ij.ui().showUI();
-        ij.command().run(OpenVSIPlugInSciJava.class, true);
+        ij.command().run(BioFormatsOpenPlugInSciJava.class, true);
 
     }
 }

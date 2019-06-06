@@ -1,4 +1,4 @@
-package ch.epfl.biop.bdv.vsiopener;
+package ch.epfl.biop.bdv.bioformats;
 
 import bdv.util.BdvFunctions;
 import bdv.util.BdvHandle;
@@ -29,8 +29,8 @@ import java.io.File;
 import java.util.logging.Logger;
 
 @Plugin(type = Command.class,menuPath = "Plugins>BigDataViewer>SciJava>Open VSI Single Source (experimental) (SciJava)")
-public class OpenVSIPlugInSingleSourceSciJava implements Command {
-    private static final Logger LOGGER = Logger.getLogger( OpenVSIPlugInSingleSourceSciJava.class.getName() );
+public class BioFormatsOpenPlugInSingleSourceSciJava implements Command {
+    private static final Logger LOGGER = Logger.getLogger( BioFormatsOpenPlugInSingleSourceSciJava.class.getName() );
 
     @Parameter(label = "VSI Image File")
     public File inputFile;
@@ -75,24 +75,24 @@ public class OpenVSIPlugInSingleSourceSciJava implements Command {
             readerIdx.setMetadataStore(omeMetaIdxOmeXml);
             readerIdx.setId(inputFile.getAbsolutePath());
 
-            VSIBdvSource bdvSrc = null;
+            BioFormatsBdvSource bdvSrc = null;
 
             LOGGER.info("src idx = "+sourceIndex);
             LOGGER.info("ch idx = "+channelIndex);
-            BIOFormatVSIHelper h = new BIOFormatVSIHelper(readerIdx, sourceIndex);
-            VolatileVSIBdvSource<?, ?> vSrc = null;
+            BioFormatsHelper h = new BioFormatsHelper(readerIdx, sourceIndex);
+            VolatileBioFormatsBdvSource<?, ?> vSrc = null;
             if (h.is24bitsRGB) {
-                bdvSrc = new VSIBdvRGBSource(readerIdx, sourceIndex, channelIndex, switchZandC);
-                vSrc = new VolatileVSIBdvSource<ARGBType, VolatileARGBType>(bdvSrc, new VolatileARGBType(), new SharedQueue(2));
+                bdvSrc = new BioFormatsBdvRGBSource(readerIdx, sourceIndex, channelIndex, switchZandC);
+                vSrc = new VolatileBioFormatsBdvSource<ARGBType, VolatileARGBType>(bdvSrc, new VolatileARGBType(), new SharedQueue(2));
 
             } else {
                 if (h.is8bits)  {
-                    bdvSrc = new VSIBdvUnsignedByteSource(readerIdx, sourceIndex, channelIndex, switchZandC);
-                    vSrc = new VolatileVSIBdvSource<UnsignedByteType, VolatileUnsignedByteType>(bdvSrc, new VolatileUnsignedByteType(), new SharedQueue(2));
+                    bdvSrc = new BioFormatsBdvUnsignedByteSource(readerIdx, sourceIndex, channelIndex, switchZandC);
+                    vSrc = new VolatileBioFormatsBdvSource<UnsignedByteType, VolatileUnsignedByteType>(bdvSrc, new VolatileUnsignedByteType(), new SharedQueue(2));
                 }
                 if (h.is16bits) {
-                    bdvSrc = new VSIBdvUnsignedShortSource(readerIdx, sourceIndex, channelIndex, switchZandC);
-                    vSrc = new VolatileVSIBdvSource<UnsignedShortType, VolatileUnsignedShortType>(bdvSrc, new VolatileUnsignedShortType(), new SharedQueue(2));
+                    bdvSrc = new BioFormatsBdvUnsignedShortSource(readerIdx, sourceIndex, channelIndex, switchZandC);
+                    vSrc = new VolatileBioFormatsBdvSource<UnsignedShortType, VolatileUnsignedShortType>(bdvSrc, new VolatileUnsignedShortType(), new SharedQueue(2));
                 }
             }
 
@@ -115,10 +115,6 @@ public class OpenVSIPlugInSingleSourceSciJava implements Command {
                 case "Standard":
                     bdvstack = BdvFunctions.show(bdvSrc, opts);
                     break;
-                //case "Volatile + Standard":
-                //    bdvstack = BdvFunctions.show(vSrc, opts);
-                //    bdvstack = BdvFunctions.show(bdvSrc, opts);
-                //    break;
                 default:
                     LOGGER.info("Invalid append mode: "+appendMode);
                     return;

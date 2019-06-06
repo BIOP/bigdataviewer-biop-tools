@@ -1,4 +1,4 @@
-package ch.epfl.biop.bdv.vsiopener;
+package ch.epfl.biop.bdv.bioformats;
 
 import loci.formats.ImageReader;
 import net.imglib2.Cursor;
@@ -7,7 +7,6 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.cache.img.DiskCachedCellImgFactory;
 import net.imglib2.cache.img.DiskCachedCellImgOptions;
 import net.imglib2.img.Img;
-import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.view.Views;
 
@@ -16,8 +15,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import static net.imglib2.cache.img.DiskCachedCellImgOptions.options;
 
 // TODO : say interleaved channels not supported
-public class VSIBdvUnsignedShortSource extends VSIBdvSource<UnsignedShortType> {
-    public VSIBdvUnsignedShortSource(ImageReader reader, int image_index, int channel_index, boolean sw) {
+public class BioFormatsBdvUnsignedShortSource extends BioFormatsBdvSource<UnsignedShortType> {
+    public BioFormatsBdvUnsignedShortSource(ImageReader reader, int image_index, int channel_index, boolean sw) {
         super(reader, image_index, channel_index, sw);
     }
 

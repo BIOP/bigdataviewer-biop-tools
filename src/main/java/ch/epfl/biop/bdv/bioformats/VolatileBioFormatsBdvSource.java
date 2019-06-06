@@ -1,4 +1,4 @@
-package ch.epfl.biop.bdv.vsiopener;
+package ch.epfl.biop.bdv.bioformats;
 
 import bdv.util.AbstractSource;
 import bdv.util.volatiles.SharedQueue;
@@ -13,13 +13,13 @@ import net.imglib2.type.numeric.NumericType;
 
 import java.util.function.Supplier;
 
-public class VolatileVSIBdvSource < T extends NumericType< T >, V extends Volatile< T > & NumericType< V >> extends AbstractSource< V > {
-    private final VSIBdvSource< T > source;
+public class VolatileBioFormatsBdvSource< T extends NumericType< T >, V extends Volatile< T > & NumericType< V >> extends AbstractSource< V > {
+    private final BioFormatsBdvSource< T > source;
 
     private SharedQueue queue;
 
-    public VolatileVSIBdvSource(
-            final VSIBdvSource< T > source,
+    public VolatileBioFormatsBdvSource(
+            final BioFormatsBdvSource< T > source,
             final V type,
             final SharedQueue queue )
     {
@@ -28,8 +28,8 @@ public class VolatileVSIBdvSource < T extends NumericType< T >, V extends Volati
         this.queue = queue;
     }
 
-    public VolatileVSIBdvSource(
-            final VSIBdvSource< T > source,
+    public VolatileBioFormatsBdvSource(
+            final BioFormatsBdvSource< T > source,
             final Supplier< V > typeSupplier,
             final SharedQueue queue )
     {

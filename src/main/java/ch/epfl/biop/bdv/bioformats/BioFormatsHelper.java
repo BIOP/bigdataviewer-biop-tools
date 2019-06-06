@@ -1,29 +1,21 @@
-package ch.epfl.biop.bdv.vsiopener;
+package ch.epfl.biop.bdv.bioformats;
 
-import loci.common.services.ServiceFactory;
 import loci.formats.ImageReader;
-import loci.formats.gui.BufferedImageReader;
-import loci.formats.in.CellSensReader;
 import loci.formats.meta.IMetadata;
-import loci.formats.services.OMEXMLService;
-import mpicbg.spim.data.sequence.VoxelDimensions;
 import ome.units.UNITS;
 import ome.units.quantity.Length;
-import ome.xml.meta.OMEXMLMetadata;
 import ome.xml.model.enums.PixelType;
-import ome.xml.model.primitives.PositiveInteger;
 
-import java.io.File;
 import java.util.logging.Logger;
 
 /**
  * Inspired from https://github.com/qupath/qupath-bioformats-extension/blob/master/src/main/java/qupath/lib/images/servers/BioFormatsImageServer.java
  */
 
-public class BIOFormatVSIHelper {
+public class BioFormatsHelper {
 
 
-    private static final Logger LOGGER = Logger.getLogger( BIOFormatVSIHelper.class.getName() );
+    private static final Logger LOGGER = Logger.getLogger( BioFormatsHelper.class.getName() );
 
     /**
      * Manager to help keep multithreading under control.
@@ -47,7 +39,7 @@ public class BIOFormatVSIHelper {
 
     //public double pXmm, pYmm, pZmm, dXmm, dYmm, dZmm;
 
-    public BIOFormatVSIHelper(ImageReader reader, int image_index) throws Exception {
+    public BioFormatsHelper(ImageReader reader, int image_index) throws Exception {
 
         final IMetadata omeMeta = (IMetadata) reader.getMetadataStore();
         reader.setSeries(image_index);

@@ -1,4 +1,4 @@
-package ch.epfl.biop.bdv.vsiopener;
+package ch.epfl.biop.bdv.bioformats;
 
 import loci.formats.ImageReader;
 import net.imglib2.Cursor;
@@ -16,10 +16,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import static net.imglib2.cache.img.DiskCachedCellImgOptions.options;
 
 
-public class VSIBdvRGBSource extends VSIBdvSource<ARGBType> {
+public class BioFormatsBdvRGBSource extends BioFormatsBdvSource<ARGBType> {
 
 
-    public VSIBdvRGBSource(ImageReader reader, int image_index, int channel_index, boolean sw) {
+    public BioFormatsBdvRGBSource(ImageReader reader, int image_index, int channel_index, boolean sw) {
         super(reader, image_index, channel_index, sw);
     }
 
