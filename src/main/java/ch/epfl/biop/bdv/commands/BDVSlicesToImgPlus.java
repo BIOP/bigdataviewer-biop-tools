@@ -86,7 +86,7 @@ public class BDVSlicesToImgPlus<T extends RealType<T>> implements Command {
     @Parameter(label = "Parallelize when exporting several channels")
     public boolean wrapMultichannelParallel = true;
 
-    @Parameter(label = "Ignore Source LUT")
+    @Parameter(label = "Ignore Source LUT (check for RGB)")
     public boolean ignoreSourceLut = false;
 
     // Output imageplus window

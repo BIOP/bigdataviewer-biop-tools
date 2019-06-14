@@ -16,13 +16,16 @@ import java.util.stream.Collectors;
 
 abstract public class BDVSourceFunctionalInterfaceCommand extends DynamicCommand {
 
-    @Parameter(label="Source indexes ('2,3-5'), starts at 0")
+    @Parameter(label = "Bdv Frame Containing the sources to process", type = ItemIO.BOTH)
+    BdvHandle bdv_h;
+
+    @Parameter(label="Indexes ('0,3-5'), of the sources to process")
     public String sourceIndexString = "0";
 
     protected Function<Source<?>, Source<?>> f;
 
-    @Parameter(type = ItemIO.BOTH)
-    BdvHandle bdv_h;
+    @Parameter(label = "Bdv Frame containing the output sources", type = ItemIO.BOTH)
+    BdvHandle bdv_out;
 
     @Parameter(choices = {"Replace In Bdv", "Add To Bdv", "Output List as Output Item"})
     String mode;
@@ -40,7 +43,7 @@ abstract public class BDVSourceFunctionalInterfaceCommand extends DynamicCommand
                         .map(idx -> bdv_h.getViewerPanel().getState().getSources().get(idx).getSpimSource())
                         .collect(Collectors.toList());
 
-        BdvOptions opts = BdvOptions.options().addTo(bdv_h);
+        BdvOptions opts = BdvOptions.options().addTo(bdv_out);
 
         srcs_out = srcs_in.stream().map(s -> {
                 Source<?> src_out = f.apply(s);
@@ -52,7 +55,7 @@ abstract public class BDVSourceFunctionalInterfaceCommand extends DynamicCommand
                                              .filter(stest -> stest.getSpimSource().equals(s))
                                              .findFirst().get().getConverter();
                         // TODO clone converter instead of passing reference
-                        bdv_h.getViewerPanel().addSource(new SourceAndConverter<>(src_out, cvt));
+                        bdv_out.getViewerPanel().addSource(new SourceAndConverter<>(src_out, cvt));
                     } else {
                         BdvFunctions.show(src_out, opts);
                     }
