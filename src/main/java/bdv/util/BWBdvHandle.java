@@ -58,6 +58,10 @@ public class BWBdvHandle extends BdvHandle {
         return false;
     }
 
+    public BigWarp getBW() {
+        return this.bw;
+    }
+
     @Override
     public String toString() {
         if (moving) {

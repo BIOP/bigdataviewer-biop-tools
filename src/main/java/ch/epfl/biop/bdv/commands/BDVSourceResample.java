@@ -16,6 +16,9 @@ public class BDVSourceResample extends BDVSourceFunctionalInterfaceCommand {
     @Parameter(label = "Index of the source resampling template")
     int idxSourceDst;
 
+    @Parameter
+    boolean reuseMipMaps;
+
     public BDVSourceResample() {
         this.f = src -> new ResampledSource(
                             src,
@@ -23,7 +26,8 @@ public class BDVSourceResample extends BDVSourceFunctionalInterfaceCommand {
                                    .getState()
                                    .getSources()
                                    .get(idxSourceDst)
-                                   .getSpimSource());
+                                   .getSpimSource(),
+                            reuseMipMaps);
     }
 
 }

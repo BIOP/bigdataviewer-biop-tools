@@ -21,12 +21,12 @@ public class ResampledSource < T extends NumericType<T> & NativeType<T>> impleme
 
     protected final DefaultInterpolators< T > interpolators = new DefaultInterpolators<>();
 
+    boolean reuseMipMaps;
 
-    public ResampledSource(Source<T> source, Source<T> srcResamplingModel) {
+    public ResampledSource(Source<T> source, Source<T> srcResamplingModel, boolean reuseMipMaps) {
         this.origin=source;
         this.srcResamplingModel=srcResamplingModel;
-        System.out.println("resample type = "+source.getType().getClass());
-
+        this.reuseMipMaps=reuseMipMaps;
     }
 
     @Override
@@ -38,22 +38,26 @@ public class ResampledSource < T extends NumericType<T> & NativeType<T>> impleme
     public RandomAccessibleInterval<T> getSource(int t, int level) {
         // Get current big dataviewer transformation : source transform and viewer transform
         AffineTransform3D at = new AffineTransform3D(); // Empty Transform
-        srcResamplingModel.getSourceTransform(t,0,at);
-        //at = at.inverse();
+        srcResamplingModel.getSourceTransform(t,reuseMipMaps?level:0,at);
 
-        // Get real random accessible from the source
-        final RealRandomAccessible<T> ipimg = origin.getInterpolatedSource(t, 0, Interpolation.NEARESTNEIGHBOR);
+        at = at.inverse();
+
+        final RealRandomAccessible<T> ipimg = origin.getInterpolatedSource(t, reuseMipMaps?level:0, Interpolation.NEARESTNEIGHBOR);
 
         // Gets randomAccessible view ...
         RandomAccessible<T> ra = RealViews.affine(ipimg, at); // Gets the view
 
-        // TODO check is -1 is necessary
+        // TODO check if -1 is necessary
 
-        long sx = srcResamplingModel.getSource(t,0).dimension(0)-1;
+        long sx = srcResamplingModel.getSource(t,reuseMipMaps?level:0).dimension(0)-1;
 
-        long sy = srcResamplingModel.getSource(t,0).dimension(1)-1;
+        long sy = srcResamplingModel.getSource(t,reuseMipMaps?level:0).dimension(1)-1;
 
-        long sz = srcResamplingModel.getSource(t,0).dimension(2)-1;
+        long sz = srcResamplingModel.getSource(t,reuseMipMaps?level:0).dimension(2)-1;
+
+        /*if (sx<1) sx=1;
+        if (sy<1) sy=1;*/
+        //if (sz<1) sz=1;
 
         // ... interval
         RandomAccessibleInterval<T> view =
@@ -67,15 +71,14 @@ public class ResampledSource < T extends NumericType<T> & NativeType<T>> impleme
         final T zero = getType();
         zero.setZero();
         ExtendedRandomAccessibleInterval<T, RandomAccessibleInterval< T >>
-                eView = Views.extendZero(getSource( 0, level ));
+                eView = Views.extendZero(getSource( t, level ));
         RealRandomAccessible< T > realRandomAccessible = Views.interpolate( eView, interpolators.get(method) );
         return realRandomAccessible;
     }
 
     @Override
     public void getSourceTransform(int t, int level, AffineTransform3D transform) {
-        srcResamplingModel.getSourceTransform(t,0,transform);
-
+        srcResamplingModel.getSourceTransform(t,reuseMipMaps?level:0,transform);
     }
 
     @Override
@@ -95,6 +98,6 @@ public class ResampledSource < T extends NumericType<T> & NativeType<T>> impleme
 
     @Override
     public int getNumMipmapLevels() {
-        return 1;
+        return reuseMipMaps?origin.getNumMipmapLevels():1;
     }
 }
