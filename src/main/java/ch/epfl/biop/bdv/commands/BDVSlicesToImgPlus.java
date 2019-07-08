@@ -137,6 +137,11 @@ public class BDVSlicesToImgPlus<T extends RealType<T>> implements Command {
             // Get the source
             Source<T> s = (Source<T>) viewerState.getSources().get(sourceIndex).getSpimSource();
 
+            if (s.getNumMipmapLevels()<mipmapLevel) {
+                System.err.println("Error, mipmap level requested = "+mipmapLevel);
+                System.err.println("But there are only "+s.getNumMipmapLevels()+" in the source");
+            }
+
             // Interpolation switch
             Interpolation interpolation;
             if (interpolate) {

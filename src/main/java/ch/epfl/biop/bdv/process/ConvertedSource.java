@@ -1,6 +1,5 @@
 package ch.epfl.biop.bdv.process;
 
-import bdv.util.AbstractSource;
 import bdv.util.DefaultInterpolators;
 import bdv.viewer.Interpolation;
 import bdv.viewer.Source;
