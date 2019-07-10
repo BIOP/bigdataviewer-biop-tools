@@ -210,6 +210,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>eu.kiaru</groupId>
+			<artifactId>limeseg</artifactId>
+			<version>0.4.2</version>
+		</dependency>
+
+		<dependency>
 			<groupId>sc.fiji</groupId>
 			<artifactId>bigwarp_fiji</artifactId>
 

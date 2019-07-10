@@ -190,13 +190,13 @@ public class BDVSlicesToImgPlus<T extends RealType<T>> implements Command {
 
             // Set ImagePlus display properties as in BigDataViewer
             // Min Max
-            impTemp.setDisplayRange(
-                    bdv_h.getSetupAssignments().getConverterSetups().get(sourceIndex).getDisplayRangeMin(),
-                    bdv_h.getSetupAssignments().getConverterSetups().get(sourceIndex).getDisplayRangeMax()
-            );
 
             // Simple Color LUT
             if (!ignoreSourceLut) {
+                impTemp.setDisplayRange(
+                        bdv_h.getSetupAssignments().getConverterSetups().get(sourceIndex).getDisplayRangeMin(),
+                        bdv_h.getSetupAssignments().getConverterSetups().get(sourceIndex).getDisplayRangeMax()
+                );
                 ARGBType c = bdv_h.getSetupAssignments().getConverterSetups().get(sourceIndex).getColor();
                 impTemp.setLut(LUT.createLutFromColor(new Color(ARGBType.red(c.get()), ARGBType.green(c.get()), ARGBType.blue(c.get()))));
             }
