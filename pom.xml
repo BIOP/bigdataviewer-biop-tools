@@ -210,9 +210,16 @@
 		</dependency>
 
 		<dependency>
-			<groupId>eu.kiaru</groupId>
-			<artifactId>limeseg</artifactId>
-			<version>0.4.2</version>
+			<groupId>org.orangepalantir</groupId>
+			<artifactId>leastsquares</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+
+
+		<!-- Commons Math - https://commons.apache.org/proper/commons-math/ -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-math3</artifactId>
 		</dependency>
 
 		<dependency>
