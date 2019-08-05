@@ -134,6 +134,7 @@
 	<properties>
 		<license.licenseName>N/A</license.licenseName>
 		<license.copyrightOwners>N/A</license.copyrightOwners>
+		<package-name>ch.epfl.biop.bigdataviewerBiopTools</package-name>
 	</properties>
 
 	<repositories>
@@ -186,6 +187,7 @@
 		<dependency>
 			<groupId>org.scijava</groupId>
 			<artifactId>scijava-ui-swing</artifactId>
+			<version>0.13.0</version>
 		</dependency>
 
 		<dependency>

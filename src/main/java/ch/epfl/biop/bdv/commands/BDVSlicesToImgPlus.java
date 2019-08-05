@@ -233,7 +233,9 @@ public class BDVSlicesToImgPlus<T extends RealType<T>> implements Command {
         calibration.yOrigin=posY;
         calibration.zOrigin=posZ;
 
-        calibration.setUnit(viewerState.getSources().get(sourceIndexes.get(0)).getSpimSource().getVoxelDimensions().unit());
+        if (viewerState.getSources().get(sourceIndexes.get(0)).getSpimSource().getVoxelDimensions()!=null) {
+            calibration.setUnit(viewerState.getSources().get(sourceIndexes.get(0)).getSpimSource().getVoxelDimensions().unit());
+        }
 
         // Scaling factor
         // Isotropic output image
