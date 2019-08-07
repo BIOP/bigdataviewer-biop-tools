@@ -38,6 +38,7 @@ abstract public class BDVSourceFunctionalInterfaceCommand extends DynamicCommand
 
     @Override
     public void run() {
+        initCommand();
         List<Source<?>> srcs_in = CommandHelper.commaSeparatedListToArray(sourceIndexString)
                         .stream()
                         .map(idx -> bdv_h.getViewerPanel().getState().getSources().get(idx).getSpimSource())
@@ -66,6 +67,10 @@ abstract public class BDVSourceFunctionalInterfaceCommand extends DynamicCommand
                 return src_out;
             }
         ).collect(Collectors.toList());
+    }
+
+    public void initCommand() {
+
     }
 
 }
