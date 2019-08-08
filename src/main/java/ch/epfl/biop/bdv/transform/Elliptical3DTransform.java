@@ -145,9 +145,10 @@ public class Elliptical3DTransform extends RealTransformSequence {
         ev.y = cz * b.y - sz * a.y;
         ev.z = cz * b.z - sz * a.z;
 
-        rot3D.set(en.x, en.y, en.z, 0,
+        rot3D.set(
                   eu.x, eu.y, eu.z, 0,
                   ev.x, ev.y, ev.z, 0,
+                  en.x, en.y, en.z, 0,
                      0,    0,    0, 1
                 );
 

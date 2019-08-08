@@ -173,8 +173,6 @@ public class BMWCommand implements Command {
     }
 
     public < T extends RealType< T > & NativeType< T >> double computeIntegratedIntensity(RealRandomAccess<T> rra, int subsampling) {
-        // TODO : needs to incroporate subsampling
-
         double somme =0;
         //T val_sum;
         //val_sum = rra.get().createVariable();

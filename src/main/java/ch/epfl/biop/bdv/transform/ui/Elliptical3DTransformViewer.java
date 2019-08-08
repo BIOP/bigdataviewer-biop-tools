@@ -4,7 +4,6 @@ import ch.epfl.biop.bdv.transform.Elliptical3DTransform;
 import org.scijava.plugin.Plugin;
 import org.scijava.ui.swing.viewer.EasySwingDisplayViewer;
 import org.scijava.ui.viewer.DisplayViewer;
-import sun.awt.image.ImageWatched;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -40,7 +39,10 @@ public class Elliptical3DTransformViewer extends
 
     @Override
     protected void redraw() {
-
+        Map<String, Double> params = e3Dt.getParameters();
+        paramsUI.keySet().forEach(k -> {
+            paramsUI.get(k).setValue(params.get(k));
+        });
     }
 
     Elliptical3DTransform e3Dt;
@@ -50,7 +52,7 @@ public class Elliptical3DTransformViewer extends
     JTextArea textInfo;
 
     Map<String, Double> paramsTransfo;
-    Map<String, DoubleValueSwingSet> paramsUI;
+    Map<String, DoubleValueSwingSetLog> paramsUI;
 
     @Override
     protected JPanel createDisplayPanel(Elliptical3DTransform elliptical3DTransform) {
@@ -69,7 +71,7 @@ public class Elliptical3DTransformViewer extends
         textInfo.setEditable(false);
 
         paramsTransfo.keySet().forEach(k -> {
-            paramsUI.put(k, new DoubleValueSwingSet(k, paramsTransfo.get(k), (v) -> e3Dt.setParameters(k,v)));
+            paramsUI.put(k, new DoubleValueSwingSetLog(k, paramsTransfo.get(k), (v) -> e3Dt.setParameters(k,v)));
             panelInfo.add(paramsUI.get(k).getPanel());
         });
 
@@ -80,7 +82,7 @@ public class Elliptical3DTransformViewer extends
     }
 
 
-    class DoubleValueSwingSet {
+    class DoubleValueSwingSetLog {
         JSlider sliderLog;
         JTextField valueTF;
         JLabel labelName;
@@ -91,7 +93,7 @@ public class Elliptical3DTransformViewer extends
         Consumer<Double> vChanged;
 
 
-        public DoubleValueSwingSet(String name, Double v, Consumer<Double> valueChanged) {
+        public DoubleValueSwingSetLog(String name, Double v, Consumer<Double> valueChanged) {
             vChanged = valueChanged;
             sliderLog = new JSlider();
             valueOld = new Double(0);
