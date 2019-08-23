@@ -9,6 +9,7 @@ import net.imglib2.RealRandomAccess;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 import org.apache.commons.math3.analysis.MultivariateFunction;
+import org.apache.commons.math3.exception.TooManyEvaluationsException;
 import org.apache.commons.math3.optim.InitialGuess;
 import org.apache.commons.math3.optim.MaxEval;
 import org.apache.commons.math3.optim.PointValuePair;
@@ -131,18 +132,24 @@ public class Optimize3DEllipticalTransformCommand implements Command{
             };
 
             SimplexOptimizer optimizer = new SimplexOptimizer(1e-10, 1e-30);
+            try {
+                final PointValuePair optimum =
+                        optimizer.optimize(
+                                new MaxEval(1000),
+                                new ObjectiveFunction(mf),
+                                GoalType.MAXIMIZE,
+                                new InitialGuess(this.getCurrentOptimzedParamsAsDoubles()),
+                                new NelderMeadSimplex(this.getStepOptimzedParamsAsDoubles())
+                        );// Steps for optimization
 
-            final PointValuePair optimum =
-                    optimizer.optimize(
-                            new MaxEval(1000),
-                            new ObjectiveFunction(mf),
-                            GoalType.MAXIMIZE,
-                            new InitialGuess(this.getCurrentOptimzedParamsAsDoubles()),
-                            new NelderMeadSimplex(this.getStepOptimzedParamsAsDoubles())
-                    );// Steps for optimization
+                this.setParams(optimum.getPoint());
 
-            this.setParams(optimum.getPoint());
+            } catch (TooManyEvaluationsException e) {
 
+                //this.setParams(optimum.getPoint());
+
+                System.err.println("Optimization did not converge in 1000 iterations");
+            }
             /*System.out.println(Arrays.toString(e3dT.getParameters().values()) + " : "
                     + optimum.getSecond());*/
 

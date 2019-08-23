@@ -1,5 +1,6 @@
 package ch.epfl.biop.bdv.commands;
 
+import bdv.viewer.Source;
 import ch.epfl.biop.bdv.process.ConvertedSource;
 import net.imagej.display.ColorTables;
 import net.imagej.lut.LUTService;

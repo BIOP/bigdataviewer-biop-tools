@@ -1,5 +1,7 @@
 package ch.epfl.biop.bdv.transform;
 
+import net.imglib2.RealLocalizable;
+import net.imglib2.RealPositionable;
 import net.imglib2.realtransform.*;
 import org.scijava.vecmath.Vector3d;
 
@@ -7,35 +9,59 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class Elliptical3DTransform extends RealTransformSequence {
+// extends RealTransformSequence
+public class Elliptical3DTransform implements InvertibleRealTransform {
 
     // Transform 1 : spherical to cartesian
 
-    SphericalToCartesianTransform3D s2c = SphericalToCartesianTransform3D.getInstance();
+    public SphericalToCartesianTransform3D s2c = SphericalToCartesianTransform3D.getInstance();
 
     // Transform 2 : scale elliptical axes
 
-    Scale3D s3d = new Scale3D(1f,1f,1f);
+    public Scale3D s3d = new Scale3D(1f,1f,1f);
 
     // Transform 3 : rotate axes
 
-    AffineTransform3D rot3D = new AffineTransform3D();
+    public AffineTransform3D rot3D = new AffineTransform3D();
 
     // Transform 4 : translate center
 
-    Translation3D tr3D = new Translation3D();
+    public Translation3D tr3D = new Translation3D();
+
+    public RealTransformSequence rts = new RealTransformSequence();
+
+    public RealTransformSequence rtsi = new RealTransformSequence();
 
     public Elliptical3DTransform() {
-        nSource=3;
-        nTarget=3;
-        this.add(s2c);
-        this.add(s3d);
-        this.add(rot3D);
-        this.add(tr3D);
+
+        rts.add(s2c);
+        rts.add(s3d);
+        rts.add(rot3D);
+        rts.add(tr3D);
+
+        rtsi.add(tr3D.inverse());
+        rtsi.add(rot3D.inverse());
+        rtsi.add(s3d.inverse());
+        rtsi.add(s2c.inverse());
 
         updateNotifiers = new ArrayList<>();
         this.updateTransformsFromParameters();
 
+        inverse = new InverseRealTransform( this );
+    }
+
+    static public ArrayList<String> getParamsName() {
+        ArrayList<String> names = new ArrayList<>();
+        names.add("r1");
+        names.add("r2");
+        names.add("r3");
+        names.add("theta");
+        names.add("phi");
+        names.add("angle_en");
+        names.add("tx");
+        names.add("ty");
+        names.add("tz");
+        return names;
     }
 
     public Map<String, Double> getParameters() {
@@ -119,10 +145,10 @@ public class Elliptical3DTransform extends RealTransformSequence {
         en.z = Math.cos(theta);
 
         Vector3d a,b;
-        if ((en.z==0)&&(en.y==0)) {
-            a = new Vector3d(0, en.x, 0); // TODO : is this good ?
+        if ((en.x==0)&&(en.y==0)) {
+            a = new Vector3d(1, 0, 0); // TODO : is this good ?
         } else {
-            a = new Vector3d(0, en.z, -en.y);
+            a = new Vector3d(en.y, -en.x, 0);
         }
 
         b = new Vector3d(0, 0, 0);
@@ -134,9 +160,6 @@ public class Elliptical3DTransform extends RealTransformSequence {
         double sz = Math.sin(angle_en);
         double cz = Math.cos(angle_en);
 
-        // eu = cz A + sz B
-        // ev = cz B - sz A
-
         eu.x = cz * a.x + sz * b.x;
         eu.y = cz * a.y + sz * b.y;
         eu.z = cz * a.z + sz * b.z;
@@ -146,18 +169,61 @@ public class Elliptical3DTransform extends RealTransformSequence {
         ev.z = cz * b.z - sz * a.z;
 
         rot3D.set(
-                  eu.x, eu.y, eu.z, 0,
-                  ev.x, ev.y, ev.z, 0,
-                  en.x, en.y, en.z, 0,
+                  en.x, eu.x, ev.x, 0,
+                  en.y, eu.y, ev.y, 0,
+                  en.z, eu.z, ev.z, 0,
                      0,    0,    0, 1
                 );
-
-        //rot3D.identity();
 
         updateNotifiers.forEach(c -> {
             c.run();
         });
 
+    }
+
+    @Override
+    public void applyInverse(double[] source, double[] target) {
+        rtsi.apply(source,target);
+    }
+
+    @Override
+    public void applyInverse(RealPositionable source, RealLocalizable target) {
+        rtsi.apply(target,source);
+    }
+
+    private final InverseRealTransform inverse;
+
+    @Override
+    public InvertibleRealTransform inverse() {
+        return inverse;
+    }
+
+    @Override
+    public int numSourceDimensions() {
+        return 3;
+    }
+
+    @Override
+    public int numTargetDimensions() {
+        return 3;
+    }
+
+    @Override
+    public void apply(double[] source, double[] target) {
+        rts.apply(source,target);
+    }
+
+    @Override
+    public void apply(RealLocalizable source, RealPositionable target) {
+        rts.apply(source, target);
+    }
+
+    @Override
+    public Elliptical3DTransform copy() {
+        final Elliptical3DTransform copy = new Elliptical3DTransform();
+        copy.rts = rts.copy();
+        copy.rtsi = rtsi.copy();
+        return copy;
     }
 
 }
