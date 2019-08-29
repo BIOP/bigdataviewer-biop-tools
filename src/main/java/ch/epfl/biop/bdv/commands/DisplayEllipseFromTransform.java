@@ -55,7 +55,6 @@ public class DisplayEllipseFromTransform implements Command {
 
         final Source< UnsignedShortType > s = new RealRandomAccessibleIntervalSource<>( rra, interval, type, sourceTransform, "Ellipse" );
 
-
         WarpedSource ws = new WarpedSource(s,"Ellipsoid");
         ws.updateTransform(e3Dt.inverse());
         ws.setIsTransformed(true);
@@ -64,8 +63,6 @@ public class DisplayEllipseFromTransform implements Command {
             ws.updateTransform(e3Dt.inverse());
             this.bdv_h.getViewerPanel().requestRepaint();
         }); // TODO avoid memory leak somehow...
-
-
 
         BdvOptions options = BdvOptions.options();
 

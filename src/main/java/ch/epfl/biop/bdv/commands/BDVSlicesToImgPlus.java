@@ -118,10 +118,26 @@ public class BDVSlicesToImgPlus<T extends RealType<T>> implements Command {
         RealPoint pt = new RealPoint(3); // Number of dimension
 
         //Get global coordinates of the central position  of the viewer
-        bdv_h.getViewerPanel().displayToGlobalCoordinates(w/2, h/2, pt);
+        bdv_h.getViewerPanel().displayToGlobalCoordinates(w/2.0, h/2.0, pt);
         double posX = pt.getDoublePosition(0);
         double posY = pt.getDoublePosition(1);
         double posZ = pt.getDoublePosition(2);
+
+        bdv_h.getViewerPanel().displayToGlobalCoordinates(w/2.0+samplingInXVoxelUnit, h/2.0, pt);
+
+        double dx = pt.getDoublePosition(0)-posX;
+        double dy = pt.getDoublePosition(1)-posY;
+        double dz = pt.getDoublePosition(2)-posZ;
+
+        double dX = Math.sqrt(dx*dx+dy*dy+dz*dz);
+
+        bdv_h.getViewerPanel().displayToGlobalCoordinates(w/2.0, h/2.0+samplingInXVoxelUnit, pt);
+
+        dx = pt.getDoublePosition(0)-posX;
+        dy = pt.getDoublePosition(1)-posY;
+        dz = pt.getDoublePosition(2)-posZ;
+
+        double dY = Math.sqrt(dx*dx+dy*dy+dz*dz);
 
         // Stream is single threaded or multithreaded based on boolean parameter
         Stream<Integer> indexStream;
@@ -237,12 +253,20 @@ public class BDVSlicesToImgPlus<T extends RealType<T>> implements Command {
             calibration.setUnit(viewerState.getSources().get(sourceIndexes.get(0)).getSpimSource().getVoxelDimensions().unit());
         }
 
+        //*******************
         // Scaling factor
         // Isotropic output image
-        double globalScaleFactor = 1;
-        calibration.pixelWidth=globalScaleFactor;
-        calibration.pixelHeight=globalScaleFactor;
-        calibration.pixelDepth=globalScaleFactor;
+        // Get physical pixel size based on first source
+        //*************
+
+        if (Math.abs((dX/dY)-1.0)>1e-5) {
+            System.err.println("Warning : pixelDepth can be wrong because pixelWidth (= "+dX+") is different from pixelHeigth (= "+dY+")");
+        }
+
+        double avgVoxelSize = (dX+dY)/2.0;
+        calibration.pixelWidth=avgVoxelSize;
+        calibration.pixelHeight=avgVoxelSize;
+        calibration.pixelDepth=avgVoxelSize;
 
         // Set generated calibration to output image
         imp.setCalibration(calibration);

@@ -1,9 +1,11 @@
 package ch.epfl.biop.bdv.sampleimage;
 
-import net.imglib2.RealInterval;
-import net.imglib2.RealPoint;
-import net.imglib2.RealRandomAccess;
-import net.imglib2.RealRandomAccessible;
+import bdv.util.AxisOrder;
+import bdv.util.BdvOptions;
+import bdv.util.RealRandomAccessibleIntervalSource;
+import bdv.viewer.Source;
+import net.imglib2.*;
+import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import java.util.function.ToIntFunction;
 
@@ -63,6 +65,18 @@ public class Procedural3DImageShort extends RealPoint implements RealRandomAcces
         };
 
         return rra;
+    }
+
+    public Source<UnsignedShortType> getSource(String sourceName) {
+        Interval interval = new FinalInterval(
+                new long[]{ -1, -1, -1 },
+                new long[]{ 1, 1, 1 });
+        RealRandomAccessible<UnsignedShortType> rra = this.getRRA();
+        final AxisOrder axisOrder = AxisOrder.getAxisOrder( BdvOptions.options().values.axisOrder(), rra, false );
+        final AffineTransform3D sourceTransform = BdvOptions.options().values.getSourceTransform();
+        final UnsignedShortType type = rra.realRandomAccess().get();
+
+        return new RealRandomAccessibleIntervalSource<>( rra, interval, type, sourceTransform, sourceName );
     }
 
 }

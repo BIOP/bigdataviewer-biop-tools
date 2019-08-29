@@ -60,6 +60,12 @@ abstract public class BDVSourceFunctionalInterfaceCommand extends DynamicCommand
                         .map(idx -> bdv_h.getViewerPanel().getState().getSources().get(idx).getSpimSource())
                         .collect(Collectors.toList());
 
+        // To remove
+        Source<?> srcTest = bdv_h.getViewerPanel().getState().getSources().get(0).getSpimSource();
+
+        //bdv_h.getViewerPanel().getState().getSources().get(0).getSpimSource()
+
+
         BdvOptions opts = BdvOptions.options().addTo(bdv_out);
 
         srcs_out = srcs_in.stream().map(s -> {
