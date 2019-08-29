@@ -9,19 +9,32 @@ import org.scijava.plugin.Plugin;
 public class BDVSourceAffineTransform extends BDVSourceFunctionalInterfaceCommand {
 
     @Parameter(label = "Affine Transform Matrix", style = "text area")
-    String matrix;
+    String stringMatrix = "1,0,0,0,\n 0,1,0,0,\n 0,0,1,0, \n 0,0,0,1";
 
     public BDVSourceAffineTransform() {
         this.f = src -> {
             AffineTransform3D at = new AffineTransform3D();
-            at.translate(20,0,0);
+            at.set(this.toDouble());
 
             if (src instanceof  BDVSourceAffineTransformed) {
-                ((BDVSourceAffineTransformed) src).transform.concatenate(at);
+                ((BDVSourceAffineTransformed) src).transform =((BDVSourceAffineTransformed) src).transform.concatenate(at);
                 return src;
             } else {
                 return new BDVSourceAffineTransformed(src, at);
             }
         };
+    }
+
+    public double[] toDouble() {
+        String[] strNumber = stringMatrix.split(",");
+        double[] mat = new double[16];
+        if (strNumber.length!=16) {
+            System.err.println("matrix has not enough elements");
+            return null;
+        }
+        for (int i=0;i<16;i++) {
+            mat[i] = Double.valueOf(strNumber[i].trim());
+        }
+        return mat;
     }
 }
