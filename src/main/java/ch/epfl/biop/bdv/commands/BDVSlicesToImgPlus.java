@@ -1,7 +1,7 @@
 package ch.epfl.biop.bdv.commands;
 
 import bdv.util.BdvHandle;
-import ch.epfl.biop.bdv.scijava.BigDataServerPlugInSciJava;
+import ch.epfl.biop.bdv.scijava.command.BigDataServerPlugInSciJava;
 import ij.ImagePlus;
 import ij.measure.Calibration;
 import ij.plugin.RGBStackMerge;
