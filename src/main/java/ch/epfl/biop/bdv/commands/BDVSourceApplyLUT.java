@@ -2,6 +2,7 @@ package ch.epfl.biop.bdv.commands;
 
 import bdv.viewer.Source;
 import ch.epfl.biop.bdv.process.ConvertedSource;
+import ch.epfl.biop.bdv.scijava.util.BDVSourceFunctionalInterfaceCommand;
 import net.imagej.display.ColorTables;
 import net.imagej.lut.LUTService;
 import net.imglib2.converter.Converter;
@@ -18,7 +19,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
 
-@Plugin(type = Command.class, initializer = "init", menuPath = "Plugins>BIOP>BDV>Apply LUT Source")
+import static ch.epfl.biop.bdv.scijava.command.Info.ScijavaBdvRootMenu;
+
+@Plugin(type = Command.class, initializer = "init", menuPath = ScijavaBdvRootMenu+"Apply LUT to Sources")
 public class BDVSourceApplyLUT extends BDVSourceFunctionalInterfaceCommand {
 
     @Parameter

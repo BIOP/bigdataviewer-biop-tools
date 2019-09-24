@@ -2,6 +2,9 @@ package ch.epfl.biop.bdv.wholeslidealign;
 
 import bdv.spimdata.SpimDataMinimal;
 import bdv.spimdata.XmlIoSpimDataMinimal;
+import bdv.util.BdvFunctions;
+import bdv.util.BdvHandle;
+import bdv.util.BdvStackSource;
 import ch.epfl.biop.wrappers.elastix.RegisterHelper;
 import ch.epfl.biop.wrappers.elastix.ij2commands.Elastix_Register;
 import ij.ImagePlus;
@@ -12,10 +15,8 @@ import mpicbg.spim.data.generic.sequence.BasicSetupImgLoader;
 import mpicbg.spim.data.registration.ViewTransform;
 import mpicbg.spim.data.registration.ViewTransformAffine;
 import mpicbg.spim.data.sequence.MultiResolutionSetupImgLoader;
-import mpicbg.spim.data.sequence.ViewSetup;
 import net.imglib2.*;
 import net.imglib2.img.display.imagej.ImageJFunctions;
-import net.imglib2.realtransform.AffineGet;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.realtransform.RealViews;
 import net.imglib2.view.Views;
@@ -25,15 +26,18 @@ import org.scijava.command.CommandService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
-import net.imglib2.interpolation.randomaccess.NLinearInterpolatorFactory;
 import net.imglib2.interpolation.randomaccess.NearestNeighborInterpolatorFactory;
 
 import java.io.File;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+import java.util.List;
 
-@Plugin(type = Command.class, menuPath = "Plugins>BIOP>BDV>Align SpimData")
+import static ch.epfl.biop.bdv.scijava.command.Info.ScijavaBdvRootMenu;
+
+@Plugin(type = Command.class, menuPath = ScijavaBdvRootMenu+"Registration>Align SpimData")
 public class RegisterSpimData implements Command {
+
+    @Parameter
+    BdvHandle bdv_h;
 
     @Parameter
     AbstractSpimData as;
@@ -141,11 +145,15 @@ public class RegisterSpimData implements Command {
             ViewTransform vt = new ViewTransformAffine( null, at1MM ); // affine3D
             as.getViewRegistrations().getViewRegistration(tpMoving,viewSetupMoving).getTransformList().add(vt);
             as.getViewRegistrations().getViewRegistration(tpMoving,viewSetupMoving).updateModel();
+
             //as.getSequenceDescription().getViewSetups().get(viewSetupMoving)
 
             System.out.println("Done!");
 
             System.out.println(as.getBasePath().getAbsolutePath());
+
+            List<BdvStackSource<?>> bss = BdvFunctions.show(as);
+
 
             new XmlIoSpimDataMinimal().save( (SpimDataMinimal) as, "./imaris.xml" );
         } catch (Exception e) {

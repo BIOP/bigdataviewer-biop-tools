@@ -1,11 +1,14 @@
 package ch.epfl.biop.bdv.commands;
 
+import ch.epfl.biop.bdv.scijava.util.BDVSourceFunctionalInterfaceCommand;
 import net.imglib2.realtransform.AffineTransform3D;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
-@Plugin(type = Command.class, initializer = "init", menuPath = "Plugins>BIOP>BDV>Transform Source (affine)")
+import static ch.epfl.biop.bdv.scijava.command.Info.ScijavaBdvRootMenu;
+
+@Plugin(type = Command.class, initializer = "init", menuPath = ScijavaBdvRootMenu+"Transformation>Transform Source (affine)")
 public class BDVSourceAffineTransform extends BDVSourceFunctionalInterfaceCommand {
 
     @Parameter(label = "Affine Transform Matrix", style = "text area")

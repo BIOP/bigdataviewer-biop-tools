@@ -26,8 +26,10 @@ import org.scijava.vecmath.Vector3d;
 
 import java.util.Arrays;
 
+import static ch.epfl.biop.bdv.scijava.command.Info.ScijavaBdvRootMenu;
 
-@Plugin(type = Command.class, menuPath = "Plugins>BIOP>Big Warp>Curvature Transform")
+
+@Plugin(type = Command.class, menuPath = ScijavaBdvRootMenu+"Transformation>Big Warp>Curvature Transform")
 public class BMWCommand implements Command {
     @Parameter(label = "Bdv Frame from BigWarp")
     BdvHandle bdv_warp;
@@ -82,7 +84,6 @@ public class BMWCommand implements Command {
 
     @Override
     public void run() {
-
         phi = phi/180*Math.PI;
         theta = theta/180*Math.PI;
         normal_angle = normal_angle/180*Math.PI;

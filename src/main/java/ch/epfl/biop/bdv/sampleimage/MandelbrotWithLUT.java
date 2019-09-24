@@ -25,7 +25,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
 
-@Plugin(type=Command.class, initializer = "init", menuPath = "Plugins>BIOP>BDV>Samples>Mandelbrot")
+import static ch.epfl.biop.bdv.scijava.command.Info.ScijavaBdvRootMenu;
+
+@Plugin(type=Command.class, initializer = "init", menuPath = ScijavaBdvRootMenu+"Open>Samples>Mandelbrot")
 public class MandelbrotWithLUT extends DynamicCommand {
 
     @Parameter(label = "Open in new BigDataViewer window")

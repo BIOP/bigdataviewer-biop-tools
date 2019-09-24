@@ -8,7 +8,9 @@ import org.scijava.plugin.Plugin;
 
 import java.util.Arrays;
 
-@Plugin(type = Command.class, menuPath = "Plugins>BIOP>BDV>Synchronize BDV windows")
+import static ch.epfl.biop.bdv.scijava.command.Info.ScijavaBdvRootMenu;
+
+@Plugin(type = Command.class, menuPath = ScijavaBdvRootMenu+"Synchronize BDV windows")
 public class SynchronizeBDV implements Command {
 
     @Parameter

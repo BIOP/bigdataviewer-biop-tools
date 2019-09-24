@@ -22,8 +22,10 @@ import org.scijava.plugin.Plugin;
 
 import java.util.Random;
 
+import static ch.epfl.biop.bdv.scijava.command.Info.ScijavaBdvRootMenu;
 
-@Plugin(type= Command.class, initializer = "init", menuPath = "Plugins>BIOP>BDV>Samples>Voronoi Label 3D")
+
+@Plugin(type= Command.class, initializer = "init", menuPath = ScijavaBdvRootMenu+"Open>Samples>Voronoi Label 3D")
 public class VoronoiLabel3D  implements Command{
     @Parameter(label = "Create new BigDataViewer window")
     public boolean createNewWindow;

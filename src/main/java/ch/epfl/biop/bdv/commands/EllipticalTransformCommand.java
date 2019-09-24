@@ -1,6 +1,7 @@
 package ch.epfl.biop.bdv.commands;
 
 import bdv.img.WarpedSource;
+import ch.epfl.biop.bdv.scijava.util.BDVSourceFunctionalInterfaceCommand;
 import ch.epfl.biop.bdv.transform.Elliptical3DTransform;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
@@ -12,7 +13,9 @@ import org.scijava.plugin.Plugin;
 import java.util.ArrayList;
 import java.util.List;
 
-@Plugin(type = Command.class, menuPath = "Plugins>BIOP>BDV>Elliptical Transform")
+import static ch.epfl.biop.bdv.scijava.command.Info.ScijavaBdvRootMenu;
+
+@Plugin(type = Command.class, menuPath = ScijavaBdvRootMenu+"Transformation>Elliptical Transform")
 public class EllipticalTransformCommand extends BDVSourceFunctionalInterfaceCommand {
 
     @Parameter
@@ -34,7 +37,7 @@ public class EllipticalTransformCommand extends BDVSourceFunctionalInterfaceComm
             System.out.println("1");
             e3Dt.updateNotifiers.add(() -> {
                 ws.updateTransform(e3Dt);
-                this.bdv_out.getViewerPanel().requestRepaint();
+                this.bdv_h_out.getViewerPanel().requestRepaint();
             }); // TODO avoid memory leak somehow...
 
             System.out.println("2");

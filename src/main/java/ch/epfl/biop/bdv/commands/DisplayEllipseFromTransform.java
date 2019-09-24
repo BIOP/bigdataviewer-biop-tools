@@ -15,7 +15,9 @@ import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
-@Plugin(type = Command.class, menuPath = "Plugins>BIOP>BDV>Display Ellipsoid")
+import static ch.epfl.biop.bdv.scijava.command.Info.ScijavaBdvRootMenu;
+
+@Plugin(type = Command.class, menuPath = ScijavaBdvRootMenu+"Transformation>Display Ellipsoid")
 public class DisplayEllipseFromTransform implements Command {
 
     @Parameter(label = "Open in new BigDataViewer window")

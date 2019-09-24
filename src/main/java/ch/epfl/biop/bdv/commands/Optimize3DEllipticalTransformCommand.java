@@ -24,7 +24,9 @@ import org.scijava.plugin.Plugin;
 
 import java.util.Map;
 
-@Plugin(type = Command.class, initializer = "init", menuPath = "Plugins>BIOP>BDV>Elliptical Transform Optimization")
+import static ch.epfl.biop.bdv.scijava.command.Info.ScijavaBdvRootMenu;
+
+@Plugin(type = Command.class, initializer = "init", menuPath = ScijavaBdvRootMenu+"Transformation>Elliptical Transform Optimization")
 public class Optimize3DEllipticalTransformCommand implements Command{
 
     @Parameter(type = ItemIO.BOTH)
