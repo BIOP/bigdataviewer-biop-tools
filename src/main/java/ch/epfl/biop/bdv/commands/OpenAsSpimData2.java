@@ -12,7 +12,6 @@ import net.preibisch.mvrecon.fiji.spimdata.SpimData2;
 import net.preibisch.mvrecon.fiji.spimdata.XmlIoSpimData2;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
-import org.scijava.object.ObjectService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
@@ -21,7 +20,7 @@ import java.io.File;
 import static ch.epfl.biop.bdv.scijava.command.Info.ScijavaBdvCmdSuffix;
 import static ch.epfl.biop.bdv.scijava.command.Info.ScijavaBdvRootMenu;
 
-@Plugin(type = Command.class, menuPath = ScijavaBdvRootMenu+"Open>Open XML/HDF5 (SpimData2)"+ScijavaBdvCmdSuffix)
+@Plugin(type = Command.class, menuPath = ScijavaBdvRootMenu+"Open>XML/HDF5 (SpimData2)"+ScijavaBdvCmdSuffix)
 public class OpenAsSpimData2 implements Command {
 
     @Parameter(label = "XML File")

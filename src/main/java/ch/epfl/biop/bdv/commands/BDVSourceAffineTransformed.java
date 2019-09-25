@@ -31,14 +31,17 @@ public class BDVSourceAffineTransformed<T> implements Source<T> {
     @Override
     public RealRandomAccessible<T> getInterpolatedSource(int t, int level, Interpolation method) {
         //RealRandomAccessible<T> rra =
-                return origin.getInterpolatedSource(t,level,method);
+        return origin.getInterpolatedSource(t,level,method);
         //return RealViews.affine(rra, transform);
     }
 
     @Override
     public void getSourceTransform(int t, int level, AffineTransform3D transform) {
-        origin.getSourceTransform(t,level,transform);
+        AffineTransform3D atOrigin = new AffineTransform3D();
+        origin.getSourceTransform(t,level,atOrigin);
+        transform.identity();
         transform.concatenate(this.transform);
+        transform.concatenate(atOrigin);
     }
 
     @Override

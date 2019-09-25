@@ -33,7 +33,7 @@ import java.util.List;
 
 import static ch.epfl.biop.bdv.scijava.command.Info.ScijavaBdvRootMenu;
 
-@Plugin(type = Command.class, menuPath = ScijavaBdvRootMenu+"Registration>Align SpimData")
+@Plugin(type = Command.class, menuPath = ScijavaBdvRootMenu+"Registration>Align SpimData with Elastix")
 public class RegisterSpimData implements Command {
 
     @Parameter
@@ -41,6 +41,9 @@ public class RegisterSpimData implements Command {
 
     @Parameter
     AbstractSpimData as;
+
+    @Parameter
+    String datasetName;
 
     @Parameter
     int viewSetupFixed;
@@ -66,31 +69,30 @@ public class RegisterSpimData implements Command {
     @Override
     public void run() {
         BasicSetupImgLoader silF = as.getSequenceDescription().getImgLoader().getSetupImgLoader(viewSetupFixed);
-        AffineTransform3D at1MM;
+        AffineTransform3D atfMM;
 
         RandomAccessibleInterval raiM;
         if (silF instanceof MultiResolutionSetupImgLoader) {
             MultiResolutionSetupImgLoader msil1 = (MultiResolutionSetupImgLoader) silF;
             raiM = msil1.getImage(tpFixed,levelSetupFixed);
-            at1MM = msil1.getMipmapTransforms()[levelSetupFixed];
+            atfMM = msil1.getMipmapTransforms()[levelSetupFixed];
         } else {
             raiM = silF.getImage(tpFixed);
-            at1MM = new AffineTransform3D();
-            at1MM.identity();
+            atfMM = new AffineTransform3D();
+            atfMM.identity();
         }
 
         BasicSetupImgLoader silM = as.getSequenceDescription().getImgLoader().getSetupImgLoader(viewSetupMoving);
-        AffineTransform3D at2MM;
+        AffineTransform3D atmMM;
         RandomAccessibleInterval raiF;
-        if (silF instanceof MultiResolutionSetupImgLoader) {
+        if (silM instanceof MultiResolutionSetupImgLoader) {
             MultiResolutionSetupImgLoader msil2 = (MultiResolutionSetupImgLoader) silM;
-
             raiF = msil2.getImage(tpMoving,levelSetupMoving);
-            at2MM = msil2.getMipmapTransforms()[levelSetupMoving];
+            atmMM = msil2.getMipmapTransforms()[levelSetupMoving];
         } else {
             raiF = silF.getImage(tpMoving);
-            at2MM = new AffineTransform3D();
-            at2MM.identity();
+            atmMM = new AffineTransform3D();
+            atmMM.identity();
         }
 
         AffineTransform3D pxFToRealSpace = as.getViewRegistrations().getViewRegistration(tpFixed,viewSetupFixed).getModel();
@@ -101,15 +103,19 @@ public class RegisterSpimData implements Command {
 
         // Computes transform of moving RAI into fixed one
         movToFixed.identity();
-        movToFixed.concatenate(at2MM.inverse());
+        movToFixed.concatenate(atmMM.inverse());
         movToFixed.concatenate(pxMToRealSpace.inverse());
         movToFixed.concatenate(pxFToRealSpace);
-        movToFixed.concatenate(at1MM);
+        movToFixed.concatenate(atfMM);
+
+        movToFixed = movToFixed.inverse(); // Apparently better
 
         RealRandomAccessible rraiM = Views.interpolate(Views.extendZero(raiM), new NearestNeighborInterpolatorFactory());
         RandomAccessible trRraiM = RealViews.affine(rraiM, movToFixed);
 
         ImagePlus impM = ImageJFunctions.wrap(Views.interval(trRraiM,raiF), "Moving");
+
+        //ImagePlus impM = ImageJFunctions.wrap(raiM, "Moving");
         ImagePlus impF = ImageJFunctions.wrap(raiF, "Fixed");
 
         impM.show();
@@ -132,30 +138,43 @@ public class RegisterSpimData implements Command {
 
             assert et.getClass()== ElastixAffineTransform2D.class;
 
-            // Convert to AffineTransform3D:
-
             Double[] m2D = et.TransformParameters;
 
-            final AffineTransform3D affine3D = new AffineTransform3D();
-            affine3D.set(new double[][] {{m2D[0], m2D[1], 0, m2D[ 2]},
-                    {m2D[3], m2D[4], 0, m2D[ 5]},
-                    {0, 0, 1, 0},
-                    {0.,     0.,     0.,      1.     } });
+            for (Double d : m2D) {
+                System.out.println(d);
+            }
 
-            ViewTransform vt = new ViewTransformAffine( null, at1MM ); // affine3D
+            final AffineTransform3D affine3D = new AffineTransform3D();
+            affine3D.set(new double[][] {
+                    {m2D[0], m2D[1], 0,   m2D[4]}, //0 ok
+                    {m2D[2], m2D[3], 0,   m2D[5]},
+                    {0     ,      0, 1,        0},
+                    {0.    ,      0, 0,        1}});
+
+            AffineTransform3D atRes = new AffineTransform3D();
+            atRes.identity();
+            //atRes.concatenate(movToFixed.inverse());
+            //atRes.concatenate(affine3D.inverse());
+            atRes.concatenate(pxMToRealSpace);
+            atRes.concatenate(pxFToRealSpace.inverse());
+            atRes.concatenate(atfMM.inverse());
+            atRes.concatenate(affine3D);
+            atRes.concatenate(atmMM);
+
+
+
+
+
+            //atRes.concatenate(movToFixed);
+
+            ViewTransform vt = new ViewTransformAffine( null, atRes.inverse() ); // affine3D
+
             as.getViewRegistrations().getViewRegistration(tpMoving,viewSetupMoving).getTransformList().add(vt);
             as.getViewRegistrations().getViewRegistration(tpMoving,viewSetupMoving).updateModel();
 
-            //as.getSequenceDescription().getViewSetups().get(viewSetupMoving)
-
             System.out.println("Done!");
 
-            System.out.println(as.getBasePath().getAbsolutePath());
-
-            List<BdvStackSource<?>> bss = BdvFunctions.show(as);
-
-
-            new XmlIoSpimDataMinimal().save( (SpimDataMinimal) as, "./imaris.xml" );
+            new XmlIoSpimDataMinimal().save( (SpimDataMinimal) as, new File(as.getBasePath(),datasetName).getAbsolutePath() );
         } catch (Exception e) {
             e.printStackTrace();
         }

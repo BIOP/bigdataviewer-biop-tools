@@ -29,7 +29,18 @@ public class BDVSourceAffineTransform extends BDVSourceFunctionalInterfaceComman
     }
 
     public double[] toDouble() {
-        String[] strNumber = stringMatrix.split(",");
+        String inputString = stringMatrix;
+        // Test if the String is written using AffineTransform3D toString() method
+        String[] testIfParenthesis = stringMatrix.split("[\\(\\)]+");// right of left parenthesis
+        for (String str: testIfParenthesis) {
+            System.out.println(str);
+        }
+
+        if (testIfParenthesis.length>1) {
+            inputString = testIfParenthesis[1]+",0,0,0,1";
+        }
+
+        String[] strNumber = inputString.split(",");
         double[] mat = new double[16];
         if (strNumber.length!=16) {
             System.err.println("matrix has not enough elements");
