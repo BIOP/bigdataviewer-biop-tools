@@ -8,12 +8,17 @@ import bdv.util.BdvOptions;
 import mpicbg.spim.data.SpimData;
 import mpicbg.spim.data.SpimDataException;
 import mpicbg.spim.data.generic.AbstractSpimData;
+/*
 import net.preibisch.mvrecon.fiji.spimdata.SpimData2;
 import net.preibisch.mvrecon.fiji.spimdata.XmlIoSpimData2;
+
+ */
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import spim.fiji.spimdata.SpimData2;
+import spim.fiji.spimdata.XmlIoSpimData2;
 
 import java.io.File;
 

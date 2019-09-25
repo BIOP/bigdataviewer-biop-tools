@@ -1,7 +1,5 @@
 package ch.epfl.biop.bdv.wholeslidealign;
 
-import bdv.spimdata.SpimDataMinimal;
-import bdv.spimdata.XmlIoSpimDataMinimal;
 import bdv.util.BdvHandle;
 import bdv.util.RealCropper;
 import bdv.viewer.Interpolation;
@@ -9,35 +7,32 @@ import bdv.viewer.Source;
 import ch.epfl.biop.bdv.commands.BDVSourceAffineTransform;
 import ch.epfl.biop.wrappers.elastix.RegisterHelper;
 import ch.epfl.biop.wrappers.elastix.ij2commands.Elastix_Register;
+import ch.epfl.biop.wrappers.transformix.ij2commands.Transformix_TransformImgPlus;
 import ij.ImagePlus;
 import ij.plugin.Duplicator;
 import itc.transforms.elastix.ElastixAffineTransform2D;
 import itc.transforms.elastix.ElastixTransform;
-import mpicbg.spim.data.generic.sequence.BasicSetupImgLoader;
-import mpicbg.spim.data.registration.ViewTransform;
-import mpicbg.spim.data.registration.ViewTransformAffine;
-import mpicbg.spim.data.sequence.MultiResolutionSetupImgLoader;
 import net.imglib2.FinalRealInterval;
-import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.RealRandomAccessible;
 import net.imglib2.img.display.imagej.ImageJFunctions;
-import net.imglib2.interpolation.randomaccess.NearestNeighborInterpolatorFactory;
-import net.imglib2.realtransform.AffineTransform;
 import net.imglib2.realtransform.AffineTransform3D;
-import net.imglib2.realtransform.RealViews;
-import net.imglib2.view.Views;
+import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.command.CommandModule;
 import org.scijava.command.CommandService;
+import org.scijava.module.ModuleService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
+import ij.IJ;
+
 import java.io.File;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import static ch.epfl.biop.bdv.scijava.command.Info.ScijavaBdvRootMenu;
 import static ch.epfl.biop.bdv.scijava.util.BDVSourceFunctionalInterfaceCommand.ADD;
-import static ch.epfl.biop.bdv.scijava.util.BDVSourceFunctionalInterfaceCommand.REPLACE;
 
 @Plugin(type = Command.class, menuPath = ScijavaBdvRootMenu+"Registration>Align Sources with Elastix")
 public class RegisterBdvSources2D implements Command {
@@ -74,6 +69,18 @@ public class RegisterBdvSources2D implements Command {
 
     @Parameter
     boolean interpolate;
+
+    @Parameter
+    boolean outputRegisteredSource = false;
+
+    @Parameter
+    boolean showImagePlusRegistrationResult = false;
+
+    @Parameter(type = ItemIO.OUTPUT)
+    AffineTransform3D affineTransformOut;
+
+    @Parameter
+    ModuleService ms;
 
     @Override
     public void run() {
@@ -124,14 +131,15 @@ public class RegisterBdvSources2D implements Command {
         //impF.show();
 
         try {
-            CommandModule cm = cs.run(Elastix_Register.class, true, "movingImage",impM,
+            Future<CommandModule> cm = cs.run(Elastix_Register.class, true, "movingImage",impM,
                     "fixedImage", impF,
                     "rigid",false,
-                    "fast_affine",true,
-                    "affine",false,
-                    "spline",false).get();
+                    "fast_affine",false,
+                    "affine",true,
+                    "spline",false);
+            CommandModule cmg = cm.get();
 
-            RegisterHelper rh = (RegisterHelper) cm.getOutput("rh");
+            RegisterHelper rh = (RegisterHelper) cmg.getOutput("rh");
             File fTransform = new File(rh.getFinalTransformFile());
 
             ElastixTransform et = ElastixTransform.load(fTransform);
@@ -162,19 +170,40 @@ public class RegisterBdvSources2D implements Command {
             transformInRealCoordinates.concatenate(affine3D);
             transformInRealCoordinates.concatenate(at3D);
 
+            if (outputRegisteredSource) {
+                // Using module service because:
+                /*
+                log.debug("The command '" + info.getIdentifier() +
+                    "' extends Module directly. Due to a design flaw in the " +
+                    "CommandService API, the result cannot be coerced to a " +
+                    "Future<CommandModule>, so null will be returned instead. " +
+                    "If you need the resulting module, please instead call " +
+                    "moduleService.run(commandService.getCommand(commandClass), ...).");*/
 
-            //cm =
-                    cs.run(BDVSourceAffineTransform.class, true,
-                "bdv_h_in",bdv_h,
-                "sourceIndexString", idxMovingSource,
-                "bdv_h_out", bdv_h,
-                "output_mode", ADD,
-                "keepConverters",true,
-                "stringMatrix", transformInRealCoordinates.inverse().toString() );
-                    //.get();// CREATES NULL POINTER EXCEPTION !
+                ms.run(cs.getCommand(BDVSourceAffineTransform.class),true, "bdv_h_in", bdv_h,
+                        "sourceIndexString", Integer.toString(idxMovingSource),
+                        "bdv_h_out", bdv_h,
+                        "output_mode", ADD,
+                        "keepConverters", false,
+                        "stringMatrix", transformInRealCoordinates.inverse().toString()).get();
+
+            }
+
+            if (showImagePlusRegistrationResult) {
+                impF.show();
+
+                ImagePlus transformedImage = ((ImagePlus)cs.run(Transformix_TransformImgPlus.class, true, "img_in", impM,
+                        "rh", rh).get().getOutput("img_out"));
+                transformedImage.show();
+
+                IJ.run(impF, "Enhance Contrast", "saturated=0.35");
+                IJ.run(transformedImage, "Enhance Contrast", "saturated=0.35");
+                IJ.run(impF, "32-bit", "");
+                IJ.run((ImagePlus) null, "Merge Channels...", "c1=Transformed_DUP_Moving c2=DUP_Fixed create");
+            }
 
             //--------------------------------------------------
-
+            affineTransformOut = transformInRealCoordinates.inverse();
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -14,11 +14,6 @@ import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.view.ExtendedRandomAccessibleInterval;
 import net.imglib2.view.Views;
-import net.preibisch.mvrecon.fiji.spimdata.SpimData2;
-import net.preibisch.mvrecon.fiji.spimdata.XmlIoSpimData2;
-import net.preibisch.mvrecon.fiji.spimdata.interestpoints.InterestPoint;
-import net.preibisch.mvrecon.fiji.spimdata.interestpoints.InterestPointList;
-import net.preibisch.mvrecon.fiji.spimdata.interestpoints.ViewInterestPointLists;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
@@ -64,7 +59,7 @@ public class InterestPointDetect2D implements Command {
     int zLocation;
 
     public void run() {
-
+/*
         final HashMap<ViewId, List<InterestPoint>> points = new HashMap<>();
 
         List<InterestPoint> ips = new ArrayList<>();
@@ -135,7 +130,7 @@ public class InterestPointDetect2D implements Command {
             }
         } else {
             System.err.println("Dataset should be open as a Spim2Dataset");
-        }
+        }*/
     }
 
 
@@ -147,11 +142,11 @@ public class InterestPointDetect2D implements Command {
      * @param parameters the parameters
      * @return the true if successful, false if interest points cannot be saved
      */
-
+   /*
     // final SpimData2 data
     public static boolean addInterestPoints(SpimData2 sd2, String label, final HashMap< ViewId, List< InterestPoint > > points, final String parameters )
     {
-        for ( final ViewId viewId : points.keySet() )
+    for ( final ViewId viewId : points.keySet() )
         {
             final InterestPointList list =
                     new InterestPointList(
@@ -174,6 +169,7 @@ public class InterestPointDetect2D implements Command {
 
         return true;
     }
+    */
 
 }
 /**

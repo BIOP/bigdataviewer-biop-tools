@@ -32,12 +32,15 @@ public class BDVSourceAffineTransform extends BDVSourceFunctionalInterfaceComman
         String inputString = stringMatrix;
         // Test if the String is written using AffineTransform3D toString() method
         String[] testIfParenthesis = stringMatrix.split("[\\(\\)]+");// right of left parenthesis
-        for (String str: testIfParenthesis) {
-            System.out.println(str);
-        }
 
-        if (testIfParenthesis.length>1) {
-            inputString = testIfParenthesis[1]+",0,0,0,1";
+        if (testIfParenthesis!=null) {
+            for (String str : testIfParenthesis) {
+                System.out.println(str);
+            }
+
+            if (testIfParenthesis.length > 1) {
+                inputString = testIfParenthesis[1] + ",0,0,0,1";
+            }
         }
 
         String[] strNumber = inputString.split(",");

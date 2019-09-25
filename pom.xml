@@ -236,13 +236,13 @@
 			<artifactId>image-transform-converters</artifactId>
 			<version>0.1.00</version>
 		</dependency>
-
+		<!--
 		<dependency>
 			<groupId>net.preibisch</groupId>
 			<artifactId>multiview-reconstruction</artifactId>
 			<version>0.3.6-SNAPSHOT</version>
 		</dependency>
-
+		-->
 		<dependency>
 			<groupId>sc.fiji</groupId>
 			<artifactId>bigwarp_fiji</artifactId>
