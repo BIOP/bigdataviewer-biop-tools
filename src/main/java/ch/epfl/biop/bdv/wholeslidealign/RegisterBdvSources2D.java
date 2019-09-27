@@ -28,17 +28,18 @@ import org.scijava.plugin.Plugin;
 import ij.IJ;
 
 import java.io.File;
+import java.util.List;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 import static ch.epfl.biop.bdv.scijava.command.Info.ScijavaBdvRootMenu;
 import static ch.epfl.biop.bdv.scijava.util.BDVSourceFunctionalInterfaceCommand.ADD;
+import static ch.epfl.biop.bdv.scijava.util.BDVSourceFunctionalInterfaceCommand.LIST;
 
 @Plugin(type = Command.class, menuPath = ScijavaBdvRootMenu+"Registration>Align Sources with Elastix")
 public class RegisterBdvSources2D implements Command {
 
     @Parameter
-    BdvHandle bdv_h;
+    BdvHandle bdv_h_fixed;
 
     @Parameter
     int idxFixedSource;
@@ -48,6 +49,9 @@ public class RegisterBdvSources2D implements Command {
 
     @Parameter
     int levelFixedSource;
+
+    @Parameter
+    BdvHandle bdv_h_moving;
 
     @Parameter
     int idxMovingSource;
@@ -71,13 +75,19 @@ public class RegisterBdvSources2D implements Command {
     boolean interpolate;
 
     @Parameter
-    boolean outputRegisteredSource = false;
+    boolean displayRegisteredSource = false;
 
     @Parameter
     boolean showImagePlusRegistrationResult = false;
 
     @Parameter(type = ItemIO.OUTPUT)
     AffineTransform3D affineTransformOut;
+
+    @Parameter(type = ItemIO.OUTPUT)
+    Source registeredSource;
+
+    @Parameter(required = false)
+    BdvHandle bdv_h_out;
 
     @Parameter
     ModuleService ms;
@@ -95,8 +105,8 @@ public class RegisterBdvSources2D implements Command {
 
         // Fetch cropped images from source
 
-        Source sMoving = bdv_h.getViewerPanel().getState().getSources().get(idxMovingSource).getSpimSource();
-        Source sFixed = bdv_h.getViewerPanel().getState().getSources().get(idxFixedSource).getSpimSource();
+        Source sMoving = bdv_h_moving.getViewerPanel().getState().getSources().get(idxMovingSource).getSpimSource();
+        Source sFixed = bdv_h_fixed.getViewerPanel().getState().getSources().get(idxFixedSource).getSpimSource();
 
         // Get real random accessible from the source
         final RealRandomAccessible ipMovingimg = sMoving.getInterpolatedSource(tpMoving, levelMovingSource, interpolation);
@@ -134,8 +144,8 @@ public class RegisterBdvSources2D implements Command {
             Future<CommandModule> cm = cs.run(Elastix_Register.class, true, "movingImage",impM,
                     "fixedImage", impF,
                     "rigid",false,
-                    "fast_affine",false,
-                    "affine",true,
+                    "fast_affine",true,
+                    "affine",false,
                     "spline",false);
             CommandModule cmg = cm.get();
 
@@ -170,7 +180,12 @@ public class RegisterBdvSources2D implements Command {
             transformInRealCoordinates.concatenate(affine3D);
             transformInRealCoordinates.concatenate(at3D);
 
-            if (outputRegisteredSource) {
+            String mode = ADD;
+            if (!displayRegisteredSource) {
+                mode = LIST;
+
+            }
+
                 // Using module service because:
                 /*
                 log.debug("The command '" + info.getIdentifier() +
@@ -180,14 +195,18 @@ public class RegisterBdvSources2D implements Command {
                     "If you need the resulting module, please instead call " +
                     "moduleService.run(commandService.getCommand(commandClass), ...).");*/
 
-                ms.run(cs.getCommand(BDVSourceAffineTransform.class),true, "bdv_h_in", bdv_h,
+            Object o = ms.run(cs.getCommand(BDVSourceAffineTransform.class),true,
+                        "bdv_h_in", bdv_h_moving,
                         "sourceIndexString", Integer.toString(idxMovingSource),
-                        "bdv_h_out", bdv_h,
-                        "output_mode", ADD,
+                        "bdv_h_out", bdv_h_out,
+                        "output_mode", mode,
                         "keepConverters", false,
-                        "stringMatrix", transformInRealCoordinates.inverse().toString()).get();
+                        "outputInNewBdv", false,
+                        "stringMatrix", transformInRealCoordinates.inverse().toString(),
+                    "makeInputVolatile",false)
+                    .get().getOutput("srcs_out");
 
-            }
+            registeredSource = ((List<Source<?>>) o).get(0);
 
             if (showImagePlusRegistrationResult) {
                 impF.show();
