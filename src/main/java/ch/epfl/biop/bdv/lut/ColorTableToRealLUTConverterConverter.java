@@ -11,7 +11,7 @@ public class ColorTableToRealLUTConverterConverter<I extends ColorTable, O exten
     @Override
     public <T> T convert(Object src, Class<T> dest) {
         ColorTable ct = (ColorTable) src;
-        return (T) new RealLUTConverter<>(0,5500,ct);
+        return (T) new RealLUTConverter<>(0,255,ct);
     }
 
     @Override

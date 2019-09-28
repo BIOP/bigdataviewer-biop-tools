@@ -3,15 +3,14 @@ package ch.epfl.biop.bdv.sampleimage;
 import bdv.util.BdvFunctions;
 import bdv.util.BdvHandle;
 import bdv.util.BdvOptions;
+import ch.epfl.biop.bdv.process.Procedural3DImageShort;
 import net.imagej.display.ColorTables;
 import net.imagej.lut.LUTService;
 import net.imglib2.*;
 import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
 import net.imglib2.display.ColorTable;
-import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.ARGBType;
-import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
@@ -60,12 +59,6 @@ public class Wave3DSampleCommand extends DynamicCommand {
         Interval interval = new FinalInterval(
                 new long[]{ -100, -100, -100 },
                 new long[]{ 100, 100, 100 });
-
-        /*public class Wave3D extends Procedural3DImageShort {
-            public int getValue(double x, double y, double z) {
-                return (int) ((Math.sin(x/20)*Math.sin(y/40)*Math.sin(z/5)+1)*2000);
-            }
-        }*/
 
         RealRandomAccessible<UnsignedShortType> rra = new Procedural3DImageShort(
                 p -> (int) ((Math.sin(p[0]/20)*Math.sin(p[1]/40)*Math.sin(p[2]/5)+1)*2000)

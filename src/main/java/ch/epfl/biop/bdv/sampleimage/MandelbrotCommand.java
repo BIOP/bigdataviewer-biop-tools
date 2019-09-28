@@ -3,15 +3,17 @@ package ch.epfl.biop.bdv.sampleimage;
 import bdv.util.BdvFunctions;
 import bdv.util.BdvHandle;
 import bdv.util.BdvOptions;
+import ch.epfl.biop.bdv.process.Procedural3DImageShort;
 import net.imagej.display.ColorTables;
 import net.imagej.lut.LUTService;
-import net.imglib2.*;
+import net.imglib2.FinalInterval;
+import net.imglib2.Interval;
+import net.imglib2.RealRandomAccessible;
 import net.imglib2.converter.Converter;
 import net.imglib2.converter.Converters;
 import net.imglib2.display.ColorTable;
-import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.ARGBType;
-import net.imglib2.type.numeric.integer.UnsignedByteType;
+import net.imglib2.type.numeric.integer.UnsignedShortType;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.command.DynamicCommand;
@@ -27,8 +29,8 @@ import java.util.Map;
 
 import static ch.epfl.biop.bdv.scijava.command.Info.ScijavaBdvRootMenu;
 
-@Plugin(type=Command.class, initializer = "init", menuPath = ScijavaBdvRootMenu+"Open>Samples>Mandelbrot")
-public class MandelbrotWithLUT extends DynamicCommand {
+@Plugin(type=Command.class, initializer = "init", menuPath = ScijavaBdvRootMenu+"Open>Samples>Mandelbrot Set")
+public class MandelbrotCommand extends DynamicCommand {
 
     @Parameter(label = "Open in new BigDataViewer window")
     public boolean createNewWindow;
@@ -36,9 +38,6 @@ public class MandelbrotWithLUT extends DynamicCommand {
     // ItemIO.BOTH required because it can be modified in case of appending new data to BDV (-> requires INPUT), or created (-> requires OUTPUT)
     @Parameter(label = "BigDataViewer Frame", type = ItemIO.BOTH, required = false)
     public BdvHandle bdv_h;
-
-    @Parameter(label = "Center view on fractal")
-    public boolean centerView = true;
 
     @Parameter
     private LUTService lutService;
@@ -52,6 +51,8 @@ public class MandelbrotWithLUT extends DynamicCommand {
     @Parameter
     private ConvertService cs;
 
+    public int maxIterations = 255;
+
     // -- other fields --
 
     private Map<String, URL> luts = null;
@@ -60,28 +61,26 @@ public class MandelbrotWithLUT extends DynamicCommand {
         Converter bvdLut = cs.convert(table, Converter.class);
 
         Interval interval = new FinalInterval(
-                new long[]{ -2, -1 },
-                new long[]{ 1, 1 } );
+                new long[]{ -2, -1, -0},
+                new long[]{ 1, 1, 0 });
 
-
-        RealRandomAccess img = new MandelbrotRandomAccess();
-
-        RealRandomAccessible<UnsignedByteType> rra = new RealRandomAccessible<UnsignedByteType>() {
-            @Override
-            public RealRandomAccess<UnsignedByteType> realRandomAccess() {
-                return ((MandelbrotRandomAccess) img).copy();
-            }
-
-            @Override
-            public RealRandomAccess<UnsignedByteType> realRandomAccess(RealInterval realInterval) {
-                return ((MandelbrotRandomAccess) img).copy();
-            }
-
-            @Override
-            public int numDimensions() {
-                return 2;
-            }
-        };
+        RealRandomAccessible<UnsignedShortType> rra = new Procedural3DImageShort(
+                p -> {
+                        double re = p[0];
+                        double im = p[1];
+                        int i = 0;
+                        for ( ; i < maxIterations; ++i )
+                        {
+                            final double squre = re * re;
+                            final double squim = im * im;
+                            if ( squre + squim > 4 )
+                                break;
+                            im = 2 * re * im + p[1];
+                            re = squre - squim + p[0];
+                        }
+                        return i;
+                }
+        ).getRRA();
 
 
         final RealRandomAccessible<ARGBType> convertedrra =
@@ -91,17 +90,12 @@ public class MandelbrotWithLUT extends DynamicCommand {
                         new ARGBType() );
 
         BdvOptions options = BdvOptions.options();
-        if (createNewWindow == false && bdv_h!=null) {
-            options.addTo(bdv_h).is2D();
-        }
-        bdv_h = BdvFunctions.show( convertedrra, interval, "Mandelbrot Set", options ).getBdvHandle();
 
-        if (centerView) {
-            AffineTransform3D at = new AffineTransform3D();
-            at.translate(2, 1, 0);
-            at.scale(300);
-            bdv_h.getViewerPanel().setCurrentViewerTransform(at);
+        if (!createNewWindow) {
+            options.addTo(bdv_h);
         }
+
+        bdv_h = BdvFunctions.show( convertedrra, interval, "Mandelbrot Set", options ).getBdvHandle();
 
     }
 

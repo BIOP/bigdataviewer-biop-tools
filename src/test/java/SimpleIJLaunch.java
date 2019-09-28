@@ -19,7 +19,7 @@ public class SimpleIJLaunch {
     #@ ObjectService os
 #@ ImagePlus imp
 
-import ch.epfl.biop.bdv.sampleimage.Procedural3DImageShort
+import ch.epfl.biop.bdv.process.Procedural3DImageShort
 import bdv.util.BdvFunctions
 import bdv.util.BdvOptions
 import bdv.util.BdvHandle

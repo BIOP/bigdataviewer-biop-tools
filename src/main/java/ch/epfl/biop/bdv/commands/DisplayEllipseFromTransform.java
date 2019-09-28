@@ -3,7 +3,7 @@ package ch.epfl.biop.bdv.commands;
 import bdv.img.WarpedSource;
 import bdv.util.*;
 import bdv.viewer.Source;
-import ch.epfl.biop.bdv.sampleimage.Procedural3DImageShort;
+import ch.epfl.biop.bdv.process.Procedural3DImageShort;
 import ch.epfl.biop.bdv.transform.Elliptical3DTransform;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
