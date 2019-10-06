@@ -1,4 +1,4 @@
-package ch.epfl.biop.bdv.commands;
+package ch.epfl.biop.bdv.process;
 
 import bdv.viewer.Interpolation;
 import bdv.viewer.Source;
@@ -6,7 +6,6 @@ import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.RealRandomAccessible;
 import net.imglib2.realtransform.AffineTransform3D;
-import net.imglib2.realtransform.RealViews;
 
 public class BDVSourceAffineTransformed<T> implements Source<T> {
 
@@ -30,9 +29,7 @@ public class BDVSourceAffineTransformed<T> implements Source<T> {
 
     @Override
     public RealRandomAccessible<T> getInterpolatedSource(int t, int level, Interpolation method) {
-        //RealRandomAccessible<T> rra =
         return origin.getInterpolatedSource(t,level,method);
-        //return RealViews.affine(rra, transform);
     }
 
     @Override

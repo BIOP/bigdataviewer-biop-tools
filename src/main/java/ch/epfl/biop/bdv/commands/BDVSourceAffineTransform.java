@@ -1,6 +1,7 @@
 package ch.epfl.biop.bdv.commands;
 
-import ch.epfl.biop.bdv.scijava.util.BDVSourceFunctionalInterfaceCommand;
+import ch.epfl.biop.bdv.process.BDVSourceAffineTransformed;
+import ch.epfl.biop.bdv.scijava.command.BDVSourceFunctionalInterfaceCommand;
 import net.imglib2.realtransform.AffineTransform3D;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
@@ -19,7 +20,7 @@ public class BDVSourceAffineTransform extends BDVSourceFunctionalInterfaceComman
             AffineTransform3D at = new AffineTransform3D();
             at.set(this.toDouble());
 
-            if (src instanceof  BDVSourceAffineTransformed) {
+            if (src instanceof BDVSourceAffineTransformed) {
                 ((BDVSourceAffineTransformed) src).transform =((BDVSourceAffineTransformed) src).transform.concatenate(at);
                 return src;
             } else {

@@ -2,7 +2,7 @@ package ch.epfl.biop.bdv.commands;
 
 import bdv.viewer.Source;
 import ch.epfl.biop.bdv.process.ConvertedSource;
-import ch.epfl.biop.bdv.scijava.util.BDVSourceFunctionalInterfaceCommand;
+import ch.epfl.biop.bdv.scijava.command.BDVSourceFunctionalInterfaceCommand;
 import net.imagej.display.ColorTables;
 import net.imagej.lut.LUTService;
 import net.imglib2.converter.Converter;

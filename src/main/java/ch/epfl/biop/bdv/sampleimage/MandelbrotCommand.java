@@ -29,7 +29,7 @@ import java.util.Map;
 
 import static ch.epfl.biop.bdv.scijava.command.Info.ScijavaBdvRootMenu;
 
-@Plugin(type=Command.class, initializer = "init", menuPath = ScijavaBdvRootMenu+"Open>Samples>Mandelbrot Set")
+@Plugin(type=Command.class, initializer = "init", menuPath = ScijavaBdvRootMenu+"Open>Samples>Fractal")
 public class MandelbrotCommand extends DynamicCommand {
 
     @Parameter(label = "Open in new BigDataViewer window")

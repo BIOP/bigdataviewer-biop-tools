@@ -65,6 +65,7 @@ public class Procedural3DImageShort extends RealPoint implements RealRandomAcces
 
         return rra;
     }
+    /*
 
     public Source<UnsignedShortType> getSource(String sourceName) {
         Interval interval = new FinalInterval(
@@ -77,5 +78,7 @@ public class Procedural3DImageShort extends RealPoint implements RealRandomAcces
 
         return new RealRandomAccessibleIntervalSource<>( rra, interval, type, sourceTransform, sourceName );
     }
+    */
+
 
 }
