@@ -5,14 +5,14 @@ import bdv.util.BdvFunctions;
 import bdv.util.BdvHandle;
 import bdv.util.BdvOptions;
 import bdv.util.volatiles.SharedQueue;
+import bdv.util.volatiles.VolatileTypeMatcher;
 import bdv.viewer.Source;
 import ch.epfl.biop.bdv.bioformats.bioformatssource.VolatileBdvSource;
-import ch.epfl.biop.bdv.scijava.util.VolatileUtils;
 import net.imglib2.RealPoint;
 import net.imglib2.Volatile;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.realtransform.ThinplateSplineTransform;
-import net.imglib2.type.numeric.NumericType;
+import net.imglib2.type.NativeType;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.command.CommandService;
@@ -171,7 +171,7 @@ public class AutoWarp2D implements Command {
         if (appendWarpedSource) {
             Source src = bdv_h_moving.getViewerPanel().getState().getSources().get(idxMovingSource).getSpimSource();
 
-            Volatile vType = VolatileUtils.getVolatileFromNumeric((NumericType) src.getType());
+            Volatile vType = (Volatile) VolatileTypeMatcher.getVolatileTypeForType((NativeType) src.getType());
 
             VolatileBdvSource vsrc = new VolatileBdvSource(src,vType,new SharedQueue(1));
 

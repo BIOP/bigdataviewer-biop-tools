@@ -1,11 +1,10 @@
 package ch.epfl.biop.bdv.commands;
 
 import bdv.img.WarpedSource;
-import ch.epfl.biop.bdv.scijava.util.BDVSourceFunctionalInterfaceCommand;
+import ch.epfl.biop.bdv.scijava.command.BDVSourceFunctionalInterfaceCommand;
 import ch.epfl.biop.bdv.transform.Elliptical3DTransform;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
-import org.scijava.module.DefaultMutableModuleItem;
 import org.scijava.module.ModuleItem;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;

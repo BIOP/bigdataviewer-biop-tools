@@ -2,7 +2,7 @@ package ch.epfl.biop.bdv.commands;
 
 import bdv.util.BdvHandle;
 import ch.epfl.biop.bdv.process.ResampledSource;
-import ch.epfl.biop.bdv.scijava.util.BDVSourceFunctionalInterfaceCommand;
+import ch.epfl.biop.bdv.scijava.command.BDVSourceFunctionalInterfaceCommand;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
