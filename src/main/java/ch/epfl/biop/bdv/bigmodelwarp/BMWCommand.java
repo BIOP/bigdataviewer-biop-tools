@@ -28,7 +28,6 @@ import java.util.Arrays;
 
 import static ch.epfl.biop.bdv.scijava.command.Info.ScijavaBdvRootMenu;
 
-
 @Plugin(type = Command.class, menuPath = ScijavaBdvRootMenu+"Transformation>Big Warp>Curvature Transform")
 public class BMWCommand implements Command {
     @Parameter(label = "Bdv Frame from BigWarp")
