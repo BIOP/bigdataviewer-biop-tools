@@ -16,6 +16,7 @@ import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -87,12 +88,13 @@ public class OpenImageWithBioformatsBigdataviewerBridge implements Command {
                             lbss.get(idx).setColor(
                                     BioFormatsMetaDataHelper.getSourceColor((BioFormatsBdvSource) bfsl.concreteSource)
                             );
-                            lbss.get(idx).setDisplayRange(0, 255);
+                            //lbss.get(idx).setDisplayRange(0, 255);
                         }
                 );
             }
 
             if (setGrouping) {
+
                 Map<BioFormatsMetaDataHelper.BioformatsChannel, List<Integer>> srcsGroupedByChannel =
                         (Map<BioFormatsMetaDataHelper.BioformatsChannel, List<Integer>>)
                 asd.getSequenceDescription()
@@ -119,7 +121,7 @@ public class OpenImageWithBioformatsBigdataviewerBridge implements Command {
                         SourceGroup sg = bdv_h.getViewerPanel()
                                 .getVisibilityAndGrouping()
                                 .getSourceGroups().get(idx);
-                        //System.out.println("sgs.get("+idx+").getName() = "+sgs.get(idx).getName());
+
                         sg.setName(sgs.get(idx).getName());
                         final int idx_cp = idx;
                         sgs.get(idx).getSourceIds().stream().forEach(
@@ -134,6 +136,42 @@ public class OpenImageWithBioformatsBigdataviewerBridge implements Command {
                     }
                     idx++;
                 }
+
+                // Creates group by datalocation
+                Map<String, ArrayList<Integer>> dataLocationToViewSetup =
+                        (Map<String, ArrayList<Integer>>)
+                                asd.getSequenceDescription().getViewSetupsOrdered().stream()
+                                        .map(obj -> ((mpicbg.spim.data.sequence.ViewSetup) obj).getId())
+                                        .collect(Collectors.groupingBy(e -> {
+                                                    BioFormatsSetupLoader bfsl = (BioFormatsSetupLoader) asd.getSequenceDescription().getImgLoader().getSetupImgLoader((int)e);
+                                                    return bfsl.getOpener().dataLocation;
+                                                },
+                                                Collectors.toList()));
+
+                sgs = dataLocationToViewSetup.entrySet().stream().map(
+                        e -> {
+                            SourceGroup sg = new SourceGroup(e.getKey());
+                            System.out.println(e.getKey());
+                            e.getValue().forEach(index -> {sg.addSource(index); System.out.println(index);});
+                            return sg;
+                        }
+                ).collect(Collectors.toList());
+
+                int idx_offs = idx;
+                while (idx<sgs.size()+idx_offs) {
+                    if (idx<bdv_h.getViewerPanel().getVisibilityAndGrouping().getSourceGroups().size()) {
+                        SourceGroup sg = bdv_h.getViewerPanel()
+                                .getVisibilityAndGrouping()
+                                .getSourceGroups().get(idx);
+
+                        sg.setName(sgs.get(idx-idx_offs).getName());
+                        sgs.get(idx-idx_offs).getSourceIds().stream().forEach( id -> sg.addSource(id) );
+                    } else {
+                        bdv_h.getViewerPanel().addGroup(sgs.get(idx));
+                    }
+                    idx++;
+                }
+
 
                 // dirty but updates display - update do not have a public access
                 SourceGroup dummy = new SourceGroup("dummy");
