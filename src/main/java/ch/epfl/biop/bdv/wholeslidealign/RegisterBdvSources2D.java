@@ -32,8 +32,8 @@ import java.util.List;
 import java.util.concurrent.Future;
 
 import static ch.epfl.biop.bdv.scijava.command.Info.ScijavaBdvRootMenu;
-import static ch.epfl.biop.bdv.scijava.command.BDVSourceFunctionalInterfaceCommand.ADD;
-import static ch.epfl.biop.bdv.scijava.command.BDVSourceFunctionalInterfaceCommand.LIST;
+import static ch.epfl.biop.bdv.scijava.command.BDVSourceAndConverterFunctionalInterfaceCommand.ADD;
+import static ch.epfl.biop.bdv.scijava.command.BDVSourceAndConverterFunctionalInterfaceCommand.LIST;
 
 @Plugin(type = Command.class, menuPath = ScijavaBdvRootMenu+"Registration>Align Sources with Elastix")
 public class RegisterBdvSources2D implements Command {

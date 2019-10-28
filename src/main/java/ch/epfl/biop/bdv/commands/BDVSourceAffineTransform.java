@@ -1,7 +1,8 @@
 package ch.epfl.biop.bdv.commands;
 
+import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.bdv.process.BDVSourceAffineTransformed;
-import ch.epfl.biop.bdv.scijava.command.BDVSourceFunctionalInterfaceCommand;
+import ch.epfl.biop.bdv.scijava.command.BDVSourceAndConverterFunctionalInterfaceCommand;
 import net.imglib2.realtransform.AffineTransform3D;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
@@ -10,7 +11,7 @@ import org.scijava.plugin.Plugin;
 import static ch.epfl.biop.bdv.scijava.command.Info.ScijavaBdvRootMenu;
 
 @Plugin(type = Command.class, initializer = "init", menuPath = ScijavaBdvRootMenu+"Transformation>Transform Source (affine)")
-public class BDVSourceAffineTransform extends BDVSourceFunctionalInterfaceCommand {
+public class BDVSourceAffineTransform extends BDVSourceAndConverterFunctionalInterfaceCommand {
 
     @Parameter(label = "Affine Transform Matrix", style = "text area")
     String stringMatrix = "1,0,0,0,\n 0,1,0,0,\n 0,0,1,0, \n 0,0,0,1";
@@ -20,11 +21,12 @@ public class BDVSourceAffineTransform extends BDVSourceFunctionalInterfaceComman
             AffineTransform3D at = new AffineTransform3D();
             at.set(this.toDouble());
 
-            if (src instanceof BDVSourceAffineTransformed) {
-                ((BDVSourceAffineTransformed) src).transform =((BDVSourceAffineTransformed) src).transform.concatenate(at);
+            if (src.getSpimSource() instanceof BDVSourceAffineTransformed) {
+                ((BDVSourceAffineTransformed) src.getSpimSource()).transform =((BDVSourceAffineTransformed) src.getSpimSource()).transform.concatenate(at);
                 return src;
             } else {
-                return new BDVSourceAffineTransformed(src, at);
+                // TODO : wrapping as volatile
+                return new SourceAndConverter<>(new BDVSourceAffineTransformed(src.getSpimSource(), at), src.getConverter());
             }
         };
     }

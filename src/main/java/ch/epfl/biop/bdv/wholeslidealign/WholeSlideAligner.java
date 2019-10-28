@@ -19,8 +19,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
 import static ch.epfl.biop.bdv.scijava.command.Info.ScijavaBdvRootMenu;
-import static ch.epfl.biop.bdv.scijava.command.BDVSourceFunctionalInterfaceCommand.ADD;
-import static ch.epfl.biop.bdv.scijava.command.BDVSourceFunctionalInterfaceCommand.REPLACE;
+import static ch.epfl.biop.bdv.scijava.command.BDVSourceAndConverterFunctionalInterfaceCommand.ADD;
+import static ch.epfl.biop.bdv.scijava.command.BDVSourceAndConverterFunctionalInterfaceCommand.REPLACE;
 
 @Plugin(type = Command.class, menuPath = ScijavaBdvRootMenu+"Registration>Align Scans")
 public class WholeSlideAligner implements Command {

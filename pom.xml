@@ -26,7 +26,7 @@
 
 	<groupId>ch.epfl.biop</groupId>
 	<artifactId>bigdataviewer-biop-tools</artifactId>
-	<version>0.1.2-SNAPSHOT</version>
+	<version>0.1.2-SOC-SNAPSHOT</version>
 
 	<name>Biop Bigdataviewer Tools and Plugins </name>
 	<description>Big data viewer tools BIOP - EPFL</description>
@@ -160,7 +160,7 @@
 		<dependency>
 			<groupId>ch.epfl.biop</groupId>
 			<artifactId>bigdataviewer_scijava</artifactId>
-			<version>0.1.4-SNAPSHOT</version>
+			<version>0.1.4-SOC-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>

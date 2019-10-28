@@ -1,8 +1,10 @@
 package ch.epfl.biop.bdv.commands;
 
 import bdv.util.BdvHandle;
+import bdv.viewer.Source;
+import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.bdv.process.ResampledSource;
-import ch.epfl.biop.bdv.scijava.command.BDVSourceFunctionalInterfaceCommand;
+import ch.epfl.biop.bdv.scijava.command.BDVSourceAndConverterFunctionalInterfaceCommand;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
@@ -11,7 +13,7 @@ import static ch.epfl.biop.bdv.scijava.command.Info.ScijavaBdvRootMenu;
 
 
 @Plugin(type = Command.class, initializer = "init", menuPath = ScijavaBdvRootMenu+"Transformation>Resample Source")
-public class BDVSourceResample extends BDVSourceFunctionalInterfaceCommand {
+public class BDVSourceResample extends BDVSourceAndConverterFunctionalInterfaceCommand {
 
     @Parameter(label = "Bdv Frame containing source resampling template")
     BdvHandle bdv_dst;
@@ -23,14 +25,19 @@ public class BDVSourceResample extends BDVSourceFunctionalInterfaceCommand {
     boolean reuseMipMaps;
 
     public BDVSourceResample() {
-        this.f = src -> new ResampledSource(
-                            src,
+        this.f = src -> {
+            Source srcRsampled =
+            new ResampledSource(
+                            src.getSpimSource(),
                             bdv_dst.getViewerPanel()
                                    .getState()
                                    .getSources()
                                    .get(idxSourceDst)
                                    .getSpimSource(),
                             reuseMipMaps);
+            // TODO : volatile stuff
+            return new SourceAndConverter<>(srcRsampled, src.getConverter());
+        };
     }
 
 }

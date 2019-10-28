@@ -1,7 +1,8 @@
 package ch.epfl.biop.bdv.commands;
 
 import bdv.img.WarpedSource;
-import ch.epfl.biop.bdv.scijava.command.BDVSourceFunctionalInterfaceCommand;
+import bdv.viewer.SourceAndConverter;
+import ch.epfl.biop.bdv.scijava.command.BDVSourceAndConverterFunctionalInterfaceCommand;
 import ch.epfl.biop.bdv.transform.Elliptical3DTransform;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
@@ -15,7 +16,7 @@ import java.util.List;
 import static ch.epfl.biop.bdv.scijava.command.Info.ScijavaBdvRootMenu;
 
 @Plugin(type = Command.class, menuPath = ScijavaBdvRootMenu+"Transformation>Elliptical Transform")
-public class EllipticalTransformCommand extends BDVSourceFunctionalInterfaceCommand {
+public class EllipticalTransformCommand extends BDVSourceAndConverterFunctionalInterfaceCommand {
 
     @Parameter
     double r1, r2, r3, //radius of axes 1 2 3 of ellipse
@@ -30,16 +31,13 @@ public class EllipticalTransformCommand extends BDVSourceFunctionalInterfaceComm
     public EllipticalTransformCommand() {
 
         this.f = src -> {
-            System.out.println("0");
-            WarpedSource ws = new WarpedSource(src,src.getName()+"_EllipticalTransform");
+            WarpedSource ws = new WarpedSource(src.getSpimSource(),src.getSpimSource().getName()+"_EllipticalTransform");
 
-            System.out.println("1");
             e3Dt.updateNotifiers.add(() -> {
                 ws.updateTransform(e3Dt);
                 this.bdv_h_out.getViewerPanel().requestRepaint();
             }); // TODO avoid memory leak somehow...
 
-            System.out.println("2");
             e3Dt.setParameters(
                     "r1", r1,
                     "r2", r2,
@@ -51,10 +49,8 @@ public class EllipticalTransformCommand extends BDVSourceFunctionalInterfaceComm
                     "ty", ty,
                     "tz", tz);
 
-            System.out.println("3");
             ws.setIsTransformed(true);
-            System.out.println("4");
-            return ws;
+            return new SourceAndConverter<>(ws, src.getConverter());
         };
     }
 

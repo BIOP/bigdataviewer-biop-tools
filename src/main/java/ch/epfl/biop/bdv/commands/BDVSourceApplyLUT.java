@@ -1,13 +1,11 @@
 package ch.epfl.biop.bdv.commands;
 
-import bdv.viewer.Source;
-import ch.epfl.biop.bdv.process.ConvertedSource;
-import ch.epfl.biop.bdv.scijava.command.BDVSourceFunctionalInterfaceCommand;
+import bdv.viewer.SourceAndConverter;
+import ch.epfl.biop.bdv.scijava.command.BDVSourceAndConverterFunctionalInterfaceCommand;
 import net.imagej.display.ColorTables;
 import net.imagej.lut.LUTService;
 import net.imglib2.converter.Converter;
 import net.imglib2.display.ColorTable;
-import net.imglib2.type.numeric.ARGBType;
 import org.scijava.command.Command;
 import org.scijava.convert.ConvertService;
 import org.scijava.module.MutableModuleItem;
@@ -22,7 +20,7 @@ import java.util.Map;
 import static ch.epfl.biop.bdv.scijava.command.Info.ScijavaBdvRootMenu;
 
 @Plugin(type = Command.class, initializer = "init", menuPath = ScijavaBdvRootMenu+"Apply LUT to Sources")
-public class BDVSourceApplyLUT extends BDVSourceFunctionalInterfaceCommand {
+public class BDVSourceApplyLUT extends BDVSourceAndConverterFunctionalInterfaceCommand {
 
     @Parameter
     private LUTService lutService;
@@ -45,10 +43,12 @@ public class BDVSourceApplyLUT extends BDVSourceFunctionalInterfaceCommand {
 
     public BDVSourceApplyLUT() {
         this.f = src -> {
-            ConvertedSource convSource = new ConvertedSource<>(src, () -> new ARGBType(), cs.convert(table, Converter.class), src.getName()+"_"+choice);
+            /*ConvertedSource convSource = new ConvertedSource<>(src, () -> new ARGBType(), cs.convert(table, Converter.class), src.getName()+"_"+choice);
             convSource.getLinearRange().setMin(min);
-            convSource.getLinearRange().setMax(max);
-            return convSource;
+            convSource.getLinearRange().setMax(max);*/
+
+            // TODO : volatile stuff
+            return new SourceAndConverter<>(src.getSpimSource(), cs.convert(table, Converter.class));
         };
     }
 
