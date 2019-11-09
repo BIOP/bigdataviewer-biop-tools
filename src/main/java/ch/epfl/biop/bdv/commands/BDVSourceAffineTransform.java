@@ -1,7 +1,7 @@
 package ch.epfl.biop.bdv.commands;
 
+import bdv.tools.transformation.TransformedSource;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.bdv.process.BDVSourceAffineTransformed;
 import ch.epfl.biop.bdv.scijava.command.BDVSourceAndConverterFunctionalInterfaceCommand;
 import net.imglib2.realtransform.AffineTransform3D;
 import org.scijava.command.Command;
@@ -21,12 +21,33 @@ public class BDVSourceAffineTransform extends BDVSourceAndConverterFunctionalInt
             AffineTransform3D at = new AffineTransform3D();
             at.set(this.toDouble());
 
-            if (src.getSpimSource() instanceof BDVSourceAffineTransformed) {
-                ((BDVSourceAffineTransformed) src.getSpimSource()).transform =((BDVSourceAffineTransformed) src.getSpimSource()).transform.concatenate(at);
+            /*if (src.getSpimSource() instanceof TransformedSource) {
+                System.out.println("Rien a faire");
+                TransformedSource ts = (TransformedSource) src.getSpimSource();
+                AffineTransform3D at3d = new AffineTransform3D();
+                ts.getFixedTransform(at3d);
+                ts.setFixedTransform(at3d.concatenate(at));
+
+
+                // Check whether the volatile one is tranformed...
                 return src;
-            } else {
-                // TODO : wrapping as volatile
-                return new SourceAndConverter<>(new BDVSourceAffineTransformed(src.getSpimSource(), at), src.getConverter());
+            } else*/
+            {
+                // TODO : wrap source with a TransformedSource
+                System.out.println("Wrapping source within a Transformed Source");
+                SourceAndConverter sac;
+                TransformedSource ts = new TransformedSource(src.getSpimSource());
+                ts.setFixedTransform(at);
+                if (src.asVolatile()!=null) {
+                    SourceAndConverter vsac;
+                    TransformedSource vts = new TransformedSource(src.asVolatile().getSpimSource());
+                    vts.setFixedTransform(at);
+                    vsac = new SourceAndConverter(vts, src.asVolatile().getConverter());
+                    sac = new SourceAndConverter<>(ts, src.getConverter(),vsac);
+                } else {
+                    sac = new SourceAndConverter<>(ts, src.getConverter());
+                }
+                return sac;
             }
         };
     }

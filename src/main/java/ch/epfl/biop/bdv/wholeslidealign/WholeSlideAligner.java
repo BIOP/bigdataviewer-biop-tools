@@ -4,6 +4,7 @@ import bdv.util.BdvFunctions;
 import bdv.util.BdvHandle;
 import bdv.util.BdvOptions;
 import bdv.viewer.Source;
+import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.bdv.commands.BDVSourceAffineTransform;
 import ch.epfl.biop.bdv.commands.BDVSourceWarp;
 import net.imglib2.realtransform.AffineTransform3D;
@@ -105,9 +106,9 @@ public class WholeSlideAligner implements Command {
                     "showImagePlusRegistrationResult", showDetails
             ).get();//.getOutput("");
             AffineTransform3D at1 = (AffineTransform3D) cm.getOutput("affineTransformOut");
-            Source firstRegSrc = (Source) cm.getOutput("registeredSource");
+            SourceAndConverter firstRegSrc = (SourceAndConverter) cm.getOutput("registeredSource");
 
-            BdvFunctions.show(firstRegSrc, BdvOptions.options().addTo(bdv_regSteps));
+            BdvFunctions.show(firstRegSrc.getSpimSource(), BdvOptions.options().addTo(bdv_regSteps));
 
             log.accept("----------- Second registration");
 
@@ -134,9 +135,9 @@ public class WholeSlideAligner implements Command {
             ).get();
 
             AffineTransform3D at2 = (AffineTransform3D) cm.getOutput("affineTransformOut");
-            Source secondRegSrc = (Source) cm.getOutput("registeredSource");
+            SourceAndConverter secondRegSrc = (SourceAndConverter) cm.getOutput("registeredSource");
 
-            BdvFunctions.show(secondRegSrc, BdvOptions.options().addTo(bdv_regSteps)).getBdvHandle();
+            BdvFunctions.show(secondRegSrc.getSpimSource(), BdvOptions.options().addTo(bdv_regSteps)).getBdvHandle();
 
             log.accept("----------- Precise Warping based on particular locations");
             ThinplateSplineTransform tst =
@@ -168,9 +169,9 @@ public class WholeSlideAligner implements Command {
                     "bdv_h_out", bdv_regSteps,
                     "output_mode", ADD,
                     "sourceIndexString",(currentRefSourceIndex+","+otherChannelIndexes),
-                    "keepConverters", false,
-                    "makeInputVolatile", false,
-                    "outputInNewBdv", false,
+                    //"keepConverters", false,
+                    //"makeInputVolatile", false,
+                    //"outputInNewBdv", false,
                     "stringMatrix", at1.concatenate(at2).toString()
                     ).get();
 
@@ -189,9 +190,9 @@ public class WholeSlideAligner implements Command {
                     "bdv_h_out", this.bdv_h_accumulating_scans_volatile,
                     "output_mode", REPLACE,
                     "sourceIndexString",sourcesToTransform,
-                    "keepConverters", false,
-                    "makeInputVolatile", true,
-                    "outputInNewBdv", false,
+                    //"keepConverters", false,
+                    //"makeInputVolatile", true,
+                    //"outputInNewBdv", false,
                     "rt", tst
             ).get();
 

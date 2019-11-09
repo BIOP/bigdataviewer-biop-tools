@@ -4,6 +4,7 @@ import bdv.util.BdvHandle;
 import bdv.util.RealCropper;
 import bdv.viewer.Interpolation;
 import bdv.viewer.Source;
+import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.bdv.commands.BDVSourceAffineTransform;
 import ch.epfl.biop.wrappers.elastix.RegisterHelper;
 import ch.epfl.biop.wrappers.elastix.ij2commands.Elastix_Register;
@@ -84,7 +85,7 @@ public class RegisterBdvSources2D implements Command {
     AffineTransform3D affineTransformOut;
 
     @Parameter(type = ItemIO.OUTPUT)
-    Source registeredSource;
+    SourceAndConverter registeredSource;
 
     @Parameter(required = false)
     BdvHandle bdv_h_out;
@@ -200,13 +201,14 @@ public class RegisterBdvSources2D implements Command {
                         "sourceIndexString", Integer.toString(idxMovingSource),
                         "bdv_h_out", bdv_h_out,
                         "output_mode", mode,
-                        "keepConverters", false,
-                        "outputInNewBdv", false,
-                        "stringMatrix", transformInRealCoordinates.inverse().toString(),
-                    "makeInputVolatile",false)
-                    .get().getOutput("srcs_out");
+                        //"keepConverters", false,
+                        //"outputInNewBdv", false,
+                        "stringMatrix", transformInRealCoordinates.inverse().toString()
+                    //"makeInputVolatile",false
+                    //
+                    ).get().getOutput("srcs_out");
 
-            registeredSource = ((List<Source<?>>) o).get(0);
+            registeredSource = ((List<SourceAndConverter<?>>) o).get(0);
 
             if (showImagePlusRegistrationResult) {
                 impF.show();

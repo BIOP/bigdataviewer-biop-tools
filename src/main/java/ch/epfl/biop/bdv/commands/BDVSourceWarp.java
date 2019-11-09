@@ -24,8 +24,16 @@ public class BDVSourceWarp extends BDVSourceAndConverterFunctionalInterfaceComma
                 if (ws.getType() instanceof Volatile) {
                     return new SourceAndConverter<>(ws, src.getConverter());
                 } else {
-                    // TODO : wrap source as volatile and create volatile sourceandconverter
-                    return new SourceAndConverter<>(ws, src.getConverter());
+                    if (src.asVolatile()== null) {
+                        // TODO : wrap source as volatile and create volatile        sourceandconverter
+                        return new SourceAndConverter<>(ws, src.getConverter());
+                    } else {
+                        WarpedSource vws = new WarpedSource(src.asVolatile().getSpimSource(),"Warped_"+src.asVolatile().getSpimSource().getName());
+                        vws.updateTransform(rt);
+                        vws.setIsTransformed(true);
+                        SourceAndConverter vsac = new SourceAndConverter<>(vws, src.asVolatile().getConverter());
+                        return new SourceAndConverter<>(ws, src.getConverter(), vsac);
+                    }
                 }
         };
     }
