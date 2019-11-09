@@ -3,6 +3,7 @@ import ch.epfl.biop.bdv.scijava.command.open.BigDataViewerPlugInSciJava;
 import loci.common.DebugTools;
 import net.imagej.ImageJ;
 
+import java.io.File;
 import java.util.concurrent.ExecutionException;
 
 public class WholeSlideAlignement {
@@ -16,11 +17,13 @@ public class WholeSlideAlignement {
 
         // Open Dataset
 
+        DatasetHelper.getSampleVSIDataset();
+        File f = DatasetHelper.getDataset(DatasetHelper.LIF);
+
         try {
             // Opens dataset
             BdvHandle bdvh = (BdvHandle) ij.command().run(BigDataViewerPlugInSciJava.class, true,
-                    "file", "C:\\Users\\nicol\\Dropbox\\BIOP\\QuPath Formation\\Test_60519\\Test_60519\\vsiFused3D_v3.xml",
-                    "createNewWindow", true).get().getOutput("bdv_h");
+                    "file", f, "createNewWindow", true).get().getOutput("bdv_h");
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {

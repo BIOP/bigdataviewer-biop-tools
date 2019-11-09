@@ -105,7 +105,6 @@ public class AutoWarp2D implements Command {
             pts_Fixed.add(new RealPoint(Double.valueOf(coordsXY[i]),Double.valueOf(coordsXY[i+1]),zLocation));
         }
 
-
         Stream<RealPoint> streamOfPts;
 
         if (parallel) {
