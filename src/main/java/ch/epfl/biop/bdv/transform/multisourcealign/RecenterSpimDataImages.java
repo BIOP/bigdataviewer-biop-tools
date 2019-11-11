@@ -115,13 +115,13 @@ public class RecenterSpimDataImages implements Command {
 
                     spimData.getViewRegistrations().getViewRegistration(timePoint,iViewSetup).preconcatenateTransform(toOrigin);
                     spimData.getViewRegistrations().getViewRegistration(timePoint,iViewSetup).concatenateTransform(centerImage);
-
+                    spimData.getViewRegistrations().getViewRegistration(timePoint,iViewSetup).updateModel();
 
                     if (viewSetupToFollowingViewSetup.get(iViewSetup)!=null) {
                         viewSetupToFollowingViewSetup.get(iViewSetup).forEach(ivs -> {
                                     spimData.getViewRegistrations().getViewRegistration(timePoint, ivs).preconcatenateTransform(toOrigin);
                                     spimData.getViewRegistrations().getViewRegistration(timePoint, ivs).concatenateTransform(centerImage);
-
+                                    spimData.getViewRegistrations().getViewRegistration(timePoint, ivs).updateModel();
                                 }
                         );
                     }

@@ -18,9 +18,6 @@ import static ch.epfl.biop.bdv.scijava.command.Info.ScijavaBdvRootMenu;
 @Plugin(type = Command.class, menuPath = ScijavaBdvRootMenu+"Bdv>Edit Sources>Transform>Elliptical>Display Ellipsoid")
 public class DisplayEllipseFromTransform implements Command {
 
-    @Parameter(label = "Open in new BigDataViewer window")
-    public boolean createNewWindow;
-
     // ItemIO.BOTH required because it can be modified in case of appending new data to BDV (-> requires INPUT), or created (-> requires OUTPUT)
     @Parameter(label = "BigDataViewer Frame", type = ItemIO.BOTH)
     public BdvHandle bdv_h;

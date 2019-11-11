@@ -1,6 +1,7 @@
 package ch.epfl.biop.bdv.ui.swing;
 
 import ch.epfl.biop.bdv.transform.ellipticaltransform.Elliptical3DTransform;
+import org.scijava.Priority;
 import org.scijava.plugin.Plugin;
 import org.scijava.ui.swing.viewer.EasySwingDisplayViewer;
 import org.scijava.ui.viewer.DisplayViewer;
@@ -13,7 +14,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
-@Plugin(type = DisplayViewer.class)
+@Plugin(type = DisplayViewer.class, priority = Priority.FIRST)
 public class SwingElliptical3DTransformViewer extends
         EasySwingDisplayViewer<Elliptical3DTransform> {
 
