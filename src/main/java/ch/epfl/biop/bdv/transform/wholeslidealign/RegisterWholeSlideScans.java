@@ -1,12 +1,11 @@
-package ch.epfl.biop.bdv.wholeslidealign;
+package ch.epfl.biop.bdv.transform.wholeslidealign;
 
 import bdv.util.BdvFunctions;
 import bdv.util.BdvHandle;
 import bdv.util.BdvOptions;
-import bdv.viewer.Source;
+import ch.epfl.biop.bdv.scijava.command.edit.transform.BDVSourceAffineTransform;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.bdv.commands.BDVSourceAffineTransform;
-import ch.epfl.biop.bdv.commands.BDVSourceWarp;
+import ch.epfl.biop.bdv.scijava.command.edit.transform.BDVSourceWarp;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.realtransform.ThinplateSplineTransform;
 import org.scijava.command.Command;
@@ -23,8 +22,8 @@ import static ch.epfl.biop.bdv.scijava.command.Info.ScijavaBdvRootMenu;
 import static ch.epfl.biop.bdv.scijava.command.BDVSourceAndConverterFunctionalInterfaceCommand.ADD;
 import static ch.epfl.biop.bdv.scijava.command.BDVSourceAndConverterFunctionalInterfaceCommand.REPLACE;
 
-@Plugin(type = Command.class, menuPath = ScijavaBdvRootMenu+"Registration>Align Scans")
-public class WholeSlideAligner implements Command {
+@Plugin(type = Command.class, menuPath = ScijavaBdvRootMenu+"Bdv>Edit Sources>Register>Auto Align Sources")
+public class RegisterWholeSlideScans implements Command {
 
     @Parameter
     BdvHandle bdv_h;
@@ -169,9 +168,9 @@ public class WholeSlideAligner implements Command {
                     "bdv_h_out", bdv_regSteps,
                     "output_mode", ADD,
                     "sourceIndexString",(currentRefSourceIndex+","+otherChannelIndexes),
-                    "keepConverters", false,
-                    "makeInputVolatile", false,
-                    "outputInNewBdv", false,
+                    //"keepConverters", false,
+                    //"makeInputVolatile", false,
+                    //"outputInNewBdv", false,
                     "stringMatrix", at1.concatenate(at2).toString()
                     ).get();
 
@@ -190,9 +189,9 @@ public class WholeSlideAligner implements Command {
                     "bdv_h_out", this.bdv_h_accumulating_scans_volatile,
                     "output_mode", REPLACE,
                     "sourceIndexString",sourcesToTransform,
-                    "keepConverters", false,
-                    "makeInputVolatile", true,
-                    "outputInNewBdv", false,
+                    //"keepConverters", false,
+                    //"makeInputVolatile", true,
+                    //"outputInNewBdv", false,
                     "rt", tst
             ).get();
 

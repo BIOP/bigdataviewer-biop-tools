@@ -1,10 +1,10 @@
-package ch.epfl.biop.bdv.commands;
+package ch.epfl.biop.bdv.transform.ellipticaltransform;
 
 import bdv.img.WarpedSource;
 import bdv.tools.transformation.TransformedSource;
 import bdv.util.BdvHandle;
 import bdv.viewer.Interpolation;
-import ch.epfl.biop.bdv.transform.Elliptical3DTransform;
+import ch.epfl.biop.bdv.transform.ellipticaltransform.Elliptical3DTransform;
 import net.imglib2.RealRandomAccess;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
@@ -26,7 +26,7 @@ import java.util.Map;
 
 import static ch.epfl.biop.bdv.scijava.command.Info.ScijavaBdvRootMenu;
 
-@Plugin(type = Command.class, initializer = "init", menuPath = ScijavaBdvRootMenu+"Transformation>Elliptical Transform Optimization")
+@Plugin(type = Command.class, initializer = "init", menuPath = ScijavaBdvRootMenu+"Bdv>Edit Sources>Transform>Elliptical>Elliptical Transform Optimization")
 public class Optimize3DEllipticalTransformCommand implements Command{
 
     @Parameter(type = ItemIO.BOTH)
@@ -93,24 +93,21 @@ public class Optimize3DEllipticalTransformCommand implements Command{
         // Is this a warped source ?
         WarpedSource<?> ws;
         try {
-            System.out.println(bdv_h.getViewerPanel().getState().getSources().get(sourceIndex).getSpimSource().getClass());
-
-            TransformedSource<?> ts = (TransformedSource<?>) bdv_h.getViewerPanel().getState().getSources().get(sourceIndex).getSpimSource();
-
-            ws = (WarpedSource<?>) (ts.getWrappedSource());
-
+            if ( bdv_h.getViewerPanel().getState().getSources().get(sourceIndex).getSpimSource() instanceof TransformedSource) {
+                TransformedSource<?> ts = (TransformedSource<?>) bdv_h.getViewerPanel().getState().getSources().get(sourceIndex).getSpimSource();
+                System.out.println(ts.getWrappedSource().getClass());
+                ws = (WarpedSource<?>) (ts.getWrappedSource());
+            } else if ( bdv_h.getViewerPanel().getState().getSources().get(sourceIndex).getSpimSource() instanceof WarpedSource) {
+                ws = (WarpedSource<?>) (bdv_h.getViewerPanel().getState().getSources().get(sourceIndex).getSpimSource());
+            } else {
+                System.err.println("Source is not a WarpedSource. Cannot optimize");
+                System.out.println(bdv_h.getViewerPanel().getState().getSources().get(sourceIndex).getSpimSource().getClass());
+                return;
+            }
         } catch (ClassCastException e) {
             System.err.println("Source is not a WarpedSource. Cannot optimize");
             return;
         }
-
-        // Is it transformed by a 3D elliptical warped transform ?
-        /*try {
-            e3dT = (Elliptical3DTransform) ws.getTransform();
-        } catch (ClassCastException e) {
-            System.err.println("Transform is not Elliptical3DTransform. Cannot optimize");
-            return;
-        }*/
 
         nOptimizedParams=0;
         if (r1) nOptimizedParams++;

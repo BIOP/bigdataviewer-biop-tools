@@ -1,5 +1,5 @@
 import bdv.util.BdvHandle;
-import ch.epfl.biop.bdv.scijava.command.open.BigDataViewerPlugInSciJava;
+import ch.epfl.biop.bdv.scijava.command.spimdata.BigDataViewerPlugInSciJava;
 import loci.common.DebugTools;
 import net.imagej.ImageJ;
 

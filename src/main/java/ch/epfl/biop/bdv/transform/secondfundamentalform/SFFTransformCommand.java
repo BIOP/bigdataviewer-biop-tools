@@ -1,4 +1,4 @@
-package ch.epfl.biop.bdv.bigmodelwarp;
+package ch.epfl.biop.bdv.transform.secondfundamentalform;
 
 import bdv.util.BWBdvHandle;
 import bdv.util.BdvHandle;
@@ -28,8 +28,8 @@ import java.util.Arrays;
 
 import static ch.epfl.biop.bdv.scijava.command.Info.ScijavaBdvRootMenu;
 
-@Plugin(type = Command.class, menuPath = ScijavaBdvRootMenu+"Transformation>Big Warp>Curvature Transform")
-public class BMWCommand implements Command {
+@Plugin(type = Command.class, menuPath = ScijavaBdvRootMenu+"Bdv>Edit Sources>Transform>Transform Source (second fundamental form)")
+public class SFFTransformCommand implements Command {
     @Parameter(label = "Bdv Frame from BigWarp")
     BdvHandle bdv_warp;
 

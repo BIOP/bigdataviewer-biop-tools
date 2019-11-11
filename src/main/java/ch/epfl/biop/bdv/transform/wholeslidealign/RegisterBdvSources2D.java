@@ -1,11 +1,11 @@
-package ch.epfl.biop.bdv.wholeslidealign;
+package ch.epfl.biop.bdv.transform.wholeslidealign;
 
 import bdv.util.BdvHandle;
 import bdv.util.RealCropper;
 import bdv.viewer.Interpolation;
 import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.bdv.commands.BDVSourceAffineTransform;
+import ch.epfl.biop.bdv.scijava.command.edit.transform.BDVSourceAffineTransform;
 import ch.epfl.biop.wrappers.elastix.RegisterHelper;
 import ch.epfl.biop.wrappers.elastix.ij2commands.Elastix_Register;
 import ch.epfl.biop.wrappers.transformix.ij2commands.Transformix_TransformImgPlus;
@@ -36,7 +36,7 @@ import static ch.epfl.biop.bdv.scijava.command.Info.ScijavaBdvRootMenu;
 import static ch.epfl.biop.bdv.scijava.command.BDVSourceAndConverterFunctionalInterfaceCommand.ADD;
 import static ch.epfl.biop.bdv.scijava.command.BDVSourceAndConverterFunctionalInterfaceCommand.LIST;
 
-@Plugin(type = Command.class, menuPath = ScijavaBdvRootMenu+"Registration>Align Sources with Elastix")
+@Plugin(type = Command.class, menuPath = ScijavaBdvRootMenu+"Bdv>Edit Sources>Register>Align Sources with Elastix")
 public class RegisterBdvSources2D implements Command {
 
     @Parameter
@@ -201,11 +201,12 @@ public class RegisterBdvSources2D implements Command {
                         "sourceIndexString", Integer.toString(idxMovingSource),
                         "bdv_h_out", bdv_h_out,
                         "output_mode", mode,
-                        "keepConverters", false,
-                        "outputInNewBdv", false,
-                        "stringMatrix", transformInRealCoordinates.inverse().toString(),
-                    "makeInputVolatile",false)
-                    .get().getOutput("srcs_out");
+                        //"keepConverters", false,
+                        //"outputInNewBdv", false,
+                        "stringMatrix", transformInRealCoordinates.inverse().toString()
+                    //"makeInputVolatile",false
+                    //
+                    ).get().getOutput("srcs_out");
 
             registeredSource = ((List<SourceAndConverter<?>>) o).get(0);
 

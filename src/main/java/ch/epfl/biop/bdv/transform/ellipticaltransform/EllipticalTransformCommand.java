@@ -1,9 +1,9 @@
-package ch.epfl.biop.bdv.commands;
+package ch.epfl.biop.bdv.transform.ellipticaltransform;
 
 import bdv.img.WarpedSource;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.bdv.scijava.command.BDVSourceAndConverterFunctionalInterfaceCommand;
-import ch.epfl.biop.bdv.transform.Elliptical3DTransform;
+import ch.epfl.biop.bdv.transform.ellipticaltransform.Elliptical3DTransform;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.module.ModuleItem;
@@ -15,7 +15,7 @@ import java.util.List;
 
 import static ch.epfl.biop.bdv.scijava.command.Info.ScijavaBdvRootMenu;
 
-@Plugin(type = Command.class, menuPath = ScijavaBdvRootMenu+"Transformation>Elliptical Transform")
+@Plugin(type = Command.class, menuPath = ScijavaBdvRootMenu+"Bdv>Edit Sources>Transform>Transform Source (elliptical)")
 public class EllipticalTransformCommand extends BDVSourceAndConverterFunctionalInterfaceCommand {
 
     @Parameter
@@ -31,12 +31,6 @@ public class EllipticalTransformCommand extends BDVSourceAndConverterFunctionalI
     public EllipticalTransformCommand() {
 
         this.f = src -> {
-            WarpedSource ws = new WarpedSource(src.getSpimSource(),src.getSpimSource().getName()+"_EllipticalTransform");
-
-            e3Dt.updateNotifiers.add(() -> {
-                ws.updateTransform(e3Dt);
-                this.bdv_h_out.getViewerPanel().requestRepaint();
-            }); // TODO avoid memory leak somehow...
 
             e3Dt.setParameters(
                     "r1", r1,
@@ -48,9 +42,29 @@ public class EllipticalTransformCommand extends BDVSourceAndConverterFunctionalI
                     "tx", tx,
                     "ty", ty,
                     "tz", tz);
+            WarpedSource ws = new WarpedSource(src.getSpimSource(),src.getSpimSource().getName()+"_EllipticalTransform");
+
+            e3Dt.updateNotifiers.add(() -> {
+                ws.updateTransform(e3Dt);
+                this.bdv_h_out.getViewerPanel().requestRepaint();
+            }); // TODO avoid memory leak somehow...
 
             ws.setIsTransformed(true);
-            return new SourceAndConverter<>(ws, src.getConverter());
+            SourceAndConverter sac;
+            if (src.asVolatile()!=null) {
+                WarpedSource vws = new WarpedSource(src.asVolatile().getSpimSource(),src.asVolatile().getSpimSource().getName()+"_EllipticalTransform");
+
+                e3Dt.updateNotifiers.add(() -> {
+                    vws.updateTransform(e3Dt);
+                }); // TODO avoid memory leak somehow...
+
+                SourceAndConverter vsac = new SourceAndConverter(vws, src.asVolatile().getConverter());
+                sac = new SourceAndConverter(ws, src.getConverter(),vsac);
+                return sac;
+            } else {
+                sac = new SourceAndConverter<>(ws, src.getConverter());
+                return sac;
+            }
         };
     }
 

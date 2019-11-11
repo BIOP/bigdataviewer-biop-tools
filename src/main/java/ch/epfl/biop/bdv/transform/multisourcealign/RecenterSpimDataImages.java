@@ -1,4 +1,4 @@
-package ch.epfl.biop.bdv.multisourcealign;
+package ch.epfl.biop.bdv.transform.multisourcealign;
 
 import ch.epfl.biop.bdv.scijava.command.spimdata.UpdateSpimDataDisplay;
 import mpicbg.spim.data.generic.AbstractSpimData;
@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 import static ch.epfl.biop.bdv.scijava.command.Info.ScijavaBdvRootMenu;
 
-@Plugin(type = Command.class, menuPath = ScijavaBdvRootMenu+"Registration>Align Scans In Z")
+@Plugin(type = Command.class, menuPath = ScijavaBdvRootMenu+"SpimDataset>Register>Display Setups Along Z")
 public class RecenterSpimDataImages implements Command {
 
     @Parameter
@@ -52,7 +52,6 @@ public class RecenterSpimDataImages implements Command {
 
     @Override
     public void run() {
-
 
             // TODO : replace this fake entities by the correct ones
             ArrayList<Integer>  entitiesIndexInOrder = new ArrayList<>();

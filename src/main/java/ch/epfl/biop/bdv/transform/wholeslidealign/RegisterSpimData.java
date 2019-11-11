@@ -1,10 +1,8 @@
-package ch.epfl.biop.bdv.wholeslidealign;
+package ch.epfl.biop.bdv.transform.wholeslidealign;
 
 import bdv.spimdata.SpimDataMinimal;
 import bdv.spimdata.XmlIoSpimDataMinimal;
-import bdv.util.BdvFunctions;
 import bdv.util.BdvHandle;
-import bdv.util.BdvStackSource;
 import ch.epfl.biop.wrappers.elastix.RegisterHelper;
 import ch.epfl.biop.wrappers.elastix.ij2commands.Elastix_Register;
 import ij.ImagePlus;
@@ -29,11 +27,10 @@ import org.scijava.plugin.Plugin;
 import net.imglib2.interpolation.randomaccess.NearestNeighborInterpolatorFactory;
 
 import java.io.File;
-import java.util.List;
 
 import static ch.epfl.biop.bdv.scijava.command.Info.ScijavaBdvRootMenu;
 
-@Plugin(type = Command.class, menuPath = ScijavaBdvRootMenu+"Registration>Align SpimData with Elastix")
+@Plugin(type = Command.class, menuPath = ScijavaBdvRootMenu+"SpimDataset>Register>Align SpimData with Elastix (obsolete)")
 public class RegisterSpimData implements Command {
 
     @Parameter

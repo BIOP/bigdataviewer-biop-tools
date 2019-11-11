@@ -1,4 +1,4 @@
-package ch.epfl.biop.bdv.bigmodelwarp;
+package ch.epfl.biop.bdv.transform.secondfundamentalform;
 
 import org.scijava.vecmath.Vector3d;
 

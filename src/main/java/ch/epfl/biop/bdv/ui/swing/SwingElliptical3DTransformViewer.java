@@ -1,6 +1,6 @@
-package ch.epfl.biop.bdv.transform.ui;
+package ch.epfl.biop.bdv.ui.swing;
 
-import ch.epfl.biop.bdv.transform.Elliptical3DTransform;
+import ch.epfl.biop.bdv.transform.ellipticaltransform.Elliptical3DTransform;
 import org.scijava.plugin.Plugin;
 import org.scijava.ui.swing.viewer.EasySwingDisplayViewer;
 import org.scijava.ui.viewer.DisplayViewer;
@@ -14,10 +14,10 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 @Plugin(type = DisplayViewer.class)
-public class Elliptical3DTransformViewer extends
+public class SwingElliptical3DTransformViewer extends
         EasySwingDisplayViewer<Elliptical3DTransform> {
 
-    public Elliptical3DTransformViewer()
+    public SwingElliptical3DTransformViewer()
     {
         super( Elliptical3DTransform.class );
     }

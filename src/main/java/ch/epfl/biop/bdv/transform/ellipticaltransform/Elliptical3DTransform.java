@@ -1,4 +1,4 @@
-package ch.epfl.biop.bdv.transform;
+package ch.epfl.biop.bdv.transform.ellipticaltransform;
 
 import net.imglib2.RealLocalizable;
 import net.imglib2.RealPositionable;
@@ -8,7 +8,7 @@ import org.scijava.vecmath.Vector3d;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
+import bdv.util.RandomAccessibleIntervalSource;
 // extends RealTransformSequence
 public class Elliptical3DTransform implements InvertibleRealTransform {
 

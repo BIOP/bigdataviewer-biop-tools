@@ -160,7 +160,7 @@
 		<dependency>
 			<groupId>ch.epfl.biop</groupId>
 			<artifactId>bigdataviewer_scijava</artifactId>
-			<version>0.1.4-SOC-SNAPSHOT</version>
+			<version>0.1.4</version>
 		</dependency>
 
 		<dependency>
@@ -178,13 +178,6 @@
 			<groupId>sc.fiji</groupId>
 			<artifactId>bigdataviewer-vistools</artifactId>
 		</dependency>
-		<!--- to be removed once pushed to the parent pom
-		<dependency>
-			<groupId>net.imglib2</groupId>
-			<artifactId>imglib2-realtransform</artifactId>
-			<version>2.2.1</version>
-		</dependency>
-		-->
 		<dependency>
 			<groupId>org.scijava</groupId>
 			<artifactId>scijava-ui-swing</artifactId>
@@ -218,7 +211,6 @@
 			<version>1.0.0</version>
 		</dependency>
 
-
 		<!-- Commons Math - https://commons.apache.org/proper/commons-math/ -->
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -236,13 +228,6 @@
 			<artifactId>image-transform-converters</artifactId>
 			<version>0.1.00</version>
 		</dependency>
-		<!--
-		<dependency>
-			<groupId>net.preibisch</groupId>
-			<artifactId>multiview-reconstruction</artifactId>
-			<version>0.3.6-SNAPSHOT</version>
-		</dependency>
-		-->
 		<dependency>
 			<groupId>sc.fiji</groupId>
 			<artifactId>bigwarp_fiji</artifactId>
@@ -252,7 +237,7 @@
         <dependency>
             <groupId>ch.epfl.biop</groupId>
             <artifactId>bigdataviewer-bioformats</artifactId>
-            <version>0.1.6-SNAPSHOT</version>
+            <version>0.1.6</version>
         </dependency>
 
 		<dependency>

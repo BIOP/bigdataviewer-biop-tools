@@ -1,10 +1,8 @@
-package ch.epfl.biop.bdv.commands;
+package ch.epfl.biop.bdv.transform.ellipticaltransform;
 
 import bdv.img.WarpedSource;
 import bdv.util.*;
 import bdv.viewer.Source;
-import ch.epfl.biop.bdv.process.Procedural3DImageShort;
-import ch.epfl.biop.bdv.transform.Elliptical3DTransform;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.RealRandomAccessible;
@@ -17,14 +15,14 @@ import org.scijava.plugin.Plugin;
 
 import static ch.epfl.biop.bdv.scijava.command.Info.ScijavaBdvRootMenu;
 
-@Plugin(type = Command.class, menuPath = ScijavaBdvRootMenu+"Transformation>Display Ellipsoid")
+@Plugin(type = Command.class, menuPath = ScijavaBdvRootMenu+"Bdv>Edit Sources>Transform>Elliptical>Display Ellipsoid")
 public class DisplayEllipseFromTransform implements Command {
 
     @Parameter(label = "Open in new BigDataViewer window")
     public boolean createNewWindow;
 
     // ItemIO.BOTH required because it can be modified in case of appending new data to BDV (-> requires INPUT), or created (-> requires OUTPUT)
-    @Parameter(label = "BigDataViewer Frame", type = ItemIO.BOTH, required = false)
+    @Parameter(label = "BigDataViewer Frame", type = ItemIO.BOTH)
     public BdvHandle bdv_h;
 
     @Parameter(type = ItemIO.BOTH)
@@ -68,11 +66,7 @@ public class DisplayEllipseFromTransform implements Command {
 
         BdvOptions options = BdvOptions.options();
 
-        if (!createNewWindow) {
-            options.addTo(bdv_h);
-        }
-
-        bdv_h = BdvFunctions.show( ws, options ).getBdvHandle();
+        bdv_h = BdvFunctions.show( ws, options.addTo(bdv_h) ).getBdvHandle();
 
     }
 }
