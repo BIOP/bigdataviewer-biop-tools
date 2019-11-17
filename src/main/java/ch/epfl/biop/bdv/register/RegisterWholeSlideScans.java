@@ -1,4 +1,4 @@
-package ch.epfl.biop.bdv.transform.wholeslidealign;
+package ch.epfl.biop.bdv.register;
 
 import bdv.util.BdvFunctions;
 import bdv.util.BdvHandle;
@@ -22,7 +22,7 @@ import static ch.epfl.biop.bdv.scijava.command.Info.ScijavaBdvRootMenu;
 import static ch.epfl.biop.bdv.scijava.command.BDVSourceAndConverterFunctionalInterfaceCommand.ADD;
 import static ch.epfl.biop.bdv.scijava.command.BDVSourceAndConverterFunctionalInterfaceCommand.REPLACE;
 
-@Plugin(type = Command.class, menuPath = ScijavaBdvRootMenu+"Bdv>Edit Sources>Register>Auto Align Sources")
+@Plugin(type = Command.class, menuPath = ScijavaBdvRootMenu+"Bdv>Edit Sources>Register>Auto Align Sources with Elastix")
 public class RegisterWholeSlideScans implements Command {
 
     @Parameter

@@ -1,4 +1,4 @@
-package ch.epfl.biop.bdv.transform.wholeslidealign;
+package ch.epfl.biop.bdv.register;
 
 import bdv.util.BdvHandle;
 import bdv.util.RealCropper;
@@ -6,6 +6,7 @@ import bdv.viewer.Interpolation;
 import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.bdv.scijava.command.edit.transform.BDVSourceAffineTransform;
+import ch.epfl.biop.bdv.scijava.command.edit.transform.BDVSourceAffineTransformWithString;
 import ch.epfl.biop.wrappers.elastix.RegisterHelper;
 import ch.epfl.biop.wrappers.elastix.ij2commands.Elastix_Register;
 import ch.epfl.biop.wrappers.transformix.ij2commands.Transformix_TransformImgPlus;
@@ -129,8 +130,9 @@ public class RegisterBdvSources2D implements Command {
         RandomAccessibleInterval viewMoving = RealCropper.getCroppedSampledRRAI(ipMovingimg,
                 movat,fi,pxSizeInCurrentUnit,pxSizeInCurrentUnit,pxSizeInCurrentUnit);
         ImagePlus impM = ImageJFunctions.wrap(viewMoving, "Moving");
+        impM.show();
         impM = new Duplicator().run(impM); // Virtual messes up the process, don't know why
-        //impM.show();
+
 
         at3D.identity();
         at3D.translate(-px,-py,pz);
@@ -138,8 +140,9 @@ public class RegisterBdvSources2D implements Command {
         RandomAccessibleInterval viewFixed = RealCropper.getCroppedSampledRRAI(ipFixedimg,
                 fixat,fi,pxSizeInCurrentUnit,pxSizeInCurrentUnit,pxSizeInCurrentUnit);
         ImagePlus impF = ImageJFunctions.wrap(viewFixed, "Fixed");
+        impF.show();
         impF = new Duplicator().run(impF); // Virtual messes up the process, don't know why
-        //impF.show();
+
 
         try {
             Future<CommandModule> cm = cs.run(Elastix_Register.class, true, "movingImage",impM,
@@ -165,7 +168,7 @@ public class RegisterBdvSources2D implements Command {
 
             final AffineTransform3D affine3D = new AffineTransform3D();
             affine3D.set(new double[][] {
-                    {m2D[0], m2D[1], 0,   m2D[4]}, //0 ok
+                    {m2D[0], m2D[1], 0,   m2D[4]},
                     {m2D[2], m2D[3], 0,   m2D[5]},
                     {0     ,      0, 1,        0},
                     {0.    ,      0, 0,        1}});
@@ -196,16 +199,13 @@ public class RegisterBdvSources2D implements Command {
                     "If you need the resulting module, please instead call " +
                     "moduleService.run(commandService.getCommand(commandClass), ...).");*/
 
-            Object o = ms.run(cs.getCommand(BDVSourceAffineTransform.class),true,
+            Object o = ms.run(cs.getCommand(BDVSourceAffineTransformWithString.class),true,
                         "bdv_h_in", bdv_h_moving,
                         "sourceIndexString", Integer.toString(idxMovingSource),
                         "bdv_h_out", bdv_h_out,
                         "output_mode", mode,
-                        //"keepConverters", false,
-                        //"outputInNewBdv", false,
-                        "stringMatrix", transformInRealCoordinates.inverse().toString()
-                    //"makeInputVolatile",false
-                    //
+                        "stringMatrix", transformInRealCoordinates.inverse().toString(),
+                        "transformInPlace", false
                     ).get().getOutput("srcs_out");
 
             registeredSource = ((List<SourceAndConverter<?>>) o).get(0);

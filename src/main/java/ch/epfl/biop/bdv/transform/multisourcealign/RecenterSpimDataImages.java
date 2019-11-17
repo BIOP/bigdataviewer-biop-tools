@@ -42,7 +42,7 @@ public class RecenterSpimDataImages implements Command {
     @Parameter
     int idOfEntityUsedForAlignment = 2;
 
-    @Parameter(label = "BigDataViewer Frame", type = ItemIO.BOTH)
+    @Parameter(label = "SpimDataset", type = ItemIO.BOTH)
     public AbstractSpimData<AbstractSequenceDescription<BasicViewSetup,?,?>> spimData;
 
     int counter = 0;
@@ -105,7 +105,7 @@ public class RecenterSpimDataImages implements Command {
                     AffineTransform3D at3DToOrigin = new AffineTransform3D();
                     at3DToOrigin.translate(-at3D.get(0,3), -at3D.get(1,3), -at3D.get(2,3));
                     at3DToOrigin.scale(1d,1d,zSliceSize/(at3D.get(2,2)));
-                    at3DToOrigin.translate(0,0,zStartingLocation+entitiesIndexInOrder.indexOf(eIndex)*zSliceSize);
+                    at3DToOrigin.translate(0,0,zStartingLocation+entitiesIndexInOrder.indexOf(eIndex)*zSliceSize*0);
 
                     AffineTransform3D at3DCenter = new AffineTransform3D();
                     at3DCenter.translate(-sx/2, -sy/2,0);

@@ -1,4 +1,4 @@
-package ch.epfl.biop.bdv.transform.wholeslidealign;
+package ch.epfl.biop.bdv.register;
 
 import bdv.img.WarpedSource;
 import bdv.util.BdvFunctions;

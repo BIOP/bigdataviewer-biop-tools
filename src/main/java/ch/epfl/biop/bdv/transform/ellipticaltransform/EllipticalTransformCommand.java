@@ -15,7 +15,7 @@ import java.util.List;
 
 import static ch.epfl.biop.bdv.scijava.command.Info.ScijavaBdvRootMenu;
 
-@Plugin(type = Command.class, menuPath = ScijavaBdvRootMenu+"Bdv>Edit Sources>Transform>Transform Source (elliptical)")
+@Plugin(type = Command.class, menuPath = ScijavaBdvRootMenu+"Bdv>Edit Sources>Transform>Elliptical>Create Elliptical transform and transform sources")
 public class EllipticalTransformCommand extends BDVSourceAndConverterFunctionalInterfaceCommand {
 
     @Parameter
@@ -69,7 +69,7 @@ public class EllipticalTransformCommand extends BDVSourceAndConverterFunctionalI
     }
 
 
-    private List<ModuleItem<Double>> transformParamsItems = new ArrayList<>();
+    //private List<ModuleItem<Double>> transformParamsItems = new ArrayList<>();
 
     /*public void init() {
         Elliptical3DTransform.getParamsName().forEach(p -> {
@@ -83,6 +83,5 @@ public class EllipticalTransformCommand extends BDVSourceAndConverterFunctionalI
 
     public void initCommand() {
         e3Dt = new Elliptical3DTransform();
-
     }
 }

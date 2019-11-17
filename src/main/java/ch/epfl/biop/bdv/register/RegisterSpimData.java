@@ -1,4 +1,4 @@
-package ch.epfl.biop.bdv.transform.wholeslidealign;
+package ch.epfl.biop.bdv.register;
 
 import bdv.spimdata.SpimDataMinimal;
 import bdv.spimdata.XmlIoSpimDataMinimal;
