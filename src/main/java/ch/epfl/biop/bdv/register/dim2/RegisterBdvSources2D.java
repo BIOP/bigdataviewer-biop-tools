@@ -1,4 +1,4 @@
-package ch.epfl.biop.bdv.register;
+package ch.epfl.biop.bdv.register.dim2;
 
 import bdv.util.BdvHandle;
 import bdv.util.RealCropper;
@@ -37,7 +37,7 @@ import static ch.epfl.biop.bdv.scijava.command.Info.ScijavaBdvRootMenu;
 import static ch.epfl.biop.bdv.scijava.command.BDVSourceAndConverterFunctionalInterfaceCommand.ADD;
 import static ch.epfl.biop.bdv.scijava.command.BDVSourceAndConverterFunctionalInterfaceCommand.LIST;
 
-@Plugin(type = Command.class, menuPath = ScijavaBdvRootMenu+"Bdv>Edit Sources>Register>Align Sources with Elastix")
+@Plugin(type = Command.class, menuPath = ScijavaBdvRootMenu+"Bdv>Edit Sources>Register>2D>Align Sources with Elastix")
 public class RegisterBdvSources2D implements Command {
 
     @Parameter

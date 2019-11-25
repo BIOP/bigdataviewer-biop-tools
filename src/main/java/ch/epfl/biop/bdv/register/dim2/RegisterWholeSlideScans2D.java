@@ -1,4 +1,4 @@
-package ch.epfl.biop.bdv.register;
+package ch.epfl.biop.bdv.register.dim2;
 
 import bdv.util.BdvFunctions;
 import bdv.util.BdvHandle;
@@ -22,8 +22,8 @@ import static ch.epfl.biop.bdv.scijava.command.Info.ScijavaBdvRootMenu;
 import static ch.epfl.biop.bdv.scijava.command.BDVSourceAndConverterFunctionalInterfaceCommand.ADD;
 import static ch.epfl.biop.bdv.scijava.command.BDVSourceAndConverterFunctionalInterfaceCommand.REPLACE;
 
-@Plugin(type = Command.class, menuPath = ScijavaBdvRootMenu+"Bdv>Edit Sources>Register>Auto Align Sources with Elastix")
-public class RegisterWholeSlideScans implements Command {
+@Plugin(type = Command.class, menuPath = ScijavaBdvRootMenu+"Bdv>Edit Sources>Register>2D>Auto Align Sources with Elastix")
+public class RegisterWholeSlideScans2D implements Command {
 
     @Parameter
     BdvHandle bdv_h;
@@ -71,7 +71,6 @@ public class RegisterWholeSlideScans implements Command {
 
         // Approximate rigid registration
         try {
-
 
             BdvHandle bdv_regSteps = BdvFunctions.show(
                     bdv_h.getViewerPanel().getState().getSources().get(globalRefSourceIndex).getSpimSource()
@@ -168,9 +167,6 @@ public class RegisterWholeSlideScans implements Command {
                     "bdv_h_out", bdv_regSteps,
                     "output_mode", ADD,
                     "sourceIndexString",(currentRefSourceIndex+","+otherChannelIndexes),
-                    //"keepConverters", false,
-                    //"makeInputVolatile", false,
-                    //"outputInNewBdv", false,
                     "stringMatrix", at1.concatenate(at2).toString()
                     ).get();
 
@@ -189,9 +185,6 @@ public class RegisterWholeSlideScans implements Command {
                     "bdv_h_out", this.bdv_h_accumulating_scans_volatile,
                     "output_mode", REPLACE,
                     "sourceIndexString",sourcesToTransform,
-                    //"keepConverters", false,
-                    //"makeInputVolatile", true,
-                    //"outputInNewBdv", false,
                     "rt", tst
             ).get();
 
@@ -200,21 +193,6 @@ public class RegisterWholeSlideScans implements Command {
         } catch (ExecutionException e) {
             e.printStackTrace();
         }
-
-        /*
-        -76.5, -62.8,
--76.9, -60.5,
--69, -63,
--69.1, -60.7,
--74.8, -59.5
-
-
-                            "-76.5, -62.8,\n" +
-                                    "-76.9, -60.5,\n" +
-                                    "-69, -63,\n" +
-                                    "-69.1, -60.7,\n" +
-                                    "-74.8, -59.5",
-         */
 
     }
 }

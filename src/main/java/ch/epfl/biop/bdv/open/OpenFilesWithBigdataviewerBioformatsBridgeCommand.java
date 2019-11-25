@@ -3,6 +3,7 @@ package ch.epfl.biop.bdv.open;
 import bdv.util.BdvFunctions;
 import bdv.util.BdvHandle;
 import bdv.util.BdvStackSource;
+import ch.epfl.biop.bdv.bioformats.BioFormatsMetaDataHelper;
 import ch.epfl.biop.bdv.bioformats.BioformatsBdvDisplayHelper;
 import ch.epfl.biop.bdv.bioformats.bioformatssource.BioFormatsBdvOpener;
 import ch.epfl.biop.bdv.bioformats.command.BioformatsBigdataviewerBridgeDatasetCommand;
@@ -45,7 +46,16 @@ public class OpenFilesWithBigdataviewerBioformatsBridgeCommand extends Bioformat
     @Parameter
     GuavaWeakCacheService cs;
 
+    @Parameter
+    boolean verbose;
+
+
     public void run() {
+
+        if (verbose) {
+            BioFormatsMetaDataHelper.log = (s) -> System.out.println(s);
+        }
+
         List<BioFormatsBdvOpener> openers = new ArrayList<>();
         for (File f:files) {
             openers.add(getOpener(f));
@@ -55,6 +65,10 @@ public class OpenFilesWithBigdataviewerBioformatsBridgeCommand extends Bioformat
         bdv_h = lbss.get(0).getBdvHandle();
         BioformatsBdvDisplayHelper.autosetColorsAngGrouping(lbss, spimData, setColor, minDisplay, maxDisplay, setGrouping);
         cs.put(spimData, lbss);
+
+        if (verbose) {
+            BioFormatsMetaDataHelper.log = (s) -> {};
+        }
     }
 
 }

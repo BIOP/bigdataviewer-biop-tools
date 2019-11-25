@@ -1,6 +1,23 @@
+import bdv.util.BdvFunctions;
+import bdv.util.BdvHandle;
+import bdv.util.BdvOptions;
+import bdv.util.BdvStackSource;
+import bdv.viewer.Source;
+import bdv.viewer.SourceAndConverter;
+import ch.epfl.biop.bdv.bioformats.bioformatssource.BioFormatsBdvOpener;
+import ch.epfl.biop.bdv.register.dim2.FindLineSymmetry2D;
+import ch.epfl.biop.bdv.scijava.command.BDVSourceAndConverterFunctionalInterfaceCommand;
+import ch.epfl.biop.bdv.scijava.command.edit.transform.BDVSourceAffineTransform;
 import ij.ImagePlus;
 import loci.common.DebugTools;
 import net.imagej.ImageJ;
+import net.imglib2.realtransform.AffineTransform;
+import net.imglib2.realtransform.AffineTransform3D;
+import ome.units.UNITS;
+import ome.units.quantity.Length;
+
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public class SimpleIJLaunch {
 
@@ -12,6 +29,70 @@ public class SimpleIJLaunch {
 
         final ImageJ ij = new ImageJ();
         ij.ui().showUI();
+
+        /*Source bdvsrc = BioFormatsBdvOpener
+                .getOpener().auto()
+                .positionReferenceFrameLength(new Length(10, UNITS.MICROMETER))
+                .voxSizeReferenceFrameLength(new Length(10, UNITS.MICROMETER))
+                .location("C:\\Users\\nicol\\Dropbox\\BIOP\\19-05-24 VSI Samples\\align\\Image_05.vsi")
+                .getVolatileSources("2.0").get(0);
+
+        BdvStackSource bss = BdvFunctions.show(bdvsrc, BdvOptions.options());
+        bss.setDisplayRange(0,250);
+        BdvHandle bdvh = bss.getBdvHandle();
+        ij.object().addObject(bdvh);
+
+
+        /*AffineTransform3D at3dmm0 = new AffineTransform3D();
+        bdvsrc.getSourceTransform(0,0,at3dmm0);
+        System.out.println("at3dmm0:"+at3dmm0);
+
+        AffineTransform3D at3dmm4 = new AffineTransform3D();
+        bdvsrc.getSourceTransform(0,4,at3dmm4);
+        System.out.println("at3dmm4:"+at3dmm4);
+
+        AffineTransform3D mm4 = new AffineTransform3D();
+        mm4.concatenate(at3dmm0.inverse());
+        mm4.concatenate(at3dmm4);
+        System.out.println("mm4:"+mm4);
+
+
+        AffineTransform3D at3d = new AffineTransform3D();
+        at3d.concatenate(at3dmm0.inverse());
+
+        AffineTransform3D trInLocMM4 = new AffineTransform3D();
+        trInLocMM4.translate(-1,-1,0);
+        //trInLocMM4.concatenate(mm4.inverse());
+        //trInLocMM4.preConcatenate(mm4);
+        at3d.preConcatenate(trInLocMM4);
+        at3d.preConcatenate(at3dmm0);*/
+
+        //System.out.println("at3d:"+at3d);
+
+/*
+        try {
+
+            AffineTransform3D a = (AffineTransform3D) ij.command().run(FindLineSymmetry2D.class,true,
+                    "sourceIndex",0,
+                    "bdv_h",bdvh,
+                    "numMipMap",6,
+                    "timepoint",0
+            ).get().getOutput("at3D");
+
+            System.out.println(a);
+            ij.module().run(ij.command().getCommand(BDVSourceAffineTransform.class),true,
+                    "sourceIndexString","0",
+                    "bdv_h_in",bdvh,
+                    "bdv_h_out",bdvh,
+                    "at",a,
+                    "output_mode", BDVSourceAndConverterFunctionalInterfaceCommand.ADD,
+                    "transformInPlace", false
+                    ).get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }*/
 
     }
 

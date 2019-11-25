@@ -1,4 +1,4 @@
-package ch.epfl.biop.bdv.register;
+package ch.epfl.biop.bdv.register.dim2;
 
 import bdv.img.WarpedSource;
 import bdv.util.BdvFunctions;
@@ -27,7 +27,7 @@ import java.util.stream.Stream;
 
 import static ch.epfl.biop.bdv.scijava.command.Info.ScijavaBdvRootMenu;
 
-@Plugin(type = Command.class, menuPath = ScijavaBdvRootMenu+"Bdv>Edit Sources>Register>AutoWarp Sources with Elastix and BigWarp")
+@Plugin(type = Command.class, menuPath = ScijavaBdvRootMenu+"Bdv>Edit Sources>Register>2D>AutoWarp Sources with Elastix and BigWarp")
 public class AutoWarp2D implements Command {
 
     @Parameter(required = false)
