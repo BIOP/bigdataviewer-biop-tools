@@ -39,6 +39,9 @@ public class FindLineSymmetry2D implements Command {
     @Parameter
     int timepoint;
 
+    @Parameter
+    double thresholdValue;
+
     @Parameter(type = ItemIO.OUTPUT)
     AffineTransform3D at3D = new AffineTransform3D();
 
