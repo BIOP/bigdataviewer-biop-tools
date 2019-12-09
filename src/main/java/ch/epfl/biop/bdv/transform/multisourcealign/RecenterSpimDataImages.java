@@ -1,6 +1,6 @@
 package ch.epfl.biop.bdv.transform.multisourcealign;
 
-import ch.epfl.biop.bdv.scijava.command.spimdata.UpdateSpimDataDisplay;
+import ch.epfl.biop.bdv.scijava.command.spimdata.SpimdatasetUpdateBdvWindow;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import mpicbg.spim.data.generic.sequence.AbstractSequenceDescription;
 import mpicbg.spim.data.generic.sequence.BasicViewSetup;
@@ -127,6 +127,6 @@ public class RecenterSpimDataImages implements Command {
                     }
                 }
             }
-            cs.run(UpdateSpimDataDisplay.class, true, "timePoint", timePoint, "spimData", spimData);
+            cs.run(SpimdatasetUpdateBdvWindow.class, true, "timePoint", timePoint, "spimData", spimData);
     }
 }

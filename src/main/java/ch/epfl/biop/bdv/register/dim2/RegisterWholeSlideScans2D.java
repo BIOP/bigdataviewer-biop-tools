@@ -3,9 +3,9 @@ package ch.epfl.biop.bdv.register.dim2;
 import bdv.util.BdvFunctions;
 import bdv.util.BdvHandle;
 import bdv.util.BdvOptions;
-import ch.epfl.biop.bdv.scijava.command.edit.transform.BDVSourceAffineTransform;
+import ch.epfl.biop.bdv.scijava.command.edit.transform.BdvSourcesAffineTransform;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.bdv.scijava.command.edit.transform.BDVSourceWarp;
+import ch.epfl.biop.bdv.scijava.command.edit.transform.BdvSourcesWarp;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.realtransform.ThinplateSplineTransform;
 import org.scijava.command.Command;
@@ -19,8 +19,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
 import static ch.epfl.biop.bdv.scijava.command.Info.ScijavaBdvRootMenu;
-import static ch.epfl.biop.bdv.scijava.command.BDVSourceAndConverterFunctionalInterfaceCommand.ADD;
-import static ch.epfl.biop.bdv.scijava.command.BDVSourceAndConverterFunctionalInterfaceCommand.REPLACE;
+import static ch.epfl.biop.bdv.scijava.command.BdvSourceAndConverterFunctionalInterfaceCommand.ADD;
+import static ch.epfl.biop.bdv.scijava.command.BdvSourceAndConverterFunctionalInterfaceCommand.REPLACE;
 
 @Plugin(type = Command.class, menuPath = ScijavaBdvRootMenu+"Bdv>Edit Sources>Register>2D>Auto Align Sources with Elastix")
 public class RegisterWholeSlideScans2D implements Command {
@@ -162,7 +162,7 @@ public class RegisterWholeSlideScans2D implements Command {
 
             int nSourcesBefore = bdv_regSteps.getViewerPanel().getState().getSources().size();
 
-            ms.run(cs.getCommand(BDVSourceAffineTransform.class),true,
+            ms.run(cs.getCommand(BdvSourcesAffineTransform.class),true,
                     "bdv_h_in",bdv_h,
                     "bdv_h_out", bdv_regSteps,
                     "output_mode", ADD,
@@ -180,7 +180,7 @@ public class RegisterWholeSlideScans2D implements Command {
 
             System.out.println("sourcesToTransform="+sourcesToTransform);
 
-            ms.run(cs.getCommand(BDVSourceWarp.class),true,
+            ms.run(cs.getCommand(BdvSourcesWarp.class),true,
                     "bdv_h_in",bdv_regSteps,
                     "bdv_h_out", this.bdv_h_accumulating_scans_volatile,
                     "output_mode", REPLACE,

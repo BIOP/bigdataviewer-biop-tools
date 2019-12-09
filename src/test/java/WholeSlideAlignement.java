@@ -1,5 +1,5 @@
 import bdv.util.BdvHandle;
-import ch.epfl.biop.bdv.scijava.command.spimdata.BigDataViewerPlugInSciJava;
+import ch.epfl.biop.bdv.scijava.command.spimdata.SpimdatasetOpenXML;
 import loci.common.DebugTools;
 import net.imagej.ImageJ;
 
@@ -22,7 +22,7 @@ public class WholeSlideAlignement {
 
         try {
             // Opens dataset
-            BdvHandle bdvh = (BdvHandle) ij.command().run(BigDataViewerPlugInSciJava.class, true,
+            BdvHandle bdvh = (BdvHandle) ij.command().run(SpimdatasetOpenXML.class, true,
                     "file", f, "createNewWindow", true).get().getOutput("bdv_h");
         } catch (InterruptedException e) {
             e.printStackTrace();

@@ -2,21 +2,17 @@ package ch.epfl.biop.bdv.transform.ellipticaltransform;
 
 import bdv.img.WarpedSource;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.bdv.scijava.command.BDVSourceAndConverterFunctionalInterfaceCommand;
-import ch.epfl.biop.bdv.transform.ellipticaltransform.Elliptical3DTransform;
+import ch.epfl.biop.bdv.scijava.command.BdvSourceAndConverterFunctionalInterfaceCommand;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
-import org.scijava.module.ModuleItem;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
-import java.util.ArrayList;
-import java.util.List;
 
 import static ch.epfl.biop.bdv.scijava.command.Info.ScijavaBdvRootMenu;
 
 @Plugin(type = Command.class, menuPath = ScijavaBdvRootMenu+"Bdv>Edit Sources>Transform>Elliptical>Create Elliptical transform and transform sources")
-public class EllipticalTransformCommand extends BDVSourceAndConverterFunctionalInterfaceCommand {
+public class EllipticalTransformCommand extends BdvSourceAndConverterFunctionalInterfaceCommand {
 
     @Parameter
     double r1, r2, r3, //radius of axes 1 2 3 of ellipse
@@ -46,7 +42,7 @@ public class EllipticalTransformCommand extends BDVSourceAndConverterFunctionalI
 
             e3Dt.updateNotifiers.add(() -> {
                 ws.updateTransform(e3Dt);
-                this.bdv_h_out.getViewerPanel().requestRepaint();
+                this.bdvh_out.getViewerPanel().requestRepaint();
             }); // TODO avoid memory leak somehow...
 
             ws.setIsTransformed(true);

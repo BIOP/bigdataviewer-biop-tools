@@ -5,8 +5,8 @@ import bdv.util.RealCropper;
 import bdv.viewer.Interpolation;
 import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.bdv.scijava.command.edit.transform.BDVSourceAffineTransform;
-import ch.epfl.biop.bdv.scijava.command.edit.transform.BDVSourceAffineTransformWithString;
+import ch.epfl.biop.bdv.scijava.command.edit.transform.BdvSourcesAffineTransform;
+import ch.epfl.biop.bdv.scijava.command.edit.transform.BdvSourcesAffineTransformWithString;
 import ch.epfl.biop.wrappers.elastix.RegisterHelper;
 import ch.epfl.biop.wrappers.elastix.ij2commands.Elastix_Register;
 import ch.epfl.biop.wrappers.transformix.ij2commands.Transformix_TransformImgPlus;
@@ -34,8 +34,8 @@ import java.util.List;
 import java.util.concurrent.Future;
 
 import static ch.epfl.biop.bdv.scijava.command.Info.ScijavaBdvRootMenu;
-import static ch.epfl.biop.bdv.scijava.command.BDVSourceAndConverterFunctionalInterfaceCommand.ADD;
-import static ch.epfl.biop.bdv.scijava.command.BDVSourceAndConverterFunctionalInterfaceCommand.LIST;
+import static ch.epfl.biop.bdv.scijava.command.BdvSourceAndConverterFunctionalInterfaceCommand.ADD;
+import static ch.epfl.biop.bdv.scijava.command.BdvSourceAndConverterFunctionalInterfaceCommand.LIST;
 
 @Plugin(type = Command.class, menuPath = ScijavaBdvRootMenu+"Bdv>Edit Sources>Register>2D>Align Sources with Elastix")
 public class RegisterBdvSources2D implements Command {
@@ -199,7 +199,7 @@ public class RegisterBdvSources2D implements Command {
                     "If you need the resulting module, please instead call " +
                     "moduleService.run(commandService.getCommand(commandClass), ...).");*/
 
-            Object o = ms.run(cs.getCommand(BDVSourceAffineTransformWithString.class),true,
+            Object o = ms.run(cs.getCommand(BdvSourcesAffineTransformWithString.class),true,
                         "bdv_h_in", bdv_h_moving,
                         "sourceIndexString", Integer.toString(idxMovingSource),
                         "bdv_h_out", bdv_h_out,
