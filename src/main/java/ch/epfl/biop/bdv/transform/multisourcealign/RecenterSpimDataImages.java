@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 import static ch.epfl.biop.bdv.scijava.command.Info.ScijavaBdvRootMenu;
 
-@Plugin(type = Command.class, menuPath = ScijavaBdvRootMenu+"SpimDataset>Register>Display Setups Along Z")
+@Plugin(type = Command.class, menuPath = ScijavaBdvRootMenu+"SpimDataset>Register>Center and Display Setups Along Z")
 public class RecenterSpimDataImages implements Command {
 
     @Parameter

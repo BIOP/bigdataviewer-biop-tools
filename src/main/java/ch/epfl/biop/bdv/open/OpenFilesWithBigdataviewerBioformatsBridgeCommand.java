@@ -51,11 +51,9 @@ public class OpenFilesWithBigdataviewerBioformatsBridgeCommand extends Bioformat
 
 
     public void run() {
-
         if (verbose) {
             BioFormatsMetaDataHelper.log = (s) -> System.out.println(s);
         }
-
         List<BioFormatsBdvOpener> openers = new ArrayList<>();
         for (File f:files) {
             openers.add(getOpener(f));
@@ -65,7 +63,6 @@ public class OpenFilesWithBigdataviewerBioformatsBridgeCommand extends Bioformat
         bdv_h = lbss.get(0).getBdvHandle();
         BioformatsBdvDisplayHelper.autosetColorsAngGrouping(lbss, spimData, setColor, minDisplay, maxDisplay, setGrouping);
         cs.put(spimData, lbss);
-
         if (verbose) {
             BioFormatsMetaDataHelper.log = (s) -> {};
         }

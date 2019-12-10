@@ -5,7 +5,6 @@ import bdv.util.RealCropper;
 import bdv.viewer.Interpolation;
 import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.bdv.scijava.command.edit.transform.BdvSourcesAffineTransform;
 import ch.epfl.biop.bdv.scijava.command.edit.transform.BdvSourcesAffineTransformWithString;
 import ch.epfl.biop.wrappers.elastix.RegisterHelper;
 import ch.epfl.biop.wrappers.elastix.ij2commands.Elastix_Register;

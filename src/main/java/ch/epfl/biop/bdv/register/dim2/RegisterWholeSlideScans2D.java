@@ -7,7 +7,10 @@ import ch.epfl.biop.bdv.scijava.command.edit.transform.BdvSourcesAffineTransform
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.bdv.scijava.command.edit.transform.BdvSourcesWarp;
 import net.imglib2.realtransform.AffineTransform3D;
+import net.imglib2.realtransform.RealTransform;
+import net.imglib2.realtransform.RealTransformSequence;
 import net.imglib2.realtransform.ThinplateSplineTransform;
+import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.command.CommandModule;
 import org.scijava.command.CommandService;
@@ -65,6 +68,9 @@ public class RegisterWholeSlideScans2D implements Command {
 
     @Parameter
     boolean showDetails;
+
+    @Parameter(type = ItemIO.OUTPUT)
+    RealTransformSequence rts;
 
     @Override
     public void run() {
@@ -162,6 +168,7 @@ public class RegisterWholeSlideScans2D implements Command {
 
             int nSourcesBefore = bdv_regSteps.getViewerPanel().getState().getSources().size();
 
+
             ms.run(cs.getCommand(BdvSourcesAffineTransform.class),true,
                     "bdv_h_in",bdv_h,
                     "bdv_h_out", bdv_regSteps,
@@ -187,6 +194,10 @@ public class RegisterWholeSlideScans2D implements Command {
                     "sourceIndexString",sourcesToTransform,
                     "rt", tst
             ).get();
+
+            rts = new RealTransformSequence();
+            rts.add(at1.concatenate(at2));
+            rts.add(tst);
 
         } catch (InterruptedException e) {
             e.printStackTrace();
