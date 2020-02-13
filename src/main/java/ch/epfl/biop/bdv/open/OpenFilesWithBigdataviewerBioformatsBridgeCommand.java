@@ -2,6 +2,7 @@ package ch.epfl.biop.bdv.open;
 
 import bdv.util.BdvFunctions;
 import bdv.util.BdvHandle;
+import bdv.util.BdvOptions;
 import bdv.util.BdvStackSource;
 import ch.epfl.biop.bdv.bioformats.BioFormatsMetaDataHelper;
 import ch.epfl.biop.bdv.bioformats.BioformatsBdvDisplayHelper;
@@ -37,8 +38,8 @@ public class OpenFilesWithBigdataviewerBioformatsBridgeCommand extends Bioformat
     @Parameter(required = false)
     double maxDisplay = 255;
 
-    @Parameter(type = ItemIO.OUTPUT)
-    public BdvHandle bdv_h;
+    @Parameter(type = ItemIO.BOTH)
+    public BdvHandle bdvh;
 
     @Parameter(type = ItemIO.OUTPUT)
     AbstractSpimData spimData;
@@ -49,7 +50,6 @@ public class OpenFilesWithBigdataviewerBioformatsBridgeCommand extends Bioformat
     @Parameter
     boolean verbose;
 
-
     public void run() {
         if (verbose) {
             BioFormatsMetaDataHelper.log = (s) -> System.out.println(s);
@@ -59,8 +59,8 @@ public class OpenFilesWithBigdataviewerBioformatsBridgeCommand extends Bioformat
             openers.add(getOpener(f));
         }
         spimData = BioFormatsConvertFilesToSpimData.getSpimData(openers);
-        List<BdvStackSource<?>> lbss = BdvFunctions.show(spimData);
-        bdv_h = lbss.get(0).getBdvHandle();
+        List<BdvStackSource<?>> lbss = BdvFunctions.show(spimData, BdvOptions.options().addTo(bdvh));
+        //bdv_h = lbss.get(0).getBdvHandle();
         BioformatsBdvDisplayHelper.autosetColorsAngGrouping(lbss, spimData, setColor, minDisplay, maxDisplay, setGrouping);
         cs.put(spimData, lbss);
         if (verbose) {
