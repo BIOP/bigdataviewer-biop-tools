@@ -18,7 +18,7 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 
-@Plugin(type = Command.class, menuPath = "BigDataViewer>Edit Sources>Register>2D>AutoWarp Sources with Elastix and BigWarp")
+@Plugin(type = Command.class, menuPath = "BigDataViewer>Sources>Register>2D>AutoWarp Sources with Elastix and BigWarp")
 public class AutoWarp2D implements Command {
 
     @Parameter(required = false)
