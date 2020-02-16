@@ -17,9 +17,10 @@ import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.scijava.ui.UIService;
 
+// TODO : make it ok with the actual source transform, not only with RAI
 
-@Plugin(type = Command.class, menuPath = "BigDataViewer>Sources>Register>2D>Find Line Of Symmetry")
-public class FindLineSymmetry2D implements Command {
+@Plugin(type = Command.class, menuPath = "BigDataViewer>Sources>Register>Find Line Of Symmetry (2D)")
+public class FindLineSymmetry2DCommand implements Command {
 
     @Parameter
     OpService ops;
@@ -35,9 +36,6 @@ public class FindLineSymmetry2D implements Command {
 
     @Parameter
     int numMipMap;
-
-    //@Parameter
-    //double thresholdValue;
 
     @Parameter(type = ItemIO.OUTPUT)
     AffineTransform3D at3D = new AffineTransform3D();
@@ -58,6 +56,7 @@ public class FindLineSymmetry2D implements Command {
         double minScore = Double.MAX_VALUE;
         for (double angle = -0.5;angle<0.5;angle+=0.01) {
             double score = getScore(raiTrFilled,rl,angle);
+            //System.out.println("angle \t"+angle+ "\t score \t"+score);
             if (score<minScore) {
                 minScore = score;
                 angleMinScore = angle;
@@ -97,7 +96,7 @@ public class FindLineSymmetry2D implements Command {
         //ui.show(rasterrotrimageLeft);
 
         RandomAccessibleInterval rasterrotrimageRight = Views.invertAxis(Views.interval((RandomAccessible) rotrimage, new long[] {0,-maxdim},
-                new long[] {maxdim,maxdim}),0); //Sets the interval
+        new long[] {maxdim,maxdim}),0); //Sets the interval
         //ui.show(rasterrotrimageRight);
 
         Cursor<RealType> cR = ((IterableInterval)rasterrotrimageLeft).localizingCursor();

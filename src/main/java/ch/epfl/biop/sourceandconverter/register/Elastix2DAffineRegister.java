@@ -38,6 +38,8 @@ public class Elastix2DAffineRegister implements Runnable {
 
     boolean interpolate = false;
 
+    boolean showResultIJ1 = false;
+
     public Elastix2DAffineRegister(SourceAndConverter sac_fixed,
                                    int levelMipmapFixed,
                                    int tpFixed,
@@ -50,7 +52,8 @@ public class Elastix2DAffineRegister implements Runnable {
                                    double py,
                                    double pz,
                                    double sx,
-                                   double sy) {
+                                   double sy,
+                                   boolean showResultIJ1) {
         this.rh = rh;
         this.sac_fixed = sac_fixed;
         this.sac_moving = sac_moving;
@@ -64,6 +67,7 @@ public class Elastix2DAffineRegister implements Runnable {
         this.levelMipmapMoving = levelMipmapMoving;
         this.tpFixed = tpFixed;
         this.tpMoving = tpMoving;
+        this.showResultIJ1 = showResultIJ1;
     }
 
     public void setInterpolate(boolean interpolate) {
@@ -107,7 +111,7 @@ public class Elastix2DAffineRegister implements Runnable {
         RandomAccessibleInterval viewMoving = RealCropper.getCroppedSampledRRAI(ipMovingimg,
                 movat,fi,pxSizeInCurrentUnit,pxSizeInCurrentUnit,pxSizeInCurrentUnit);
         ImagePlus impM = ImageJFunctions.wrap(viewMoving, "Moving");
-        impM.show();
+        //impM.show();
         impM = new Duplicator().run(impM); // Virtual messes up the process, don't know why
 
 
@@ -117,7 +121,7 @@ public class Elastix2DAffineRegister implements Runnable {
         RandomAccessibleInterval viewFixed = RealCropper.getCroppedSampledRRAI(ipFixedimg,
                 fixat,fi,pxSizeInCurrentUnit,pxSizeInCurrentUnit,pxSizeInCurrentUnit);
         ImagePlus impF = ImageJFunctions.wrap(viewFixed, "Fixed");
-        impF.show();
+        //impF.show();
         impF = new Duplicator().run(impF); // Virtual messes up the process, don't know why
 
 
@@ -164,7 +168,7 @@ public class Elastix2DAffineRegister implements Runnable {
 
         affineTransformOut = transformInRealCoordinates.inverse();
 
-        if (true) {
+        if (showResultIJ1) {
             impF.show();
             ImagePlus transformedImage = ImagePlusFunctions.splitApplyRecompose(
                     imp -> {

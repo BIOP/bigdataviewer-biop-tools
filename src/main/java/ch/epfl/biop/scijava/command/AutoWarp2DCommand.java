@@ -1,9 +1,9 @@
-package ch.epfl.biop.bdv.register.dim2;
+package ch.epfl.biop.scijava.command;
 
-import bdv.util.BdvHandle;
-import ch.epfl.biop.scijava.command.Elastix2DAffineRegisterCommand;
+import bdv.viewer.SourceAndConverter;
 import net.imglib2.RealPoint;
 import net.imglib2.realtransform.AffineTransform3D;
+import net.imglib2.realtransform.RealTransform;
 import net.imglib2.realtransform.ThinplateSplineTransform;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
@@ -18,17 +18,11 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 
-@Plugin(type = Command.class, menuPath = "BigDataViewer>Sources>Register>2D>AutoWarp Sources with Elastix and BigWarp")
-public class AutoWarp2D implements Command {
-
-    @Parameter(required = false)
-    BdvHandle bdv_h_out;
+@Plugin(type = Command.class, menuPath = "BigDataViewer>Sources>Register>AutoWarp Sources with Elastix and BigWarp (2D)")
+public class AutoWarp2DCommand implements Command {
 
     @Parameter
-    BdvHandle bdv_h_fixed;
-
-    @Parameter
-    int idxFixedSource;
+    SourceAndConverter sac_fixed;
 
     @Parameter
     int tpFixed;
@@ -37,19 +31,13 @@ public class AutoWarp2D implements Command {
     int levelFixedSource;
 
     @Parameter
-    BdvHandle bdv_h_moving;
-
-    @Parameter
-    int idxMovingSource;
+    SourceAndConverter sac_moving;
 
     @Parameter
     int tpMoving;
 
     @Parameter
     int levelMovingSource;
-
-    @Parameter
-    CommandService cs;
 
     @Parameter
     double sx,sy;
@@ -61,7 +49,7 @@ public class AutoWarp2D implements Command {
     String ptListCoordinates = "15,10,\n -30,-40,\n ";
 
     @Parameter(type = ItemIO.OUTPUT)
-    ThinplateSplineTransform tst;
+    RealTransform tst;
 
     @Parameter
     double pxSizeInCurrentUnit;
@@ -76,7 +64,7 @@ public class AutoWarp2D implements Command {
     boolean showPoints;
 
     @Parameter
-    boolean appendWarpedSource;
+    CommandService cs;
 
     public Consumer<String> log = s -> System.out.println(s);
 
@@ -109,12 +97,10 @@ public class AutoWarp2D implements Command {
         streamOfPts.forEach(pt -> {
             try {
                 AffineTransform3D at = (AffineTransform3D) cs.run(Elastix2DAffineRegisterCommand.class,true,
-                        "bdv_h_fixed", bdv_h_fixed,
-                        "idxFixedSource", idxFixedSource,
+                        "sac_fixed", sac_fixed,
                         "tpFixed", tpFixed,
                         "levelFixedSource", levelFixedSource,
-                        "bdv_h_moving", bdv_h_moving,
-                        "idxMovingSource", idxMovingSource,
+                        "sac_moving", sac_moving,
                         "tpMoving", tpMoving,
                         "levelMovingSource", levelMovingSource,
                         "px", pt.getDoublePosition(0),
@@ -124,10 +110,8 @@ public class AutoWarp2D implements Command {
                         "sy",sy,
                         "pxSizeInCurrentUnit", pxSizeInCurrentUnit,
                         "interpolate", interpolate,
-                        "bdv_h_out", bdv_h_out,
-                        "displayRegisteredSource", false,
                         "showImagePlusRegistrationResult", showPoints
-                ).get().getOutput("affineTransformOut");
+                ).get().getOutput("at3D");
 
                 RealPoint ptCorr = new RealPoint(3);
                 at.apply(pt, ptCorr);

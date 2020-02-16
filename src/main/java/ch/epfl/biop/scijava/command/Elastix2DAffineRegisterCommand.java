@@ -60,7 +60,8 @@ public class Elastix2DAffineRegisterCommand implements Command {
                 sac_moving,levelMovingSource,tpMoving,
                 rh,
                 pxSizeInCurrentUnit,
-                px,py,pz,sx,sy);
+                px,py,pz,sx,sy,
+                showImagePlusRegistrationResult);
         reg.setInterpolate(interpolate);
         reg.run();
 
