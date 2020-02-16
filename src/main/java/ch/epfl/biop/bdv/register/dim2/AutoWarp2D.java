@@ -1,18 +1,10 @@
 package ch.epfl.biop.bdv.register.dim2;
 
-import bdv.img.WarpedSource;
-import bdv.util.BdvFunctions;
 import bdv.util.BdvHandle;
-import bdv.util.BdvOptions;
-import bdv.util.volatiles.SharedQueue;
-import bdv.util.volatiles.VolatileTypeMatcher;
-import bdv.viewer.Source;
-import ch.epfl.biop.bdv.bioformats.bioformatssource.VolatileBdvSource;
+import ch.epfl.biop.scijava.command.Elastix2DAffineRegisterCommand;
 import net.imglib2.RealPoint;
-import net.imglib2.Volatile;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.realtransform.ThinplateSplineTransform;
-import net.imglib2.type.NativeType;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.command.CommandService;
@@ -25,9 +17,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import static ch.epfl.biop.bdv.scijava.command.Info.ScijavaBdvRootMenu;
 
-@Plugin(type = Command.class, menuPath = ScijavaBdvRootMenu+"Bdv>Edit Sources>Register>2D>AutoWarp Sources with Elastix and BigWarp")
+@Plugin(type = Command.class, menuPath = "BigDataViewer>Edit Sources>Register>2D>AutoWarp Sources with Elastix and BigWarp")
 public class AutoWarp2D implements Command {
 
     @Parameter(required = false)
@@ -117,7 +108,7 @@ public class AutoWarp2D implements Command {
 
         streamOfPts.forEach(pt -> {
             try {
-                AffineTransform3D at = (AffineTransform3D) cs.run(RegisterBdvSources2D.class,true,
+                AffineTransform3D at = (AffineTransform3D) cs.run(Elastix2DAffineRegisterCommand.class,true,
                         "bdv_h_fixed", bdv_h_fixed,
                         "idxFixedSource", idxFixedSource,
                         "tpFixed", tpFixed,
@@ -166,22 +157,6 @@ public class AutoWarp2D implements Command {
         }
 
         tst = new ThinplateSplineTransform(ptI,ptF);
-
-        if (appendWarpedSource) {
-            Source src = bdv_h_moving.getViewerPanel().getState().getSources().get(idxMovingSource).getSpimSource();
-
-            Volatile vType = (Volatile) VolatileTypeMatcher.getVolatileTypeForType((NativeType) src.getType());
-
-            VolatileBdvSource vsrc = new VolatileBdvSource(src,vType,new SharedQueue(1));
-
-            WarpedSource ws = new WarpedSource(vsrc,"Warped Src");
-
-            ws.updateTransform(tst);
-
-            ws.setIsTransformed(true);
-
-            bdv_h_out = BdvFunctions.show(ws, BdvOptions.options().addTo(bdv_h_out)).getBdvHandle();
-        }
 
     }
 

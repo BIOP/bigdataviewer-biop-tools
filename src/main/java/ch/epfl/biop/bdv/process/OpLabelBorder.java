@@ -74,7 +74,7 @@ public class OpLabelBorder extends AbstractOp {
                         + abs(v.compareTo(inYS.next()))
                         + abs(v.compareTo(inZS.next()));
 
-                out.next().set( (int) ( res>0?126:0 ) );
+                out.next().set( ( res>0?126:0 ) );
             }
 
         }, options().initializeCellsAsDirty( true ) );

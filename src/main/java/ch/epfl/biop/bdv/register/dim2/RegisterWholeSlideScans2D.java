@@ -3,11 +3,8 @@ package ch.epfl.biop.bdv.register.dim2;
 import bdv.util.BdvFunctions;
 import bdv.util.BdvHandle;
 import bdv.util.BdvOptions;
-import ch.epfl.biop.bdv.scijava.command.edit.transform.BdvSourcesAffineTransform;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.bdv.scijava.command.edit.transform.BdvSourcesWarp;
 import net.imglib2.realtransform.AffineTransform3D;
-import net.imglib2.realtransform.RealTransform;
 import net.imglib2.realtransform.RealTransformSequence;
 import net.imglib2.realtransform.ThinplateSplineTransform;
 import org.scijava.ItemIO;
@@ -21,11 +18,8 @@ import org.scijava.plugin.Plugin;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
-import static ch.epfl.biop.bdv.scijava.command.Info.ScijavaBdvRootMenu;
-import static ch.epfl.biop.bdv.scijava.command.BdvSourceAndConverterFunctionalInterfaceCommand.ADD;
-import static ch.epfl.biop.bdv.scijava.command.BdvSourceAndConverterFunctionalInterfaceCommand.REPLACE;
 
-@Plugin(type = Command.class, menuPath = ScijavaBdvRootMenu+"Bdv>Edit Sources>Register>2D>Auto Align Sources with Elastix")
+@Plugin(type = Command.class, menuPath = "BigDataViewer>Edit Sources>Register>2D>Auto Align Sources with Elastix")
 public class RegisterWholeSlideScans2D implements Command {
 
     @Parameter
@@ -34,14 +28,14 @@ public class RegisterWholeSlideScans2D implements Command {
     @Parameter
     BdvHandle bdv_h_accumulating_scans_volatile;
 
-    @Parameter(label = "Index of global reference image (usually, first dapi channel)")
-    int globalRefSourceIndex;
+    @Parameter(label = "Global reference image (usually, first dapi channel)")
+    SourceAndConverter globalRefSource;
 
     @Parameter(label = "Index of current reference image (dapi channel of scan i)")
-    int currentRefSourceIndex;
+    SourceAndConverter currentRefSource;
 
     @Parameter(label = "Indexes of channels of scan i, except the reference one")
-    String otherChannelIndexes;
+    SourceAndConverter[] otherChannel;
 
     @Parameter(label = "Locations of interest for warping registration", style = "text area")
     String ptListCoordinates = "15,10,\n -30,-40,\n ";
@@ -74,18 +68,18 @@ public class RegisterWholeSlideScans2D implements Command {
 
     @Override
     public void run() {
-
+/*
         // Approximate rigid registration
         try {
 
-            BdvHandle bdv_regSteps = BdvFunctions.show(
-                    bdv_h.getViewerPanel().getState().getSources().get(globalRefSourceIndex).getSpimSource()
-            ).getBdvHandle();
+            //BdvHandle bdv_regSteps = BdvFunctions.show(
+            //        bdv_h.getViewerPanel().getState().getSources().get(globalRefSourceIndex).getSpimSource()
+            //).getBdvHandle();
 
-            BdvFunctions.show(
-                    bdv_h.getViewerPanel().getState().getSources().get(currentRefSourceIndex).getSpimSource(),
-                    BdvOptions.options().addTo(bdv_regSteps)
-            );
+            //BdvFunctions.show(
+            //        bdv_h.getViewerPanel().getState().getSources().get(currentRefSourceIndex).getSpimSource(),
+            //        BdvOptions.options().addTo(bdv_regSteps)
+            //);
 
             log.accept("----------- First registration");
 
@@ -204,6 +198,6 @@ public class RegisterWholeSlideScans2D implements Command {
         } catch (ExecutionException e) {
             e.printStackTrace();
         }
-
+*/
     }
 }

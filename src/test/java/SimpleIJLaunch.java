@@ -1,23 +1,6 @@
-import bdv.util.BdvFunctions;
-import bdv.util.BdvHandle;
-import bdv.util.BdvOptions;
-import bdv.util.BdvStackSource;
-import bdv.viewer.Source;
-import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.bdv.bioformats.bioformatssource.BioFormatsBdvOpener;
-import ch.epfl.biop.bdv.register.dim2.FindLineSymmetry2D;
-import ch.epfl.biop.bdv.scijava.command.BdvSourceAndConverterFunctionalInterfaceCommand;
-import ch.epfl.biop.bdv.scijava.command.edit.transform.BdvSourcesAffineTransform;
-import ij.ImagePlus;
+
 import loci.common.DebugTools;
 import net.imagej.ImageJ;
-import net.imglib2.realtransform.AffineTransform;
-import net.imglib2.realtransform.AffineTransform3D;
-import ome.units.UNITS;
-import ome.units.quantity.Length;
-
-import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 public class SimpleIJLaunch {
 

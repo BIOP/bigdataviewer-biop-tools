@@ -1,6 +1,6 @@
-package ch.epfl.biop.bdv.ui;
+package ch.epfl.biop.scijava.ui;
 
-import ch.epfl.biop.bdv.transform.ellipticaltransform.Elliptical3DTransform;
+import bdv.util.Elliptical3DTransform;
 import org.scijava.Priority;
 import org.scijava.display.AbstractDisplay;
 import org.scijava.display.Display;

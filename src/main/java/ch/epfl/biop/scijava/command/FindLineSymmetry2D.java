@@ -1,6 +1,7 @@
-package ch.epfl.biop.bdv.register.dim2;
+package ch.epfl.biop.scijava.command;
 
 import bdv.util.BdvHandle;
+import bdv.viewer.SourceAndConverter;
 import net.imagej.ops.OpService;
 import net.imglib2.*;
 import net.imglib2.interpolation.randomaccess.NearestNeighborInterpolatorFactory;
@@ -16,9 +17,8 @@ import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.scijava.ui.UIService;
 
-import static ch.epfl.biop.bdv.scijava.command.Info.ScijavaBdvRootMenu;
 
-@Plugin(type = Command.class, menuPath = ScijavaBdvRootMenu+"Bdv>Edit Sources>Register>2D>Find Line Of Symmetry")
+@Plugin(type = Command.class, menuPath = "BigDataViewer>Sources>Register>2D>Find Line Of Symmetry")
 public class FindLineSymmetry2D implements Command {
 
     @Parameter
@@ -28,19 +28,16 @@ public class FindLineSymmetry2D implements Command {
     UIService ui;
 
     @Parameter
-    BdvHandle bdv_h;
-
-    @Parameter
-    int sourceIndex;
-
-    @Parameter
-    int numMipMap;
+    SourceAndConverter sac;
 
     @Parameter
     int timepoint;
 
     @Parameter
-    double thresholdValue;
+    int numMipMap;
+
+    //@Parameter
+    //double thresholdValue;
 
     @Parameter(type = ItemIO.OUTPUT)
     AffineTransform3D at3D = new AffineTransform3D();
@@ -48,9 +45,9 @@ public class FindLineSymmetry2D implements Command {
     @Override
     public void run() {
         AffineTransform3D srcTrMM = new AffineTransform3D();
-        bdv_h.getViewerPanel().getState().getSources().get(sourceIndex).getSpimSource().getSourceTransform(timepoint,numMipMap,srcTrMM);
+        sac.getSpimSource().getSourceTransform(timepoint,numMipMap,srcTrMM);
 
-        RandomAccessibleInterval rai = bdv_h.getViewerPanel().getState().getSources().get(sourceIndex).getSpimSource().getSource(timepoint,numMipMap);
+        RandomAccessibleInterval rai = sac.getSpimSource().getSource(timepoint,numMipMap);
 
         rai = Views.hyperSlice(rai,2,0); // Gets first slice in Z1
         RandomAccessibleInterval raiTr = (RandomAccessibleInterval) ops.threshold().otsu((IterableInterval) rai);

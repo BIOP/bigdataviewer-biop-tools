@@ -1,5 +1,5 @@
 import bdv.util.BdvHandle;
-import ch.epfl.biop.bdv.scijava.command.spimdata.SpimdatasetOpenXML;
+//import ch.epfl.biop.bdv.scijava.command.spimdata.SpimdatasetOpenXML;
 import loci.common.DebugTools;
 import net.imagej.ImageJ;
 
@@ -19,7 +19,7 @@ public class WholeSlideAlignement {
 
         DatasetHelper.getSampleVSIDataset();
         File f = DatasetHelper.getDataset(DatasetHelper.LIF);
-
+        /*
         try {
             // Opens dataset
             BdvHandle bdvh = (BdvHandle) ij.command().run(SpimdatasetOpenXML.class, true,
@@ -28,6 +28,6 @@ public class WholeSlideAlignement {
             e.printStackTrace();
         } catch (ExecutionException e) {
             e.printStackTrace();
-        }
+        }*/
     }
 }

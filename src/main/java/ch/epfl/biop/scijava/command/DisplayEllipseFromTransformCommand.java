@@ -1,8 +1,10 @@
-package ch.epfl.biop.bdv.transform.ellipticaltransform;
+package ch.epfl.biop.scijava.command;
 
 import bdv.img.WarpedSource;
 import bdv.util.*;
 import bdv.viewer.Source;
+import bdv.util.Elliptical3DTransform;
+import bdv.viewer.SourceAndConverter;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.RealRandomAccessible;
@@ -12,15 +14,15 @@ import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import sc.fiji.bdvpg.services.SourceAndConverterServices;
+import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterUtils;
 
-import static ch.epfl.biop.bdv.scijava.command.Info.ScijavaBdvRootMenu;
 
-@Plugin(type = Command.class, menuPath = ScijavaBdvRootMenu+"Bdv>Edit Sources>Transform>Elliptical>Display Ellipsoid")
-public class DisplayEllipseFromTransform implements Command {
+@Plugin(type = Command.class, menuPath = "BigDataViewer>Sources>Transform>Create Ellipsoid Source")
+public class DisplayEllipseFromTransformCommand implements Command {
 
-    // ItemIO.BOTH required because it can be modified in case of appending new data to BDV (-> requires INPUT), or created (-> requires OUTPUT)
-    @Parameter(label = "BigDataViewer Frame", type = ItemIO.BOTH)
-    public BdvHandle bdv_h;
+    @Parameter(type = ItemIO.OUTPUT)
+    SourceAndConverter sac_out;
 
     @Parameter(type = ItemIO.BOTH)
     Elliptical3DTransform e3Dt;
@@ -45,25 +47,22 @@ public class DisplayEllipseFromTransform implements Command {
                 new long[]{ -100, -100, -100 },
                 new long[]{ 100, 100, 100 });
 
-
-        final AxisOrder axisOrder = AxisOrder.getAxisOrder( BdvOptions.options().values.axisOrder(), rra, false );
-        final AffineTransform3D sourceTransform = BdvOptions.options().values.getSourceTransform();
         final UnsignedShortType type = rra.realRandomAccess().get();
 
-        final Source< UnsignedShortType > s = new RealRandomAccessibleIntervalSource<>( rra, interval, type, sourceTransform, "Ellipse" );
+        final Source< UnsignedShortType > s = new RealRandomAccessibleIntervalSource<>( rra, interval, type, new AffineTransform3D(), "Ellipse" );
 
         WarpedSource ws = new WarpedSource(s,"Ellipsoid");
         ws.updateTransform(e3Dt.inverse());
         ws.setIsTransformed(true);
 
+        sac_out = SourceAndConverterUtils.createSourceAndConverter(ws);
+
         e3Dt.updateNotifiers.add(() -> {
             ws.updateTransform(e3Dt.inverse());
-            this.bdv_h.getViewerPanel().requestRepaint();
-        }); // TODO avoid memory leak somehow...
-
-        BdvOptions options = BdvOptions.options();
-
-        bdv_h = BdvFunctions.show( ws, options.addTo(bdv_h) ).getBdvHandle();
+            SourceAndConverterServices
+                    .getSourceAndConverterDisplayService()
+                    .getDisplaysOf(sac_out).forEach(bdvHandle -> bdvHandle.getViewerPanel().requestRepaint());
+        });
 
     }
 }

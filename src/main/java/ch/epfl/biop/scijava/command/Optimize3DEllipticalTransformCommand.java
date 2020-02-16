@@ -1,10 +1,9 @@
-package ch.epfl.biop.bdv.transform.ellipticaltransform;
+package ch.epfl.biop.scijava.command;
 
 import bdv.img.WarpedSource;
-import bdv.tools.transformation.TransformedSource;
-import bdv.util.BdvHandle;
 import bdv.viewer.Interpolation;
-import ch.epfl.biop.bdv.transform.ellipticaltransform.Elliptical3DTransform;
+import bdv.util.Elliptical3DTransform;
+import bdv.viewer.SourceAndConverter;
 import net.imglib2.RealRandomAccess;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
@@ -24,9 +23,8 @@ import org.scijava.plugin.Plugin;
 
 import java.util.Map;
 
-import static ch.epfl.biop.bdv.scijava.command.Info.ScijavaBdvRootMenu;
 
-@Plugin(type = Command.class, initializer = "init", menuPath = ScijavaBdvRootMenu+"Bdv>Edit Sources>Transform>Elliptical>Elliptical Transform Optimization")
+@Plugin(type = Command.class, initializer = "init", menuPath = "BigDataViewer>Sources>Transform>Elliptic 3D Transform Optimization")
 public class Optimize3DEllipticalTransformCommand implements Command{
 
     @Parameter(type = ItemIO.BOTH)
@@ -72,11 +70,8 @@ public class Optimize3DEllipticalTransformCommand implements Command{
     @Parameter
     double stz = 1;
 
-    @Parameter(label = "Bdv Frame Containing the source for optimization (non transformed)", type = ItemIO.BOTH)
-    BdvHandle bdv_h;
-
-    @Parameter(label="Elliptical Warped Source to optimize")
-    public int sourceIndex = 0;
+    @Parameter
+    SourceAndConverter sac;
 
     int nOptimizedParams;
 
@@ -91,7 +86,8 @@ public class Optimize3DEllipticalTransformCommand implements Command{
 
     public void run() {
         // Is this a warped source ?
-        WarpedSource<?> ws;
+        WarpedSource<?> ws = (WarpedSource<?>) sac.getSpimSource();
+        /*
         try {
             if ( bdv_h.getViewerPanel().getState().getSources().get(sourceIndex).getSpimSource() instanceof TransformedSource) {
                 TransformedSource<?> ts = (TransformedSource<?>) bdv_h.getViewerPanel().getState().getSources().get(sourceIndex).getSpimSource();
@@ -107,7 +103,7 @@ public class Optimize3DEllipticalTransformCommand implements Command{
         } catch (ClassCastException e) {
             System.err.println("Source is not a WarpedSource. Cannot optimize");
             return;
-        }
+        }*/
 
         nOptimizedParams=0;
         if (r1) nOptimizedParams++;

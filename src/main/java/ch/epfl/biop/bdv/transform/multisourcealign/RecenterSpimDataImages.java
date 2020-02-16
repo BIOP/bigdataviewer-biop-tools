@@ -1,6 +1,5 @@
 package ch.epfl.biop.bdv.transform.multisourcealign;
 
-import ch.epfl.biop.bdv.scijava.command.spimdata.SpimdatasetUpdateBdvWindow;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import mpicbg.spim.data.generic.sequence.AbstractSequenceDescription;
 import mpicbg.spim.data.generic.sequence.BasicViewSetup;
@@ -19,9 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static ch.epfl.biop.bdv.scijava.command.Info.ScijavaBdvRootMenu;
-
-@Plugin(type = Command.class, menuPath = ScijavaBdvRootMenu+"SpimDataset>Register>Center and Display Setups Along Z")
+@Plugin(type = Command.class, menuPath = "BigDataViewer>SpimDataset>Register>Center and Display Setups Along Z")
 public class RecenterSpimDataImages implements Command {
 
     @Parameter
@@ -127,6 +124,7 @@ public class RecenterSpimDataImages implements Command {
                     }
                 }
             }
-            cs.run(SpimdatasetUpdateBdvWindow.class, true, "timePoint", timePoint, "spimData", spimData);
+            //cs.run(SpimdatasetUpdateBdvWindow.class, true, "timePoint", timePoint, "spimData", spimData);
+            // TODO : Fix this : update bdv where sources of the spimdata are displayed
     }
 }

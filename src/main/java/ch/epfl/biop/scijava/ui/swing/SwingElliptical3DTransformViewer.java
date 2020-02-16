@@ -1,6 +1,6 @@
-package ch.epfl.biop.bdv.ui.swing;
+package ch.epfl.biop.scijava.ui.swing;
 
-import ch.epfl.biop.bdv.transform.ellipticaltransform.Elliptical3DTransform;
+import bdv.util.Elliptical3DTransform;
 import org.scijava.Priority;
 import org.scijava.plugin.Plugin;
 import org.scijava.ui.swing.viewer.EasySwingDisplayViewer;
