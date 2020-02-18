@@ -82,7 +82,7 @@ public class Optimize3DEllipticalTransformCommand implements Command{
     int sourceTimePoint = 0;
 
     @Parameter
-    double phiMin=-1, phiMax=1, thetaMin=Math.PI/2-1, thetaMax=Math.PI/2-1, dPhi=0.05, dTheta=0.05;
+    double phiMin=-1, phiMax=1, thetaMin=-Math.PI/2, thetaMax=Math.PI/2, dPhi=0.05, dTheta=0.05;
 
     public void run() {
         // Is this a warped source ?
@@ -133,8 +133,8 @@ public class Optimize3DEllipticalTransformCommand implements Command{
                                 new MaxEval(1000),
                                 new ObjectiveFunction(mf),
                                 GoalType.MAXIMIZE,
-                                new InitialGuess(this.getCurrentOptimzedParamsAsDoubles()),
-                                new NelderMeadSimplex(this.getStepOptimzedParamsAsDoubles())
+                                new InitialGuess(this.getCurrentOptimizedParamsAsDoubles()),
+                                new NelderMeadSimplex(this.getStepOptimizedParamsAsDoubles())
                         );// Steps for optimization
 
                 this.setParams(optimum.getPoint());
@@ -153,7 +153,7 @@ public class Optimize3DEllipticalTransformCommand implements Command{
         }
     }
 
-    public double[] getCurrentOptimzedParamsAsDoubles() {
+    public double[] getCurrentOptimizedParamsAsDoubles() {
         double[] ans = new double[nOptimizedParams];
         int cIndex=0;
         Map<String, Double> p = e3dT.getParameters();
@@ -169,7 +169,7 @@ public class Optimize3DEllipticalTransformCommand implements Command{
         return ans;
     }
 
-    public double[] getStepOptimzedParamsAsDoubles() {
+    public double[] getStepOptimizedParamsAsDoubles() {
         double[] ans = new double[nOptimizedParams];
         int cIndex=0;
         Map<String, Double> p = e3dT.getParameters();
