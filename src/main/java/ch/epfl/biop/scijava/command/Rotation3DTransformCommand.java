@@ -1,0 +1,126 @@
+package ch.epfl.biop.scijava.command;
+
+import bdv.tools.transformation.TransformedSource;
+import bdv.viewer.SourceAndConverter;
+import net.imglib2.realtransform.AffineTransform3D;
+import net.imglib2.util.LinAlgHelpers;
+import org.scijava.command.Command;
+import org.scijava.command.InteractiveCommand;
+import org.scijava.plugin.Parameter;
+import org.scijava.plugin.Plugin;
+import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
+import sc.fiji.bdvpg.services.SourceAndConverterServices;
+
+
+@Plugin(type = Command.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>Rotation 3D Transform")
+public class Rotation3DTransformCommand extends InteractiveCommand {
+
+    @Parameter
+    SourceAndConverter[] sacs;
+
+    @Parameter(style = "slider", min = "0", max = "360")
+    int rx;
+
+    @Parameter(style = "slider", min = "0", max = "360")
+    int ry;
+
+    @Parameter(style = "slider", min = "0", max = "360")
+    double rz;
+
+    @Parameter
+    double cx, cy, cz;
+
+    public void run() {
+        double [][] m = new double[3][3];
+
+        AffineTransform3D rotMatrix = new AffineTransform3D();
+
+        /*Roi roi1 = rm.getRoi(0);
+        Roi roi2 = rm.getRoi(1);
+
+        if (!(roi1 instanceof PointRoi)) {
+            System.err.println("Point 1 is not a point!");
+            return;
+        }
+
+        if (!(roi2 instanceof PointRoi)) {
+            System.err.println("Point 2 is not a point!");
+            return;
+        }
+
+        PointRoi pt1 = (PointRoi) roi1;
+        PointRoi pt2 = (PointRoi) roi2;*/
+
+        /*double dx = -pt1.getXBase()+pt2.getXBase();
+        double dy = -pt1.getYBase()+pt2.getYBase();
+        double dz = -pt1.getZPosition()+pt2.getZPosition();*/
+
+        /*double norm = Math.sqrt(dx*dx+dy*dy+dz*dz);
+
+        dx = dx/norm;
+        dy = dy/norm;
+        dz = dz/norm;*/
+
+        double rxRad = Math.PI * rx/180.0; // div by 2 because quaternion
+        double ryRad = Math.PI * ry/180.0; // div by 2 because quaternion
+        double rzRad = Math.PI * rz/180.0; // div by 2 because quaternion
+
+        //double ux = Math.sin(thetaRad/2)*Math.cos(phiRad);
+        //double uy = Math.sin(thetaRad/2)*Math.sin(phiRad);
+        //double uz = Math.cos(thetaRad/2);
+
+        // Now finds the quaternion that brings dx, dy, dz into the z direction:
+        // cross product dx, dy, dz with 0,0,1
+        double[] qx = new double[4];
+
+        qx[0] = Math.cos(rxRad);
+        qx[1] = Math.sin(rxRad);
+        qx[2] = 0;
+        qx[3] = 0;
+
+        double[] qy = new double[4];
+
+        qy[0] = Math.cos(ryRad);
+        qy[1] = 0;
+        qy[2] = Math.sin(ryRad);
+        qy[3] = 0;
+
+        double[] qz = new double[4];
+
+        qz[0] = Math.cos(rzRad);
+        qz[1] = 0;
+        qz[2] = 0;
+        qz[3] = Math.sin(rzRad);
+
+        double[] qXY = new double[4];
+
+        LinAlgHelpers.quaternionMultiply(qy,qx,qXY);
+
+        double[] qRes = new double[4];
+
+        LinAlgHelpers.quaternionMultiply(qz,qXY,qRes);
+
+        LinAlgHelpers.quaternionToR(qRes, m);
+
+        rotMatrix.set( m[0][0], m[0][1], m[0][2], 0,
+                       m[1][0], m[1][1], m[1][2], 0,
+                       m[2][0], m[2][1], m[2][2], 0);
+
+        AffineTransform3D at3D = new AffineTransform3D();
+
+        at3D.translate(-cx, -cy, -cz);
+
+        at3D.preConcatenate(rotMatrix);
+
+        if (sacs!=null) {
+            for (SourceAndConverter sac:sacs) {
+                if (sac!=null) {
+                    if (sac.getSpimSource() instanceof TransformedSource) {
+                        ((TransformedSource) sac.getSpimSource()).setFixedTransform(at3D);
+                        SourceAndConverterServices.getSourceAndConverterDisplayService().updateDisplays(sac);
+                    }
+                }
+            }
+        }
+    }
+}
