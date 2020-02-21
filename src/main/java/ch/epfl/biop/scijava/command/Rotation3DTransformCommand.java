@@ -32,9 +32,9 @@ public class Rotation3DTransformCommand extends InteractiveCommand {
 
     public void run() {
 
-        double rxRad = Math.PI * rx/180.0;
-        double ryRad = Math.PI * ry/180.0;
-        double rzRad = Math.PI * rz/180.0;
+        double rxRad = Math.PI * rx/360.0; // factor 2 because quaternions
+        double ryRad = Math.PI * ry/360.0; // factor 2 because quaternions
+        double rzRad = Math.PI * rz/360.0; // factor 2 because quaternions
 
         double[] qx = new double[4];
 
