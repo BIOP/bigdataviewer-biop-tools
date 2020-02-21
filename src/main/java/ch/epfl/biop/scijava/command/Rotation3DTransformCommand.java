@@ -31,46 +31,11 @@ public class Rotation3DTransformCommand extends InteractiveCommand {
     double cx, cy, cz;
 
     public void run() {
-        double [][] m = new double[3][3];
 
-        AffineTransform3D rotMatrix = new AffineTransform3D();
+        double rxRad = Math.PI * rx/180.0;
+        double ryRad = Math.PI * ry/180.0;
+        double rzRad = Math.PI * rz/180.0;
 
-        /*Roi roi1 = rm.getRoi(0);
-        Roi roi2 = rm.getRoi(1);
-
-        if (!(roi1 instanceof PointRoi)) {
-            System.err.println("Point 1 is not a point!");
-            return;
-        }
-
-        if (!(roi2 instanceof PointRoi)) {
-            System.err.println("Point 2 is not a point!");
-            return;
-        }
-
-        PointRoi pt1 = (PointRoi) roi1;
-        PointRoi pt2 = (PointRoi) roi2;*/
-
-        /*double dx = -pt1.getXBase()+pt2.getXBase();
-        double dy = -pt1.getYBase()+pt2.getYBase();
-        double dz = -pt1.getZPosition()+pt2.getZPosition();*/
-
-        /*double norm = Math.sqrt(dx*dx+dy*dy+dz*dz);
-
-        dx = dx/norm;
-        dy = dy/norm;
-        dz = dz/norm;*/
-
-        double rxRad = Math.PI * rx/180.0; // div by 2 because quaternion
-        double ryRad = Math.PI * ry/180.0; // div by 2 because quaternion
-        double rzRad = Math.PI * rz/180.0; // div by 2 because quaternion
-
-        //double ux = Math.sin(thetaRad/2)*Math.cos(phiRad);
-        //double uy = Math.sin(thetaRad/2)*Math.sin(phiRad);
-        //double uz = Math.cos(thetaRad/2);
-
-        // Now finds the quaternion that brings dx, dy, dz into the z direction:
-        // cross product dx, dy, dz with 0,0,1
         double[] qx = new double[4];
 
         qx[0] = Math.cos(rxRad);
@@ -99,6 +64,10 @@ public class Rotation3DTransformCommand extends InteractiveCommand {
         double[] qRes = new double[4];
 
         LinAlgHelpers.quaternionMultiply(qz,qXY,qRes);
+
+        double [][] m = new double[3][3];
+
+        AffineTransform3D rotMatrix = new AffineTransform3D();
 
         LinAlgHelpers.quaternionToR(qRes, m);
 

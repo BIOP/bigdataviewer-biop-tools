@@ -43,7 +43,7 @@ public class SourcesFromImagePlusGetter implements Runnable {
     int nChannel = 0;
 
     public SourceAndConverter transformSingleChannel(ImagePlus im) {
-        if (im.getT()>0) {
+        if (im.getT()>1) {
             System.err.println("Multiple timepoints unsupported in imageplus to SourceAndConverter convertion");
         }
 
