@@ -9,7 +9,7 @@ import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 
-@Plugin(type = Command.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Get Sources From ImagePlus")
+@Plugin(type = Command.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Import>Get Sources From ImagePlus")
 public class SourceFromImagePlusCommand implements Command {
 
     @Parameter

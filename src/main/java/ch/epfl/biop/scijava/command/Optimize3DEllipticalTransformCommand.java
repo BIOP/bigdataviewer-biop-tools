@@ -1,8 +1,8 @@
 package ch.epfl.biop.scijava.command;
 
 import bdv.img.WarpedSource;
-import bdv.viewer.Interpolation;
 import bdv.util.Elliptical3DTransform;
+import bdv.viewer.Interpolation;
 import bdv.viewer.SourceAndConverter;
 import net.imglib2.RealRandomAccess;
 import net.imglib2.type.NativeType;
@@ -46,17 +46,17 @@ public class Optimize3DEllipticalTransformCommand implements Command{
     @Parameter
     double sr3 = 1;
     @Parameter
-    boolean theta=true;
+    boolean rx=true;
     @Parameter
-    double stheta = 0.1;
+    double srx = 0.1;
     @Parameter
-    boolean phi=true;
+    boolean ry=true;
     @Parameter
-    double sphi = 0.1;
+    double sry = 0.1;
     @Parameter
-    boolean angle_en =true;
+    boolean rz =true;
     @Parameter
-    double sangle_en = 0.1;
+    double srz = 0.1;
     @Parameter
     boolean tx=true;
     @Parameter
@@ -109,9 +109,9 @@ public class Optimize3DEllipticalTransformCommand implements Command{
         if (r1) nOptimizedParams++;
         if (r2) nOptimizedParams++;
         if (r3) nOptimizedParams++;
-        if (theta) nOptimizedParams++;
-        if (phi) nOptimizedParams++;
-        if (angle_en) nOptimizedParams++;
+        if (rx) nOptimizedParams++;
+        if (ry) nOptimizedParams++;
+        if (rz) nOptimizedParams++;
         if (tx) nOptimizedParams++;
         if (ty) nOptimizedParams++;
         if (tz) nOptimizedParams++;
@@ -160,9 +160,9 @@ public class Optimize3DEllipticalTransformCommand implements Command{
         if (r1) {ans[cIndex]=p.get("r1");cIndex++;}
         if (r2) {ans[cIndex]=p.get("r2");cIndex++;}
         if (r3) {ans[cIndex]=p.get("r3");cIndex++;}
-        if (theta) {ans[cIndex]=p.get("theta");cIndex++;}
-        if (phi) {ans[cIndex]=p.get("phi");cIndex++;}
-        if (angle_en) {ans[cIndex]=p.get("angle_en");cIndex++;}
+        if (rx) {ans[cIndex]=p.get("rx");cIndex++;}
+        if (ry) {ans[cIndex]=p.get("ry");cIndex++;}
+        if (rz) {ans[cIndex]=p.get("rz");cIndex++;}
         if (tx) {ans[cIndex]=p.get("tx");cIndex++;}
         if (ty) {ans[cIndex]=p.get("ty");cIndex++;}
         if (tz) {ans[cIndex]=p.get("tz");cIndex++;}
@@ -176,9 +176,9 @@ public class Optimize3DEllipticalTransformCommand implements Command{
         if (r1) {ans[cIndex]=sr1;cIndex++;}
         if (r2) {ans[cIndex]=sr2;cIndex++;}
         if (r3) {ans[cIndex]=sr3;cIndex++;}
-        if (theta) {ans[cIndex]=stheta;cIndex++;}
-        if (phi) {ans[cIndex]=sphi;cIndex++;}
-        if (angle_en) {ans[cIndex]=sangle_en;cIndex++;}
+        if (rx) {ans[cIndex]=srx;cIndex++;}
+        if (ry) {ans[cIndex]=sry;cIndex++;}
+        if (rz) {ans[cIndex]=srz;cIndex++;}
         if (tx) {ans[cIndex]=stx;cIndex++;}
         if (ty) {ans[cIndex]=sty;cIndex++;}
         if (tz) {ans[cIndex]=stz;cIndex++;}
@@ -192,9 +192,9 @@ public class Optimize3DEllipticalTransformCommand implements Command{
         if (r1) {args[2*cIndex]="r1";args[2*cIndex+1]=params[cIndex];cIndex++;}
         if (r2) {args[2*cIndex]="r2";args[2*cIndex+1]=params[cIndex];cIndex++;}
         if (r3) {args[2*cIndex]="r3";args[2*cIndex+1]=params[cIndex];cIndex++;}
-        if (theta) {args[2*cIndex]="theta";args[2*cIndex+1]=params[cIndex];cIndex++;}
-        if (phi) {args[2*cIndex]="phi";args[2*cIndex+1]=params[cIndex];cIndex++;}
-        if (angle_en) {args[2*cIndex]="angle_en";args[2*cIndex+1]=params[cIndex];cIndex++;}
+        if (rx) {args[2*cIndex]="rx";args[2*cIndex+1]=params[cIndex];cIndex++;}
+        if (ry) {args[2*cIndex]="ry";args[2*cIndex+1]=params[cIndex];cIndex++;}
+        if (rz) {args[2*cIndex]="rz";args[2*cIndex+1]=params[cIndex];cIndex++;}
         if (tx) {args[2*cIndex]="tx";args[2*cIndex+1]=params[cIndex];cIndex++;}
         if (ty) {args[2*cIndex]="ty";args[2*cIndex+1]=params[cIndex];cIndex++;}
         if (tz) {args[2*cIndex]="tz";args[2*cIndex+1]=params[cIndex];cIndex++;}

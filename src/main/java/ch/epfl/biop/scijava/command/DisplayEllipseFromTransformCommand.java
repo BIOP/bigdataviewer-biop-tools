@@ -3,7 +3,6 @@ package ch.epfl.biop.scijava.command;
 import bdv.img.WarpedSource;
 import bdv.util.*;
 import bdv.viewer.Source;
-import bdv.util.Elliptical3DTransform;
 import bdv.viewer.SourceAndConverter;
 import net.imglib2.FinalInterval;
 import net.imglib2.Interval;

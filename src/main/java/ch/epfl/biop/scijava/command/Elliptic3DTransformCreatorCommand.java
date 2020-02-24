@@ -11,7 +11,7 @@ public class Elliptic3DTransformCreatorCommand implements Command {
 
     @Parameter
     double r1, r2, r3, //radius of axes 1 2 3 of ellipse
-            theta, phi, angle_en, // 3D rotation euler angles  - maybe not the best parametrization
+            rx, ry, rz, // 3D rotation euler angles  - maybe not the best parametrization
             tx, ty, tz; // ellipse center
 
     @Parameter(type = ItemIO.OUTPUT)
@@ -24,9 +24,9 @@ public class Elliptic3DTransformCreatorCommand implements Command {
                 "r1", r1,
                 "r2", r2,
                 "r3", r3,
-                "theta", theta,
-                "phi", phi,
-                "angle_en", angle_en,
+                "rx", rx,
+                "ry", ry,
+                "rz", rz,
                 "tx", tx,
                 "ty", ty,
                 "tz", tz);

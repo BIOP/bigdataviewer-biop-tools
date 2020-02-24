@@ -135,6 +135,9 @@
 		<license.licenseName>N/A</license.licenseName>
 		<license.copyrightOwners>N/A</license.copyrightOwners>
 		<package-name>ch.epfl.biop.bigdataviewerBiopTools</package-name>
+
+		<imglib2.version>5.1.0</imglib2.version>
+		<imglib2-cache.version>1.0.0-beta-8</imglib2-cache.version>
 	</properties>
 
 	<repositories>
@@ -242,7 +245,7 @@
 		<dependency>
 			<groupId>ch.epfl.biop</groupId>
 			<artifactId>bigdataviewer-bioformats</artifactId>
-			<version>0.1.9</version>
+			<version>0.2.0</version>
 		</dependency>
 
 	</dependencies>

@@ -3,7 +3,7 @@ package bdv.util;
 import net.imglib2.RealLocalizable;
 import net.imglib2.RealPositionable;
 import net.imglib2.realtransform.*;
-import org.scijava.vecmath.Vector3d;
+import net.imglib2.util.LinAlgHelpers;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -55,9 +55,9 @@ public class Elliptical3DTransform implements InvertibleRealTransform {
         names.add("r1");
         names.add("r2");
         names.add("r3");
-        names.add("theta");
-        names.add("phi");
-        names.add("angle_en");
+        names.add("rx");
+        names.add("ry");
+        names.add("rz");
         names.add("tx");
         names.add("ty");
         names.add("tz");
@@ -71,9 +71,9 @@ public class Elliptical3DTransform implements InvertibleRealTransform {
         map.put("r2", r2);
         map.put("r3", r3);
 
-        map.put("theta", theta);
-        map.put("phi", phi);
-        map.put("angle_en", angle_en);
+        map.put("rx", rx);
+        map.put("ry", ry);
+        map.put("rz", rz);
 
         map.put("tx", tx);
         map.put("ty", ty);
@@ -97,14 +97,14 @@ public class Elliptical3DTransform implements InvertibleRealTransform {
                 case "r3":
                     r3=map.get(k);
                     break;
-                case "theta":
-                    theta=map.get(k);
+                case "rx":
+                    rx=map.get(k);
                     break;
-                case "phi":
-                    phi=map.get(k);
+                case "ry":
+                    ry=map.get(k);
                     break;
-                case "angle_en":
-                    angle_en=map.get(k);
+                case "rz":
+                    rz=map.get(k);
                     break;
                 case "tx":
                     tx=map.get(k);
@@ -125,7 +125,7 @@ public class Elliptical3DTransform implements InvertibleRealTransform {
     public ArrayList<Runnable> updateNotifiers;
 
     double r1=1, r2=1, r3=1, //radius of axes 1 2 3 of ellipse
-           theta=0, phi=0, angle_en=0, // 3D rotation euler angles maybe not the best parametrization
+           rx=0, ry=0, rz=0, // 3D rotation euler angles maybe not the best parametrization
            tx=0, ty=0, tz=0; // ellipse center
 
 
@@ -136,7 +136,7 @@ public class Elliptical3DTransform implements InvertibleRealTransform {
 
         // Pfou
 
-        Vector3d en = new Vector3d(0,0,0);
+        /*Vector3d en = new Vector3d(0,0,0);
         Vector3d eu = new Vector3d(0,0,0);
         Vector3d ev = new Vector3d(0,0,0);
 
@@ -173,7 +173,51 @@ public class Elliptical3DTransform implements InvertibleRealTransform {
                   en.y, eu.y, ev.y, 0,
                   en.z, eu.z, ev.z, 0,
                      0,    0,    0, 1
-                );
+                );*/
+
+        double rxRad = rx;// Math.PI * rx/360.0; // factor 2 because quaternions
+        double ryRad = ry;// Math.PI * ry/360.0; // factor 2 because quaternions
+        double rzRad = rz;// Math.PI * rz/360.0; // factor 2 because quaternions
+
+        double[] qx = new double[4];
+
+        qx[0] = Math.cos(rxRad);
+        qx[1] = Math.sin(rxRad);
+        qx[2] = 0;
+        qx[3] = 0;
+
+        double[] qy = new double[4];
+
+        qy[0] = Math.cos(ryRad);
+        qy[1] = 0;
+        qy[2] = Math.sin(ryRad);
+        qy[3] = 0;
+
+        double[] qz = new double[4];
+
+        qz[0] = Math.cos(rzRad);
+        qz[1] = 0;
+        qz[2] = 0;
+        qz[3] = Math.sin(rzRad);
+
+        double[] qXY = new double[4];
+
+        LinAlgHelpers.quaternionMultiply(qy,qx,qXY);
+
+        double[] qRes = new double[4];
+
+        LinAlgHelpers.quaternionMultiply(qz,qXY,qRes);
+
+        double [][] m = new double[3][3];
+
+        AffineTransform3D rotMatrix = new AffineTransform3D();
+
+        LinAlgHelpers.quaternionToR(qRes, m);
+
+        rot3D.set( m[0][0], m[0][1], m[0][2], 0,
+                m[1][0], m[1][1], m[1][2], 0,
+                m[2][0], m[2][1], m[2][2], 0);
+
 
         updateNotifiers.forEach(c -> {
             c.run();

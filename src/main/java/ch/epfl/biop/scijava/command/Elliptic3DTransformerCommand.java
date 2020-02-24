@@ -3,12 +3,9 @@ package ch.epfl.biop.scijava.command;
 import bdv.util.Elliptical3DTransform;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.sourceandconverter.transform.Elliptic3DTransformer;
-import net.imglib2.realtransform.AffineTransform3D;
-import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceAffineTransformer;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
