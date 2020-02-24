@@ -26,7 +26,7 @@
 
 	<groupId>ch.epfl.biop</groupId>
 	<artifactId>bigdataviewer-biop-tools</artifactId>
-	<version>0.1.2</version>
+	<version>0.1.3</version>
 
 	<name>Biop Bigdataviewer Tools and Plugins </name>
 	<description>Big data viewer tools BIOP - EPFL</description>
@@ -138,6 +138,9 @@
 
 		<imglib2.version>5.1.0</imglib2.version>
 		<imglib2-cache.version>1.0.0-beta-8</imglib2-cache.version>
+
+		<scijava.app.directory>C:/Users/chiarutt/Desktop/fiji-bdv-playground/Fiji.app/</scijava.app.directory>
+		<scijava.deleteOtherVersions>true</scijava.deleteOtherVersions>
 	</properties>
 
 	<repositories>

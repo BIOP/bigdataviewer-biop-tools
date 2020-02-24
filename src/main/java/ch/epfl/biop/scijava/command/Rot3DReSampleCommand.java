@@ -45,6 +45,9 @@ public class Rot3DReSampleCommand implements Command {
     @Parameter
     double voxFX, voxFY, voxFZ;
 
+    @Parameter
+    boolean alignX;
+
     @Parameter(type = ItemIO.OUTPUT)
     ImagePlus imp_out;
 
@@ -96,10 +99,10 @@ public class Rot3DReSampleCommand implements Command {
 
         double[] q1 = new double[4];
 
-        q1[0] = 1 + v1x*v2x+v1y*v2y+v1z*v2z;
-        q1[1] = v1y*v2z-v1z*v2y;
-        q1[2] = v1z*v2x-v1x*v2z;
-        q1[3] = v1x*v2y-v1y*v2x;
+        q1[0] = 1 + v2x*v1x+v2y*v1y+v2z*v1z;
+        q1[1] = v2y*v1z-v2z*v1y;
+        q1[2] = v2z*v1x-v2x*v1z;
+        q1[3] = v2x*v1y-v2y*v1x;
 
         double normq1 = Math.sqrt( q1[0]*q1[0]+q1[1]*q1[1]+q1[2]*q1[2]+q1[3]*q1[3] );
 
@@ -112,11 +115,26 @@ public class Rot3DReSampleCommand implements Command {
 
         AffineTransform3D rotMatrix = new AffineTransform3D();
 
-        LinAlgHelpers.quaternionToR(q1, m);
+        if (alignX) {
+            double[] q2 = new double[4];
 
-        rotMatrix.set( m[0][0], m[1][0], m[2][0], 0,
-                m[0][1], m[1][1], m[2][1], 0,
-                m[0][2], m[1][2], m[2][2], 0);
+            double alpha = (Math.atan2(v1y,v1x)+Math.PI/2.0)/2.0;
+
+            q2[0] = Math.cos(alpha);
+            q2[3] = Math.sin(alpha);
+
+            double[] q1q2 = new double[4];
+
+            LinAlgHelpers.quaternionMultiply(q1,q2,q1q2);
+
+            LinAlgHelpers.quaternionToR(q1q2, m);
+        } else {
+            LinAlgHelpers.quaternionToR(q1, m);
+        }
+
+        rotMatrix.set( m[0][0], m[0][1], m[0][2], 0,
+                m[1][0], m[1][1], m[1][2], 0,
+                m[2][0], m[2][1], m[2][2], 0);
 
         double cx = ((pt1.getXBase()+pt2.getXBase())/2.0)*voxIX;
         double cy = ((pt1.getYBase()+pt2.getYBase())/2.0)*voxIY;
