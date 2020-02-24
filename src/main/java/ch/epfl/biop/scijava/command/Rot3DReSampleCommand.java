@@ -27,14 +27,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-@Plugin(type = Command.class, menuPath = "3DRot>Rotation 3D Resample")
+@Plugin(type = Command.class, menuPath = "Image>Stacks>Rotation 3D Resample")
 public class Rot3DReSampleCommand implements Command {
 
     @Parameter
     ImagePlus imp_in;
 
-    @Parameter(type = ItemIO.OUTPUT)
-    SourceAndConverter[] sacs_out;
+    //@Parameter(type = ItemIO.OUTPUT)
+    //SourceAndConverter[] sacs_out;
 
     @Parameter
     RoiManager rm;
@@ -181,7 +181,7 @@ public class Rot3DReSampleCommand implements Command {
         if (sacs == null) {
             System.out.println("sacs is null");
         }
-        sacs_out = sacs.stream().map(sampler::apply).collect(Collectors.toList())
+        SourceAndConverter[] sacs_out = sacs.stream().map(sampler::apply).collect(Collectors.toList())
                        .toArray(new SourceAndConverter[sacs.size()]);
 
         ImagePlus[] channels = new ImagePlus[sacs_out.length];

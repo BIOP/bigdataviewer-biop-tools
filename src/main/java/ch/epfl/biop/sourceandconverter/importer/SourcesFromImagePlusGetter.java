@@ -44,7 +44,7 @@ public class SourcesFromImagePlusGetter implements Runnable {
 
     public SourceAndConverter transformSingleChannel(ImagePlus im) {
         if (im.getT()>1) {
-            System.err.println("Multiple timepoints unsupported in imageplus to SourceAndConverter convertion");
+            System.err.println("Multiple timepoints unsupported in imageplus to SourceAndConverter convert");
         }
 
         RandomAccessibleInterval rai = ImageJFunctions.wrapReal(im);
