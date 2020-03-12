@@ -231,7 +231,7 @@
         <dependency>
             <groupId>sc.fiji</groupId>
             <artifactId>bigdataviewer-playground</artifactId>
-            <version>0.1.4</version>
+            <version>0.1.5</version>
         </dependency>
 
 		<dependency>
@@ -248,7 +248,7 @@
 		<dependency>
 			<groupId>ch.epfl.biop</groupId>
 			<artifactId>bigdataviewer-bioformats</artifactId>
-			<version>0.2.0</version>
+			<version>0.2.1</version>
 		</dependency>
 
 	</dependencies>

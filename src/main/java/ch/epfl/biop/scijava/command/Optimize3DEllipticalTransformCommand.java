@@ -21,7 +21,9 @@ import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.plugin.Plugin;
 
+import java.time.Duration;
 import java.util.Map;
+import java.util.concurrent.*;
 
 
 @Plugin(type = Command.class, initializer = "init", menuPath = "BigDataViewer>Sources>Transform>Elliptic 3D Transform Optimization")
@@ -82,7 +84,13 @@ public class Optimize3DEllipticalTransformCommand implements Command{
     int sourceTimePoint = 0;
 
     @Parameter
-    double phiMin=-1, phiMax=1, thetaMin=-Math.PI/2, thetaMax=Math.PI/2, dPhi=0.05, dTheta=0.05;
+    double phiMin=-Math.PI, phiMax=Math.PI, thetaMin=0, thetaMax=Math.PI, dPhi=0.05, dTheta=0.05;
+
+    @Parameter
+    int maxOptimisationStep;
+
+    @Parameter
+    int timeout_seconds;
 
     public void run() {
         // Is this a warped source ?
@@ -128,22 +136,44 @@ public class Optimize3DEllipticalTransformCommand implements Command{
 
             SimplexOptimizer optimizer = new SimplexOptimizer(1e-10, 1e-30);
             try {
-                final PointValuePair optimum =
-                        optimizer.optimize(
-                                new MaxEval(1000),
-                                new ObjectiveFunction(mf),
-                                GoalType.MAXIMIZE,
-                                new InitialGuess(this.getCurrentOptimizedParamsAsDoubles()),
-                                new NelderMeadSimplex(this.getStepOptimizedParamsAsDoubles())
-                        );// Steps for optimization
 
-                this.setParams(optimum.getPoint());
+
+
+                final Duration timeout = Duration.ofSeconds(timeout_seconds);
+                ExecutorService executor = Executors.newSingleThreadExecutor();
+
+                final Future<double[]> handler = executor.submit(new Callable() {
+
+                    @Override
+                    public double[] call() throws Exception {
+                        final PointValuePair optimum =
+                                optimizer.optimize(
+                                        new MaxEval(maxOptimisationStep),
+                                        new ObjectiveFunction(mf),
+                                        GoalType.MAXIMIZE,
+                                        new InitialGuess(getCurrentOptimizedParamsAsDoubles()),
+                                        new NelderMeadSimplex(getStepOptimizedParamsAsDoubles())
+                                );// Steps for optimization
+                        return optimum.getPoint();
+                    }
+                });
+
+                try {
+                    this.setParams(handler.get(timeout.toMillis(), TimeUnit.MILLISECONDS));//optimum.getPoint());
+                } catch (TimeoutException e) {
+                    handler.cancel(true);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                }
+
+                executor.shutdownNow();
+
 
             } catch (TooManyEvaluationsException e) {
 
-                //this.setParams(optimum.getPoint());
-
-                System.err.println("Optimization did not converge in 1000 iterations");
+                System.err.println("Optimization did not converge in "+maxOptimisationStep+" iterations");
             }
             /*System.out.println(Arrays.toString(e3dT.getParameters().values()) + " : "
                     + optimum.getSecond());*/
@@ -211,7 +241,7 @@ public class Optimize3DEllipticalTransformCommand implements Command{
                 rra.setPosition(new double[]{1,pTheta,pPhi});
                 double v = rra.get().getRealDouble();
                 if (v>thresholdIntensity) {
-                    somme+=v*Math.sin(pTheta);
+                    somme+=v*Math.abs(Math.sin(pTheta));
                 }
             }
         }

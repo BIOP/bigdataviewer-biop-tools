@@ -51,6 +51,9 @@ public class Rot3DReSampleCommand implements Command {
     @Parameter(type = ItemIO.OUTPUT)
     ImagePlus imp_out;
 
+    @Parameter
+    boolean interpolate;
+
     public void run() {
 
         SourcesFromImagePlusGetter getter = new SourcesFromImagePlusGetter(imp_in);
@@ -176,7 +179,7 @@ public class Rot3DReSampleCommand implements Command {
         if (model == null) {
             System.out.println("model is nul");
         }
-        SourceResampler sampler = new SourceResampler(null, model, false);
+        SourceResampler sampler = new SourceResampler(null, model, false, interpolate);
 
         if (sacs == null) {
             System.out.println("sacs is null");
