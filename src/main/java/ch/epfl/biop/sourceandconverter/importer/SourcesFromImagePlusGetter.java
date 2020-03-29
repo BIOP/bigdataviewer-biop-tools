@@ -1,8 +1,10 @@
 package ch.epfl.biop.sourceandconverter.importer;
 
+import bdv.util.ImagePlusHelper;
 import bdv.util.RandomAccessibleIntervalSource;
 import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
+import ch.epfl.biop.scijava.command.ExportToImagePlusCommand;
 import ij.ImagePlus;
 import ij.plugin.ChannelSplitter;
 import net.imglib2.RandomAccessibleInterval;
@@ -53,11 +55,7 @@ public class SourcesFromImagePlusGetter implements Runnable {
             rai = Views.addDimension(rai, 0, 0);
         }
 
-        AffineTransform3D at3D = new AffineTransform3D();
-
-        at3D.set(imp.getCalibration().pixelWidth,0,0);
-        at3D.set(imp.getCalibration().pixelHeight,1,1);
-        at3D.set(imp.getCalibration().pixelDepth,2,2);
+        AffineTransform3D at3D = ImagePlusHelper.getMatrixFromImagePlus(imp);
 
         // Makes Bdv Source
         Source src = new RandomAccessibleIntervalSource(rai, Util.getTypeFromInterval(rai), at3D, imp.getTitle()+"_Ch"+nChannel);
