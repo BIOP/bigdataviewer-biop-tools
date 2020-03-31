@@ -44,8 +44,11 @@ public class BdvViewToImagePlusExportCommand<T extends RealType<T>> implements C
     @Parameter(label = "BigDataViewer Frame")
     public BdvHandle bdv_h;
 
-    @Parameter
+    @Parameter(required = false)
     SourceAndConverter[] sacs;
+
+    @Parameter
+    boolean allSources;
 
     @Parameter(label="Mipmap level, 0 for highest resolution")
     public int mipmapLevel = 0;
@@ -91,6 +94,8 @@ public class BdvViewToImagePlusExportCommand<T extends RealType<T>> implements C
 
     Consumer<String> errlog = (s) -> System.err.println(s);
 
+    List<SourceAndConverter<?>> sourceList;
+
     @Override
     public void run() {
         // Retrieve viewer state from big data viewer
@@ -108,12 +113,17 @@ public class BdvViewToImagePlusExportCommand<T extends RealType<T>> implements C
         double posY = pt.getDoublePosition(1);
         double posZ = pt.getDoublePosition(2);
         // Stream is single threaded or multithreaded based on boolean parameter
-        List<SourceAndConverter> sourceList = Arrays.asList(sacs);
+
+        if (allSources) {
+            sourceList = bdv_h.getViewerPanel().state().getSources();
+        } else {
+            sourceList = Arrays.asList(sacs);
+        }
         Map<SourceAndConverter, Integer> sourceMapIndex = new HashMap<>();
         for (int i=0;i<sourceList.size();i++) {
             sourceMapIndex.put(sourceList.get(i),i);
         }
-        Stream<SourceAndConverter> sourceStream;
+        Stream<SourceAndConverter<?>> sourceStream;
         if (wrapMultichannelParallel) {
             sourceStream = sourceList.parallelStream();
         } else {
@@ -194,14 +204,15 @@ public class BdvViewToImagePlusExportCommand<T extends RealType<T>> implements C
             // Store result in ConcurrentHashMap
             genImagePlus.put(sourceMapIndex.get(sac), impTemp);
         });
-// Merging stacks, if possible, by using RGBStackMerge IJ1 class
+
+        // Merging stacks, if possible, by using RGBStackMerge IJ1 class
         ImagePlus[] orderedArray = IntStream
-                .range(0,sacs.length)
+                .range(0,sourceList.size())
                 .mapToObj(idx -> genImagePlus.get(idx))
                 .toArray(ImagePlus[]::new);
         if (orderedArray.length>1) {
             boolean identicalBitDepth = IntStream
-                    .range(0,sacs.length)
+                    .range(0,sourceList.size())
                     .mapToObj(idx -> genImagePlus.get(idx).getBitDepth()).distinct().limit(2).count()==1;
             if (identicalBitDepth) {
                 imp = RGBStackMerge.mergeChannels(orderedArray, false);
@@ -214,7 +225,7 @@ public class BdvViewToImagePlusExportCommand<T extends RealType<T>> implements C
         }
 
         // Title
-        String title = bdv_h.toString() // TODO : find a relevant name / title from the bdv handle
+        String title = BdvHandleHelper.getWindowTitle(bdv_h)
                 + " - [T=" + timepoint + ", MML=" + mipmapLevel + "]"
                 +"[BDV="+ BdvHandleHelper.getWindowTitle(bdv_h) +"]"+"[XY,Z="+ samplingXYInPhysicalUnit +","+samplingZInPhysicalUnit+"]";
         imp.setTitle(title);
@@ -303,9 +314,9 @@ public class BdvViewToImagePlusExportCommand<T extends RealType<T>> implements C
     // -- Initializers --
 
     public void updateUnit() {
-        if ((sacs.length>0) && (sacs[0]!=null)) {
-            if (sacs[0].getSpimSource().getVoxelDimensions() != null) {
-                unitOfFirstSource = sacs[0].getSpimSource().getVoxelDimensions().unit();
+        if ((sourceList.size()>0) && (sourceList.get(0)!=null)) {
+            if (sourceList.get(0).getSpimSource().getVoxelDimensions() != null) {
+                unitOfFirstSource = sourceList.get(0).getSpimSource().getVoxelDimensions().unit();
             }
         }
     }
