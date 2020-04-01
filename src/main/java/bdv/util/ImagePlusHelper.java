@@ -103,7 +103,10 @@ public class ImagePlusHelper {
             m[i] = compactStringToFloat(str.substring(7*i, 7*(i+1)));
         }
         AffineTransform3D at3D = new AffineTransform3D();
-        at3D.set(m[0],0,0);
+        at3D.set(m[0],m[1], m[2], 0,
+                m[3], m[4], m[5], 0,
+                m[6], m[7], m[8], 0);
+        /*at3D.set(m[0],0,0);
         at3D.set(m[1],0,1);
         at3D.set(m[2],0,2);
 
@@ -113,7 +116,7 @@ public class ImagePlusHelper {
 
         at3D.set(m[6],2,0);
         at3D.set(m[7],2,1);
-        at3D.set(m[8],2,2);
+        at3D.set(m[8],2,2);*/
 
         return at3D;
     }

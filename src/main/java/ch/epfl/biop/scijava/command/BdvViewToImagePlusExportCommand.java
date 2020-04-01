@@ -1,13 +1,13 @@
 package ch.epfl.biop.scijava.command;
 
 import bdv.util.BdvHandle;
+import bdv.util.ImagePlusHelper;
 import bdv.util.RealCropper;
 import bdv.viewer.Interpolation;
 import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
 import bdv.viewer.SynchronizedViewerState;
 import ij.ImagePlus;
-import ij.measure.Calibration;
 import ij.plugin.RGBStackMerge;
 import net.imglib2.FinalRealInterval;
 import net.imglib2.RandomAccessibleInterval;
@@ -95,6 +95,8 @@ public class BdvViewToImagePlusExportCommand<T extends RealType<T>> implements C
     Consumer<String> errlog = (s) -> System.err.println(s);
 
     List<SourceAndConverter<?>> sourceList;
+
+    AffineTransform3D at3D = null;
 
     @Override
     public void run() {
@@ -230,27 +232,25 @@ public class BdvViewToImagePlusExportCommand<T extends RealType<T>> implements C
                 +"[BDV="+ BdvHandleHelper.getWindowTitle(bdv_h) +"]"+"[XY,Z="+ samplingXYInPhysicalUnit +","+samplingZInPhysicalUnit+"]";
         imp.setTitle(title);
 
-        // TODO : add affine transform in image plus
-        //imp.getProperties().setProperty("AffineTransform3D", )
+        // Origin is in fact the point 0,0,0 of the image
+        // Get current big dataviewer transformation : source transform and viewer transform
+        at3D = new AffineTransform3D(); // Empty Transform
+        // viewer transform
+        viewerState.getViewerTransform(at3D); // Get current transformation by the viewer state and puts it into sourceToImgPlus
 
-        // Calibration in the limit of what's possible to know and set
-        Calibration calibration = new Calibration();
-        calibration.setImage(imp);
+        // Center on the display center of the viewer ...
+        at3D.translate(-w / 2, -h / 2, 0);
 
-        // Origin is in fact the center of the image
-        calibration.xOrigin=posX;
-        calibration.yOrigin=posY;
-        calibration.zOrigin=posZ;
+        // Getting an image independent of the view scaling unit (not sure)
+        double xNorm = getNormTransform(0, at3D);//trans
+        at3D.scale(1/xNorm);
 
-        calibration.pixelWidth=samplingXYInPhysicalUnit;
-        calibration.pixelHeight=samplingXYInPhysicalUnit;
-        calibration.pixelDepth=samplingZInPhysicalUnit;
+        at3D.scale(1./samplingXYInPhysicalUnit, 1./samplingXYInPhysicalUnit, 1./samplingZInPhysicalUnit);
+        at3D.translate((xSize/(2*samplingXYInPhysicalUnit)), (ySize/(2*samplingXYInPhysicalUnit)), (zSize/(samplingZInPhysicalUnit)));
 
+        ImagePlusHelper.storeMatrixToImagePlus(imp, at3D.inverse());
         updateUnit();
-        calibration.setUnit(unitOfFirstSource);
-
-        // Set generated calibration to output image
-        imp.setCalibration(calibration);
+        imp.getCalibration().setUnit(unitOfFirstSource);
     }
 
     /**
