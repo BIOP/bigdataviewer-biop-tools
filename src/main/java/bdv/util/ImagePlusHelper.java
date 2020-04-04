@@ -1,11 +1,16 @@
 package bdv.util;
 
 import ij.ImagePlus;
+import ij.io.FileInfo;
 import ij.measure.Calibration;
 import net.imglib2.realtransform.AffineTransform3D;
-import net.imglib2.util.LinAlgHelpers;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ImagePlusHelper {
+
+    final public static String regexAffineTransform3D = "(3d-affine: \\()(.+),(.+),(.+),(.+),(.+),(.+),(.+),(.+),(.+),(.+),(.+),(.*)\\)";
 
     // TODO : improve storage of transform:
     // Assume orthogonality and store rotation matrix as quaternion
@@ -21,20 +26,92 @@ public class ImagePlusHelper {
         cal.pixelHeight = voxY;
         cal.pixelDepth = voxZ;
 
-        cal.xOrigin = m[3];
-        cal.yOrigin = m[7];
-        cal.zOrigin = m[11];
-
-        // Inner trick : use cal.info to store matrix of transformation
-        cal.info = ImagePlusHelper.matrixToStringIn64Characters(at3D); // Otherwise it cannot be stored in cal info
+        cal.xOrigin = 0;
+        cal.yOrigin = 0;
+        cal.zOrigin = 0;
 
         imp.setCalibration(cal);
+        // Inner trick : use cal.info to store matrix of transformation
+        //cal.info = ImagePlusHelper.matrixToStringIn64Characters(at3D); // Otherwise it cannot be stored in cal info
+        if (imp.getOriginalFileInfo()==null) {
+            imp.setFileInfo(new FileInfo());
+        }
+
+        if (imp.getOriginalFileInfo().description == null) {
+            imp.getOriginalFileInfo().description = "Description\n";
+        }
+
+        // Removes any previously existing stored affine transform
+
+        //if (imp.getOriginalFileInfo().description.matches(regexAffineTransform3D)) {
+            imp.getOriginalFileInfo().description = imp.getOriginalFileInfo().description.replaceAll(regexAffineTransform3D, "");
+        //}
+        // Append it
+        imp.getOriginalFileInfo().description += at3D.toString() + "\n";
+
     }
 
     public static AffineTransform3D getMatrixFromImagePlus(ImagePlus imp) {
         AffineTransform3D at3D = new AffineTransform3D();
 
-        if ((imp.getCalibration()!=null)&&(imp.getCalibration().info!=null)&&(imp.getCalibration().info.length()==63)) {
+        if (imp.getOriginalFileInfo()!=null) {
+
+            System.out.println("File Info non null");
+            if (imp.getOriginalFileInfo().description != null) {
+
+                System.out.println("Description non null");
+
+                Pattern pattern =
+                        Pattern.compile(regexAffineTransform3D);
+
+                Matcher matcher =
+                        pattern.matcher(imp.getOriginalFileInfo().description);
+
+                if (matcher.find()) {
+                    // Looks good!
+                    System.out.println("Looks good!");
+
+                    String match = matcher.group();
+                    System.out.println(match);
+                     //= imp.getOriginalFileInfo().description
+                    /*String[] blocks =  match.split(regexAffineTransform3D);
+                    if (blocks.length!=13) {
+                        System.err.println("Malformed affinetransform expression "+ blocks.length);
+                    } else*/
+                    {
+                        double[] m = new double[12];
+
+                        for (int i=0;i<12;i++) {
+                            m[i] = Double.valueOf(matcher.group(i+2));
+                        }
+
+                        at3D.set(m);
+
+                        return at3D;
+                    }
+                } else {
+                    System.out.println("Affine not found");
+                }
+            }
+        }
+
+        if (imp.getCalibration()!=null) {
+
+            System.out.println("Matrix from calibration");
+            at3D.scale(imp.getCalibration().pixelWidth,
+                       imp.getCalibration().pixelHeight,
+                       imp.getCalibration().pixelDepth );
+            at3D.translate(imp.getCalibration().xOrigin * imp.getCalibration().pixelWidth,
+                    imp.getCalibration().yOrigin * imp.getCalibration().pixelHeight,
+                    imp.getCalibration().zOrigin * imp.getCalibration().pixelDepth
+                    );
+        }
+
+
+
+        // Strategy : is there an affinetramsform in file description
+
+        /*if ((imp.getCalibration()!=null)&&(imp.getCalibration().info!=null)&&(imp.getCalibration().info.length()==63)) {
 
             at3D = ImagePlusHelper.stringIn64CharactersToMatrix(imp.getCalibration().info);
 
@@ -50,10 +127,11 @@ public class ImagePlusHelper {
             at3D.set(imp.getCalibration().xOrigin, 0, 3);
             at3D.set(imp.getCalibration().yOrigin, 1, 3);
             at3D.set(imp.getCalibration().zOrigin, 2, 3);
-        }
+        }*/
         return at3D;
     }
 
+    /*
     public static String matrixToStringIn64Characters(AffineTransform3D at3D) {
         // 9 components (xOrigin, yOrigin and zOrigin and already stored
         // 64 / 9 = 7 characters per number + 1 :
@@ -106,21 +184,11 @@ public class ImagePlusHelper {
         at3D.set(m[0],m[1], m[2], 0,
                 m[3], m[4], m[5], 0,
                 m[6], m[7], m[8], 0);
-        /*at3D.set(m[0],0,0);
-        at3D.set(m[1],0,1);
-        at3D.set(m[2],0,2);
 
-        at3D.set(m[3],1,0);
-        at3D.set(m[4],1,1);
-        at3D.set(m[5],1,2);
-
-        at3D.set(m[6],2,0);
-        at3D.set(m[7],2,1);
-        at3D.set(m[8],2,2);*/
 
         return at3D;
-    }
-
+    }*/
+    /*
     public static float compactStringToFloat(String str) {
         int f1 = str.charAt(0);
         int f2 = str.charAt(1);
@@ -141,8 +209,9 @@ public class ImagePlusHelper {
         reconstruct+=(f7-offsetChar) << 30 ;
 
         return Float.intBitsToFloat(reconstruct);
-    }
+    }*/
 
+    /*
     public static String floatToCompactString(float f) {
 
         int raw = Float.floatToRawIntBits(f);
@@ -157,10 +226,10 @@ public class ImagePlusHelper {
         int f7 = ((raw & (31 << 30)) >>> 30) + offsetChar;
 
         return "" + ((char) f1) + ((char) f2) + ((char) f3) + ((char) f4) + ((char) f5) + ((char) f6) + ((char) f7);
-    }
+    }*/
 
     public static void main(String... args) {
-        boolean ok = true;
+        /*boolean ok = true;
         for (int i=0;i<2000;i++) {
             float test = (float) Math.random();
             String str = floatToCompactString(test);
@@ -173,6 +242,19 @@ public class ImagePlusHelper {
             System.out.println("ok");
         } else {
             System.out.println("not ok");
-        }
+        }*/
+        AffineTransform3D at3D = new AffineTransform3D();
+
+        String description = "Image Description \n";
+        description+="Blable \n";
+        description+=at3D+"\n";
+        at3D.scale(3);
+        description+=at3D+"\n";
+        description+="Blabli \n";
+        System.out.println(description);
+        System.out.println("--------------");
+        description = description.replaceAll(regexAffineTransform3D,"");
+        System.out.println(description);
+
     }
 }

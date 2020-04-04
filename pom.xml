@@ -144,7 +144,7 @@
 		<bigdataviewer-vistools.version>1.0.0-beta-19-table-SNAPSHOT</bigdataviewer-vistools.version>
 
 
-		<scijava.app.directory>C:/Users/chiarutt/Desktop/fiji-bdv-playground/Fiji.app/</scijava.app.directory>
+		<scijava.app.directory>C:\Users\nicol\Desktop\fiji-win64-bdv-playground/Fiji.app/</scijava.app.directory>
 		<scijava.deleteOtherVersions>true</scijava.deleteOtherVersions>
 	</properties>
 
