@@ -292,7 +292,6 @@ public class ImagePlusHelper {
                 }
             }
 
-
             for (int t=beginTimePoint;t<endTimePoint;t++) {
                 if (sac.getSpimSource().isPresent(t)) {
                     rais[t] = sac.getSpimSource().getSource(t, mipmapLevel);
@@ -331,7 +330,7 @@ public class ImagePlusHelper {
                 }
             }
             ((CompositeImage)imp).setLuts(luts);
-            
+
         }
 
         return imp;
