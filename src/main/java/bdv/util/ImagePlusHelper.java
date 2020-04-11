@@ -1,14 +1,66 @@
 package bdv.util;
 
+import bdv.tools.brightness.ConverterSetup;
+import bdv.viewer.SourceAndConverter;
+import ij.CompositeImage;
+import ij.IJ;
 import ij.ImagePlus;
 import ij.measure.Calibration;
+import ij.plugin.HyperStackConverter;
+import ij.process.LUT;
+import net.imagej.ImgPlus;
+import net.imagej.axis.Axes;
+import net.imagej.axis.AxisType;
+import net.imglib2.Cursor;
+import net.imglib2.RandomAccess;
+import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.cache.Cache;
+import net.imglib2.cache.img.CachedCellImg;
+import net.imglib2.cache.img.DiskCachedCellImgFactory;
+import net.imglib2.cache.img.LoadedCellCacheLoader;
+import net.imglib2.cache.ref.SoftRefLoaderCache;
+import net.imglib2.img.Img;
+import net.imglib2.img.basictypeaccess.AccessFlags;
+import net.imglib2.img.basictypeaccess.ArrayDataAccessFactory;
+import net.imglib2.img.cell.Cell;
+import net.imglib2.img.cell.CellGrid;
+import net.imglib2.img.display.imagej.ImageJFunctions;
+import net.imglib2.img.display.imagej.ImgToVirtualStack;
 import net.imglib2.realtransform.AffineTransform3D;
+import net.imglib2.type.NativeType;
+import net.imglib2.type.numeric.ARGBType;
+import net.imglib2.type.numeric.integer.*;
+import net.imglib2.type.numeric.real.DoubleType;
+import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.util.Intervals;
+import net.imglib2.util.Util;
+import net.imglib2.view.Views;
+import net.imglib2.cache.img.DiskCachedCellImgOptions.CacheType;
+import org.janelia.saalfeldlab.n5.imglib2.RandomAccessibleLoader;
 
+import static net.imglib2.img.basictypeaccess.AccessFlags.VOLATILE;
+import static net.imglib2.type.PrimitiveType.BYTE;
+import static net.imglib2.type.PrimitiveType.DOUBLE;
+import static net.imglib2.type.PrimitiveType.FLOAT;
+import static net.imglib2.type.PrimitiveType.INT;
+import static net.imglib2.type.PrimitiveType.LONG;
+import static net.imglib2.type.PrimitiveType.SHORT;
+
+
+import java.awt.*;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+
+import static net.imglib2.cache.img.DiskCachedCellImgOptions.options;
 
 /**
- * Helper class that facilitate compatibility for going forth and back between bdv and imageplus
+ * Helper class that facilitate compatibility for going forth and back between bdv and ImagePlus
  * The affine transform located an ImagePlus in 3D cannot be properly defined using the ij.measure.Calibration class
  * - Inner trick used : store and retrieve the affine transform from within the ImagePlus "info" property
  * - This allows to support saving the image as tiff and being able to retrieve its location when loading it
@@ -16,6 +68,7 @@ import java.util.regex.Pattern;
  * allows to compute the offset relative to the original dataset
  * - Calibration is still used in order to store all the useful information that can be contained within it
  * (and is useful for the proper scaling retrieval)
+ *
  * @author Nicolas Chiaruttini, EPFL, 2020
  */
 
@@ -25,6 +78,13 @@ public class ImagePlusHelper {
      * Regex matching the toString function of AffineTransform3D
      */
     final public static String regexAffineTransform3D = "(3d-affine: \\()(.+),(.+),(.+),(.+),(.+),(.+),(.+),(.+),(.+),(.+),(.+),(.*)\\)";
+
+    public static void storeExtendedCalibrationToImagePlus(ImagePlus imp, AffineTransform3D at3D, String unit, int timePointBegin) {
+        storeMatrixToImagePlus(imp, at3D);
+        storeTimeOriginToImagePlus(imp, timePointBegin);
+        if (unit!=null)
+            imp.getCalibration().setUnit(unit);
+    }
 
     public static void storeMatrixToImagePlus(ImagePlus imp, AffineTransform3D at3D) {
         Calibration cal = new Calibration();
@@ -61,9 +121,10 @@ public class ImagePlusHelper {
     }
 
     public static AffineTransform3D getMatrixFromImagePlus(ImagePlus imp) {
-        AffineTransform3D at3D = new AffineTransform3D();
 
+        // Checks whether the AffineTransform is defined in ImagePlus "info" property
         if (imp.getInfoProperty()!=null) {
+            AffineTransform3D at3D = new AffineTransform3D();
             Pattern pattern = Pattern.compile(regexAffineTransform3D);
             Matcher matcher = pattern.matcher(imp.getInfoProperty());
             if (matcher.find()) {
@@ -125,7 +186,9 @@ public class ImagePlusHelper {
             }
         }
 
+        // Otherwise : use Calibration from ImagePlus
         if (imp.getCalibration()!=null) {
+            AffineTransform3D at3D = new AffineTransform3D();
             //Matrix built from calibration
             at3D.scale(imp.getCalibration().pixelWidth,
                        imp.getCalibration().pixelHeight,
@@ -134,9 +197,201 @@ public class ImagePlusHelper {
                     imp.getCalibration().yOrigin * imp.getCalibration().pixelHeight,
                     imp.getCalibration().zOrigin * imp.getCalibration().pixelDepth
                     );
+            return at3D;
         }
 
+
+        // Default : returns identity
+        AffineTransform3D at3D = new AffineTransform3D();
         return at3D;
+    }
+
+    /**
+     * Regex matching the toString function of AffineTransform3D
+     */
+    final public static String regexTimePointOrigin= "(TimePoint: \\()(.+)\\)";
+
+    // TODO
+    public static void storeTimeOriginToImagePlus(ImagePlus imp, int timePoint) {
+    }
+
+    // TODO
+    public static int geTimeOriginFromImagePlus(ImagePlus imp, int timePoint) {
+        return 0;
+    }
+
+    /**
+     *
+     * @param sac
+     * @param mipmapLevel
+     * @return
+     */
+
+    public static ImagePlus wrap(SourceAndConverter sac, ConverterSetup cs, int mipmapLevel, int beginTimePoint, int endTimePoint, boolean ignoreSourceLut) {
+
+        // Avoids no mip map exception
+        mipmapLevel = Math.min(mipmapLevel, sac.getSpimSource().getNumMipmapLevels()-1);
+        RandomAccessibleInterval[] rais = new RandomAccessibleInterval[endTimePoint-beginTimePoint];
+        for (int i=beginTimePoint;i<endTimePoint;i++) {
+            rais[i] = sac.getSpimSource().getSource(i,mipmapLevel);
+        }
+
+        ImgPlus imgPlus;
+        ImagePlus imp;
+        if (true) {
+            imgPlus = new ImgPlus(cacheRAI(Views.stack(rais)),
+                sac.getSpimSource().getName(),
+                new AxisType[] { Axes.X, Axes.Y, Axes.Z, Axes.TIME } );
+            imp = ImageJFunctions.wrap(imgPlus, "");
+        } else {
+            imp = ImageJFunctions.wrap(Views.stack(rais), sac.getSpimSource().getName());
+        }
+
+        imp.setTitle(sac.getSpimSource().getName());
+
+        imp.setDimensions(1, (int) rais[0].dimension(2), endTimePoint-beginTimePoint); // Set 3 dimension as Z, not as Channel
+
+        System.out.println("ignoreSourceLut:"+ignoreSourceLut);
+        System.out.println("cs:"+cs);
+        // Simple Color LUT
+        if ((!ignoreSourceLut)&&(cs!=null)) {
+            System.out.println("Settings the settings");
+            ARGBType c = cs.getColor();
+            imp.setLut(LUT.createLutFromColor(new Color(ARGBType.red(c.get()), ARGBType.green(c.get()), ARGBType.blue(c.get()))));
+            imp.setDisplayRange(cs.getDisplayRangeMin(),cs.getDisplayRangeMax());
+        }
+
+        return imp;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public static ImagePlus wrap(List<SourceAndConverter> sacs,
+                                 Map<SourceAndConverter,ConverterSetup> csMap,
+                                 Map<SourceAndConverter,Integer> mipmapMap,
+                                 int beginTimePoint,
+                                 int endTimePoint,
+                                 boolean ignoreSourceLut) {
+
+        RandomAccessibleInterval[] raisList = new RandomAccessibleInterval[sacs.size()];
+
+        for (int c=0;c<sacs.size();c++) {
+            SourceAndConverter sac = sacs.get(c);
+            RandomAccessibleInterval[] rais = new RandomAccessibleInterval[endTimePoint-beginTimePoint];
+            int mipmapLevel = Math.min(mipmapMap.get(sac), sac.getSpimSource().getNumMipmapLevels()-1); // mipmap level should exist
+            for (int t=beginTimePoint;t<endTimePoint;t++) {
+                if (sac.getSpimSource().isPresent(t)) {
+                    rais[t] = sac.getSpimSource().getSource(t, mipmapLevel);
+                } /*else {
+                    rais[t] =
+                }*/
+            }
+
+            raisList[c] = Views.stack(rais);
+        }
+        /*
+        wrapAsVolatileCachedCellImg(raisList, new int[]{(int) raisList[0].dimension(0),
+                                                        (int) raisList[0].dimension(1),
+                                                        })*/
+        ImgPlus imgPlus = new ImgPlus(cacheRAI(Views.stack(raisList)),
+                "",
+                new AxisType[] { Axes.X, Axes.Y, Axes.Z, Axes.TIME, Axes.CHANNEL } );
+        ImagePlus imp = HyperStackConverter.toHyperStack(ImgToVirtualStack.wrap(imgPlus),
+                sacs.size(), (int) raisList[0].dimension(2), endTimePoint-beginTimePoint, "composite");
+
+        if ((!ignoreSourceLut)) {
+            LUT[] luts = new LUT[sacs.size()];
+            for (SourceAndConverter sac:sacs) {
+                if (csMap.get(sac)!=null) {
+                    ARGBType c = csMap.get(sac).getColor();
+                    LUT lut;
+                    if (c!=null) {
+                        lut = LUT.createLutFromColor(new Color(ARGBType.red(c.get()), ARGBType.green(c.get()), ARGBType.blue(c.get())));
+                    } else {
+                        lut = LUT.createLutFromColor(new Color(ARGBType.red(255), ARGBType.green(255), ARGBType.blue(255)));
+                    }
+                    luts[sacs.indexOf(sac)] = lut;
+                    imp.setC(sacs.indexOf(sac)+1);
+                    imp.getProcessor().setLut(lut);
+                    imp.setDisplayRange(csMap.get(sac).getDisplayRangeMin(),csMap.get(sac).getDisplayRangeMax());
+                }
+            }
+            ((CompositeImage)imp).setLuts(luts);
+        }
+
+        return imp;
+    }
+
+
+    public static<T extends NativeType<T>> Img cacheRAI(RandomAccessibleInterval<T> source) {
+        final int[] cellDimensions = new int[source.numDimensions()];
+        cellDimensions[0] = (int) (source.dimension(0)); // X
+        cellDimensions[1] = (int) (source.dimension(1)); // Y
+
+        for (int d=2;d<source.numDimensions();d++){ // Z C T
+            cellDimensions[d] = 1;
+        }
+
+        final DiskCachedCellImgFactory<T> factory = new DiskCachedCellImgFactory<>(Util.getTypeFromInterval(source),
+                options()
+                .cellDimensions( cellDimensions )
+                .cacheType( CacheType.BOUNDED )
+                .maxCacheSize( 100 ) );
+
+        return factory.create(source, target -> {
+            Cursor< T > targetCursor = target.localizingCursor();
+            RandomAccess< T > sourceRandomAccess = source.randomAccess();
+            // iterate over the input cursor
+            while ( targetCursor.hasNext())
+            {
+                // move input cursor forward
+                targetCursor.fwd();
+
+                // set the output cursor to the position of the input cursor
+                sourceRandomAccess.setPosition( targetCursor );
+
+                // set the value of this pixel of the output image, every Type supports T.set( T type )
+                targetCursor.get().set( sourceRandomAccess.get() );
+            }
+
+        }, options().initializeCellsAsDirty(true));
+    }
+
+    @SuppressWarnings( { "unchecked", "rawtypes" } )
+    public static final <T extends NativeType<T>> RandomAccessibleInterval<T> wrapAsVolatileCachedCellImg(
+            final RandomAccessibleInterval<T> source,
+            final int[] blockSize) throws IOException {
+
+        final long[] dimensions = Intervals.dimensionsAsLongArray(source);
+        final CellGrid grid = new CellGrid(dimensions, blockSize);
+
+        final RandomAccessibleLoader<T> loader = new RandomAccessibleLoader<T>(Views.zeroMin(source));
+
+        final T type = Util.getTypeFromInterval(source);
+
+        final CachedCellImg<T, ?> img;
+        final Cache<Long, Cell<?>> cache =
+                new SoftRefLoaderCache().withLoader(LoadedCellCacheLoader.get(grid, loader, type, AccessFlags.setOf(VOLATILE)));
+
+        if (GenericByteType.class.isInstance(type)) {
+            img = new CachedCellImg(grid, type, cache, ArrayDataAccessFactory.get(BYTE, AccessFlags.setOf(VOLATILE)));
+        } else if (GenericShortType.class.isInstance(type)) {
+            img = new CachedCellImg(grid, type, cache, ArrayDataAccessFactory.get(SHORT, AccessFlags.setOf(VOLATILE)));
+        } else if (GenericIntType.class.isInstance(type)) {
+            img = new CachedCellImg(grid, type, cache, ArrayDataAccessFactory.get(INT, AccessFlags.setOf(VOLATILE)));
+        } else if (GenericLongType.class.isInstance(type)) {
+            img = new CachedCellImg(grid, type, cache, ArrayDataAccessFactory.get(LONG, AccessFlags.setOf(VOLATILE)));
+        } else if (FloatType.class.isInstance(type)) {
+            img = new CachedCellImg(grid, type, cache, ArrayDataAccessFactory.get(FLOAT, AccessFlags.setOf(VOLATILE)));
+        } else if (DoubleType.class.isInstance(type)) {
+            img = new CachedCellImg(grid, type, cache, ArrayDataAccessFactory.get(DOUBLE, AccessFlags.setOf(VOLATILE)));
+        } else {
+            img = null;
+        }
+
+        return img;
     }
 
 }

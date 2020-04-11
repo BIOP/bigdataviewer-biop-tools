@@ -1,46 +1,45 @@
 package ch.epfl.biop.scijava.command;
 
+import bdv.tools.brightness.ConverterSetup;
 import bdv.util.BdvHandle;
 import bdv.util.ImagePlusHelper;
-import bdv.util.RealCropper;
-import bdv.viewer.Interpolation;
-import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
-import bdv.viewer.SynchronizedViewerState;
 import ij.ImagePlus;
-import ij.plugin.RGBStackMerge;
-import net.imglib2.FinalRealInterval;
-import net.imglib2.RandomAccessibleInterval;
+import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imglib2.RealPoint;
-import net.imglib2.RealRandomAccessible;
-import net.imglib2.img.display.imagej.ImageJFunctions;
+import net.imglib2.cache.img.DiskCachedCellImgFactory;
+import net.imglib2.cache.img.DiskCachedCellImgOptions;
 import net.imglib2.realtransform.AffineTransform3D;
-import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.numeric.integer.UnsignedShortType;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.BdvHandleHelper;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
-import ij.process.LUT;
+import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
+import sc.fiji.bdvpg.services.SourceAndConverterServices;
+import sc.fiji.bdvpg.sourceandconverter.importer.EmptySourceAndConverterCreator;
+import sc.fiji.bdvpg.sourceandconverter.transform.SourceResampler;
 
-import java.awt.*;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Arrays;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
+import static net.imglib2.cache.img.DiskCachedCellImgOptions.options;
+
+/**
+ * TODO : wrap multichannel in virtualstack
+ * option for caching or not
+ * @param <T>
+ */
 
 @Plugin(type = Command.class,
         menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Export>Current View To ImagePlus")
 public class BdvViewToImagePlusExportCommand<T extends RealType<T>> implements Command {
 
-    // ItemIO.BOTH required because it can be modified in case of appending new data to BDV (-> requires INPUT), or created (-> requires OUTPUT)
     @Parameter(label = "BigDataViewer Frame")
     public BdvHandle bdv_h;
 
@@ -56,17 +55,20 @@ public class BdvViewToImagePlusExportCommand<T extends RealType<T>> implements C
     @Parameter(label="Match bdv frame window size", persist=false, callback = "matchXYBDVFrame")
     public boolean matchWindowSize=false;
 
-    @Parameter(label = "Physical Size X", callback = "matchXYBDVFrame")
+    @Parameter(label = "Total Size X", callback = "matchXYBDVFrame")
     public double xSize = 100;
 
-    @Parameter(label = "Physical Size Y", callback = "matchXYBDVFrame")
+    @Parameter(label = "Total Size Y", callback = "matchXYBDVFrame")
     public double ySize = 100;
 
-    @Parameter(label = "Physical Size Z")//, callback = "matchXYBDVFrame")
+    @Parameter(label = "Half Thickness Z (above and below)")
     public double zSize = 100;
 
-    @Parameter(label = "Timepoint", persist = false)
-    public int timepoint = 0;
+    @Parameter(label = "Start Timepoint")
+    public int timepointBegin = 0;
+
+    @Parameter(label = "End Timepoint")
+    public int timepointEnd = 0;
 
     @Parameter(label = "XY Pixel size sampling (physical unit)", callback = "changePhysicalSampling")
     public double samplingXYInPhysicalUnit = 1;
@@ -77,170 +79,123 @@ public class BdvViewToImagePlusExportCommand<T extends RealType<T>> implements C
     @Parameter(label = "Interpolate")
     public boolean interpolate = true;
 
-    @Parameter(label = "Parallelize when exporting several channels")
-    public boolean wrapMultichannelParallel = true;
-
     @Parameter(label = "Ignore Source LUT (check for RGB)")
     public boolean ignoreSourceLut = false;
 
+    @Parameter(label = "Make Composite")
+    public boolean makeComposite = true;
+
     // Output imageplus window
     @Parameter(type = ItemIO.OUTPUT)
-    public ImagePlus imp;
+    public ImagePlus compositeImage;
 
-    String unitOfFirstSource ="";
+    @Parameter(type = ItemIO.OUTPUT)
+    public Map<SourceAndConverter, ImagePlus> singleChannelImages = new HashMap<>();
 
-    // Map containing wrapped sources, can be accessed in parallel -> Concurrent
-    ConcurrentHashMap<Integer,ImagePlus> genImagePlus = new ConcurrentHashMap<>();
+    String unitOfFirstSource=" ";
 
-    Consumer<String> errlog = (s) -> System.err.println(s);
+    public Consumer<String> errlog = (s) -> System.err.println(s);
 
     List<SourceAndConverter<?>> sourceList;
 
-    AffineTransform3D at3D = null;
+    AffineTransform3D at3D;
 
     @Override
     public void run() {
-        // Retrieve viewer state from big data viewer
-        SynchronizedViewerState viewerState = bdv_h.getViewerPanel().state();
 
-        //Center on the display center of the viewer ...
-        double w = bdv_h.getViewerPanel().getDisplay().getWidth();
-        double h = bdv_h.getViewerPanel().getDisplay().getHeight();
+        // Sanity checks
+        // 1. Timepoints
+        if (timepointEnd<=timepointBegin) {
+            timepointEnd = timepointBegin+1;
+        }
 
-        RealPoint pt = new RealPoint(3); // Number of dimension
-
-        //Get global coordinates of the central position  of the viewer
-        bdv_h.getViewerPanel().displayToGlobalCoordinates(w/2.0, h/2.0, pt);
-        double posX = pt.getDoublePosition(0);
-        double posY = pt.getDoublePosition(1);
-        double posZ = pt.getDoublePosition(2);
-        // Stream is single threaded or multithreaded based on boolean parameter
-
+        // 2. At least one source
         if (allSources) {
-            sourceList = bdv_h.getViewerPanel().state().getSources();
-        } else {
-            sourceList = Arrays.asList(sacs);
-        }
-        Map<SourceAndConverter, Integer> sourceMapIndex = new HashMap<>();
-        for (int i=0;i<sourceList.size();i++) {
-            sourceMapIndex.put(sourceList.get(i),i);
-        }
-        Stream<SourceAndConverter<?>> sourceStream;
-        if (wrapMultichannelParallel) {
-            sourceStream = sourceList.parallelStream();
-        } else {
-            sourceStream = sourceList.stream();
-        }
-
-        // Wrap each source independently
-        sourceStream.forEach( sac -> {
-
-            // Get the source
-            Source<T> s = (Source<T>) sac.getSpimSource();
-
-            if (s.getNumMipmapLevels()<mipmapLevel) {
-                errlog.accept("Error, mipmap level requested = "+mipmapLevel);
-                errlog.accept("But there are only "+s.getNumMipmapLevels()+" in the source");
-                errlog.accept("Highest level chosen instead.");
-                mipmapLevel = s.getNumMipmapLevels()-1;
-            }
-
-            // Interpolation switch
-            Interpolation interpolation;
-            if (interpolate) {
-                interpolation = Interpolation.NLINEAR;
-            } else {
-                interpolation = Interpolation.NEARESTNEIGHBOR;
-            }
-
-            // Get real random accessible from the source
-            final RealRandomAccessible<T> ipimg = s.getInterpolatedSource(timepoint, mipmapLevel, interpolation);
-
-            // Get current big dataviewer transformation : source transform and viewer transform
-            AffineTransform3D transformedSourceToViewer = new AffineTransform3D(); // Empty Transform
-            // viewer transform
-            viewerState.getViewerTransform(transformedSourceToViewer); // Get current transformation by the viewer state and puts it into sourceToImgPlus
-
-            // Center on the display center of the viewer ...
-            transformedSourceToViewer.translate(-w / 2, -h / 2, 0);
-
-            // Getting an image independent of the view scaling unit (not sure)
-            double xNorm = getNormTransform(0, transformedSourceToViewer);//trans
-            transformedSourceToViewer.scale(1/xNorm);//xNorm);//1/ samplingInXPixelUnit);
-
-            // Alternative : Get a bounding box from - (TODO interesting related post : https://forum.image.sc/t/using-imglib2-to-shear-an-image/2534/3)
-
-            // Source transform
-            final AffineTransform3D sourceTransform = new AffineTransform3D();
-            s.getSourceTransform(timepoint, mipmapLevel, sourceTransform); // Get current transformation of the source
-
-            // Composition of source and viewer transform
-            transformedSourceToViewer.concatenate(sourceTransform); // Concatenate viewer state transform and source transform to know the final slice of the source
-
-            RandomAccessibleInterval<T> view = RealCropper.getCroppedSampledRRAI(
-                    ipimg,
-                    transformedSourceToViewer,
-                    new FinalRealInterval(new double[]{-(xSize/2), -(ySize/2), -zSize}, new double[]{+(xSize/2), +(ySize/2), +zSize}),
-                    samplingXYInPhysicalUnit,samplingXYInPhysicalUnit,samplingZInPhysicalUnit
-            );
-
-            // Wrap as ImagePlus
-            ImagePlus impTemp = ImageJFunctions.wrap(view, "");
-
-            // 'Metadata' for ImagePlus set as a Z stack (instead of a Channel stack by default)
-            int nSlices = impTemp.getNSlices();
-            impTemp.setDimensions(1, nSlices, 1); // Set 3 dimension as Z, not as Channel
-
-            // Set ImagePlus display properties as in BigDataViewer
-            // Min Max
-
-            // Simple Color LUT
-            if (!ignoreSourceLut) {
-                ARGBType c = bdv_h.getConverterSetups().getConverterSetup(sac).getColor();
-                impTemp.setLut(LUT.createLutFromColor(new Color(ARGBType.red(c.get()), ARGBType.green(c.get()), ARGBType.blue(c.get()))));
-                impTemp.setDisplayRange(
-                        bdv_h.getConverterSetups().getConverterSetup(sac).getDisplayRangeMin(),
-                        bdv_h.getConverterSetups().getConverterSetup(sac).getDisplayRangeMax()
-                );
-            }
-            // Store result in ConcurrentHashMap
-            genImagePlus.put(sourceMapIndex.get(sac), impTemp);
-        });
-
-        // Merging stacks, if possible, by using RGBStackMerge IJ1 class
-        ImagePlus[] orderedArray = IntStream
-                .range(0,sourceList.size())
-                .mapToObj(idx -> genImagePlus.get(idx))
-                .toArray(ImagePlus[]::new);
-        if (orderedArray.length>1) {
-            boolean identicalBitDepth = IntStream
-                    .range(0,sourceList.size())
-                    .mapToObj(idx -> genImagePlus.get(idx).getBitDepth()).distinct().limit(2).count()==1;
-            if (identicalBitDepth) {
-                imp = RGBStackMerge.mergeChannels(orderedArray, false);
-            } else {
-                System.err.println("All channels do not have the same bit depth, sending back first channel only");
-                imp = orderedArray[0];
+            if (bdv_h.getViewerPanel().state().getSources().size()==0) {
+                errlog.accept("No source present in Bdv. Abort command.");
+                return;
             }
         } else {
-            imp = orderedArray[0];
+            if ((sacs==null)||(sacs.length==0)) {
+                errlog.accept("No selected source. Abort command.");
+                return;
+            }
         }
 
-        // Title
-        String title = BdvHandleHelper.getWindowTitle(bdv_h)
-                + " - [T=" + timepoint + ", MML=" + mipmapLevel + "]"
-                +"[BDV="+ BdvHandleHelper.getWindowTitle(bdv_h) +"]"+"[XY,Z="+ samplingXYInPhysicalUnit +","+samplingZInPhysicalUnit+"]";
-        imp.setTitle(title);
+        // Stream is single threaded or multithreaded based on boolean parameter
+        if (allSources) {
+            sourceList = sorter.apply(bdv_h.getViewerPanel().state().getSources());
+        } else {
+            sourceList = sorter.apply(Arrays.asList(sacs));
+        }
 
+        SourceAndConverter model = createModelSource();
+
+        if (makeComposite) {
+            if (sourceList.stream().map(sac -> sac.getSpimSource().getType().getClass()).distinct().count()>1) {
+                errlog.accept("Cannot make composite because sources are not of the same type");
+                makeComposite = false;
+            }
+        }
+
+        // The core of it : resampling each source with the model
+        List<SourceAndConverter> resampledSourceList = sourceList
+                .stream()
+                .map(sac -> new SourceResampler(sac,model,true, interpolate).get())
+                .collect(Collectors.toList());
+
+        // Fetch the unit of the first source
+        updateUnit();
+
+        if ((makeComposite)&&(sourceList.size()>1)) {
+            Map<SourceAndConverter, ConverterSetup> mapCS = new HashMap<>();
+            sourceList.forEach(src -> mapCS.put(resampledSourceList.get(sourceList.indexOf(src)), bdv_h.getConverterSetups().getConverterSetup(src)));
+
+            Map<SourceAndConverter, Integer> mapMipmap = new HashMap<>();
+            sourceList.forEach(src -> mapMipmap.put(resampledSourceList.get(sourceList.indexOf(src)), mipmapLevel));
+
+            compositeImage = ImagePlusHelper.wrap(
+                    resampledSourceList,
+                    mapCS,
+                    mapMipmap,
+                    timepointBegin,
+                    timepointEnd,
+                    ignoreSourceLut);
+
+            compositeImage.setTitle(BdvHandleHelper.getWindowTitle(bdv_h));
+            ImagePlusHelper.storeExtendedCalibrationToImagePlus(compositeImage, at3D.inverse(), unitOfFirstSource, timepointBegin);
+        } else {
+            resampledSourceList.forEach(source -> {
+                ImagePlus singleChannel = ImagePlusHelper.wrap(
+                        source,
+                        bdv_h.getConverterSetups().getConverterSetup(sourceList.get(resampledSourceList.indexOf(source))),
+                        mipmapLevel,
+                        timepointBegin,
+                        timepointEnd,
+                        ignoreSourceLut);
+                singleChannelImages.put(source, singleChannel);
+                singleChannel.setTitle(source.getSpimSource().getName());
+                ImagePlusHelper.storeExtendedCalibrationToImagePlus(singleChannel, at3D.inverse(), unitOfFirstSource, timepointBegin);
+                if (resampledSourceList.size()>1) {
+                    singleChannel.show();
+                } else {
+                    compositeImage = singleChannel;
+                }
+            });
+        }
+    }
+
+    private SourceAndConverter createModelSource() {
         // Origin is in fact the point 0,0,0 of the image
         // Get current big dataviewer transformation : source transform and viewer transform
         at3D = new AffineTransform3D(); // Empty Transform
         // viewer transform
-        viewerState.getViewerTransform(at3D); // Get current transformation by the viewer state and puts it into sourceToImgPlus
-
+        bdv_h.getViewerPanel().state().getViewerTransform(at3D); // Get current transformation by the viewer state and puts it into sourceToImgPlus
+        //Center on the display center of the viewer ...
+        double w = bdv_h.getViewerPanel().getDisplay().getWidth();
+        double h = bdv_h.getViewerPanel().getDisplay().getHeight();
         // Center on the display center of the viewer ...
         at3D.translate(-w / 2, -h / 2, 0);
-
         // Getting an image independent of the view scaling unit (not sure)
         double xNorm = getNormTransform(0, at3D);//trans
         at3D.scale(1/xNorm);
@@ -248,9 +203,29 @@ public class BdvViewToImagePlusExportCommand<T extends RealType<T>> implements C
         at3D.scale(1./samplingXYInPhysicalUnit, 1./samplingXYInPhysicalUnit, 1./samplingZInPhysicalUnit);
         at3D.translate((xSize/(2*samplingXYInPhysicalUnit)), (ySize/(2*samplingXYInPhysicalUnit)), (zSize/(samplingZInPhysicalUnit)));
 
-        ImagePlusHelper.storeMatrixToImagePlus(imp, at3D.inverse());
-        updateUnit();
-        imp.getCalibration().setUnit(unitOfFirstSource);
+        long nPx = (long)(xSize / samplingXYInPhysicalUnit);
+        long nPy = (long)(ySize / samplingXYInPhysicalUnit);
+        long nPz = (long)(zSize / samplingZInPhysicalUnit); // TODO : check div by 2
+
+        // Dummy ImageFactory
+        // Make edge display on demand
+        final int[] cellDimensions = new int[] { 32, 32, 32 };
+
+        // Cached Image Factory Options
+        final DiskCachedCellImgOptions factoryOptions = options()
+                .cellDimensions( cellDimensions )
+                .cacheType( DiskCachedCellImgOptions.CacheType.BOUNDED )
+                .maxCacheSize( 1 );
+
+        // Creates cached image factory of Type UnsignedShort
+        final DiskCachedCellImgFactory<UnsignedShortType> factory = new DiskCachedCellImgFactory<>( new UnsignedShortType(), factoryOptions );
+
+        // At least a pixel in all directions
+        if (nPz == 0) nPz = 1;
+        if (nPx == 0) nPx = 1;
+        if (nPy == 0) nPy = 1;
+
+        return new EmptySourceAndConverterCreator("Model", at3D.inverse(), nPx, nPy, nPz, factory).get();
     }
 
     /**
@@ -319,6 +294,88 @@ public class BdvViewToImagePlusExportCommand<T extends RealType<T>> implements C
                 unitOfFirstSource = sourceList.get(0).getSpimSource().getVoxelDimensions().unit();
             }
         }
+    }
+
+    public Function<Collection<SourceAndConverter<?>>,List<SourceAndConverter<?>>> sorter = sacs1 -> defaultSorter(sacs1);
+
+    /**
+     * Default sorting order for SourceAndConverter
+     * Because we want some consistency in channel ordering when exporting to an ImagePlus
+     * AArrg indexes are back
+     *
+     * TODO : find a better way to order between spimdata
+     * @param sacs
+     * @return
+     */
+    public static List<SourceAndConverter<?>> defaultSorter(Collection<SourceAndConverter<?>> sacs) {
+        List<SourceAndConverter<?>> sortedList = new ArrayList<>(sacs.size());
+        sortedList.addAll(sacs);
+        Set<AbstractSpimData> spimData = new HashSet<>();
+        // Gets all SpimdataInfo
+        sacs.forEach(sac -> {
+            if (SourceAndConverterServices
+                    .getSourceAndConverterService()
+                    .getMetadata(sac, SourceAndConverterService.SPIM_DATA_INFO)!=null) {
+                SourceAndConverterService.SpimDataInfo sdi = ((SourceAndConverterService.SpimDataInfo)(SourceAndConverterServices
+                        .getSourceAndConverterService()
+                        .getMetadata(sac, SourceAndConverterService.SPIM_DATA_INFO)));
+                spimData.add(sdi.asd);
+            }
+        });
+
+        Comparator<SourceAndConverter> sacComparator = (s1, s2) -> {
+            // Those who do not belong to spimdata are last:
+            SourceAndConverterService.SpimDataInfo sdi1 = null, sdi2 = null;
+            if (SourceAndConverterServices
+                    .getSourceAndConverterService()
+                    .getMetadata(s1, SourceAndConverterService.SPIM_DATA_INFO)!=null) {
+                 sdi1 = ((SourceAndConverterService.SpimDataInfo)(SourceAndConverterServices
+                        .getSourceAndConverterService()
+                        .getMetadata(s1, SourceAndConverterService.SPIM_DATA_INFO)));
+            }
+
+            if (SourceAndConverterServices
+                    .getSourceAndConverterService()
+                    .getMetadata(s2, SourceAndConverterService.SPIM_DATA_INFO)!=null) {
+                sdi2 = ((SourceAndConverterService.SpimDataInfo)(SourceAndConverterServices
+                        .getSourceAndConverterService()
+                        .getMetadata(s2, SourceAndConverterService.SPIM_DATA_INFO)));
+            }
+
+            if ((sdi1==null)&&(sdi2!=null)) {
+                return -1;
+            }
+
+            if ((sdi1!=null)&&(sdi2==null)) {
+                return 1;
+            }
+
+            if ((sdi1!=null)&&(sdi2!=null)) {
+                if (sdi1.asd==sdi2.asd) {
+                    return sdi2.setupId-sdi1.setupId;
+                } else {
+                    return sdi2.toString().compareTo(sdi1.toString());
+                }
+            }
+
+            return s2.getSpimSource().getName().compareTo(s1.getSpimSource().getName());
+        };
+
+        sortedList.sort(sacComparator);
+        return sortedList;
+    }
+
+    public static
+    <T extends Comparable<? super T>> List<T> asSortedList(Collection<T> c) {
+        return asSortedList(c,null);
+    }
+
+    public static
+    <T extends Comparable<? super T>> List<T> asSortedList(Collection<T> c, Comparator<T> comparator) {
+        List<T> list = new ArrayList<T>(c);
+        //java.util.Collections.sort(list);
+        list.sort(comparator);
+        return list;
     }
 
 }
