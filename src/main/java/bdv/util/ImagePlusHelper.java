@@ -53,10 +53,8 @@ import java.awt.*;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 
 import static net.imglib2.cache.img.DiskCachedCellImgOptions.options;
@@ -333,11 +331,11 @@ public class ImagePlusHelper {
                 }
             }
             ((CompositeImage)imp).setLuts(luts);
+            
         }
 
         return imp;
     }
-
 
     public static<T extends NativeType<T>> Img cacheRAI(RandomAccessibleInterval<T> source) {
         final int[] cellDimensions = new int[source.numDimensions()];

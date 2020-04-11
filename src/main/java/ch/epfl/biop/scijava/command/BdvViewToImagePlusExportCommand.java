@@ -205,7 +205,13 @@ public class BdvViewToImagePlusExportCommand<T extends RealType<T>> implements C
 
         long nPx = (long)(xSize / samplingXYInPhysicalUnit);
         long nPy = (long)(ySize / samplingXYInPhysicalUnit);
-        long nPz = (long)(zSize / samplingZInPhysicalUnit); // TODO : check div by 2
+        long nPz;
+        if (samplingZInPhysicalUnit==0) {
+            nPz = 1;
+        } else {
+            nPz = 1+(long)(zSize / (samplingZInPhysicalUnit/2.0)); // TODO : check div by 2
+        }
+
 
         // Dummy ImageFactory
         // Make edge display on demand
@@ -363,19 +369,6 @@ public class BdvViewToImagePlusExportCommand<T extends RealType<T>> implements C
 
         sortedList.sort(sacComparator);
         return sortedList;
-    }
-
-    public static
-    <T extends Comparable<? super T>> List<T> asSortedList(Collection<T> c) {
-        return asSortedList(c,null);
-    }
-
-    public static
-    <T extends Comparable<? super T>> List<T> asSortedList(Collection<T> c, Comparator<T> comparator) {
-        List<T> list = new ArrayList<T>(c);
-        //java.util.Collections.sort(list);
-        list.sort(comparator);
-        return list;
     }
 
 }
