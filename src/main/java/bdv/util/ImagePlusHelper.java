@@ -12,6 +12,7 @@ import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
 import net.imagej.axis.AxisType;
 import net.imglib2.Cursor;
+import net.imglib2.Interval;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.cache.Cache;
@@ -29,6 +30,7 @@ import net.imglib2.img.display.imagej.ImgToVirtualStack;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.ARGBType;
+import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.integer.*;
 import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.type.numeric.real.FloatType;
@@ -281,12 +283,24 @@ public class ImagePlusHelper {
             SourceAndConverter sac = sacs.get(c);
             RandomAccessibleInterval[] rais = new RandomAccessibleInterval[endTimePoint-beginTimePoint];
             int mipmapLevel = Math.min(mipmapMap.get(sac), sac.getSpimSource().getNumMipmapLevels()-1); // mipmap level should exist
+            long xSize = 1, ySize = 1, zSize = 1;
             for (int t=beginTimePoint;t<endTimePoint;t++) {
                 if (sac.getSpimSource().isPresent(t)) {
                     rais[t] = sac.getSpimSource().getSource(t, mipmapLevel);
-                } /*else {
-                    rais[t] =
-                }*/
+                    xSize = rais[t].dimension(0);
+                    ySize = rais[t].dimension(1);
+                    zSize = rais[t].dimension(2);
+                    break;
+                }
+            }
+
+
+            for (int t=beginTimePoint;t<endTimePoint;t++) {
+                if (sac.getSpimSource().isPresent(t)) {
+                    rais[t] = sac.getSpimSource().getSource(t, mipmapLevel);
+                } else {
+                   rais[t] = new ZerosRAI((NumericType)sac.getSpimSource().getType(), new long[]{xSize,ySize,zSize});
+                }
             }
 
             raisList[c] = Views.stack(rais);
