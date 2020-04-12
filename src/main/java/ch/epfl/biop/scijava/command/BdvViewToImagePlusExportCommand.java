@@ -31,8 +31,7 @@ import java.util.stream.Collectors;
 import static net.imglib2.cache.img.DiskCachedCellImgOptions.options;
 
 /**
- * TODO : wrap multichannel in virtualstack
- * option for caching or not
+ * Stack is virtual and cached by default
  * @param <T>
  */
 
@@ -43,10 +42,13 @@ public class BdvViewToImagePlusExportCommand<T extends RealType<T>> implements C
     @Parameter(label = "BigDataViewer Frame")
     public BdvHandle bdv_h;
 
+    @Parameter(label = "Capture Name")
+    String captureName = "Capture_00";
+
     @Parameter(required = false)
     SourceAndConverter[] sacs;
 
-    @Parameter
+    @Parameter(label = "Include all sources from current Bdv Frame")
     boolean allSources;
 
     @Parameter(label="Mipmap level, 0 for highest resolution")
@@ -55,19 +57,19 @@ public class BdvViewToImagePlusExportCommand<T extends RealType<T>> implements C
     @Parameter(label="Match bdv frame window size", persist=false, callback = "matchXYBDVFrame")
     public boolean matchWindowSize=false;
 
-    @Parameter(label = "Total Size X", callback = "matchXYBDVFrame")
+    @Parameter(label = "Total Size X (physical unit)", callback = "matchXYBDVFrame")
     public double xSize = 100;
 
-    @Parameter(label = "Total Size Y", callback = "matchXYBDVFrame")
+    @Parameter(label = "Total Size Y (physical unit)", callback = "matchXYBDVFrame")
     public double ySize = 100;
 
-    @Parameter(label = "Half Thickness Z (above and below)")
+    @Parameter(label = "Half Thickness Z (above and below, physical unit)")
     public double zSize = 100;
 
-    @Parameter(label = "Start Timepoint")
+    @Parameter(label = "Start Timepoint (included)")
     public int timepointBegin = 0;
 
-    @Parameter(label = "End Timepoint")
+    @Parameter(label = "End Timepoint (excluded)")
     public int timepointEnd = 0;
 
     @Parameter(label = "XY Pixel size sampling (physical unit)", callback = "changePhysicalSampling")
@@ -104,7 +106,7 @@ public class BdvViewToImagePlusExportCommand<T extends RealType<T>> implements C
     public void run() {
 
         // Sanity checks
-        // 1. Timepoints
+        // 1. Timepoints : at least one timepoint
         if (timepointEnd<=timepointBegin) {
             timepointEnd = timepointBegin+1;
         }
@@ -122,7 +124,6 @@ public class BdvViewToImagePlusExportCommand<T extends RealType<T>> implements C
             }
         }
 
-        // Stream is single threaded or multithreaded based on boolean parameter
         if (allSources) {
             sourceList = sorter.apply(bdv_h.getViewerPanel().state().getSources());
         } else {
@@ -133,7 +134,7 @@ public class BdvViewToImagePlusExportCommand<T extends RealType<T>> implements C
 
         if (makeComposite) {
             if (sourceList.stream().map(sac -> sac.getSpimSource().getType().getClass()).distinct().count()>1) {
-                errlog.accept("Cannot make composite because sources are not of the same type");
+                errlog.accept("Cannot make composite because all sources are not of the same type");
                 makeComposite = false;
             }
         }
@@ -214,7 +215,6 @@ public class BdvViewToImagePlusExportCommand<T extends RealType<T>> implements C
 
 
         // Dummy ImageFactory
-        // Make edge display on demand
         final int[] cellDimensions = new int[] { 32, 32, 32 };
 
         // Cached Image Factory Options
@@ -231,7 +231,7 @@ public class BdvViewToImagePlusExportCommand<T extends RealType<T>> implements C
         if (nPx == 0) nPx = 1;
         if (nPy == 0) nPy = 1;
 
-        return new EmptySourceAndConverterCreator("Model", at3D.inverse(), nPx, nPy, nPz, factory).get();
+        return new EmptySourceAndConverterCreator(captureName, at3D.inverse(), nPx, nPy, nPz, factory).get();
     }
 
     /**
@@ -302,7 +302,7 @@ public class BdvViewToImagePlusExportCommand<T extends RealType<T>> implements C
         }
     }
 
-    public Function<Collection<SourceAndConverter<?>>,List<SourceAndConverter<?>>> sorter = sacs1 -> defaultSorter(sacs1);
+    public Function<Collection<SourceAndConverter<?>>,List<SourceAndConverter<?>>> sorter = sacs1ist -> sortDefault(sacs1ist);
 
     /**
      * Default sorting order for SourceAndConverter
@@ -313,7 +313,7 @@ public class BdvViewToImagePlusExportCommand<T extends RealType<T>> implements C
      * @param sacs
      * @return
      */
-    public static List<SourceAndConverter<?>> defaultSorter(Collection<SourceAndConverter<?>> sacs) {
+    public static List<SourceAndConverter<?>> sortDefault(Collection<SourceAndConverter<?>> sacs) {
         List<SourceAndConverter<?>> sortedList = new ArrayList<>(sacs.size());
         sortedList.addAll(sacs);
         Set<AbstractSpimData> spimData = new HashSet<>();
@@ -358,7 +358,7 @@ public class BdvViewToImagePlusExportCommand<T extends RealType<T>> implements C
 
             if ((sdi1!=null)&&(sdi2!=null)) {
                 if (sdi1.asd==sdi2.asd) {
-                    return sdi2.setupId-sdi1.setupId;
+                    return sdi1.setupId-sdi2.setupId;
                 } else {
                     return sdi2.toString().compareTo(sdi1.toString());
                 }
