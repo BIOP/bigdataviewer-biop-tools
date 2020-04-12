@@ -136,13 +136,14 @@
 		<license.copyrightOwners>N/A</license.copyrightOwners>
 		<package-name>ch.epfl.biop.bigdataviewerBiopTools</package-name>
 
+		<bigwarp_fiji.version>5.1.0</bigwarp_fiji.version>
+
 		<bigdataviewer-core.version>9.0.0</bigdataviewer-core.version>
 		<imglib2.version>5.9.0</imglib2.version>
 		<imglib2-cache.version>1.0.0-beta-13</imglib2-cache.version>
 		<spim_data.version>2.2.3</spim_data.version>
 		<ui-behaviour.version>2.0.1</ui-behaviour.version>
 		<bigdataviewer-vistools.version>1.0.0-beta-19-table-SNAPSHOT</bigdataviewer-vistools.version>
-
 
 		<scijava.app.directory>C:\Users\nicol\Desktop\fiji-win64-bdv-playground/Fiji.app/</scijava.app.directory>
 		<scijava.deleteOtherVersions>true</scijava.deleteOtherVersions>
@@ -239,11 +240,11 @@
 			<artifactId>bigdataviewer-core</artifactId>
 		</dependency>
 
-		<dependency>
+		<!--<dependency>
 			<groupId>sc.fiji</groupId>
 			<artifactId>labeleditor</artifactId>
 			<version>0.6.0</version>
-		</dependency>
+		</dependency>-->
 
 		<dependency>
 			<groupId>ch.epfl.biop</groupId>
