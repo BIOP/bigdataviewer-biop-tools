@@ -1,7 +1,5 @@
 package ch.epfl.biop.scijava.command;
 
-import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.sourceandconverter.importer.SourcesFromImagePlusGetter;
 import ch.epfl.biop.spimdata.SpimDataFromImagePlusGetter;
 import ij.ImagePlus;
 import mpicbg.spim.data.generic.AbstractSpimData;
@@ -19,14 +17,9 @@ public class SourceFromImagePlusCommand implements Command {
 
     @Parameter(type = ItemIO.OUTPUT)
     AbstractSpimData asd;
-    //SourceAndConverter[] sacs;
 
     public void run() {
-        /*SourcesFromImagePlusGetter getter = new SourcesFromImagePlusGetter(imagePlus);
-        getter.run();
-        sacs = getter.getSources().toArray(new SourceAndConverter[getter.getSources().size()]);*/
         asd = (new SpimDataFromImagePlusGetter()).apply(imagePlus);
-
     }
 
 }

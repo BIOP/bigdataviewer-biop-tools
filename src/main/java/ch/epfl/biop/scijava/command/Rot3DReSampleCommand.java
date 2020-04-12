@@ -3,13 +3,14 @@ package ch.epfl.biop.scijava.command;
 import bdv.util.RandomAccessibleIntervalSource;
 import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.sourceandconverter.importer.SourcesFromImagePlusGetter;
+import ch.epfl.biop.spimdata.SpimDataFromImagePlusGetter;
 import ij.ImagePlus;
 import ij.gui.PointRoi;
 import ij.gui.Roi;
 import ij.measure.Calibration;
 import ij.plugin.RGBStackMerge;
 import ij.plugin.frame.RoiManager;
+import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.display.imagej.ImageJFunctions;
@@ -20,6 +21,7 @@ import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import sc.fiji.bdvpg.services.SourceAndConverterServices;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterUtils;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceResampler;
 
@@ -56,9 +58,8 @@ public class Rot3DReSampleCommand implements Command {
 
     public void run() {
 
-        SourcesFromImagePlusGetter getter = new SourcesFromImagePlusGetter(imp_in);
-        getter.run();
-        List<SourceAndConverter> sacs = getter.getSources();
+        AbstractSpimData asd = (new SpimDataFromImagePlusGetter()).apply(imp_in);
+        List<SourceAndConverter> sacs = SourceAndConverterServices.getSourceAndConverterService().getSourceAndConverterFromSpimdata(asd);
 
         Roi roi1 = rm.getRoi(0);
         Roi roi2 = rm.getRoi(1);

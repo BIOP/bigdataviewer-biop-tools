@@ -5,6 +5,8 @@ import bdv.img.virtualstack.VirtualStackImageLoader;
 import bdv.spimdata.SequenceDescriptionMinimal;
 import bdv.spimdata.SpimDataMinimal;
 import bdv.util.ImagePlusHelper;
+import bdv.util.ImageStackImageLoaderTimeShifted;
+import bdv.util.VirtualStackImageLoaderTimeShifted;
 import ij.ImagePlus;
 import ij.plugin.ChannelSplitter;
 import ij.process.LUT;
@@ -13,10 +15,7 @@ import mpicbg.spim.data.generic.sequence.BasicImgLoader;
 import mpicbg.spim.data.generic.sequence.BasicViewSetup;
 import mpicbg.spim.data.registration.ViewRegistration;
 import mpicbg.spim.data.registration.ViewRegistrations;
-import mpicbg.spim.data.sequence.Channel;
-import mpicbg.spim.data.sequence.FinalVoxelDimensions;
-import mpicbg.spim.data.sequence.TimePoint;
-import mpicbg.spim.data.sequence.TimePoints;
+import mpicbg.spim.data.sequence.*;
 import net.imglib2.FinalDimensions;
 import net.imglib2.realtransform.AffineTransform3D;
 import spimdata.util.DisplaySettings;
@@ -24,6 +23,8 @@ import spimdata.util.DisplaySettings;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -72,23 +73,25 @@ public class SpimDataFromImagePlusGetter implements Runnable, Function<ImagePlus
 //		final ExportMipmapInfo autoMipmapSettings = ProposeMipmaps.proposeMipmaps( new BasicViewSetup( 0, "", size, voxelSize ) );
 
         // create ImgLoader wrapping the image
+
+        int originTimePoint = ImagePlusHelper.getTimeOriginFromImagePlus(imp);
         final BasicImgLoader imgLoader;
         if ( imp.getStack().isVirtual() )
         {
             switch ( imp.getType() )
             {
                 case ImagePlus.GRAY8:
-                    imgLoader = VirtualStackImageLoader.createUnsignedByteInstance( imp );
+                    imgLoader = VirtualStackImageLoaderTimeShifted.createUnsignedByteInstance( imp, originTimePoint );
                     break;
                 case ImagePlus.GRAY16:
-                    imgLoader = VirtualStackImageLoader.createUnsignedShortInstance( imp );
+                    imgLoader = VirtualStackImageLoaderTimeShifted.createUnsignedShortInstance( imp, originTimePoint );
                     break;
                 case ImagePlus.GRAY32:
-                    imgLoader = VirtualStackImageLoader.createFloatInstance( imp );
+                    imgLoader = VirtualStackImageLoaderTimeShifted.createFloatInstance( imp, originTimePoint );
                     break;
                 case ImagePlus.COLOR_RGB:
                 default:
-                    imgLoader = VirtualStackImageLoader.createARGBInstance( imp );
+                    imgLoader = VirtualStackImageLoaderTimeShifted.createARGBInstance( imp, originTimePoint );
                     break;
             }
         }
@@ -97,17 +100,17 @@ public class SpimDataFromImagePlusGetter implements Runnable, Function<ImagePlus
             switch ( imp.getType() )
             {
                 case ImagePlus.GRAY8:
-                    imgLoader = ImageStackImageLoader.createUnsignedByteInstance( imp );
+                    imgLoader = ImageStackImageLoaderTimeShifted.createUnsignedByteInstance( imp, originTimePoint );
                     break;
                 case ImagePlus.GRAY16:
-                    imgLoader = ImageStackImageLoader.createUnsignedShortInstance( imp );
+                    imgLoader = ImageStackImageLoaderTimeShifted.createUnsignedShortInstance( imp, originTimePoint );
                     break;
                 case ImagePlus.GRAY32:
-                    imgLoader = ImageStackImageLoader.createFloatInstance( imp );
+                    imgLoader = ImageStackImageLoaderTimeShifted.createFloatInstance( imp, originTimePoint );
                     break;
                 case ImagePlus.COLOR_RGB:
                 default:
-                    imgLoader = ImageStackImageLoader.createARGBInstance( imp );
+                    imgLoader = ImageStackImageLoaderTimeShifted.createARGBInstance( imp, originTimePoint );
                     break;
             }
         }
@@ -116,7 +119,8 @@ public class SpimDataFromImagePlusGetter implements Runnable, Function<ImagePlus
         final int numSetups = imp.getNChannels();
 
         // create setups from channels
-        final HashMap< Integer, BasicViewSetup> setups = new HashMap<>( numSetups );
+        final HashMap< Integer, BasicViewSetup > setups = new HashMap<>( numSetups );
+
         ImagePlus[] impSingleChannel = ChannelSplitter.split(imp);
         for ( int s = 0; s < numSetups; ++s )
         {
@@ -138,18 +142,34 @@ public class SpimDataFromImagePlusGetter implements Runnable, Function<ImagePlus
 
         // create timepoints
         final ArrayList<TimePoint> timepoints = new ArrayList<>( numTimepoints );
-        for ( int t = 0; t < numTimepoints; ++t )
+
+        MissingViews mv = null;
+
+        if (originTimePoint>0) {
+
+            Set<ViewId> missingViewIds = new HashSet<>();
+            for (int t=0;t<originTimePoint;t++) {
+                for ( int s = 0; s < numSetups; ++s ){
+                    ViewId vId = new ViewId(t,s);
+                    missingViewIds.add(vId);
+                }
+            }
+            mv =  new MissingViews(missingViewIds);
+        }
+
+        for ( int t = 0; t < numTimepoints + originTimePoint; ++t )
             timepoints.add( new TimePoint( t ) );
-        final SequenceDescriptionMinimal seq = new SequenceDescriptionMinimal( new TimePoints( timepoints ), setups, imgLoader, null );
+        final SequenceDescriptionMinimal seq = new SequenceDescriptionMinimal( new TimePoints( timepoints ), setups, imgLoader, mv );
 
         // create ViewRegistrations from the images calibration
         final AffineTransform3D sourceTransform = ImagePlusHelper.getMatrixFromImagePlus(imp);
         final ArrayList<ViewRegistration> registrations = new ArrayList<>();
-        for ( int t = 0; t < numTimepoints; ++t )
+        for ( int t = 0; t < numTimepoints + originTimePoint; ++t )
             for ( int s = 0; s < numSetups; ++s )
-                registrations.add( new ViewRegistration( t, s, sourceTransform ) );
+                registrations.add( new ViewRegistration( t , s, sourceTransform ) );
 
         final File basePath = new File( "." );
+
         final AbstractSpimData< ? > spimData = new SpimDataMinimal( basePath, seq, new ViewRegistrations( registrations ) );
 
         return spimData;

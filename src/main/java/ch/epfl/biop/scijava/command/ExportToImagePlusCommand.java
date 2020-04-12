@@ -38,7 +38,7 @@ public class ExportToImagePlusCommand implements Command {
         AffineTransform3D at3D = new AffineTransform3D();
         sac.getSpimSource().getSourceTransform(timepoint, level, at3D);
 
-        ImagePlusHelper.storeMatrixToImagePlus(imp_out, at3D);
+        ImagePlusHelper.storeExtendedCalibrationToImagePlus(imp_out,at3D,"px",timepoint);
 
         // Color and Brightness contrast
 

@@ -69,6 +69,9 @@ import static net.imglib2.cache.img.DiskCachedCellImgOptions.options;
  * - Calibration is still used in order to store all the useful information that can be contained within it
  * (and is useful for the proper scaling retrieval)
  *
+ * - Time Origin is another property which is stored in the image info property. This allows to export and import
+ * dataset which are 'cropped in time'
+ *
  * @author Nicolas Chiaruttini, EPFL, 2020
  */
 
@@ -81,12 +84,12 @@ public class ImagePlusHelper {
 
     public static void storeExtendedCalibrationToImagePlus(ImagePlus imp, AffineTransform3D at3D, String unit, int timePointBegin) {
         storeMatrixToImagePlus(imp, at3D);
-        storeTimeOriginToImagePlus(imp, timePointBegin);
+        setTimeOriginToImagePlus(imp, timePointBegin);
         if (unit!=null)
             imp.getCalibration().setUnit(unit);
     }
 
-    public static void storeMatrixToImagePlus(ImagePlus imp, AffineTransform3D at3D) {
+    static void storeMatrixToImagePlus(ImagePlus imp, AffineTransform3D at3D) {
         Calibration cal = new Calibration();
 
         double[] m = at3D.getRowPackedCopy();
@@ -212,11 +215,33 @@ public class ImagePlusHelper {
     final public static String regexTimePointOrigin= "(TimePoint: \\()(.+)\\)";
 
     // TODO
-    public static void storeTimeOriginToImagePlus(ImagePlus imp, int timePoint) {
+    static void setTimeOriginToImagePlus(ImagePlus imp, int timePoint) {
+         if (imp.getInfoProperty() == null) {
+            imp.setProperty("Info", " "); // One character should be present
+        }
+        String info = imp.getInfoProperty();
+
+        // Removes any previously existing stored time origin
+        info = info.replaceAll(regexTimePointOrigin, "");
+
+        // Appends time origin data
+        info += "TimePoint: ("+timePoint+")\n";
+
+        imp.setProperty("Info", info);
     }
 
     // TODO
-    public static int geTimeOriginFromImagePlus(ImagePlus imp, int timePoint) {
+    public static int getTimeOriginFromImagePlus(ImagePlus imp) {
+        // Checks whether the time origin is defined in ImagePlus "info" property
+        if (imp.getInfoProperty()!=null) {
+            Pattern pattern = Pattern.compile(regexTimePointOrigin);
+            Matcher matcher = pattern.matcher(imp.getInfoProperty());
+            if (matcher.find()) {
+                // Looks good, we have something that looks like an affine transform
+                int timeOrigin = Integer.valueOf(matcher.group(2));
+                return timeOrigin;
+            }
+        }
         return 0;
     }
 
@@ -284,19 +309,19 @@ public class ImagePlusHelper {
             long xSize = 1, ySize = 1, zSize = 1;
             for (int t=beginTimePoint;t<endTimePoint;t++) {
                 if (sac.getSpimSource().isPresent(t)) {
-                    rais[t] = sac.getSpimSource().getSource(t, mipmapLevel);
-                    xSize = rais[t].dimension(0);
-                    ySize = rais[t].dimension(1);
-                    zSize = rais[t].dimension(2);
+                    rais[t-beginTimePoint] = sac.getSpimSource().getSource(t, mipmapLevel);
+                    xSize = rais[t-beginTimePoint].dimension(0);
+                    ySize = rais[t-beginTimePoint].dimension(1);
+                    zSize = rais[t-beginTimePoint].dimension(2);
                     break;
                 }
             }
 
             for (int t=beginTimePoint;t<endTimePoint;t++) {
                 if (sac.getSpimSource().isPresent(t)) {
-                    rais[t] = sac.getSpimSource().getSource(t, mipmapLevel);
+                    rais[t-beginTimePoint] = sac.getSpimSource().getSource(t, mipmapLevel);
                 } else {
-                   rais[t] = new ZerosRAI((NumericType)sac.getSpimSource().getType(), new long[]{xSize,ySize,zSize});
+                   rais[t-beginTimePoint] = new ZerosRAI((NumericType)sac.getSpimSource().getType(), new long[]{xSize,ySize,zSize});
                 }
             }
 
