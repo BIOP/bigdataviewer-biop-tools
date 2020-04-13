@@ -1,25 +1,14 @@
 package bdv.util;
 
-import java.util.ArrayList;
 
-import bdv.AbstractViewerSetupImgLoader;
-import bdv.ViewerImgLoader;
-import bdv.img.cache.CacheArrayLoader;
-import bdv.img.cache.VolatileGlobalCellCache;
-import bdv.img.virtualstack.VirtualStackVolatileARGBArrayLoader;
-import bdv.img.virtualstack.VirtualStackVolatileByteArrayLoader;
-import bdv.img.virtualstack.VirtualStackVolatileFloatArrayLoader;
-import bdv.img.virtualstack.VirtualStackVolatileShortArrayLoader;
-import ij.ImagePlus;
-import mpicbg.spim.data.generic.sequence.BasicSetupImgLoader;
-import mpicbg.spim.data.generic.sequence.ImgLoaderHint;
-import mpicbg.spim.data.generic.sequence.TypedBasicImgLoader;
+import java.util.HashMap;
+import java.util.function.Function;
+
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.Volatile;
 import net.imglib2.cache.img.CachedCellImg;
 import net.imglib2.cache.volatiles.CacheHints;
 import net.imglib2.cache.volatiles.LoadingStrategy;
-import net.imglib2.img.NativeImg;
 import net.imglib2.img.basictypeaccess.volatiles.VolatileAccess;
 import net.imglib2.img.basictypeaccess.volatiles.array.VolatileByteArray;
 import net.imglib2.img.basictypeaccess.volatiles.array.VolatileFloatArray;
@@ -29,6 +18,7 @@ import net.imglib2.img.cell.AbstractCellImg;
 import net.imglib2.img.cell.CellGrid;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.NativeType;
+import net.imglib2.type.PrimitiveType;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
@@ -37,6 +27,15 @@ import net.imglib2.type.volatiles.VolatileARGBType;
 import net.imglib2.type.volatiles.VolatileFloatType;
 import net.imglib2.type.volatiles.VolatileUnsignedByteType;
 import net.imglib2.type.volatiles.VolatileUnsignedShortType;
+
+import bdv.AbstractViewerSetupImgLoader;
+import bdv.ViewerImgLoader;
+import bdv.img.cache.CacheArrayLoader;
+import bdv.img.cache.VolatileGlobalCellCache;
+import ij.ImagePlus;
+import mpicbg.spim.data.generic.sequence.BasicSetupImgLoader;
+import mpicbg.spim.data.generic.sequence.ImgLoaderHint;
+import mpicbg.spim.data.generic.sequence.TypedBasicImgLoader;
 
 /**
  * ImageLoader backed by a ImagePlus. The ImagePlus may be virtual and in
@@ -62,83 +61,28 @@ import net.imglib2.type.volatiles.VolatileUnsignedShortType;
  *
  * @author Tobias Pietzsch &lt;tobias.pietzsch@gmail.com&gt;
  */
-public abstract class VirtualStackImageLoaderTimeShifted< T extends NativeType< T >, V extends Volatile< T > & NativeType< V >, A extends VolatileAccess >
+public class VirtualStackImageLoaderTimeShifted< T extends NativeType< T >, V extends Volatile< T > & NativeType< V >, A extends VolatileAccess >
         implements ViewerImgLoader, TypedBasicImgLoader< T >
 {
-    public static VirtualStackImageLoaderTimeShifted< FloatType, VolatileFloatType, VolatileFloatArray > createFloatInstance( final ImagePlus imp, int timeShift )
-    {
-        return new VirtualStackImageLoaderTimeShifted< FloatType, VolatileFloatType, VolatileFloatArray >(
-                imp, new VirtualStackVolatileFloatArrayLoader( imp ), new FloatType(), new VolatileFloatType(), timeShift )
-        {
-            @Override
-            protected void linkType( final CachedCellImg< FloatType, VolatileFloatArray > img )
-            {
-                img.setLinkedType( new FloatType( img ) );
-            }
 
-            @Override
-            protected void linkVolatileType( final CachedCellImg< VolatileFloatType, VolatileFloatArray > img )
-            {
-                img.setLinkedType( new VolatileFloatType( img ) );
-            }
-        };
+    public static VirtualStackImageLoaderTimeShifted< FloatType, VolatileFloatType, VolatileFloatArray > createFloatInstance( final ImagePlus imp, final int offsetTime )
+    {
+        return new VirtualStackImageLoaderTimeShifted<>( imp,array -> new VolatileFloatArray( ( float[] ) array, true ), new FloatType(), new VolatileFloatType(), offsetTime );
     }
 
-    public static VirtualStackImageLoaderTimeShifted< UnsignedShortType, VolatileUnsignedShortType, VolatileShortArray > createUnsignedShortInstance( final ImagePlus imp, int timeShift )
+    public static VirtualStackImageLoaderTimeShifted< UnsignedShortType, VolatileUnsignedShortType, VolatileShortArray > createUnsignedShortInstance( final ImagePlus imp, final int offsetTime )
     {
-        return new VirtualStackImageLoaderTimeShifted<UnsignedShortType, VolatileUnsignedShortType, VolatileShortArray>(
-                imp, new VirtualStackVolatileShortArrayLoader( imp ), new UnsignedShortType(), new VolatileUnsignedShortType(), timeShift )
-        {
-            @Override
-            protected void linkType( final CachedCellImg< UnsignedShortType, VolatileShortArray > img )
-            {
-                img.setLinkedType( new UnsignedShortType( img ) );
-            }
-
-            @Override
-            protected void linkVolatileType( final CachedCellImg< VolatileUnsignedShortType, VolatileShortArray > img )
-            {
-                img.setLinkedType( new VolatileUnsignedShortType( img ) );
-            }
-        };
+        return new VirtualStackImageLoaderTimeShifted<>( imp, array -> new VolatileShortArray( ( short[] ) array, true ), new UnsignedShortType(), new VolatileUnsignedShortType(), offsetTime );
     }
 
-    public static VirtualStackImageLoaderTimeShifted< UnsignedByteType, VolatileUnsignedByteType, VolatileByteArray > createUnsignedByteInstance( final ImagePlus imp, int timeShift )
+    public static VirtualStackImageLoaderTimeShifted< UnsignedByteType, VolatileUnsignedByteType, VolatileByteArray > createUnsignedByteInstance( final ImagePlus imp, final int offsetTime )
     {
-        return new VirtualStackImageLoaderTimeShifted<UnsignedByteType, VolatileUnsignedByteType, VolatileByteArray>(
-                imp, new VirtualStackVolatileByteArrayLoader( imp ), new UnsignedByteType(), new VolatileUnsignedByteType(), timeShift )
-        {
-            @Override
-            protected void linkType( final CachedCellImg< UnsignedByteType, VolatileByteArray > img )
-            {
-                img.setLinkedType( new UnsignedByteType( img ) );
-            }
-
-            @Override
-            protected void linkVolatileType( final CachedCellImg< VolatileUnsignedByteType, VolatileByteArray > img )
-            {
-                img.setLinkedType( new VolatileUnsignedByteType( img ) );
-            }
-        };
+        return new VirtualStackImageLoaderTimeShifted<>( imp, array -> new VolatileByteArray( ( byte[] ) array, true ), new UnsignedByteType(), new VolatileUnsignedByteType(), offsetTime );
     }
 
-    public static VirtualStackImageLoaderTimeShifted< ARGBType, VolatileARGBType, VolatileIntArray > createARGBInstance( final ImagePlus imp, int timeShift )
+    public static VirtualStackImageLoaderTimeShifted< ARGBType, VolatileARGBType, VolatileIntArray > createARGBInstance( final ImagePlus imp, final int offsetTime )
     {
-        return new VirtualStackImageLoaderTimeShifted< ARGBType, VolatileARGBType, VolatileIntArray >(
-                imp, new VirtualStackVolatileARGBArrayLoader( imp ), new ARGBType(), new VolatileARGBType(), timeShift )
-        {
-            @Override
-            protected void linkType( final CachedCellImg< ARGBType, VolatileIntArray > img )
-            {
-                img.setLinkedType( new ARGBType( img ) );
-            }
-
-            @Override
-            protected void linkVolatileType( final CachedCellImg< VolatileARGBType, VolatileIntArray > img )
-            {
-                img.setLinkedType( new VolatileARGBType( img ) );
-            }
-        };
+        return new VirtualStackImageLoaderTimeShifted<>( imp, array -> new VolatileIntArray( ( int[] ) array, true ), new ARGBType(), new VolatileARGBType(), offsetTime );
     }
 
     private static double[][] mipmapResolutions = new double[][] { { 1, 1, 1 } };
@@ -153,23 +97,40 @@ public abstract class VirtualStackImageLoaderTimeShifted< T extends NativeType< 
 
     private final int[] cellDimensions;
 
-    private final ArrayList< SetupImgLoader > setupImgLoaders;
+    private final HashMap< Integer, SetupImgLoader > setupImgLoaders;
 
-    protected VirtualStackImageLoaderTimeShifted( final ImagePlus imp, final CacheArrayLoader< A > loader, final T type, final V volatileType, int timeShift  )
+    private static int getByteCount( final PrimitiveType primitiveType )
     {
-        this.loader = loader;
+        // TODO: PrimitiveType.getByteCount() should be public, then we wouldn't have to do this...
+        switch ( primitiveType )
+        {
+            case BYTE:
+                return 1;
+            case SHORT:
+                return 2;
+            case INT:
+            case FLOAT:
+            default:
+                return 4;
+        }
+    }
+
+    protected VirtualStackImageLoaderTimeShifted( final ImagePlus imp, final Function< Object, A > wrapPixels, final T type, final V volatileType, final int timeOffset )
+    {
+        this.loader = new VirtualStackArrayLoader<>( imp, wrapPixels, getByteCount( type.getNativeTypeFactory().getPrimitiveType() ) );
         dimensions = new long[] { imp.getWidth(), imp.getHeight(), imp.getNSlices() };
         cellDimensions = new int[] { imp.getWidth(), imp.getHeight(), 1 };
         final int numSetups = imp.getNChannels();
         cache = new VolatileGlobalCellCache( 1, 1 );
-        setupImgLoaders = new ArrayList<>();
+        setupImgLoaders = new HashMap<>();
         for ( int setupId = 0; setupId < numSetups; ++setupId )
-            setupImgLoaders.add( new SetupImgLoader( setupId, type, volatileType, timeShift ) );
+            setupImgLoaders.put( setupId, new SetupImgLoader( setupId, type, volatileType, timeOffset ) );
     }
 
-    protected abstract void linkType( CachedCellImg< T, A > img );
-
-    protected abstract void linkVolatileType( CachedCellImg< V, A > img );
+    protected VirtualStackImageLoaderTimeShifted( final ImagePlus imp, final Function< Object, A > wrapPixels, final T type, final V volatileType )
+    {
+        this( imp, wrapPixels, type, volatileType, 0 );
+    }
 
     @Override
     public VolatileGlobalCellCache getCacheControl()
@@ -183,35 +144,65 @@ public abstract class VirtualStackImageLoaderTimeShifted< T extends NativeType< 
         return setupImgLoaders.get( setupId );
     }
 
+    static class VirtualStackArrayLoader< A > implements CacheArrayLoader< A >
+    {
+        private final ImagePlus imp;
+
+        private final Function< Object, A > wrapPixels;
+
+        private final int bytesPerElement;
+
+
+        public VirtualStackArrayLoader( final ImagePlus imp, final Function< Object, A > wrapPixels, final int bytesPerElement )
+        {
+            this.imp = imp;
+            this.wrapPixels = wrapPixels;
+            this.bytesPerElement = bytesPerElement;
+        }
+
+        @Override
+        public A loadArray( final int timepoint, final int setup, final int level, final int[] dimensions, final long[] min ) throws InterruptedException
+        {
+            final int channel = setup + 1;
+            final int slice = ( int ) min[ 2 ] + 1;
+            final int frame = timepoint + 1;
+            return wrapPixels.apply( imp.getStack().getProcessor( imp.getStackIndex( channel, slice, frame ) ).getPixels() );
+        }
+
+        @Override
+        public int getBytesPerElement()
+        {
+            return bytesPerElement;
+        }
+    }
+
     public class SetupImgLoader extends AbstractViewerSetupImgLoader< T, V >
     {
         private final int setupId;
-        private final int timeShift;
 
-        protected SetupImgLoader( final int setupId, final T type, final V volatileType, int timeShift )
+        private final int timeOffset;
+
+        protected SetupImgLoader( final int setupId, final T type, final V volatileType, final int timeOffset )
         {
             super( type, volatileType );
             this.setupId = setupId;
-            this.timeShift = timeShift;
+            this.timeOffset = timeOffset;
         }
 
         @Override
         public RandomAccessibleInterval< V > getVolatileImage( final int timepointId, final int level, final ImgLoaderHint... hints )
         {
-            return prepareCachedImage( timepointId-timeShift, level, LoadingStrategy.BUDGETED, volatileType );
+            return prepareCachedImage( timepointId-timeOffset, level, LoadingStrategy.BUDGETED, volatileType );
         }
 
         @Override
         public RandomAccessibleInterval< T > getImage( final int timepointId, final int level, final ImgLoaderHint... hints )
         {
-            return prepareCachedImage( timepointId-timeShift, level, LoadingStrategy.BLOCKING, type );
+            return prepareCachedImage( timepointId-timeOffset, level, LoadingStrategy.BLOCKING, type );
         }
 
         /**
-         * (Almost) create a {@link CachedCellImg} backed by the cache. The created
-         * image needs a {@link NativeImg#setLinkedType(net.imglib2.type.Type)
-         * linked type} before it can be used. The type should be either
-         * {@link ARGBType} and {@link VolatileARGBType}.
+         * Create a {@link CachedCellImg} backed by the cache.
          */
         protected < T extends NativeType< T > > AbstractCellImg< T, A, ?, ? > prepareCachedImage( final int timepointId, final int level, final LoadingStrategy loadingStrategy, final T type )
         {

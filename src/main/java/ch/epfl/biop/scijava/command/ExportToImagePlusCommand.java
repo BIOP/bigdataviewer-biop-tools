@@ -35,10 +35,21 @@ public class ExportToImagePlusCommand implements Command {
         imp_out = ImageJFunctions.wrap(sac.getSpimSource().getSource(timepoint,level), sac.getSpimSource().getName());
         imp_out.setDimensions(1,(int)sac.getSpimSource().getSource(timepoint,level).dimension(2),1);
 
+
+
         AffineTransform3D at3D = new AffineTransform3D();
         sac.getSpimSource().getSourceTransform(timepoint, level, at3D);
 
-        ImagePlusHelper.storeExtendedCalibrationToImagePlus(imp_out,at3D,"px",timepoint);
+        String unit = "px";
+
+        if (sac.getSpimSource().getVoxelDimensions() != null) {
+            unit = sac.getSpimSource().getVoxelDimensions().unit();
+            if (unit==null) {
+                unit = "px";
+            }
+        }
+
+        ImagePlusHelper.storeExtendedCalibrationToImagePlus(imp_out,at3D,unit,timepoint);
 
         // Color and Brightness contrast
 
