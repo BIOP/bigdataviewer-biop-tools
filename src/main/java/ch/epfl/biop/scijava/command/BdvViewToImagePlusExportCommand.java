@@ -66,7 +66,7 @@ public class BdvViewToImagePlusExportCommand<T extends RealType<T>> implements C
     @Parameter(label = "Half Thickness Z (above and below, physical unit)")
     public double zSize = 100;
 
-    @Parameter(label = "Start Timepoint (included)")
+    @Parameter(label = "Start Timepoint (included, starts at 0)")
     public int timepointBegin = 0;
 
     @Parameter(label = "End Timepoint (excluded)")
@@ -144,6 +144,12 @@ public class BdvViewToImagePlusExportCommand<T extends RealType<T>> implements C
                 .stream()
                 .map(sac -> new SourceResampler(sac,model,true, interpolate).get())
                 .collect(Collectors.toList());
+
+        resampledSourceList.forEach(sac -> {
+            SourceAndConverterServices.getSourceAndConverterService().remove(sac);
+        });
+
+        SourceAndConverterServices.getSourceAndConverterService().register(model);
 
         // Fetch the unit of the first source
         updateUnit();
