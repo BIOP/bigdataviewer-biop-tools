@@ -149,8 +149,9 @@
 
 		<scijava-ui-swing.version>0.13.0</scijava-ui-swing.version>
 		<!--<bigwarp_fiji.version>5.1.0</bigwarp_fiji.version>-->
-		<scijava.app.directory>C:\Users\nicol\Desktop\fiji-win64-bdv-playground/Fiji.app/</scijava.app.directory>
+		<scijava.app.directory>C:/Users/nicol/Desktop/fiji-win64-bdv-playground/Fiji.app/</scijava.app.directory>
 		<scijava.deleteOtherVersions>true</scijava.deleteOtherVersions>
+
 	</properties>
 
 	<repositories>
@@ -259,13 +260,13 @@
         <dependency>
             <groupId>sc.fiji</groupId>
             <artifactId>bigdataviewer-playground</artifactId>
-            <version>0.1.8</version>
+            <version>0.1.9</version>
         </dependency>
 
 		<dependency>
 			<groupId>ch.epfl.biop</groupId>
 			<artifactId>bigdataviewer-bioformats</artifactId>
-			<version>0.2.2</version>
+			<version>0.2.4</version>
 		</dependency>
 
 	</dependencies>

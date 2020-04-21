@@ -1,7 +1,5 @@
 package ch.epfl.biop.spimdata;
 
-import bdv.img.imagestack.ImageStackImageLoader;
-import bdv.img.virtualstack.VirtualStackImageLoader;
 import bdv.spimdata.SequenceDescriptionMinimal;
 import bdv.spimdata.SpimDataMinimal;
 import bdv.util.ImagePlusHelper;
