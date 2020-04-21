@@ -16,7 +16,7 @@ import mpicbg.spim.data.registration.ViewRegistrations;
 import mpicbg.spim.data.sequence.*;
 import net.imglib2.FinalDimensions;
 import net.imglib2.realtransform.AffineTransform3D;
-import spimdata.util.DisplaySettings;
+import spimdata.util.Displaysettings;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -124,7 +124,7 @@ public class SpimDataFromImagePlusGetter implements Runnable, Function<ImagePlus
         {
             final BasicViewSetup setup = new BasicViewSetup( s, String.format( imp.getTitle() + " channel %d", s + 1 ), size, voxelSize );
             setup.setAttribute( new Channel( s + 1 ) );
-            DisplaySettings ds = new DisplaySettings(s+1);
+            Displaysettings ds = new Displaysettings(s+1);
             ds.min = impSingleChannel[s].getDisplayRangeMin();
             ds.max = impSingleChannel[s].getDisplayRangeMax();
             if (imp.getType() == ImagePlus.COLOR_RGB) {
