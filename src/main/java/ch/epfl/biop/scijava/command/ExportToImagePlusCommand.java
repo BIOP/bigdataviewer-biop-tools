@@ -19,16 +19,16 @@ import java.awt.*;
 public class ExportToImagePlusCommand implements Command {
 
     @Parameter
-    SourceAndConverter sac;
+    public SourceAndConverter sac;
 
     @Parameter
-    int level;
+    public int level;
 
     @Parameter
-    int timepoint;
+    public int timepoint;
 
     @Parameter(type = ItemIO.OUTPUT)
-    ImagePlus imp_out;
+    public ImagePlus imp_out;
 
     @Override
     public void run() {

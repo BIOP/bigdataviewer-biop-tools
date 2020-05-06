@@ -360,8 +360,8 @@ public class ImagePlusHelper {
 
         return imp;
     }
-
-    public static<T extends NativeType<T>> Img cacheRAI(RandomAccessibleInterval<T> source) {
+    //<T extends NativeType<T>>
+    public static< T extends NumericType<T> & NativeType<T>> Img cacheRAI(RandomAccessibleInterval<T> source) {
         final int[] cellDimensions = new int[source.numDimensions()];
         cellDimensions[0] = (int) (source.dimension(0)); // X
         cellDimensions[1] = (int) (source.dimension(1)); // Y
@@ -398,7 +398,7 @@ public class ImagePlusHelper {
     @SuppressWarnings( { "unchecked", "rawtypes" } )
     public static final <T extends NativeType<T>> RandomAccessibleInterval<T> wrapAsVolatileCachedCellImg(
             final RandomAccessibleInterval<T> source,
-            final int[] blockSize) throws IOException {
+            final int[] blockSize) {
 
         final long[] dimensions = Intervals.dimensionsAsLongArray(source);
         final CellGrid grid = new CellGrid(dimensions, blockSize);
