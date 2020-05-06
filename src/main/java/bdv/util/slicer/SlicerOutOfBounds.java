@@ -135,6 +135,9 @@ public class SlicerOutOfBounds< T > extends AbstractLocalizable implements OutOf
         final long q = outOfBoundsRandomAccess.getLongPosition( d );
         if ( q == max[ d ] ) {
             outOfBoundsRandomAccess.setPosition(min[d], d);
+            /*if (d<2) {
+                outOfBoundsRandomAccess.setPosition(outOfBoundsRandomAccess.getLongPosition(2)+1, 2);
+            }*/
         } else {
             outOfBoundsRandomAccess.fwd(d);
         }
@@ -167,17 +170,41 @@ public class SlicerOutOfBounds< T > extends AbstractLocalizable implements OutOf
         final long maxD = max[ d ];
         if ( position < minD )
         {
+            if (d==1) {
+                final int shiftZ = (int) (( position - maxD ) / dimension[ d ]);
+
+                System.out.println(shiftZ);
+                outOfBoundsRandomAccess.setPosition(outOfBoundsRandomAccess.getLongPosition(2)-shiftZ,2);
+
+
+            }
+
             outOfBoundsRandomAccess.setPosition( maxD - ( maxD - position ) % dimension[ d ], d );
             dimIsOutOfBounds[ d ] = isOutOfBounds = true;
+
         }
         else if ( position > maxD )
         {
-            outOfBoundsRandomAccess.setPosition( minD + ( position - minD ) % dimension[ d ], d );
-            dimIsOutOfBounds[ d ] = isOutOfBounds = true;
+            if (d==1) {
+                final int shiftZ = (int) (( position - maxD ) / dimension[ d ]);
+                outOfBoundsRandomAccess.setPosition(outOfBoundsRandomAccess.getLongPosition(2)-shiftZ,2);
+            }
+
+            outOfBoundsRandomAccess.setPosition(minD + (position - minD) % dimension[d], d);
+            dimIsOutOfBounds[d] = isOutOfBounds = true;
+
         }
         else
         {
-            outOfBoundsRandomAccess.setPosition( position, d );
+            if(d==2) {
+                long ypos = this.getLongPosition(1);
+                final int shiftZ = (int) (( ypos - max[1] ) / dimension[ 1 ]);
+                outOfBoundsRandomAccess.setPosition( position+shiftZ, d );
+            } else {
+                outOfBoundsRandomAccess.setPosition( position, d );
+            }
+
+
             if ( isOutOfBounds )
             {
                 dimIsOutOfBounds[ d ] = false;

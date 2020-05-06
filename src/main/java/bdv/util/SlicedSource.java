@@ -22,10 +22,8 @@ public class SlicedSource< T extends NumericType<T> & NativeType<T>> extends Res
         RandomAccessibleInterval<T> nonResliced = super.buildSource(t,level);
         int nSlices = (int) nonResliced.dimension(2);
         List<RandomAccessibleInterval<T>> zSlices = new ArrayList<>(nSlices);
-        for (int z=0;z<nSlices;z++) {
-            zSlices.add(Views.hyperSlice(nonResliced,2,z));
-        }
-        return Views.interval(SlicerViews.extendSlicer(nonResliced), new FinalInterval(nonResliced.dimension(0), nonResliced.dimension(1)*60, nonResliced.dimension(2)));
+
+        return Views.interval(SlicerViews.extendSlicer(nonResliced), new FinalInterval(nonResliced.dimension(0), nonResliced.dimension(1)*60, 1));
         //return Views.addDimension(Views.concatenate(1,zSlices),0,0);
     }
 
