@@ -3,6 +3,7 @@ package ch.epfl.biop.scijava.command;
 import bdv.util.Elliptical3DTransform;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
+import org.scijava.command.CommandService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
@@ -17,6 +18,9 @@ public class Elliptic3DTransformCreatorCommand implements Command {
     @Parameter(type = ItemIO.OUTPUT)
     Elliptical3DTransform e3Dt;
 
+    @Parameter
+    CommandService cs;
+
     @Override
     public void run() {
         e3Dt = new Elliptical3DTransform();
@@ -30,5 +34,7 @@ public class Elliptic3DTransformCreatorCommand implements Command {
                 "tx", tx,
                 "ty", ty,
                 "tz", tz);
+
+        cs.run(DisplayEllipseFromTransformCommand.class, true, "rMin", 0.9, "rMax", 1.1, "e3Dt", e3Dt);
     }
 }

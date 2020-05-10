@@ -17,7 +17,7 @@ import sc.fiji.bdvpg.services.SourceAndConverterServices;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterUtils;
 
 
-@Plugin(type = Command.class, menuPath = "BigDataViewer>Sources>Transform>Create Ellipsoid Source")
+//@Plugin(type = Command.class, menuPath = "BigDataViewer>Sources>Transform>Create Ellipsoid Source")
 public class DisplayEllipseFromTransformCommand implements Command {
 
     @Parameter(type = ItemIO.OUTPUT)
@@ -35,7 +35,10 @@ public class DisplayEllipseFromTransformCommand implements Command {
         RealRandomAccessible<UnsignedShortType> rra = (new Procedural3DImageShort(
             p -> {
               if ((p[0]>rMin)&&(p[0]<rMax)) {
-                  return 255;
+                  if ((p[1] > Math.PI/2.0)) { // poles are highlighted
+                      return (int)(255.0*(1+0.25*Math.cos(20*p[2]))/2.0);
+                  } else
+                      return (int)(126.0*(1+0.25*Math.cos(20*p[2]))/2.0);
               } else {
                   return 0;
               }
@@ -43,8 +46,8 @@ public class DisplayEllipseFromTransformCommand implements Command {
 
 
         Interval interval = new FinalInterval(
-                new long[]{ -100, -100, -100 },
-                new long[]{ 100, 100, 100 });
+                new long[]{ -2, -2, -2 },
+                new long[]{ 2, 2, 2 });
 
         final UnsignedShortType type = rra.realRandomAccess().get();
 
