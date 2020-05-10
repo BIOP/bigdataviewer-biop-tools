@@ -4,18 +4,13 @@ import bdv.tools.brightness.ConverterSetup;
 import bdv.util.ImagePlusHelper;
 import bdv.viewer.SourceAndConverter;
 import ij.ImagePlus;
-import ij.process.LUT;
-import net.imglib2.display.ColorConverter;
-import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.realtransform.AffineTransform3D;
-import net.imglib2.type.numeric.ARGBType;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
 
-import java.awt.*;
 import java.util.*;
 import java.util.List;
 import java.util.function.Function;
@@ -61,9 +56,6 @@ public class ExportToImagePlusCommand implements Command {
         sourceList = sorter.apply(Arrays.asList(sacs));
 
         imp_out = ImagePlusHelper.wrap(sourceList.stream().map(sac -> (SourceAndConverter) sac).collect(Collectors.toList()), mapSacToCs, mapSacToMml, timepointBegin, timepointEnd, false );
-
-        /*ImageJFunctions.wrap(sac.getSpimSource().getSource(timepoint,level), sac.getSpimSource().getName());
-        imp_out.setDimensions(1,(int)sac.getSpimSource().getSource(timepoint,level).dimension(2),1);*/
 
         AffineTransform3D at3D = new AffineTransform3D();
         sacs[0].getSpimSource().getSourceTransform(timepointBegin, level, at3D);
