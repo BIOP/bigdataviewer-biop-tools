@@ -26,7 +26,7 @@
 
 	<groupId>ch.epfl.biop</groupId>
 	<artifactId>bigdataviewer-biop-tools</artifactId>
-	<version>0.1.6-SNAPSHOT</version>
+	<version>0.1.6</version>
 
 	<name>Biop Bigdataviewer Tools and Plugins </name>
 	<description>Big data viewer tools BIOP - EPFL</description>
@@ -260,13 +260,13 @@
         <dependency>
             <groupId>sc.fiji</groupId>
             <artifactId>bigdataviewer-playground</artifactId>
-            <version>0.2.0-SNAPSHOT</version>
+            <version>0.2.0</version>
         </dependency>
 
 		<dependency>
 			<groupId>ch.epfl.biop</groupId>
 			<artifactId>bigdataviewer-bioformats</artifactId>
-			<version>0.2.5-SNAPSHOT</version>
+			<version>0.2.5</version>
 		</dependency>
 
 	</dependencies>
