@@ -180,7 +180,7 @@ public class Rot3DReSampleCommand implements Command {
         if (model == null) {
             System.out.println("model is nul");
         }
-        SourceResampler sampler = new SourceResampler(null, model, false, interpolate);
+        SourceResampler sampler = new SourceResampler(null, model, false, false, interpolate);
 
         if (sacs == null) {
             System.out.println("sacs is null");

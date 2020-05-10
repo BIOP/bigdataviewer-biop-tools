@@ -29,10 +29,16 @@ public class SlicerOutOfBounds< T > extends AbstractLocalizable implements OutOf
 
     protected boolean isOutOfBounds = false;
 
+    final int shiftedAxis, displayerAxis;
+
     // Useless
-    public SlicerOutOfBounds( final SlicerOutOfBounds< T > outOfBounds )
+    public SlicerOutOfBounds( final SlicerOutOfBounds< T > outOfBounds)
     {
         super( outOfBounds.numDimensions() );
+
+        this.shiftedAxis = outOfBounds.shiftedAxis;
+        this.displayerAxis = outOfBounds.displayerAxis;
+
         dimension = new long[ n ];
         min = new long[ n ];
         beforeMin = new long[ n ];
@@ -54,9 +60,13 @@ public class SlicerOutOfBounds< T > extends AbstractLocalizable implements OutOf
     }
 
     //
-    public < F extends Interval & RandomAccessible< T > > SlicerOutOfBounds( final F f )
+    public < F extends Interval & RandomAccessible< T > > SlicerOutOfBounds( final F f, int shiftedAxis, int displayerAxis  )
     {
         super( f.numDimensions() );
+
+        this.shiftedAxis = shiftedAxis;
+        this.displayerAxis = displayerAxis;
+
         dimension = new long[ n ];
         f.dimensions( dimension );
         min = new long[ n ];
@@ -119,7 +129,7 @@ public class SlicerOutOfBounds< T > extends AbstractLocalizable implements OutOf
     }
 
     /* Positionable */
-
+    // TODO : MAKE SURE IT WORKS / FIX IT !
     @Override
     final public void fwd( final int d )
     {
@@ -135,15 +145,13 @@ public class SlicerOutOfBounds< T > extends AbstractLocalizable implements OutOf
         final long q = outOfBoundsRandomAccess.getLongPosition( d );
         if ( q == max[ d ] ) {
             outOfBoundsRandomAccess.setPosition(min[d], d);
-            /*if (d<2) {
-                outOfBoundsRandomAccess.setPosition(outOfBoundsRandomAccess.getLongPosition(2)+1, 2);
-            }*/
         } else {
             outOfBoundsRandomAccess.fwd(d);
         }
     }
 
     @Override
+    // TODO : MAKE SURE IT WORKS / FIX IT !
     final public void bck( final int d )
     {
         final long p = --position[ d ];
@@ -196,14 +204,13 @@ public class SlicerOutOfBounds< T > extends AbstractLocalizable implements OutOf
         }
         else
         {
-            if(d==2) {
-                long ypos = this.getLongPosition(1);
-                final int shiftZ = (int) (( ypos - max[1] ) / dimension[ 1 ]);
+            if(d==shiftedAxis) {
+                long posDisplayAxis = this.getLongPosition(displayerAxis);
+                final int shiftZ = (int) (( posDisplayAxis - max[displayerAxis] ) / dimension[ displayerAxis ]);
                 outOfBoundsRandomAccess.setPosition( position+shiftZ, d );
             } else {
                 outOfBoundsRandomAccess.setPosition( position, d );
             }
-
 
             if ( isOutOfBounds )
             {

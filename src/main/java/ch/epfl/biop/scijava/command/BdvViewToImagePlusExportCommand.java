@@ -142,7 +142,7 @@ public class BdvViewToImagePlusExportCommand<T extends RealType<T>> implements C
         // The core of it : resampling each source with the model
         List<SourceAndConverter> resampledSourceList = sourceList
                 .stream()
-                .map(sac -> new SourceResampler(sac,model,true, interpolate).get())
+                .map(sac -> new SourceResampler(sac,model,true, false, interpolate).get())
                 .collect(Collectors.toList());
 
         resampledSourceList.forEach(sac -> {

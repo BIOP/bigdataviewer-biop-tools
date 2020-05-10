@@ -1,14 +1,15 @@
 package ch.epfl.biop.sourceandconverter.transform;
 
-import bdv.util.SlicedSource;
+import bdv.util.ZSlicedSource;
 import bdv.util.VolatileSource;
 import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterUtils;
 
 import java.util.function.Function;
+import java.util.function.Supplier;
 
-public class SourceSlicer implements Runnable, Function<SourceAndConverter, SourceAndConverter> {
+public class SourceMosaicZSlicer implements Runnable, Function<SourceAndConverter, SourceAndConverter> {
 
     SourceAndConverter sac_in;
 
@@ -20,12 +21,20 @@ public class SourceSlicer implements Runnable, Function<SourceAndConverter, Sour
 
     boolean cache;
 
-    public SourceSlicer(SourceAndConverter sac_in, SourceAndConverter model, boolean reuseMipmaps, boolean cache, boolean interpolate) {
+    Supplier<Long> subSlicer;
+
+    public SourceMosaicZSlicer(SourceAndConverter sac_in,
+                               SourceAndConverter model,
+                               boolean reuseMipmaps,
+                               boolean cache,
+                               boolean interpolate,
+                               Supplier<Long> subSlicer) {
         this.reuseMipMaps = reuseMipmaps;
         this.model = model;
         this.sac_in = sac_in;
         this.interpolate = interpolate;
         this.cache = cache;
+        this.subSlicer = subSlicer;
     }
 
     @Override
@@ -40,12 +49,13 @@ public class SourceSlicer implements Runnable, Function<SourceAndConverter, Sour
     @Override
     public SourceAndConverter apply(SourceAndConverter src) {
         Source srcRsampled =
-                new SlicedSource(
+                new ZSlicedSource(
                         src.getSpimSource(),
                         model.getSpimSource(),
                         reuseMipMaps,
                         cache,
-                        interpolate);
+                        interpolate,
+                        subSlicer);
 
         SourceAndConverter sac;
         if (src.asVolatile()!=null) {
@@ -60,12 +70,13 @@ public class SourceSlicer implements Runnable, Function<SourceAndConverter, Sour
                             interpolate)*/;
             } else {
                 vsrcRsampled =
-                        new SlicedSource(
+                        new ZSlicedSource(
                             src.asVolatile().getSpimSource(),
                             model.getSpimSource(),
                             reuseMipMaps,
                             false,
-                            interpolate);
+                            interpolate,
+                            subSlicer);
             }
             vsac = new SourceAndConverter(vsrcRsampled,
                     SourceAndConverterUtils.cloneConverter(src.asVolatile().getConverter()));

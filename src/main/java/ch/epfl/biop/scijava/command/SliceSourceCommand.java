@@ -2,7 +2,7 @@ package ch.epfl.biop.scijava.command;
 
 import bdv.util.BdvHandle;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.sourceandconverter.transform.SourceSlicer;
+import ch.epfl.biop.sourceandconverter.transform.SourceMosaicZSlicer;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imglib2.RealPoint;
 import net.imglib2.cache.img.DiskCachedCellImgFactory;
@@ -86,7 +86,7 @@ public class SliceSourceCommand implements Command {
         // The core of it : resampling each source with the model
         java.util.List<SourceAndConverter> resampledSourceList = sourceList
                 .stream()
-                .map(sac -> new SourceSlicer(sac,model,reusemipmaps, cache, interpolate).get())
+                .map(sac -> new SourceMosaicZSlicer(sac,model,reusemipmaps, cache, interpolate, () -> (long) 1).get())
                 .collect(Collectors.toList());
 
         resampledSourceList.forEach(sac -> {
