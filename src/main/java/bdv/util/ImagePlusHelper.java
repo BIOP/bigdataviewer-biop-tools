@@ -300,6 +300,10 @@ public class ImagePlusHelper {
                                  int endTimePoint,
                                  boolean ignoreSourceLut) {
 
+        if (sacs.size()==1) {
+            return wrap(sacs.get(0), csMap.get(sacs.get(0)), mipmapMap.get(sacs.get(0)), beginTimePoint, endTimePoint, ignoreSourceLut);
+        }
+
         RandomAccessibleInterval[] raisList = new RandomAccessibleInterval[sacs.size()];
 
         for (int c=0;c<sacs.size();c++) {
