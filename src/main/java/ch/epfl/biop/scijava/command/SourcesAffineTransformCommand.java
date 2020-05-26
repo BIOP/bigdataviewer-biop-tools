@@ -7,8 +7,10 @@ import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
+import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterAndTimeRange;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterUtils;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceAffineTransformer;
+import sc.fiji.bdvpg.sourceandconverter.transform.SourceTransformHelper;
 
 import java.util.Arrays;
 
@@ -23,16 +25,22 @@ public class SourcesAffineTransformCommand implements Command {
     @Parameter(choices = {"Mutate", "Append"})
     String mode = "Mutate";
 
+    @Parameter
+    int timePointBegin;
+
+    @Parameter
+    int timePointEnd;
+
     @Override
     public void run() {
         SourceAffineTransformer sat = new SourceAffineTransformer(null, at3D);
         Arrays.asList(sources_in).stream().forEach(sac -> {
             switch (mode) {
                 case "Mutate":
-                    SourceAndConverterUtils.mutate(at3D, sac);
+                    SourceTransformHelper.mutate(at3D, new SourceAndConverterAndTimeRange(sac, timePointBegin, timePointEnd));
                     break;
                 case "Append":
-                    SourceAndConverterUtils.append(at3D, sac);
+                    SourceTransformHelper.append(at3D, new SourceAndConverterAndTimeRange(sac, timePointBegin, timePointEnd));
                     break;
             }
         });

@@ -7,7 +7,9 @@ import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
+import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterAndTimeRange;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterUtils;
+import sc.fiji.bdvpg.sourceandconverter.transform.SourceTransformHelper;
 
 
 @Plugin(type = Command.class, menuPath = "BigDataViewer>Sources>Transform>Center Sources")
@@ -47,10 +49,10 @@ public class SourcesRecenterCommand implements Command {
 
             switch (mode) {
                 case "Mutate":
-                    SourceAndConverterUtils.mutate(at3DCenter, sac);
+                    SourceTransformHelper.mutate(at3DCenter, new SourceAndConverterAndTimeRange(sac, timePoint));
                     break;
                 case "Append":
-                    SourceAndConverterUtils.append(at3DCenter, sac);
+                    SourceTransformHelper.append(at3DCenter, new SourceAndConverterAndTimeRange(sac, timePoint));
                     break;
             }
         }

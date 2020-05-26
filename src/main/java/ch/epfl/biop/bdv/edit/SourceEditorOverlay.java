@@ -14,9 +14,12 @@ import net.imglib2.realtransform.AffineTransform3D;
 import java.awt.*;
 import java.awt.geom.GeneralPath;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static bdv.viewer.ViewerStateChange.NUM_SOURCES_CHANGED;
+import static bdv.viewer.ViewerStateChange.VISIBILITY_CHANGED;
 
 public class SourceEditorOverlay extends BdvOverlay implements ViewerStateChangeListener {
 
@@ -25,21 +28,24 @@ public class SourceEditorOverlay extends BdvOverlay implements ViewerStateChange
     public SourceEditorOverlay(BdvHandle bdvh) {
         this.bdvh = bdvh;
         bdvh.getViewerPanel().state().changeListeners().add(this);
-        for (SourceAndConverter sac : bdvh.getViewerPanel().state().getSources()) {
-            selectedSources.add(new SelectedSource(sac));
+        for (SourceAndConverter sac : bdvh.getViewerPanel().state().getVisibleSources()) {
+            sourcesBoxOverlay.add(new SourceBoxOverlay(sac, "DEFAULT") );
         }
+
+        style.put("DEFAULT", new OverlayStyle());
+        style.put("SELECTED", new SelectedOverlayStyle());
     }
 
     private int canvasWidth;
 
     private int canvasHeight;
 
-    private List<SelectedSource> selectedSources = new ArrayList<>();
+    private List<SourceBoxOverlay> sourcesBoxOverlay = new ArrayList<>();
 
     @Override
     public synchronized void draw(Graphics2D g) {
-        for (SelectedSource source : selectedSources) {
-            //System.out.println(source.sac.getSpimSource().getName());
+
+        for (SourceBoxOverlay source : sourcesBoxOverlay) {
             source.drawBoxOverlay(g);
         }
     }
@@ -52,49 +58,48 @@ public class SourceEditorOverlay extends BdvOverlay implements ViewerStateChange
     }
 
     private synchronized void updateSourceList() {
-        System.err.println("Number of sources changed!");
-        // TODO : remove the sources which are selected which could have been removed
+        //System.err.println("Number of sources changed!");
         //throw new UnsupportedOperationException();
 
-        selectedSources.clear();
-        for (SourceAndConverter sac : bdvh.getViewerPanel().state().getSources()) {
+        sourcesBoxOverlay.clear();
+        for (SourceAndConverter sac : bdvh.getViewerPanel().state().getVisibleSources()) {
             if (sac.getSpimSource().getSource(0,0)!=null) { // TODO : fix hack to avoid dirty overlay filter
-                selectedSources.add(new SelectedSource(sac));
+                sourcesBoxOverlay.add(new SourceBoxOverlay(sac, "DEFAULT"));
             }
         }
     }
 
     @Override
     public void viewerStateChanged(ViewerStateChange change) {
-        if (change.equals(NUM_SOURCES_CHANGED)) {
+        if (change.equals(NUM_SOURCES_CHANGED)||change.equals(VISIBILITY_CHANGED)) {
             updateSourceList();
         }
     }
 
+    class SourceBoxOverlay implements TransformedBox {
 
-    private final Color backColor = new Color( 0x00994499 );
-
-    private final Color frontColor = Color.GREEN;
-
-    private final Stroke normalStroke = new BasicStroke();
-
-    private final Stroke intersectionStroke = new BasicStroke( 1f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1f, new float[] { 10f, 10f }, 0f );
-
-    private final Color intersectionColor = Color.WHITE.darker();
-
-    private Color intersectionFillColor = new Color( 0x88994499, true );
-
-    class SelectedSource implements TransformedBox {
         final SourceAndConverter<?> sac;
+
         final RenderBoxHelper rbh;
 
-        public SelectedSource(SourceAndConverter sac) {
+        String styleOverlay;
+
+        boolean showGizmo = false; // TODO Blender style Gizmo
+
+        public SourceBoxOverlay(SourceAndConverter sac, String styleOverlay) {
             this.sac = sac;
             rbh = new RenderBoxHelper();
+            this.styleOverlay = styleOverlay;
         }
 
-        public void drawBoxOverlay(Graphics g) {
-            final Graphics2D graphics = ( Graphics2D ) g;
+        public void setStyleOverlay(String styleOverlay) {
+            this.styleOverlay = styleOverlay;
+        }
+
+        public void drawBoxOverlay(Graphics2D graphics) {
+
+            OverlayStyle os = style.get(styleOverlay);
+
 
             final GeneralPath front = new GeneralPath();
             final GeneralPath back = new GeneralPath();
@@ -121,34 +126,37 @@ public class SourceEditorOverlay extends BdvOverlay implements ViewerStateChange
 
             //if ( displayMode.get() == FULL )
             {
-                graphics.setStroke( normalStroke );
-                graphics.setPaint( backColor );
+                graphics.setStroke( os.normalStroke );
+                graphics.setPaint( os.backColor );
                 graphics.draw( back );
             }
 
             //if ( fillIntersection )
             {
-                graphics.setPaint( intersectionFillColor );
+                graphics.setPaint( os.intersectionFillColor );
                 graphics.fill( intersection );
             }
 
-            graphics.setPaint( intersectionColor );
-            graphics.setStroke( intersectionStroke );
+            graphics.setPaint( os.intersectionColor );
+            graphics.setStroke( os.intersectionStroke );
             graphics.draw( intersection );
 
-            /*
-            if ( displayMode.get() == FULL )
+
+            /*if ( displayMode.get() == FULL )
+
+            boolean showCornerHandles = true;
             {
+
                 graphics.setStroke( normalStroke );
                 graphics.setPaint( frontColor );
                 graphics.draw( front );
 
                 if ( showCornerHandles )
                 {
-                    final int id = getHighlightedCornerIndex();
+                    final int id = 0;//getHighlightedCornerIndex();
                     if ( id >= 0 )
                     {
-                        final double[] p = renderBoxHelper.projectedCorners[ id ];
+                        final double[] p = rbh.projectedCorners[ id ];
                         final Ellipse2D cornerHandle = new Ellipse2D.Double(
                                 p[ 0 ] - HANDLE_RADIUS,
                                 p[ 1 ] - HANDLE_RADIUS,
@@ -169,7 +177,7 @@ public class SourceEditorOverlay extends BdvOverlay implements ViewerStateChange
         public RealInterval getInterval() {
             long[] dims = new long[3];
             sac.getSpimSource().getSource(bdvh.getViewerPanel().state().getCurrentTimepoint(),0).dimensions(dims);
-            return new FinalRealInterval(new double[]{0,0,0}, new double[]{dims[0], dims[1], dims[2]});
+            return new FinalRealInterval(new double[]{-0.5,-0.5,-0.5}, new double[]{dims[0]-0.5, dims[1]-0.5, dims[2]-0.5});
         }
 
         @Override
@@ -177,4 +185,38 @@ public class SourceEditorOverlay extends BdvOverlay implements ViewerStateChange
             sac.getSpimSource().getSourceTransform(bdvh.getViewerPanel().state().getCurrentTimepoint(),0,transform);
         }
     }
+
+
+    Map<String, OverlayStyle> style = new HashMap<>();
+
+    class OverlayStyle {
+        Color backColor = new Color( 0x00994499 );
+
+        Color frontColor = Color.GREEN;
+
+        Color intersectionFillColor = new Color( 0x88994499, true );
+
+        Stroke normalStroke = new BasicStroke();
+
+        Stroke intersectionStroke = new BasicStroke( 1f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1f, new float[] { 10f, 10f }, 0f );
+
+        Color intersectionColor = Color.WHITE.darker();
+    }
+
+    class SelectedOverlayStyle extends OverlayStyle {
+        Color backColor = new Color(0xF7BF18);
+
+        Color frontColor = Color.GREEN;
+
+        Color intersectionFillColor = new Color(0xE5B66A00, true );
+
+        Stroke normalStroke = new BasicStroke();
+
+        Stroke intersectionStroke = new BasicStroke( 1f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1f, new float[] { 10f, 10f }, 0f );
+
+        Color intersectionColor = Color.WHITE.darker();
+    }
+
+
+
 }

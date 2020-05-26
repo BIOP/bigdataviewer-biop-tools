@@ -146,6 +146,9 @@
 		<spim_data.version>2.2.4</spim_data.version>
 		<ui-behaviour.version>2.0.1</ui-behaviour.version>
 
+		<bigdataviewer-playground.version>0.2.1</bigdataviewer-playground.version>
+		<bigdataviewer-bioformats.version>0.2.5</bigdataviewer-bioformats.version>
+
 
 		<scijava-ui-swing.version>0.13.0</scijava-ui-swing.version>
 		<!--<bigwarp_fiji.version>5.1.0</bigwarp_fiji.version>-->
@@ -260,13 +263,13 @@
         <dependency>
             <groupId>sc.fiji</groupId>
             <artifactId>bigdataviewer-playground</artifactId>
-            <version>0.2.0</version>
+            <version>${bigdataviewer-playground.version}</version>
         </dependency>
 
 		<dependency>
 			<groupId>ch.epfl.biop</groupId>
 			<artifactId>bigdataviewer-bioformats</artifactId>
-			<version>0.2.5</version>
+			<version>${bigdataviewer-bioformats.version}</version>
 		</dependency>
 
 	</dependencies>
