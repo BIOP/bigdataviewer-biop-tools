@@ -79,7 +79,6 @@ public class BdvSelectorDemo {
             bdvh.getTriggerbindings().removeBehaviourMap("sources-editor");
         });
 
-
-
+        ssb.enable();
     }
 }

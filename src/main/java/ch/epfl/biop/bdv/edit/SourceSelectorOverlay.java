@@ -169,7 +169,7 @@ public class SourceSelectorOverlay extends BdvOverlay implements ViewerStateChan
 
         if (isCurrentlySelecting) {
             g.setStroke( styles.get("SELECTED").getNormalStroke() );
-            g.setPaint( styles.get("SELECTED").getIntersectionFillColor() );
+            g.setPaint( styles.get("SELECTED").getBackColor() );
             g.draw(getCurrentSelectionRectangle());
         }
 
@@ -293,7 +293,7 @@ public class SourceSelectorOverlay extends BdvOverlay implements ViewerStateChan
 
         Color frontColor = Color.GREEN;
 
-        Color intersectionFillColor = new Color( 0x88994499, true );
+        Color intersectionFillColor = new Color(0x32994499, true );
 
         Stroke normalStroke = new BasicStroke();
 
@@ -333,7 +333,7 @@ public class SourceSelectorOverlay extends BdvOverlay implements ViewerStateChan
 
         Color frontColor = Color.GREEN;
 
-        Color intersectionFillColor = new Color(0xE5B66A00, true );
+        Color intersectionFillColor = new Color(0x30B66A00, true );
 
         Stroke normalStroke = new BasicStroke();
 

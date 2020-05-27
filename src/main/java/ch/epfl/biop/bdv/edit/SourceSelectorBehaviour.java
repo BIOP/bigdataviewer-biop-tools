@@ -10,7 +10,7 @@ import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.util.Behaviours;
 import org.scijava.ui.behaviour.util.TriggerBehaviourBindings;
 
-import java.util.concurrent.Callable;
+import javax.swing.*;
 
 public class SourceSelectorBehaviour {
 
@@ -74,12 +74,30 @@ public class SourceSelectorBehaviour {
         this.notifyUnInstalled = runnable;
     }
 
+    public synchronized void enable() {
+        if (!isInstalled) {
+            install();
+        }
+    }
+
+    public synchronized void disable() {
+        if (isInstalled) {
+            uninstall();
+        }
+    }
+
+    public void remove() {
+        triggerbindings.removeInputTriggerMap("source-selector-toggle");
+        triggerbindings.removeBehaviourMap("source-selector-toggle");
+    }
+
     synchronized void install() {
         isInstalled = true;
         editorOverlay.addSelectionBehaviours(behaviours);
         triggerbindings.addBehaviourMap(SOURCES_SELECTOR_MAP, behaviours.getBehaviourMap());
-        triggerbindings.addInputTriggerMap(SOURCES_SELECTOR_MAP, behaviours.getInputTriggerMap(), "transform");
+        triggerbindings.addInputTriggerMap(SOURCES_SELECTOR_MAP, behaviours.getInputTriggerMap(), "transform", "bdv");
         bos = BdvFunctions.showOverlay(editorOverlay, "Editor_Overlay", BdvOptions.options().addTo(bdvh));
+        bdvh.getKeybindings().addInputMap("blocking-source-selector", new InputMap(), "bdv", "navigation");
         notifyInstalled.run();
     }
 
@@ -88,7 +106,14 @@ public class SourceSelectorBehaviour {
         bos.removeFromBdv();
         triggerbindings.removeBehaviourMap( SOURCES_SELECTOR_MAP );
         triggerbindings.removeInputTriggerMap( SOURCES_SELECTOR_MAP );
+        bdvh.getKeybindings().removeInputMap("blocking-source-selector");
         notifyUnInstalled.run();
     }
+
+    // It would be nice but not sure the API si there to do
+    /*
+    public static boolean isSourceSelectorPresent(BdvHandle bdvh) {
+        bdvh.getTriggerbindings().isInputTriggerMapPresent("source-selector-toggle");
+    }*/
 
 }
