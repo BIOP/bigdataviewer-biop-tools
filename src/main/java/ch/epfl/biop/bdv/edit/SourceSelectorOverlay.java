@@ -1,6 +1,7 @@
 package ch.epfl.biop.bdv.edit;
 
 import bdv.tools.boundingbox.TransformedBox;
+import bdv.ui.SourcesTransferable;
 import bdv.util.BdvOverlay;
 import bdv.viewer.SourceAndConverter;
 import bdv.viewer.ViewerPanel;
@@ -12,8 +13,11 @@ import net.imglib2.RealInterval;
 import net.imglib2.realtransform.AffineTransform3D;
 import org.scijava.ui.behaviour.DragBehaviour;
 import org.scijava.ui.behaviour.util.Behaviours;
+import sc.fiji.bdvpg.scijava.services.ui.swingdnd.BdvTransferHandler;
 
+import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseEvent;
 import java.awt.geom.GeneralPath;
 import java.util.*;
 import java.util.List;
@@ -43,18 +47,31 @@ public class SourceSelectorOverlay extends BdvOverlay implements ViewerStateChan
 
     Map<String, OverlayStyle> styles = new HashMap<>();
 
+    List<SelectedSourcesListener> selectedSourceListeners = new ArrayList<>();
+
     public SourceSelectorOverlay(ViewerPanel viewer) {
         this.viewer = viewer;
         viewer.state().changeListeners().add(this);
         updateSourceList();
         styles.put("DEFAULT", new DefaultOverlayStyle());
         styles.put("SELECTED", new SelectedOverlayStyle());
+
+        if (viewer.getTransferHandler() instanceof BdvTransferHandler) {
+            // Custom Drag support
+            BdvTransferHandler handler = (BdvTransferHandler) viewer.getTransferHandler();
+            handler.setTransferableFunction(c -> new SourcesTransferable(this.getSelectedSources()));
+
+        }
     }
 
     public void addSelectionBehaviours(Behaviours behaviours) {
-        behaviours.behaviour( new DragSelectSourcesBehaviour( "SELECT" ), "select-set-sources", new String[] { "button1" });
-        behaviours.behaviour( new DragSelectSourcesBehaviour( "ADD" ), "select-add-sources", new String[] { "shift button1" });
-        behaviours.behaviour( new DragSelectSourcesBehaviour( "REMOVE" ), "select-remove-sources", new String[] { "ctrl button1" });
+        behaviours.behaviour( new RectangleSelectSourcesBehaviour( "SELECT" ), "select-set-sources", new String[] { "button1" });
+        behaviours.behaviour( new RectangleSelectSourcesBehaviour( "ADD" ), "select-add-sources", new String[] { "shift button1" });
+        behaviours.behaviour( new RectangleSelectSourcesBehaviour( "REMOVE" ), "select-remove-sources", new String[] { "ctrl button1" });
+
+        if (viewer.getTransferHandler() instanceof BdvTransferHandler) {
+            behaviours.behaviour(new DragNDSourcesBehaviour(), "drag-selected-sources", new String[]{"alt button1"});
+        }
     }
 
     public Set<SourceAndConverter<?>> getSelectedSources() {
@@ -100,6 +117,11 @@ public class SourceSelectorOverlay extends BdvOverlay implements ViewerStateChan
         }
         // Necessary when double clicking without mouse movement
         viewer.requestRepaint();
+
+        if (currentSelection.size()>0) {
+            selectedSourceListeners.forEach(listener -> listener.updateSelectedSources(getSelectedSources()));
+        }
+
     }
 
     public Rectangle getCurrentSelectionRectangle() {
@@ -193,6 +215,9 @@ public class SourceSelectorOverlay extends BdvOverlay implements ViewerStateChan
         leftOvers.addAll(selectedSources);
         leftOvers.removeAll(viewer.state().getVisibleSources());
         selectedSources.removeAll(leftOvers);
+        if (leftOvers.size()>0) {
+            selectedSourceListeners.forEach(listener -> listener.updateSelectedSources(getSelectedSources()));
+        }
     }
 
     @Override
@@ -201,6 +226,16 @@ public class SourceSelectorOverlay extends BdvOverlay implements ViewerStateChan
             updateSourceList();
         }
     }
+
+    public void addSelectedSourcesListener(SelectedSourcesListener selectedSourcesListener) {
+        selectedSourceListeners.add(selectedSourcesListener);
+    }
+
+    public void removeSelectedSourcesListener(SelectedSourcesListener selectedSourcesListener) {
+        selectedSourceListeners.remove(selectedSourcesListener);
+    }
+
+
 
     class SourceBoxOverlay implements TransformedBox {
 
@@ -369,11 +404,11 @@ public class SourceSelectorOverlay extends BdvOverlay implements ViewerStateChan
 
     }
 
-    public class DragSelectSourcesBehaviour implements DragBehaviour {
+    public class RectangleSelectSourcesBehaviour implements DragBehaviour {
 
         final String mode;
 
-        public DragSelectSourcesBehaviour( String mode) {
+        public RectangleSelectSourcesBehaviour(String mode) {
             this.mode = mode;
         }
 
@@ -393,6 +428,24 @@ public class SourceSelectorOverlay extends BdvOverlay implements ViewerStateChan
         public void end(int x, int y) {
             endCurrentSelection(x,y,mode);
             viewer.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+        }
+    }
+
+    public class DragNDSourcesBehaviour implements DragBehaviour {
+
+        @Override
+        public void init(int x, int y) {
+            viewer.getTransferHandler().exportAsDrag(viewer, new MouseEvent(viewer, 0, 0, 0, 100, 100, 1, false), TransferHandler.MOVE);
+        }
+
+        @Override
+        public void drag(int x, int y) {
+
+        }
+
+        @Override
+        public void end(int x, int y) {
+
         }
     }
 

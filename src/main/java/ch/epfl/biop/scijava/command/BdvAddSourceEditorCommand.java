@@ -2,6 +2,7 @@ package ch.epfl.biop.scijava.command;
 
 import bdv.util.BdvHandle;
 import ch.epfl.biop.bdv.edit.SourceSelectorBehaviour;
+import ch.epfl.biop.bdv.edit.ToggleListener;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
@@ -28,13 +29,19 @@ public class BdvAddSourceEditorCommand implements Command {
 
         editor.behaviour(delete, "remove-sources-from-bdv", new String[]{"DELETE"});
 
-        ssb.setEditorOnCallback(() -> {
-            editor.install(bdvh.getTriggerbindings(), "sources-editor");
-        });
+        editor.behaviour(delete, "remove-sources-from-bdv", new String[]{"DELETE"});
 
-        ssb.setEditorOffCallback(() -> {
-            bdvh.getTriggerbindings().removeInputTriggerMap("sources-editor");
-            bdvh.getTriggerbindings().removeBehaviourMap("sources-editor");
+        ssb.addToggleListener(new ToggleListener() {
+            @Override
+            public void enable() {
+                editor.install(bdvh.getTriggerbindings(), "sources-editor");
+            }
+
+            @Override
+            public void disable() {
+                bdvh.getTriggerbindings().removeInputTriggerMap("sources-editor");
+                bdvh.getTriggerbindings().removeBehaviourMap("sources-editor");
+            }
         });
 
         ssb.enable();

@@ -1,6 +1,8 @@
 import bdv.util.BdvHandle;
 import bdv.viewer.SourceAndConverter;
+import ch.epfl.biop.bdv.edit.SelectedSourcesListener;
 import ch.epfl.biop.bdv.edit.SourceSelectorBehaviour;
+import ch.epfl.biop.bdv.edit.ToggleListener;
 import loci.common.DebugTools;
 import net.imagej.ImageJ;
 import net.imglib2.realtransform.AffineTransform3D;
@@ -12,6 +14,8 @@ import sc.fiji.bdvpg.scijava.command.bdv.BdvWindowCreatorCommand;
 import sc.fiji.bdvpg.scijava.command.source.SampleSourceCreatorCommand;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceAffineTransformer;
+
+import java.util.Collection;
 
 /**
  * Goal : mimick Blender v>2.8
@@ -70,13 +74,24 @@ public class BdvSelectorDemo {
 
         editor.behaviour(delete, "remove-sources-from-bdv", new String[]{"DELETE"});
 
-        ssb.setEditorOnCallback(() -> {
-            editor.install(bdvh.getTriggerbindings(), "sources-editor");
+        ssb.addToggleListener(new ToggleListener() {
+            @Override
+            public void enable() {
+                editor.install(bdvh.getTriggerbindings(), "sources-editor");
+            }
+
+            @Override
+            public void disable() {
+                bdvh.getTriggerbindings().removeInputTriggerMap("sources-editor");
+                bdvh.getTriggerbindings().removeBehaviourMap("sources-editor");
+            }
         });
 
-        ssb.setEditorOffCallback(() -> {
-            bdvh.getTriggerbindings().removeInputTriggerMap("sources-editor");
-            bdvh.getTriggerbindings().removeBehaviourMap("sources-editor");
+        ssb.addSelectedSourcesListener(new SelectedSourcesListener() {
+            @Override
+            public void updateSelectedSources(Collection<SourceAndConverter<?>> selectedSources) {
+                System.out.println(selectedSources.size()+" sources selected");
+            }
         });
 
         ssb.enable();

@@ -26,7 +26,7 @@
 
 	<groupId>ch.epfl.biop</groupId>
 	<artifactId>bigdataviewer-biop-tools</artifactId>
-	<version>0.1.6</version>
+	<version>0.1.7-SNAPSHOT</version>
 
 	<name>Biop Bigdataviewer Tools and Plugins </name>
 	<description>Big data viewer tools BIOP - EPFL</description>
@@ -146,7 +146,7 @@
 		<spim_data.version>2.2.4</spim_data.version>
 		<ui-behaviour.version>2.0.1</ui-behaviour.version>
 
-		<bigdataviewer-playground.version>0.2.1</bigdataviewer-playground.version>
+		<bigdataviewer-playground.version>0.2.2-SNAPSHOT</bigdataviewer-playground.version>
 		<bigdataviewer-bioformats.version>0.2.5</bigdataviewer-bioformats.version>
 
 

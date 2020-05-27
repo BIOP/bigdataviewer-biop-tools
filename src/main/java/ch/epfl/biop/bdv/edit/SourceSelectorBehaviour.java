@@ -11,6 +11,8 @@ import org.scijava.ui.behaviour.util.Behaviours;
 import org.scijava.ui.behaviour.util.TriggerBehaviourBindings;
 
 import javax.swing.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SourceSelectorBehaviour {
 
@@ -32,9 +34,7 @@ public class SourceSelectorBehaviour {
 
     boolean isInstalled; // flag for the toggle action
 
-    Runnable notifyInstalled;
-
-    Runnable notifyUnInstalled;
+    List<ToggleListener> toggleListeners = new ArrayList<>();
 
     public SourceSelectorBehaviour(BdvHandle bdvh, String triggerToggleSelector) {
         this.bdvh = bdvh;
@@ -66,14 +66,6 @@ public class SourceSelectorBehaviour {
         return bdvh;
     }
 
-    public synchronized void setEditorOnCallback(Runnable runnable) {
-        this.notifyInstalled = runnable;
-    }
-
-    public synchronized void setEditorOffCallback(Runnable runnable) {
-        this.notifyUnInstalled = runnable;
-    }
-
     public synchronized void enable() {
         if (!isInstalled) {
             install();
@@ -98,7 +90,7 @@ public class SourceSelectorBehaviour {
         triggerbindings.addInputTriggerMap(SOURCES_SELECTOR_MAP, behaviours.getInputTriggerMap(), "transform", "bdv");
         bos = BdvFunctions.showOverlay(editorOverlay, "Editor_Overlay", BdvOptions.options().addTo(bdvh));
         bdvh.getKeybindings().addInputMap("blocking-source-selector", new InputMap(), "bdv", "navigation");
-        notifyInstalled.run();
+        toggleListeners.forEach(tl -> tl.enable());
     }
 
     synchronized void uninstall() {
@@ -107,13 +99,25 @@ public class SourceSelectorBehaviour {
         triggerbindings.removeBehaviourMap( SOURCES_SELECTOR_MAP );
         triggerbindings.removeInputTriggerMap( SOURCES_SELECTOR_MAP );
         bdvh.getKeybindings().removeInputMap("blocking-source-selector");
-        notifyUnInstalled.run();
+        toggleListeners.forEach(tl -> tl.disable());
     }
 
-    // It would be nice but not sure the API si there to do
-    /*
-    public static boolean isSourceSelectorPresent(BdvHandle bdvh) {
-        bdvh.getTriggerbindings().isInputTriggerMapPresent("source-selector-toggle");
-    }*/
+    // Listeners
+
+    public void addToggleListener(ToggleListener toggleListener) {
+        toggleListeners.add(toggleListener);
+    }
+
+    public void removeToggleListener(ToggleListener toggleListener) {
+        toggleListeners.remove(toggleListener);
+    }
+
+    public void addSelectedSourcesListener(SelectedSourcesListener selectedSourcesListener) {
+        editorOverlay.addSelectedSourcesListener(selectedSourcesListener);
+    }
+
+    public void removeSelectedSourcesListener(SelectedSourcesListener selectedSourcesListener) {
+        editorOverlay.removeSelectedSourcesListener(selectedSourcesListener);
+    }
 
 }
