@@ -1,13 +1,12 @@
-import bdv.util.BdvFunctions;
 import bdv.util.BdvHandle;
-import bdv.util.BdvOptions;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.bdv.edit.SourceEditorBehaviour;
-import ch.epfl.biop.bdv.edit.SourceEditorOverlay;
-import ch.epfl.biop.scijava.command.SourcesAffineTransformCommand;
+import ch.epfl.biop.bdv.edit.SourceSelectorBehaviour;
 import loci.common.DebugTools;
 import net.imagej.ImageJ;
 import net.imglib2.realtransform.AffineTransform3D;
+import org.scijava.ui.behaviour.ClickBehaviour;
+import org.scijava.ui.behaviour.io.InputTriggerConfig;
+import org.scijava.ui.behaviour.util.Behaviours;
 import sc.fiji.bdvpg.bdv.projector.Projection;
 import sc.fiji.bdvpg.scijava.command.bdv.BdvWindowCreatorCommand;
 import sc.fiji.bdvpg.scijava.command.source.SampleSourceCreatorCommand;
@@ -22,7 +21,7 @@ import sc.fiji.bdvpg.sourceandconverter.transform.SourceAffineTransformer;
  * CardPanel have icons mimicking blender
  */
 
-public class BdvEditor2dDemo {
+public class BdvSelectorDemo {
 
     static public void main(String... args) throws Exception {
 
@@ -33,7 +32,7 @@ public class BdvEditor2dDemo {
         ij.ui().showUI();
 
         BdvHandle bdvh = (BdvHandle) (ij.command().run(BdvWindowCreatorCommand.class, true,
-                "is2D", true,
+                "is2D", false, //true,
                 "interpolate", false,
                 "projector", Projection.SUM_PROJECTOR,
                 "nTimepoints", 1,
@@ -42,11 +41,8 @@ public class BdvEditor2dDemo {
         SourceAndConverter voronoi = (SourceAndConverter) ij.command().run(SampleSourceCreatorCommand.class, true, "sampleName", "Voronoi").get().getOutput("sampleSource");
 
         SourceAndConverterServices.getSourceAndConverterDisplayService().show(bdvh,voronoi);
+
         SourceAndConverterServices.getSourceAndConverterDisplayService().getConverterSetup(voronoi).setDisplayRange(0,255);
-
-
-
-        // 3d-affine: (0.2744604688804778, 0.0, 0.0, 249.40886987349538, 0.0, 0.2744604688804778, 0.0, 153.9768896882321, 0.0, 0.0, 0.2744604688804778, 0.0)
 
         AffineTransform3D at3dViewer = new AffineTransform3D();
 
@@ -66,8 +62,24 @@ public class BdvEditor2dDemo {
 
         SourceAndConverterServices.getSourceAndConverterDisplayService().show(bdvh,new SourceAffineTransformer(voronoi, at3d).getSourceOut());
 
+        SourceSelectorBehaviour ssb = new SourceSelectorBehaviour(bdvh, "E");
 
-        new SourceEditorBehaviour(bdvh).install();
+        Behaviours editor = new Behaviours(new InputTriggerConfig());
+
+        ClickBehaviour delete = (x,y) -> bdvh.getViewerPanel().state().removeSources(ssb.getSourceSelectorOverlay().getSelectedSources());
+
+        editor.behaviour(delete, "remove-sources-from-bdv", new String[]{"DELETE"});
+
+        ssb.setEditorOnCallback(() -> {
+            editor.install(bdvh.getTriggerbindings(), "sources-editor");
+        });
+
+        ssb.setEditorOffCallback(() -> {
+            bdvh.getTriggerbindings().removeInputTriggerMap("sources-editor");
+            bdvh.getTriggerbindings().removeBehaviourMap("sources-editor");
+        });
+
+
 
     }
 }
