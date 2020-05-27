@@ -2,6 +2,7 @@ import bdv.util.BdvFunctions;
 import bdv.util.BdvHandle;
 import bdv.util.BdvOptions;
 import bdv.viewer.SourceAndConverter;
+import ch.epfl.biop.bdv.edit.SourceEditorBehaviour;
 import ch.epfl.biop.bdv.edit.SourceEditorOverlay;
 import ch.epfl.biop.scijava.command.SourcesAffineTransformCommand;
 import loci.common.DebugTools;
@@ -38,15 +39,12 @@ public class BdvEditor2dDemo {
                 "nTimepoints", 1,
                 "windowTitle", "2D editor").get().getOutput("bdvh"));
 
-        SourceEditorOverlay editorOverlay = new SourceEditorOverlay(bdvh);
-
         SourceAndConverter voronoi = (SourceAndConverter) ij.command().run(SampleSourceCreatorCommand.class, true, "sampleName", "Voronoi").get().getOutput("sampleSource");
 
         SourceAndConverterServices.getSourceAndConverterDisplayService().show(bdvh,voronoi);
         SourceAndConverterServices.getSourceAndConverterDisplayService().getConverterSetup(voronoi).setDisplayRange(0,255);
 
 
-        BdvFunctions.showOverlay(editorOverlay, "Editor_Overlay", BdvOptions.options().addTo(bdvh));
 
         // 3d-affine: (0.2744604688804778, 0.0, 0.0, 249.40886987349538, 0.0, 0.2744604688804778, 0.0, 153.9768896882321, 0.0, 0.0, 0.2744604688804778, 0.0)
 
@@ -69,6 +67,7 @@ public class BdvEditor2dDemo {
         SourceAndConverterServices.getSourceAndConverterDisplayService().show(bdvh,new SourceAffineTransformer(voronoi, at3d).getSourceOut());
 
 
+        new SourceEditorBehaviour(bdvh).install();
 
     }
 }
