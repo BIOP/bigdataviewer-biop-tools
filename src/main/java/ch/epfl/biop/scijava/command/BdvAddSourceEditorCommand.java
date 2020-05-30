@@ -29,8 +29,6 @@ public class BdvAddSourceEditorCommand implements Command {
 
         editor.behaviour(delete, "remove-sources-from-bdv", new String[]{"DELETE"});
 
-        editor.behaviour(delete, "remove-sources-from-bdv", new String[]{"DELETE"});
-
         ssb.addToggleListener(new ToggleListener() {
             @Override
             public void enable() {
