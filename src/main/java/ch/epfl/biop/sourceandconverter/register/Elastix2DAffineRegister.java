@@ -87,8 +87,8 @@ public class Elastix2DAffineRegister implements Runnable {
 
         // Fetch cropped images from source
 
-        Source sMoving = sac_moving.getSpimSource();//bdv_h_moving.getViewerPanel().getState().getSources().get(idxMovingSource).getSpimSource();
-        Source sFixed = sac_fixed.getSpimSource();//bdv_h_fixed.getViewerPanel().getState().getSources().get(idxFixedSource).getSpimSource();
+        Source sMoving = sac_moving.getSpimSource();
+        Source sFixed = sac_fixed.getSpimSource();
 
         // Get real random accessible from the source
         final RealRandomAccessible ipMovingimg = sMoving.getInterpolatedSource(tpMoving, levelMipmapMoving, interpolation);
@@ -107,13 +107,12 @@ public class Elastix2DAffineRegister implements Runnable {
 
         AffineTransform3D movat = at3D.concatenate(atMoving);
 
-
         RandomAccessibleInterval viewMoving = RealCropper.getCroppedSampledRRAI(ipMovingimg,
                 movat,fi,pxSizeInCurrentUnit,pxSizeInCurrentUnit,pxSizeInCurrentUnit);
+
         ImagePlus impM = ImageJFunctions.wrap(viewMoving, "Moving");
         //impM.show();
         impM = new Duplicator().run(impM); // Virtual messes up the process, don't know why
-
 
         at3D.identity();
         at3D.translate(-px,-py,-pz);
@@ -158,7 +157,6 @@ public class Elastix2DAffineRegister implements Runnable {
         at3D.identity();
         at3D.translate(-px,-py,-pz);
         at3D.scale(1./pxSizeInCurrentUnit, 1./pxSizeInCurrentUnit, 1./pxSizeInCurrentUnit);
-
 
         AffineTransform3D transformInRealCoordinates = new AffineTransform3D();
         transformInRealCoordinates.identity();
