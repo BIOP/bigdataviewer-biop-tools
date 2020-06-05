@@ -20,6 +20,7 @@ import sc.fiji.bdvpg.scijava.BdvHandleHelper;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
+import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterUtils;
 import sc.fiji.bdvpg.sourceandconverter.importer.EmptySourceAndConverterCreator;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceResampler;
 
@@ -308,73 +309,8 @@ public class BdvViewToImagePlusExportCommand<T extends RealType<T>> implements C
         }
     }
 
-    public Function<Collection<SourceAndConverter<?>>,List<SourceAndConverter<?>>> sorter = sacs1ist -> sortDefault(sacs1ist);
+    public Function<Collection<SourceAndConverter<?>>,List<SourceAndConverter<?>>> sorter = sacs1ist -> SourceAndConverterUtils.sortDefaultGeneric(sacs1ist);
 
-    /**
-     * Default sorting order for SourceAndConverter
-     * Because we want some consistency in channel ordering when exporting to an ImagePlus
-     * AArrg indexes are back
-     *
-     * TODO : find a better way to order between spimdata
-     * @param sacs
-     * @return
-     */
-    public static List<SourceAndConverter<?>> sortDefault(Collection<SourceAndConverter<?>> sacs) {
-        List<SourceAndConverter<?>> sortedList = new ArrayList<>(sacs.size());
-        sortedList.addAll(sacs);
-        Set<AbstractSpimData> spimData = new HashSet<>();
-        // Gets all SpimdataInfo
-        sacs.forEach(sac -> {
-            if (SourceAndConverterServices
-                    .getSourceAndConverterService()
-                    .getMetadata(sac, SourceAndConverterService.SPIM_DATA_INFO)!=null) {
-                SourceAndConverterService.SpimDataInfo sdi = ((SourceAndConverterService.SpimDataInfo)(SourceAndConverterServices
-                        .getSourceAndConverterService()
-                        .getMetadata(sac, SourceAndConverterService.SPIM_DATA_INFO)));
-                spimData.add(sdi.asd);
-            }
-        });
 
-        Comparator<SourceAndConverter> sacComparator = (s1, s2) -> {
-            // Those who do not belong to spimdata are last:
-            SourceAndConverterService.SpimDataInfo sdi1 = null, sdi2 = null;
-            if (SourceAndConverterServices
-                    .getSourceAndConverterService()
-                    .getMetadata(s1, SourceAndConverterService.SPIM_DATA_INFO)!=null) {
-                 sdi1 = ((SourceAndConverterService.SpimDataInfo)(SourceAndConverterServices
-                        .getSourceAndConverterService()
-                        .getMetadata(s1, SourceAndConverterService.SPIM_DATA_INFO)));
-            }
-
-            if (SourceAndConverterServices
-                    .getSourceAndConverterService()
-                    .getMetadata(s2, SourceAndConverterService.SPIM_DATA_INFO)!=null) {
-                sdi2 = ((SourceAndConverterService.SpimDataInfo)(SourceAndConverterServices
-                        .getSourceAndConverterService()
-                        .getMetadata(s2, SourceAndConverterService.SPIM_DATA_INFO)));
-            }
-
-            if ((sdi1==null)&&(sdi2!=null)) {
-                return -1;
-            }
-
-            if ((sdi1!=null)&&(sdi2==null)) {
-                return 1;
-            }
-
-            if ((sdi1!=null)&&(sdi2!=null)) {
-                if (sdi1.asd==sdi2.asd) {
-                    return sdi1.setupId-sdi2.setupId;
-                } else {
-                    return sdi2.toString().compareTo(sdi1.toString());
-                }
-            }
-
-            return s2.getSpimSource().getName().compareTo(s1.getSpimSource().getName());
-        };
-
-        sortedList.sort(sacComparator);
-        return sortedList;
-    }
 
 }

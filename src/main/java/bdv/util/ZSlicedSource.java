@@ -28,7 +28,7 @@ public class ZSlicedSource< T extends NumericType<T> & NativeType<T>> extends Re
     public RandomAccessibleInterval<T> buildSource(int t, int level) {
         RandomAccessibleInterval<T> nonResliced = super.buildSource(t,level);
         nonResliced = Views.subsample(nonResliced,1,1,subSampler.get());
-        return Views.interval(SlicerViews.extendSlicer(nonResliced,2,0), new FinalInterval(nonResliced.dimension(0)*nonResliced.dimension(2), nonResliced.dimension(1), 1));
+        return Views.interval(SlicerViews.extendSlicer(nonResliced,2,0), new FinalInterval(nonResliced.dimension(0)*nonResliced.dimension(2), nonResliced.dimension(1), nonResliced.dimension(2)));
     }
 
     /** Better behaviour to just keep the scale and avoid reorienting

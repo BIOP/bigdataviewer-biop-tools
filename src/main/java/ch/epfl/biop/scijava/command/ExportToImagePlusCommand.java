@@ -10,6 +10,7 @@ import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
+import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterUtils;
 
 import java.util.*;
 import java.util.List;
@@ -74,6 +75,6 @@ public class ExportToImagePlusCommand implements Command {
     }
 
 
-    public Function<Collection<SourceAndConverter<?>>,List<SourceAndConverter<?>>> sorter = sacs1ist -> BdvViewToImagePlusExportCommand.sortDefault(sacs1ist);
+    public Function<Collection<SourceAndConverter<?>>,List<SourceAndConverter<?>>> sorter = sacs1ist -> SourceAndConverterUtils.sortDefaultGeneric(sacs1ist);
 
 }
