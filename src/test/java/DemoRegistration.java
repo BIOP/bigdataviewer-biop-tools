@@ -22,7 +22,10 @@ import org.scijava.ui.behaviour.ClickBehaviour;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.util.Behaviours;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
+import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterAndTimeRange;
+import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterUtils;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceAffineTransformer;
+import sc.fiji.bdvpg.sourceandconverter.transform.SourceTransformHelper;
 
 import java.util.Collection;
 import java.util.concurrent.Future;
@@ -155,26 +158,21 @@ public class DemoRegistration {
                         "sac_moving", movingSource,
                         "tpMoving", 0,
                         "levelMovingSource", 0,
-                        "pxSizeInCurrentUnit", 2, // in mm
+                        "pxSizeInCurrentUnit", 1,
                         "interpolate", false,
                         "showImagePlusRegistrationResult", true,
-                        "px",15,
+                        "px",-20,
                         "py",275,
                         "pz",0,
-                        "sx",200,
-                        "sy",200
+                        "sx",250,
+                        "sy",250
                 );
 
                 Thread t = new Thread(() -> {
                     try {
-                        //SourceAndConverter sac = (SourceAndConverter) task.get().getOutput("registeredSource");
-
                         AffineTransform3D at3d = (AffineTransform3D) task.get().getOutput("at3D");
-
-                        SourceAndConverterServices
-                                .getSourceAndConverterDisplayService()
-                                .show(bdvh, new SourceAffineTransformer(movingSource, at3d).getSourceOut());
-
+                        SourceTransformHelper.mutate(at3d.inverse(), new SourceAndConverterAndTimeRange(movingSource,0));
+                        bdvh.getViewerPanel().requestRepaint();
                     } catch (Exception e) {
 
                     }
