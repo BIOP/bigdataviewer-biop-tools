@@ -181,8 +181,8 @@ public class Elastix2DAffineRegister implements Runnable {
         AffineTransform3D nonRegisteredPatchTransformPixToGLobal = new AffineTransform3D();
         nonRegisteredPatchTransformPixToGLobal.identity();
         nonRegisteredPatchTransformPixToGLobal.scale(pxSizeInCurrentUnit);
-        double cx = px+sx/2;
-        double cy = py+sy/2;
+        double cx = px+sx/2.0;
+        double cy = py+sy/2.0;
         double cz = pz;
 
         nonRegisteredPatchTransformPixToGLobal.translate(cx,cy,cz);
@@ -263,9 +263,11 @@ public class Elastix2DAffineRegister implements Runnable {
         newMatrix[7] = p3.getDoublePosition(1);
         newMatrix[11] = p3.getDoublePosition(2);
 
+        affineTransformOut = new AffineTransform3D();
+
         affineTransformOut.set(newMatrix);
 
-        affineTransformOut = affineTransformOut.concatenate(atMoving.inverse());
+        affineTransformOut = atMoving.concatenate(affineTransformOut.inverse());
 
     }
 

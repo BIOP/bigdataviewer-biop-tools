@@ -79,12 +79,12 @@ public class SourceMosaicZSlicer implements Runnable, Function<SourceAndConverte
                             subSlicer);
             }
             vsac = new SourceAndConverter(vsrcRsampled,
-                    SourceAndConverterUtils.cloneConverter(src.asVolatile().getConverter()));
+                    SourceAndConverterUtils.cloneConverter(src.asVolatile().getConverter(), src.asVolatile()));
             sac = new SourceAndConverter<>(srcRsampled,
-                    SourceAndConverterUtils.cloneConverter(src.getConverter()),vsac);
+                    SourceAndConverterUtils.cloneConverter(src.getConverter(), src),vsac);
         } else {
             sac = new SourceAndConverter<>(srcRsampled,
-                    SourceAndConverterUtils.cloneConverter(src.getConverter()));
+                    SourceAndConverterUtils.cloneConverter(src.getConverter(), src));
         }
 
         return sac;
