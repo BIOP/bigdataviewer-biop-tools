@@ -30,7 +30,7 @@ import sc.fiji.bdvpg.sourceandconverter.transform.SourceTransformHelper;
 import java.util.Collection;
 import java.util.concurrent.Future;
 
-public class DemoRegistration {
+public class DemoRegistrationAffine {
 
     static SourceAndConverter fixedSource;
 
@@ -47,7 +47,6 @@ public class DemoRegistration {
 
         // Setup a source selection mode with a trigger input key that toggles it on and off
         SourceSelectorBehaviour ssb = new SourceSelectorBehaviour(bdvh, "E");
-
 
         // Adds a listener which displays the events - either GUI or programmatically triggered
         ssb.addSelectedSourcesListener(new SelectedSourcesListener() {

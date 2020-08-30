@@ -5,7 +5,9 @@ import bdv.viewer.Interpolation;
 import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.fiji.imageplusutils.ImagePlusFunctions;
+import ch.epfl.biop.wrappers.elastix.RegParamBSpline_Default;
 import ch.epfl.biop.wrappers.elastix.RegisterHelper;
+import ch.epfl.biop.wrappers.elastix.RegistrationParameters;
 import ch.epfl.biop.wrappers.transformix.TransformHelper;
 import ij.IJ;
 import ij.ImagePlus;
@@ -18,12 +20,14 @@ import net.imglib2.RealPoint;
 import net.imglib2.RealRandomAccessible;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.realtransform.AffineTransform3D;
+import net.imglib2.realtransform.RealTransform;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceAffineTransformer;
+import sc.fiji.bdvpg.sourceandconverter.transform.SourceRealTransformer;
 
 import java.io.File;
 import java.io.IOException;
 
-public class Elastix2DAffineRegister implements Runnable {
+public class Elastix2DSplineRegister implements Runnable {
 
     SourceAndConverter sac_fixed, sac_moving;
     int levelMipmapFixed, levelMipmapMoving;
@@ -31,7 +35,8 @@ public class Elastix2DAffineRegister implements Runnable {
 
     RegisterHelper rh;
 
-    AffineTransform3D affineTransformOut;
+    //AffineTransform3D affineTransformOut;
+    RealTransform realTransformOut;
 
     double px,py,pz,sx,sy;
 
@@ -41,13 +46,17 @@ public class Elastix2DAffineRegister implements Runnable {
 
     boolean showResultIJ1;
 
-    public Elastix2DAffineRegister(SourceAndConverter sac_fixed,
+    int nbControlPointsX;
+
+
+    public Elastix2DSplineRegister(SourceAndConverter sac_fixed,
                                    int levelMipmapFixed,
                                    int tpFixed,
                                    SourceAndConverter sac_moving,
                                    int levelMipmapMoving,
                                    int tpMoving,
-                                   RegisterHelper rh,
+                                   //RegisterHelper rh,
+                                   int nbControlPointsX,
                                    double pxSizeInCurrentUnit,
                                    double px,
                                    double py,
@@ -55,7 +64,6 @@ public class Elastix2DAffineRegister implements Runnable {
                                    double sx,
                                    double sy,
                                    boolean showResultIJ1) {
-        this.rh = rh;
         this.sac_fixed = sac_fixed;
         this.sac_moving = sac_moving;
         this.pxSizeInCurrentUnit = pxSizeInCurrentUnit;
@@ -69,6 +77,7 @@ public class Elastix2DAffineRegister implements Runnable {
         this.tpFixed = tpFixed;
         this.tpMoving = tpMoving;
         this.showResultIJ1 = showResultIJ1;
+        this.nbControlPointsX = nbControlPointsX;
     }
 
     public void setInterpolate(boolean interpolate) {
@@ -124,12 +133,16 @@ public class Elastix2DAffineRegister implements Runnable {
         //impF.show();
         impF = new Duplicator().run(impF); // Virtual messes up the process, don't know why
 
+        rh = new RegisterHelper();
 
         rh.setMovingImage(impM);
         rh.setFixedImage(impF);
 
+        RegistrationParameters rp = new RegParamBSpline_Default();
+        rp.FinalGridSpacingInVoxels = (int) ((double)(impF.getWidth())/(double)(nbControlPointsX-1));
+        rh.addTransform(rp);
+
         rh.align();
-        //rh.to(RHZipFile.class);
 
         File fTransform = new File(rh.getFinalTransformFile());
 
@@ -263,12 +276,6 @@ public class Elastix2DAffineRegister implements Runnable {
         newMatrix[7] = p3.getDoublePosition(1);
         newMatrix[11] = p3.getDoublePosition(2);
 
-        affineTransformOut = new AffineTransform3D();
-
-        affineTransformOut.set(newMatrix);
-
-        affineTransformOut = atMoving.concatenate(affineTransformOut.inverse());
-
     }
 
     public static double prodScal(RealPoint pt1, RealPoint pt2) {
@@ -294,11 +301,11 @@ public class Elastix2DAffineRegister implements Runnable {
     }
 
     public SourceAndConverter getRegisteredSac() {
-        return new SourceAffineTransformer(null, affineTransformOut).apply(sac_moving);
+        return new SourceRealTransformer(null, realTransformOut).apply(sac_moving);
     }
 
-    public AffineTransform3D getAffineTransform() {
-        return affineTransformOut;
+    public RealTransform getRealTransform() {
+        return realTransformOut;
     }
 
 }

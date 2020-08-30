@@ -11,7 +11,7 @@ import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import java.io.File;
 import java.io.IOException;
 
-@Plugin(type = Command.class, menuPath = ScijavaBdvDefaults.RootMenu+"SpimDataset>Open Imaris")
+@Plugin(type = Command.class, menuPath = ScijavaBdvDefaults.RootMenu+"BDVDataset>Open Imaris")
 public class OpenImarisCommand implements Command {
 
     @Parameter(label = "Imaris File")
