@@ -1,8 +1,18 @@
 
+import ch.epfl.biop.scijava.command.ExportToImagePlusCommand;
 import loci.common.DebugTools;
 import net.imagej.ImageJ;
+import net.imagej.patcher.LegacyInjector;
+import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
+import sc.fiji.bdvpg.services.SourceAndConverterServices;
+
+
 
 public class SimpleIJLaunch {
+
+    static {
+        LegacyInjector.preinit();
+    }
 
     static public void main(String... args) {
         // create the ImageJ application context with all available services
@@ -12,6 +22,10 @@ public class SimpleIJLaunch {
 
         final ImageJ ij = new ImageJ();
         ij.ui().showUI();
+
+        /*((SourceAndConverterService)(SourceAndConverterServices
+                .getSourceAndConverterService()))
+                .registerScijavaCommand(ExportToImagePlusCommand.class);*/
 
         /*Source bdvsrc = BioFormatsBdvOpener
                 .getOpener().auto()

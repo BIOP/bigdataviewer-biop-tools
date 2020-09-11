@@ -19,6 +19,7 @@ import net.imglib2.cache.Cache;
 import net.imglib2.cache.img.CachedCellImg;
 import net.imglib2.cache.img.DiskCachedCellImgFactory;
 import net.imglib2.cache.img.LoadedCellCacheLoader;
+import net.imglib2.cache.img.optional.CacheOptions;
 import net.imglib2.cache.ref.SoftRefLoaderCache;
 import net.imglib2.img.Img;
 import net.imglib2.img.basictypeaccess.AccessFlags;
@@ -37,7 +38,7 @@ import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Intervals;
 import net.imglib2.util.Util;
 import net.imglib2.view.Views;
-import net.imglib2.cache.img.DiskCachedCellImgOptions.CacheType;
+//import net.imglib2.cache.img.DiskCachedCellImgOptions.CacheType;
 import org.janelia.saalfeldlab.n5.imglib2.RandomAccessibleLoader;
 
 import static net.imglib2.img.basictypeaccess.AccessFlags.VOLATILE;
@@ -258,7 +259,9 @@ public class ImagePlusHelper {
         mipmapLevel = Math.min(mipmapLevel, sac.getSpimSource().getNumMipmapLevels()-1);
         RandomAccessibleInterval[] rais = new RandomAccessibleInterval[endTimePoint-beginTimePoint];
         for (int i=beginTimePoint;i<endTimePoint;i++) {
-            rais[i] = sac.getSpimSource().getSource(i,mipmapLevel);
+            //synchronized (ImagePlusHelper.class) { // avoids https://github.com/imglib/imglib2-cache/issues/15
+                rais[i] = sac.getSpimSource().getSource(i, mipmapLevel);
+            //}
         }
 
         ImgPlus imgPlus;
@@ -313,7 +316,9 @@ public class ImagePlusHelper {
             long xSize = 1, ySize = 1, zSize = 1;
             for (int t=beginTimePoint;t<endTimePoint;t++) {
                 if (sac.getSpimSource().isPresent(t)) {
-                    rais[t-beginTimePoint] = sac.getSpimSource().getSource(t, mipmapLevel);
+                    //synchronized (ImagePlusHelper.class) { // avoids https://github.com/imglib/imglib2-cache/issues/15
+                        rais[t - beginTimePoint] = sac.getSpimSource().getSource(t, mipmapLevel);
+                    //}
                     xSize = rais[t-beginTimePoint].dimension(0);
                     ySize = rais[t-beginTimePoint].dimension(1);
                     zSize = rais[t-beginTimePoint].dimension(2);
@@ -323,9 +328,11 @@ public class ImagePlusHelper {
 
             for (int t=beginTimePoint;t<endTimePoint;t++) {
                 if (sac.getSpimSource().isPresent(t)) {
-                    rais[t-beginTimePoint] = sac.getSpimSource().getSource(t, mipmapLevel);
+                    //synchronized (ImagePlusHelper.class) { // avoids https://github.com/imglib/imglib2-cache/issues/15
+                        rais[t - beginTimePoint] = sac.getSpimSource().getSource(t, mipmapLevel);
+                    //}
                 } else {
-                   rais[t-beginTimePoint] = new ZerosRAI((NumericType)sac.getSpimSource().getType(), new long[]{xSize,ySize,zSize});
+                        rais[t - beginTimePoint] = new ZerosRAI((NumericType) sac.getSpimSource().getType(), new long[]{xSize, ySize, zSize});
                 }
             }
 
@@ -364,6 +371,7 @@ public class ImagePlusHelper {
 
         return imp;
     }
+
     //<T extends NativeType<T>>
     public static< T extends NumericType<T> & NativeType<T>> Img cacheRAI(RandomAccessibleInterval<T> source) {
         final int[] cellDimensions = new int[source.numDimensions()];
@@ -377,7 +385,7 @@ public class ImagePlusHelper {
         final DiskCachedCellImgFactory<T> factory = new DiskCachedCellImgFactory<>(Util.getTypeFromInterval(source),
                 options()
                 .cellDimensions( cellDimensions )
-                .cacheType( CacheType.BOUNDED )
+                .cacheType( CacheOptions.CacheType.BOUNDED )
                 .maxCacheSize( 100 ) );
 
         return factory.create(source, target -> {

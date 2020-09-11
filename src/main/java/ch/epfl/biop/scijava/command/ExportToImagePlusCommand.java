@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-@Plugin(type = Command.class, menuPath = "BigDataViewer>Sources>Export>As ImagePlus")
+@Plugin(type = Command.class, menuPath = "BigDataViewer>Sources>Export>Show Sources (IJ1)")
 public class ExportToImagePlusCommand implements Command {
 
     @Parameter
@@ -69,6 +69,8 @@ public class ExportToImagePlusCommand implements Command {
                 unit = "px";
             }
         }
+
+        imp_out.setTitle(sourceList.get(0).getSpimSource().getName());
 
         ImagePlusHelper.storeExtendedCalibrationToImagePlus(imp_out,at3D,unit,timepointBegin);
 
