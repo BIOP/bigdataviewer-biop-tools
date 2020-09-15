@@ -1,9 +1,7 @@
 package ch.epfl.biop.scijava.command;
 
 import bdv.util.BdvHandle;
-import bdv.util.ImagePlusHelper;
 import bdv.viewer.SourceAndConverter;
-import ij.ImagePlus;
 import net.imglib2.realtransform.AffineTransform3D;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
@@ -47,30 +45,19 @@ public class OverviewerCommand implements Command {
 
         sourceList = sorter.apply(Arrays.asList(sacs));
 
-        List<AffineTransform3D> locations = sourceList.stream().map(sac -> {
-            AffineTransform3D at3d = new AffineTransform3D();
-            sac.getSpimSource().getSourceTransform(timepointBegin, 0, at3d);
-            return at3d;
-        }).collect(Collectors.toList());
+        Map<SacProperties, List<SourceAndConverter>> sacClasses = sourceList
+                .stream()
+                .collect(Collectors.groupingBy(sac -> new SacProperties(sac)));
 
-        Map<AffineTransform3D, List<SourceAndConverter>> sacSortedPerLocation = new HashMap<>();
+        Map<SourceAndConverter<?>, List<SacProperties>> keySetSac = sacClasses.keySet().stream().collect(Collectors.groupingBy(p -> p.sac));
 
-        for (int iSource = 0; iSource < locations.size(); iSource++) {
-            AffineTransform3D at3d  = locations.get(iSource);
-            Optional<AffineTransform3D> tr = sacSortedPerLocation.keySet().stream()
-                    .filter(tr_test -> MatrixApproxEquals(tr_test.getRowPackedCopy(), at3d.getRowPackedCopy())).findFirst();
-            if (tr.isPresent()) {
-                sacSortedPerLocation.get(tr.get()).add(sourceList.get(iSource));
-            } else {
-                List<SourceAndConverter> list = new ArrayList<>();
-                list.add(sourceList.get(iSource));
-                sacSortedPerLocation.put(at3d, list);
-            }
-        }
+        List<SourceAndConverter<?>> sortedSacs = sorter.apply(keySetSac.keySet());
 
         List<SourceAndConverter> sacsToDisplay = new ArrayList<>();
 
-        sacSortedPerLocation.keySet().stream().forEach(location -> {
+        sortedSacs.forEach(sacKey -> {
+            SacProperties sacPropsKey = keySetSac.get(sacKey).get(0);
+            AffineTransform3D location = sacPropsKey.location;
 
             int xPos = currentIndex % nColumns;
             int yPos = currentIndex / nColumns;
@@ -82,7 +69,7 @@ public class OverviewerCommand implements Command {
 
             currentIndex++;
 
-            List<SourceAndConverter> sacs = sacSortedPerLocation.get(location);
+            List<SourceAndConverter> sacs = sacClasses.get(sacPropsKey);// sacSortedPerLocation.get(location);
 
             long nPixX = sacs.get(0).getSpimSource().getSource(timepointBegin, 0).dimension(0);
 
@@ -90,59 +77,56 @@ public class OverviewerCommand implements Command {
 
             long nPixZ = sacs.get(0).getSpimSource().getSource(timepointBegin, 0).dimension(2);
 
-            currentAffineTransform.scale(1/(double)nPixX, 1/(double) nPixY, 1/(double)nPixZ);
+            long sizeMax = Math.max(nPixX, nPixY);
+
+            sizeMax = Math.max(sizeMax, nPixZ);
+
+            currentAffineTransform.scale(1/(double)sizeMax, 1/(double) sizeMax, 1/(double)sizeMax);
 
             currentAffineTransform.translate(xPos,yPos,0);
 
             SourceAffineTransformer sat = new SourceAffineTransformer(null, currentAffineTransform);
 
-            sacsToDisplay.addAll(sacs.stream().map(sat::apply).collect(Collectors.toList()));
+            List<SourceAndConverter> transformedSacs =
+                    sacs.stream().map(sac -> sat.apply(sac)).collect(Collectors.toList());
 
-            //.forEach().collect(Collectors.toList())
-
-            /*
-
-            ImagePlus imp_out = ImagePlusHelper.wrap(sacSortedPerLocation.get(location).stream().map(sac -> (SourceAndConverter) sac).collect(Collectors.toList()), mapSacToCs, mapSacToMml, timepointBegin, timepointEnd, false );
-
-            AffineTransform3D at3D = new AffineTransform3D();
-            sacSortedPerLocation.get(location).get(0).getSpimSource().getSourceTransform(timepointBegin, level, at3D);
-
-            String unit = "px";
-
-            if (sacSortedPerLocation.get(location).get(0).getSpimSource().getVoxelDimensions() != null) {
-                unit = sacSortedPerLocation.get(location).get(0).getSpimSource().getVoxelDimensions().unit();
-                if (unit==null) {
-                    unit = "px";
-                }
-            }
-
-            imp_out.setTitle(sacSortedPerLocation.get(location).get(0).getSpimSource().getName());
-
-            ImagePlusHelper.storeExtendedCalibrationToImagePlus(imp_out,at3D,unit,timepointBegin);
-
-            imps_out.add(imp_out);*/
-
+            sacsToDisplay.addAll(transformedSacs);
         });
 
         SourceAndConverterServices
                 .getSourceAndConverterDisplayService()
                 .show(bdvh, sacsToDisplay.toArray(new SourceAndConverter[sacsToDisplay.size()]));
 
-        /*bdvh.getViewerPanel().state().addSources(sacsToDisplay);*/
+        AffineTransform3D currentViewLocation = new AffineTransform3D();
+
+        bdvh.getViewerPanel().state().getViewerTransform(currentViewLocation);
+        currentViewLocation.set(0,2,3);
+        bdvh.getViewerPanel().state().setViewerTransform(currentViewLocation);
+
+
     }
 
     public Function<Collection<SourceAndConverter<?>>,List<SourceAndConverter<?>>> sorter = sacs1ist -> SourceAndConverterUtils.sortDefaultGeneric(sacs1ist);
-
 
     class SacProperties {
 
         final AffineTransform3D location;
         long[] dims = new long[3];
+        SourceAndConverter sac;
 
         public SacProperties(SourceAndConverter sac) {
             location = new AffineTransform3D();
             sac.getSpimSource().getSourceTransform(timepointBegin, 0, location);
             sac.getSpimSource().getSource(timepointBegin,0).dimensions(dims);
+            this.sac = sac;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 89  * hash + (int) dims[0] + 17 * (int) dims[1] + 57 * (int) dims[2];
+            hash = hash + (int) (10 * location.get(0,0));
+            return hash;
         }
 
         @Override
