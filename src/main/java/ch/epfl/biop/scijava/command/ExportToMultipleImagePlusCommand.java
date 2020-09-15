@@ -57,8 +57,6 @@ public class ExportToMultipleImagePlusCommand implements Command {
 
         sourceList = sorter.apply(Arrays.asList(sacs));
 
-         new ArrayList<>();
-
         // Sort according to location = affine transform 3d of sources
 
         List<AffineTransform3D> locations = sourceList.stream().map(sac -> {
