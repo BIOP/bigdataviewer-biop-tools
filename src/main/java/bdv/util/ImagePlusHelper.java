@@ -3,7 +3,6 @@ package bdv.util;
 import bdv.tools.brightness.ConverterSetup;
 import bdv.viewer.SourceAndConverter;
 import ij.CompositeImage;
-import ij.IJ;
 import ij.ImagePlus;
 import ij.measure.Calibration;
 import ij.plugin.HyperStackConverter;
@@ -12,7 +11,6 @@ import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
 import net.imagej.axis.AxisType;
 import net.imglib2.Cursor;
-import net.imglib2.Interval;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.cache.Cache;
@@ -28,6 +26,7 @@ import net.imglib2.img.cell.Cell;
 import net.imglib2.img.cell.CellGrid;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.img.display.imagej.ImgToVirtualStack;
+import net.imglib2.img.planar.PlanarImg;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.ARGBType;
@@ -38,7 +37,6 @@ import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Intervals;
 import net.imglib2.util.Util;
 import net.imglib2.view.Views;
-//import net.imglib2.cache.img.DiskCachedCellImgOptions.CacheType;
 import org.janelia.saalfeldlab.n5.imglib2.RandomAccessibleLoader;
 
 import static net.imglib2.img.basictypeaccess.AccessFlags.VOLATILE;
@@ -49,14 +47,11 @@ import static net.imglib2.type.PrimitiveType.INT;
 import static net.imglib2.type.PrimitiveType.LONG;
 import static net.imglib2.type.PrimitiveType.SHORT;
 
-
 import java.awt.*;
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 
 import static net.imglib2.cache.img.DiskCachedCellImgOptions.options;
 
@@ -72,6 +67,8 @@ import static net.imglib2.cache.img.DiskCachedCellImgOptions.options;
  *
  * - Time Origin is another property which is stored in the image info property. This allows to export and import
  * dataset which are 'cropped in time'
+ *
+ * Modification 21st Sept : uses caching by Saalfeld lab : it seems to solve memory leak issues
  *
  * @author Nicolas Chiaruttini, EPFL, 2020
  */
@@ -259,15 +256,18 @@ public class ImagePlusHelper {
         mipmapLevel = Math.min(mipmapLevel, sac.getSpimSource().getNumMipmapLevels()-1);
         RandomAccessibleInterval[] rais = new RandomAccessibleInterval[endTimePoint-beginTimePoint];
         for (int i=beginTimePoint;i<endTimePoint;i++) {
-            //synchronized (ImagePlusHelper.class) { // avoids https://github.com/imglib/imglib2-cache/issues/15
-                rais[i] = sac.getSpimSource().getSource(i, mipmapLevel);
-            //}
+            rais[i] = sac.getSpimSource().getSource(i, mipmapLevel);
         }
 
         ImgPlus imgPlus;
         ImagePlus imp;
         if (true) {
-            imgPlus = new ImgPlus(cacheRAI(Views.stack(rais)),
+
+            Img img = (Img)(wrapAsVolatileCachedCellImg(Views.stack(rais), new int[]{(int) rais[0].dimension(0),(int) rais[0].dimension(1),1,1}));
+
+            imgPlus = new ImgPlus(img,//cacheRAI(Views.stack(raisList)),
+
+            //imgPlus = new ImgPlus(cacheRAI(Views.stack(rais)),
                 sac.getSpimSource().getName(),
                 new AxisType[] { Axes.X, Axes.Y, Axes.Z, Axes.TIME } );
             imp = ImageJFunctions.wrap(imgPlus, "");
@@ -316,9 +316,7 @@ public class ImagePlusHelper {
             long xSize = 1, ySize = 1, zSize = 1;
             for (int t=beginTimePoint;t<endTimePoint;t++) {
                 if (sac.getSpimSource().isPresent(t)) {
-                    //synchronized (ImagePlusHelper.class) { // avoids https://github.com/imglib/imglib2-cache/issues/15
-                        rais[t - beginTimePoint] = sac.getSpimSource().getSource(t, mipmapLevel);
-                    //}
+                    rais[t - beginTimePoint] = sac.getSpimSource().getSource(t, mipmapLevel);
                     xSize = rais[t-beginTimePoint].dimension(0);
                     ySize = rais[t-beginTimePoint].dimension(1);
                     zSize = rais[t-beginTimePoint].dimension(2);
@@ -328,21 +326,22 @@ public class ImagePlusHelper {
 
             for (int t=beginTimePoint;t<endTimePoint;t++) {
                 if (sac.getSpimSource().isPresent(t)) {
-                    //synchronized (ImagePlusHelper.class) { // avoids https://github.com/imglib/imglib2-cache/issues/15
-                        rais[t - beginTimePoint] = sac.getSpimSource().getSource(t, mipmapLevel);
-                    //}
+                    rais[t - beginTimePoint] = sac.getSpimSource().getSource(t, mipmapLevel);
                 } else {
-                        rais[t - beginTimePoint] = new ZerosRAI((NumericType) sac.getSpimSource().getType(), new long[]{xSize, ySize, zSize});
+                    rais[t - beginTimePoint] = new ZerosRAI((NumericType) sac.getSpimSource().getType(), new long[]{xSize, ySize, zSize});
                 }
             }
 
             raisList[c] = Views.stack(rais);
         }
-        /*
-        wrapAsVolatileCachedCellImg(raisList, new int[]{(int) raisList[0].dimension(0),
+
+        /*wrapAsVolatileCachedCellImg(raisList, new int[]{(int) raisList[0].dimension(0),
                                                         (int) raisList[0].dimension(1),
-                                                        })*/
-        ImgPlus imgPlus = new ImgPlus(cacheRAI(Views.stack(raisList)),
+                                                        1
+                                                        });*/
+        Img img = (Img)(wrapAsVolatileCachedCellImg(Views.stack(raisList), new int[]{(int) raisList[0].dimension(0),(int) raisList[0].dimension(1),1,1,1}));
+
+        ImgPlus imgPlus = new ImgPlus(img,//cacheRAI(Views.stack(raisList)),
                 "",
                 new AxisType[] { Axes.X, Axes.Y, Axes.Z, Axes.TIME, Axes.CHANNEL } );
         ImagePlus imp = HyperStackConverter.toHyperStack(ImgToVirtualStack.wrap(imgPlus),
@@ -373,7 +372,7 @@ public class ImagePlusHelper {
     }
 
     //<T extends NativeType<T>>
-    public static< T extends NumericType<T> & NativeType<T>> Img cacheRAI(RandomAccessibleInterval<T> source) {
+    /*public static< T extends NumericType<T> & NativeType<T>> Img cacheRAI(RandomAccessibleInterval<T> source) {
         final int[] cellDimensions = new int[source.numDimensions()];
         cellDimensions[0] = (int) (source.dimension(0)); // X
         cellDimensions[1] = (int) (source.dimension(1)); // Y
@@ -405,7 +404,7 @@ public class ImagePlusHelper {
             }
 
         }, options().initializeCellsAsDirty(true));
-    }
+    }*/
 
     @SuppressWarnings( { "unchecked", "rawtypes" } )
     public static final <T extends NativeType<T>> RandomAccessibleInterval<T> wrapAsVolatileCachedCellImg(
@@ -413,6 +412,10 @@ public class ImagePlusHelper {
             final int[] blockSize) {
 
         final long[] dimensions = Intervals.dimensionsAsLongArray(source);
+        for (long dimension : dimensions) {
+            System.out.println(dimension);
+        }
+
         final CellGrid grid = new CellGrid(dimensions, blockSize);
 
         final RandomAccessibleLoader<T> loader = new RandomAccessibleLoader<T>(Views.zeroMin(source));

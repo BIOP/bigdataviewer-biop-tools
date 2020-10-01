@@ -7,7 +7,6 @@ import org.junit.Test;
 
 public class BDVSlicesToImgPlusTest {
 
-    @Test
     public void run() throws Exception {
         // Arrange
         //  create the ImageJ application context with all available services
