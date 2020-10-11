@@ -5,6 +5,8 @@ import bdv.viewer.Interpolation;
 import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.fiji.imageplusutils.ImagePlusFunctions;
+import ch.epfl.biop.java.utilities.roi.ConvertibleRois;
+import ch.epfl.biop.java.utilities.roi.types.RealPointList;
 import ch.epfl.biop.wrappers.elastix.RegParamBSpline_Default;
 import ch.epfl.biop.wrappers.elastix.RegisterHelper;
 import ch.epfl.biop.wrappers.elastix.RegistrationParameters;
@@ -19,13 +21,15 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.RealPoint;
 import net.imglib2.RealRandomAccessible;
 import net.imglib2.img.display.imagej.ImageJFunctions;
-import net.imglib2.realtransform.AffineTransform3D;
-import net.imglib2.realtransform.RealTransform;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceAffineTransformer;
+import net.imglib2.realtransform.*;
+import net.imglib2.realtransform.inverse.WrappedIterativeInvertibleRealTransform;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceRealTransformer;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class Elastix2DSplineRegister implements Runnable {
 
@@ -35,7 +39,6 @@ public class Elastix2DSplineRegister implements Runnable {
 
     RegisterHelper rh;
 
-    //AffineTransform3D affineTransformOut;
     RealTransform realTransformOut;
 
     double px,py,pz,sx,sy;
@@ -133,13 +136,26 @@ public class Elastix2DSplineRegister implements Runnable {
         //impF.show();
         impF = new Duplicator().run(impF); // Virtual messes up the process, don't know why
 
+        
         rh = new RegisterHelper();
 
         rh.setMovingImage(impM);
         rh.setFixedImage(impF);
 
         RegistrationParameters rp = new RegParamBSpline_Default();
-        rp.FinalGridSpacingInVoxels = (int) ((double)(impF.getWidth())/(double)(nbControlPointsX-1));
+
+
+        int nbControlPointsY = (int)((double)nbControlPointsX/(double)(impF.getWidth())*(double) (impF.getHeight()));
+
+        if (nbControlPointsY<2) nbControlPointsY = 2;
+
+        double dX = ((double)(impF.getWidth())/(double)(nbControlPointsX));
+        double dY = ((double)(impF.getHeight())/(double)(nbControlPointsY));
+
+        // TODO : handle 0 and 1 pixels size image cases
+
+        rp.FinalGridSpacingInVoxels = (int) dX;
+
         rh.addTransform(rp);
 
         rh.align();
@@ -189,115 +205,91 @@ public class Elastix2DSplineRegister implements Runnable {
             IJ.run((ImagePlus) null, "Merge Channels...", "c1=Transformed_DUP_Moving c2=DUP_Fixed create");
         }
 
+        List<RealPoint> fixedImageGridPointsInFixedImageCoordinates = new ArrayList<>();
+
+        for (int xi = 0; xi<nbControlPointsX; xi ++) {
+            for (int yi = 0; yi<nbControlPointsY; yi ++) {
+                RealPoint pt = new RealPoint(2);
+                pt.setPosition(new double[]{xi*dX+dX/2.0, yi*dY+dY/2.0});
+                fixedImageGridPointsInFixedImageCoordinates.add(pt);
+            }
+        }
+
+        TransformHelper th = new TransformHelper();
+        th.setTransformFile(rh);
+
+        ConvertibleRois rois = new ConvertibleRois();
+        RealPointList rpl = new RealPointList(fixedImageGridPointsInFixedImageCoordinates);
+
+        rois.set(rpl);
+
+        th.setRois(rois);
+        th.transform();
+        ConvertibleRois tr_rois = th.getTransformedRois();
+
+        RealPointList rpl_tr = (RealPointList) tr_rois.to(RealPointList.class);
+
+        // Now : transform the coordinates from the fixed image to real space:
+
         // Let's try something different for the transformation
         // This
         AffineTransform3D nonRegisteredPatchTransformPixToGLobal = new AffineTransform3D();
         nonRegisteredPatchTransformPixToGLobal.identity();
         nonRegisteredPatchTransformPixToGLobal.scale(pxSizeInCurrentUnit);
-        double cx = px+sx/2.0;
-        double cy = py+sy/2.0;
+        double cx = px;
+        double cy = py;
         double cz = pz;
 
         nonRegisteredPatchTransformPixToGLobal.translate(cx,cy,cz);
 
-        AffineTransform3D nonRegPatchGlobalToPix = nonRegisteredPatchTransformPixToGLobal.inverse();
+        List<RealPoint> fixedImageGridPointsInGlobalCoordinates =
+                fixedImageGridPointsInFixedImageCoordinates.stream()
+                .map(pt -> {
+                    double[] newPos = new double[3];double[] oldPos = new double[3];
+                    oldPos[0] = pt.positionAsDoubleArray()[0];
+                    oldPos[1] = pt.positionAsDoubleArray()[1];
+                    oldPos[2] = 0;
+                    nonRegisteredPatchTransformPixToGLobal.apply(oldPos, newPos);
+                    return new RealPoint(newPos);
+                })
+                .collect(Collectors.toList());
 
-        RealPoint nonRegUNorm = getMatrixAxis(nonRegPatchGlobalToPix,0);
-        RealPoint nonRegVNorm = getMatrixAxis(nonRegPatchGlobalToPix,1);
-        RealPoint nonRegWNorm = getMatrixAxis(nonRegPatchGlobalToPix,2);
+        List<RealPoint> movingImageGridPointsInGlobalCoordinates =
+                rpl_tr.ptList.stream()
+                        .map(pt -> {
+                            double[] newPos = new double[3];
+                            double[] oldPos = new double[3];
+                            oldPos[0] = pt.positionAsDoubleArray()[0];
+                            oldPos[1] = pt.positionAsDoubleArray()[1];
+                            oldPos[2] = 0;
+                            nonRegisteredPatchTransformPixToGLobal.apply(oldPos, newPos);
 
-        double u0PatchCoord = prodScal(getMatrixAxis(atMoving,0), nonRegUNorm );
-        double v0PatchCoord = prodScal(getMatrixAxis(atMoving,0), nonRegVNorm );
-        double w0PatchCoord = prodScal(getMatrixAxis(atMoving,0), nonRegWNorm );
+                            return new RealPoint(newPos);
+                        })
+                        .collect(Collectors.toList());
 
-        double u1PatchCoord = prodScal(getMatrixAxis(atMoving,1), nonRegUNorm );
-        double v1PatchCoord = prodScal(getMatrixAxis(atMoving,1), nonRegVNorm );
-        double w1PatchCoord = prodScal(getMatrixAxis(atMoving,1), nonRegWNorm );
+        double[][] coordsFixed = new double[2][nbControlPointsX*nbControlPointsY];
+        double[][] coordsMoving = new double[2][nbControlPointsX*nbControlPointsY];
 
-        double u2PatchCoord = prodScal(getMatrixAxis(atMoving,2), nonRegUNorm );
-        double v2PatchCoord = prodScal(getMatrixAxis(atMoving,2), nonRegVNorm );
-        double w2PatchCoord = prodScal(getMatrixAxis(atMoving,2), nonRegWNorm );
+        for (int xi = 0; xi<nbControlPointsX; xi ++) {
+            for (int yi = 0; yi<nbControlPointsY; yi ++) {
+                int idx = yi*nbControlPointsX+xi;
+                double[] fixed_coords = fixedImageGridPointsInGlobalCoordinates.get(idx).positionAsDoubleArray();
+                double[] moving_coords = movingImageGridPointsInGlobalCoordinates.get(idx).positionAsDoubleArray();
 
-        // New origin
-        RealPoint newOrigin = new RealPoint(3);
-        newOrigin.setPosition(atMoving.get(0,3),0);
-        newOrigin.setPosition(atMoving.get(1,3),1);
-        newOrigin.setPosition(atMoving.get(2,3),2);
-        nonRegPatchGlobalToPix.apply(newOrigin,newOrigin);
+                coordsFixed[0][idx] = fixed_coords[0];
+                coordsFixed[1][idx] = fixed_coords[1];
+                coordsMoving[0][idx] = moving_coords[0];
+                coordsMoving[1][idx] = moving_coords[1];
+            }
+        }
 
-        double u3PatchCoord = newOrigin.getDoublePosition(0);
-        double v3PatchCoord = newOrigin.getDoublePosition(1);
-        double w3PatchCoord = newOrigin.getDoublePosition(2);
+        InvertibleRealTransform invTransform =
+                new WrappedIterativeInvertibleRealTransform<>(new ThinplateSplineTransform( coordsFixed, coordsMoving ));
 
-        // New Location :
-        RealPoint p0 = new RealPoint(u0PatchCoord, v0PatchCoord, w0PatchCoord);
-        RealPoint p1 = new RealPoint(u1PatchCoord, v1PatchCoord, w1PatchCoord);
-        RealPoint p2 = new RealPoint(u2PatchCoord, v2PatchCoord, w2PatchCoord);
-        RealPoint p3 = new RealPoint(u3PatchCoord, v3PatchCoord, w3PatchCoord);
+        realTransformOut =
+                new Wrapped2DTransformAs3D(invTransform);
 
-        // mCopy.set(nonRegisteredPatchTransformPixToGLobal);
-        // Computes new location in real coordinates
-        // Removes translation for this computation
-        AffineTransform3D mPatchPixToGlobal = new AffineTransform3D();
-        mPatchPixToGlobal.set(nonRegisteredPatchTransformPixToGLobal);
-        mPatchPixToGlobal = nonRegisteredPatchTransformPixToGLobal.concatenate(mPatchPixToRegPatchPix);
-
-        double shiftX = mPatchPixToGlobal.get(0,3);
-        double shiftY = mPatchPixToGlobal.get(1,3);
-        double shiftZ = mPatchPixToGlobal.get(2,3);
-
-        mPatchPixToGlobal.set(0,0,3);
-        mPatchPixToGlobal.set(0,1,3);
-        mPatchPixToGlobal.set(0,2,3);
-
-        mPatchPixToGlobal.apply(p0,p0);
-        mPatchPixToGlobal.apply(p1,p1);
-        mPatchPixToGlobal.apply(p2,p2);
-
-        mPatchPixToGlobal.set(shiftX,0,3);
-        mPatchPixToGlobal.set(shiftY,1,3);
-        mPatchPixToGlobal.set(shiftZ,2,3);
-        mPatchPixToGlobal.apply(p3,p3);
-
-        double[] newMatrix = new double[12];
-        newMatrix[0] = p0.getDoublePosition(0);
-        newMatrix[4] = p0.getDoublePosition(1);
-        newMatrix[8] = p0.getDoublePosition(2);
-
-        newMatrix[1] = p1.getDoublePosition(0);
-        newMatrix[5] = p1.getDoublePosition(1);
-        newMatrix[9] = p1.getDoublePosition(2);
-
-        newMatrix[2] = p2.getDoublePosition(0);
-        newMatrix[6] = p2.getDoublePosition(1);
-        newMatrix[10] = p2.getDoublePosition(2);
-
-        newMatrix[3] = p3.getDoublePosition(0);
-        newMatrix[7] = p3.getDoublePosition(1);
-        newMatrix[11] = p3.getDoublePosition(2);
-
-    }
-
-    public static double prodScal(RealPoint pt1, RealPoint pt2) {
-        return pt1.getDoublePosition(0)*pt2.getDoublePosition(0)+
-               pt1.getDoublePosition(1)*pt2.getDoublePosition(1)+
-               pt1.getDoublePosition(2)*pt2.getDoublePosition(2);
-    }
-
-    public RealPoint getMatrixAxis(AffineTransform3D at3D, int axis) {
-        RealPoint pt = new RealPoint(3);
-        double[] m = at3D.getRowPackedCopy();
-        pt.setPosition(m[0+axis],0);
-        pt.setPosition(m[4+axis],1);
-        pt.setPosition(m[8+axis],2);
-        return pt;
-    }
-
-    public static void normalize(RealPoint pt) {
-        double norm = Math.sqrt(prodScal(pt,pt));
-        pt.setPosition(pt.getDoublePosition(0)/norm,0);
-        pt.setPosition(pt.getDoublePosition(1)/norm,1);
-        pt.setPosition(pt.getDoublePosition(2)/norm,2);
     }
 
     public SourceAndConverter getRegisteredSac() {

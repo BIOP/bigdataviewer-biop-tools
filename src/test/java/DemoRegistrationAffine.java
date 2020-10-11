@@ -12,6 +12,7 @@ import ij.ImagePlus;
 import mpicbg.spim.data.SpimData;
 import mpicbg.spim.data.XmlIoSpimData;
 import net.imagej.ImageJ;
+import net.imagej.patcher.LegacyInjector;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.realtransform.AffineTransform3D;
@@ -30,7 +31,13 @@ import sc.fiji.bdvpg.sourceandconverter.transform.SourceTransformHelper;
 import java.util.Collection;
 import java.util.concurrent.Future;
 
+
 public class DemoRegistrationAffine {
+
+
+    static {
+        LegacyInjector.preinit();
+    }
 
     static SourceAndConverter fixedSource;
 
@@ -133,7 +140,7 @@ public class DemoRegistrationAffine {
         m.scale(1);
         m.translate(150,0,0);
 
-        bdvh.getViewerPanel().setCurrentViewerTransform(m);
+        bdvh.getViewerPanel().state().setViewerTransform(m);
         bdvh.getViewerPanel().requestRepaint();
 
 
@@ -150,7 +157,9 @@ public class DemoRegistrationAffine {
                 bdvh.getViewerPanel().showMessage("Please define a fixed and a moving source");
             } else {
                 // Go for the registration - on a selected rectangle
-                Future<CommandModule> task = ij.context().getService(CommandService.class).run(Elastix2DAffineRegisterCommand.class, true,
+                Future<CommandModule> task = ij.context()
+                        .getService(CommandService.class)
+                        .run(Elastix2DAffineRegisterCommand.class, true,
                         "sac_fixed", fixedSource,
                         "tpFixed", 0,
                         "levelFixedSource", 2,

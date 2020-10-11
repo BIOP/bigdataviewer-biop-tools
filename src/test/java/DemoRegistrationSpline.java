@@ -13,22 +13,32 @@ import ij.ImagePlus;
 import mpicbg.spim.data.SpimData;
 import mpicbg.spim.data.XmlIoSpimData;
 import net.imagej.ImageJ;
+import net.imagej.patcher.LegacyInjector;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.display.imagej.ImageJFunctions;
+import net.imglib2.ops.parse.token.Real;
 import net.imglib2.realtransform.AffineTransform3D;
+import net.imglib2.realtransform.RealTransform;
 import net.imglib2.type.numeric.ARGBType;
 import org.scijava.command.CommandModule;
 import org.scijava.command.CommandService;
 import org.scijava.ui.behaviour.ClickBehaviour;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.util.Behaviours;
+import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
+import sc.fiji.bdvpg.services.SourceAndConverterServices;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterAndTimeRange;
+import sc.fiji.bdvpg.sourceandconverter.transform.SourceRealTransformer;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceTransformHelper;
 
 import java.util.Collection;
 import java.util.concurrent.Future;
 
 public class DemoRegistrationSpline {
+
+    static {
+        LegacyInjector.preinit();
+    }
 
     static SourceAndConverter fixedSource;
 
@@ -90,6 +100,9 @@ public class DemoRegistrationSpline {
         ImagePlus imp = IJ.openImage("src/test/resources/blobs.tif");
         RandomAccessibleInterval blob = ImageJFunctions.wrapReal(imp);
 
+        ImagePlus imp_warped = IJ.openImage("src/test/resources/warped_blobs.tif");
+        RandomAccessibleInterval wblob = ImageJFunctions.wrapReal(imp_warped);
+
         // load 3d mri image spimdataset
         SpimData sd = new XmlIoSpimData().load("src/test/resources/mri-stack.xml");
 
@@ -100,22 +113,46 @@ public class DemoRegistrationSpline {
         // Gets reference of BigDataViewer
         BdvHandle bdvh = bss.getBdvHandle();
         bss.removeFromBdv();
+
+        /*SourceAndConverterServices
+                .getSourceAndConverterDisplayService()
+                .registerBdvSource(bdvh);*/
+
         // Defines location of blobs image
+        //AffineTransform3D m = new AffineTransform3D();
+
+        //m.scale(1.5);
+        /*m.rotate(2,Math.PI/10);
+        m.translate(0, 180,0);*/
+
         AffineTransform3D m = new AffineTransform3D();
         m.rotate(2,Math.PI/10);
         m.translate(0, 180,0);
 
         // Display first blobs image
-        bss = BdvFunctions.show(blob, "Blobs 1", BdvOptions.options().sourceTransform(m).addTo(bdvh));
+        bss = BdvFunctions.show(blob, "Blobs Ref", BdvOptions.options().sourceTransform(m).addTo(bdvh));
         bss.setColor(new ARGBType(ARGBType.rgba(255,0,0,0)));
 
         // Defines location of blobs image
-        m.identity();
+        /*m.identity();
         m.rotate(2,Math.PI/7);
-        m.translate(0,160,0);
+        m.translate(0,10,0);
+        m.scale(1.5);*/
+
+        // Defines location of blobs image
+        /*m.identity();
+        m.rotate(2,Math.PI/7);
+        m.translate(0,160,0);*/
+
+        AffineTransform3D preReg = new AffineTransform3D();
+        // 3d-affine: (0.9879775178221929, -0.17191061674723715, 0.0, 32.927518353048605, 0.045307243344858195, 0.7791449345927143, 0.0, 54.94017216988129, 0.0, 0.0, 1.0, 0.0)
+        double[] preRegM = new double[]{0.9879775178221929, -0.17191061674723715, 0.0, 32.927518353048605, 0.045307243344858195, 0.7791449345927143, 0.0, 54.94017216988129, 0.0, 0.0, 1.0, 0.0};
+        preReg.set(preRegM);
+
+        m.preConcatenate(preReg.inverse());
 
         // Display second blobs image
-        bss = BdvFunctions.show(blob, "Blobs 2", BdvOptions.options().sourceTransform(m).addTo(bdvh));
+        bss = BdvFunctions.show(wblob, "Blobs Warped", BdvOptions.options().sourceTransform(m).addTo(bdvh));
         bss.setColor(new ARGBType(ARGBType.rgba(0,255,255,0)));
         /*
         // Defines location of blobs image
@@ -132,8 +169,13 @@ public class DemoRegistrationSpline {
         m.scale(1);
         m.translate(150,0,0);
 
-        bdvh.getViewerPanel().setCurrentViewerTransform(m);
+        bdvh.getViewerPanel().state().setViewerTransform(m);
         bdvh.getViewerPanel().requestRepaint();
+
+        bdvh.getViewerPanel().state().getSources().forEach(sac -> {
+            SourceAndConverterServices.getSourceAndConverterService()
+                    .register(sac);
+        });
 
 
         return bdvh;
@@ -152,27 +194,40 @@ public class DemoRegistrationSpline {
                 Future<CommandModule> task = ij.context().getService(CommandService.class).run(Elastix2DSplineRegisterCommand.class, true,
                         "sac_fixed", fixedSource,
                         "tpFixed", 0,
-                        "levelFixedSource", 2,
+                        "levelFixedSource", 0,
                         "sac_moving", movingSource,
                         "tpMoving", 0,
                         "levelMovingSource", 0,
-                        "pxSizeInCurrentUnit", 1,
+                        "pxSizeInCurrentUnit", 5,
                         "interpolate", false,
                         "showImagePlusRegistrationResult", true,
-                        "px",-20,
-                        "py",275,
+                        "px",-90,
+                        "py",175,
                         "pz",0,
-                        "sx",250,
-                        "sy",250
+                        "sx",350,
+                        "sy",350
                 );
 
                 Thread t = new Thread(() -> {
                     try {
-                        AffineTransform3D at3d = (AffineTransform3D) task.get().getOutput("at3D");
-                        SourceTransformHelper.mutate(at3d, new SourceAndConverterAndTimeRange(movingSource,0));
-                        bdvh.getViewerPanel().requestRepaint();
-                    } catch (Exception e) {
+                        RealTransform rt = (RealTransform) task.get().getOutput("rt");
+                        SourceAndConverter transformedSource = new SourceRealTransformer(null, rt).apply(movingSource);
+                        //bdvh.getViewerPanel().state().removeSource(movingSource);
+                        //bdvh.getViewerPanel().state().addSource(transformedSource);
+                        SourceAndConverterServices
+                                .getSourceAndConverterDisplayService()
+                                .show(transformedSource, fixedSource);
 
+                        BdvHandle bdvh_new = SourceAndConverterServices
+                                .getSourceAndConverterDisplayService()
+                                .getActiveBdv();
+
+                        AffineTransform3D view = bdvh.getViewerPanel().state().getViewerTransform();
+                        bdvh_new.getViewerPanel().state().setViewerTransform(view);
+                                //.register(movingSource);
+                        //bdvh.getViewerPanel().requestRepaint();
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                 });
                 t.start();
