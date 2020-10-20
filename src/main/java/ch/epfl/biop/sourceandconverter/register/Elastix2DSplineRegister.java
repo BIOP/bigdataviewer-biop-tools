@@ -4,6 +4,7 @@ import bdv.util.RealCropper;
 import bdv.viewer.Interpolation;
 import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
+import bigwarp.BigWarp;
 import ch.epfl.biop.fiji.imageplusutils.ImagePlusFunctions;
 import ch.epfl.biop.java.utilities.roi.ConvertibleRois;
 import ch.epfl.biop.java.utilities.roi.types.RealPointList;
@@ -40,6 +41,8 @@ public class Elastix2DSplineRegister implements Runnable {
     RegisterHelper rh;
 
     RealTransform realTransformOut;
+
+    RealTransform realTransformInverseOut;
 
     double px,py,pz,sx,sy;
 
@@ -143,7 +146,28 @@ public class Elastix2DSplineRegister implements Runnable {
         rh.setFixedImage(impF);
 
         RegistrationParameters rp = new RegParamBSpline_Default();
+        rp.AutomaticScalesEstimation = true;
+        double maxSize = Math.max(sx/pxSizeInCurrentUnit,sy/pxSizeInCurrentUnit);
+        int nScales = 0;
 
+        while (Math.pow(2,nScales)<maxSize) {
+            nScales++;
+        }
+        //System.out.println("nScales = "+nScales);
+        rp.NumberOfResolutions = nScales-2;
+        rp.BSplineInterpolationOrder = 1;
+        rp.MaximumNumberOfIterations = 200;
+        //rp.Metric = "AdvancedNormalizedCorrelation";
+        /*rp.AutomaticScalesEstimation = true;
+        rp.NumberOfResolutions = 8;
+        rp.BSplineInterpolationOrder = 1;
+        rp.MaximumNumberOfIterations = 100;*/
+        //rp.FixedImagePyramid = "FixedRecursiveImagePyramid";
+        //rp.MovingImagePyramid = "MovingRecursiveImagePyramid";
+        //rp.NewSamplesEveryIteration = true;
+        //rp.Optimizer = "AdaptiveStochasticGradientDescent";
+        //rp.ASGDParameterEstimationMethod = "DisplacementDistribution";*/
+        //rp.MaximumStepLength = 20f;
 
         int nbControlPointsY = (int)((double)nbControlPointsX/(double)(impF.getWidth())*(double) (impF.getHeight()));
 
@@ -168,22 +192,6 @@ public class Elastix2DSplineRegister implements Runnable {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        assert et.getClass()== ElastixAffineTransform2D.class;
-
-        Double[] m2D = et.TransformParameters;
-
-        // https://elastix.lumc.nl/doxygen/parameter.html
-        // Here we assume the rotation point is the center of the image
-        final AffineTransform3D affine3D = new AffineTransform3D();
-        affine3D.set(new double[][] {
-                {m2D[0], m2D[1], 0,   m2D[4]},
-                {m2D[2], m2D[3], 0,   m2D[5]},
-                {0     ,      0, 1,        0},
-                {0.    ,      0, 0,        1}});
-
-        AffineTransform3D mPatchPixToRegPatchPix = new AffineTransform3D();
-        mPatchPixToRegPatchPix.set(affine3D);
 
         if (showResultIJ1) {
             impF.show();
@@ -290,6 +298,11 @@ public class Elastix2DSplineRegister implements Runnable {
         realTransformOut =
                 new Wrapped2DTransformAs3D(invTransform);
 
+        InvertibleRealTransform invTransformPatch =
+                new WrappedIterativeInvertibleRealTransform<>(new ThinplateSplineTransform( coordsMoving, coordsFixed ));
+
+        realTransformInverseOut = new Wrapped2DTransformAs3D(invTransformPatch);
+
     }
 
     public SourceAndConverter getRegisteredSac() {
@@ -298,6 +311,10 @@ public class Elastix2DSplineRegister implements Runnable {
 
     public RealTransform getRealTransform() {
         return realTransformOut;
+    }
+
+    public RealTransform getRealTransformInverse() {
+        return realTransformInverseOut;
     }
 
 }

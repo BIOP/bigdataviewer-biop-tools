@@ -4,6 +4,7 @@ import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.sourceandconverter.register.Elastix2DAffineRegister;
 import ch.epfl.biop.wrappers.elastix.RegParamAffine_Fast;
 import ch.epfl.biop.wrappers.elastix.RegisterHelper;
+import ch.epfl.biop.wrappers.elastix.RegistrationParameters;
 import net.imglib2.realtransform.AffineTransform3D;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
@@ -53,7 +54,19 @@ public class Elastix2DAffineRegisterCommand implements Command {
     public void run() {
 
         RegisterHelper rh = new RegisterHelper();
-        rh.addTransform(new RegParamAffine_Fast());
+        RegistrationParameters rp = new RegParamAffine_Fast();
+        rp.AutomaticScalesEstimation = true;
+        double maxSize = Math.max(sx/pxSizeInCurrentUnit,sy/pxSizeInCurrentUnit);
+        int nScales = 0;
+
+        while (Math.pow(2,nScales)<maxSize) {
+            nScales++;
+        }
+        //System.out.println("nScales = "+nScales);
+        rp.NumberOfResolutions = nScales-2;
+        rp.BSplineInterpolationOrder = 1;
+        rp.MaximumNumberOfIterations = 100;
+        rh.addTransform(rp);
 
         Elastix2DAffineRegister reg = new Elastix2DAffineRegister(
                 sac_fixed,levelFixedSource,tpFixed,

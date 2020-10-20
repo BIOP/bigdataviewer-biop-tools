@@ -3,7 +3,7 @@ package ch.epfl.biop.scijava.command;
 import bdv.util.RandomAccessibleIntervalSource;
 import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.spimdata.SpimDataFromImagePlusGetter;
+import ch.epfl.biop.spimdata.imageplus.SpimDataFromImagePlusGetter;
 import ij.ImagePlus;
 import ij.gui.PointRoi;
 import ij.gui.Roi;

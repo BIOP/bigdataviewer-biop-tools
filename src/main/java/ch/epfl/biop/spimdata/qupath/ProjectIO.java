@@ -1,4 +1,4 @@
-package ch.epfl.biop.qupathfiji;
+package ch.epfl.biop.spimdata.qupath;
 /*-
  * #%L
  * This file is part of QuPath.
@@ -22,13 +22,11 @@ package ch.epfl.biop.qupathfiji;
  * #L%
  */
 
-import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
-import java.net.URI;
 import java.util.Arrays;
 
 import org.slf4j.Logger;

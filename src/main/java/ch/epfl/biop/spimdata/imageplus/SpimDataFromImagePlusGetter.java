@@ -1,4 +1,4 @@
-package ch.epfl.biop.spimdata;
+package ch.epfl.biop.spimdata.imageplus;
 
 import bdv.spimdata.SequenceDescriptionMinimal;
 import bdv.spimdata.SpimDataMinimal;
@@ -169,6 +169,7 @@ public class SpimDataFromImagePlusGetter implements Runnable, Function<ImagePlus
         final File basePath = new File( "." );
 
         final AbstractSpimData< ? > spimData = new SpimDataMinimal( basePath, seq, new ViewRegistrations( registrations ) );
+
 
         return spimData;
     }

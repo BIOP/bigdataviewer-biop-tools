@@ -1,6 +1,6 @@
 package ch.epfl.biop.scijava.command;
 
-import ch.epfl.biop.spimdata.SpimDataFromImagePlusGetter;
+import ch.epfl.biop.spimdata.imageplus.SpimDataFromImagePlusGetter;
 import ij.ImagePlus;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import org.scijava.command.Command;
@@ -15,17 +15,18 @@ public class SourceFromImagePlusCommand implements Command {
     @Parameter
     ImagePlus imagePlus;
 
-    //@Parameter(type = ItemIO.OUTPUT) // Removed because it cannot set its name convenientl otherwise...
+    //@Parameter(type = ItemIO.OUTPUT) // Removed because because using it as a parameter currently prevents
+    // its naming...
     // So it's like the postprocessor of the SpimData is done inside the command
     AbstractSpimData asd;
 
     @Parameter
-    SourceAndConverterService sacs;
+    SourceAndConverterService sac_service;
 
     public void run() {
         asd = (new SpimDataFromImagePlusGetter()).apply(imagePlus);
-        sacs.register(asd);
-        sacs.setSpimDataName(asd, imagePlus.getTitle());
+        sac_service.register(asd);
+        sac_service.setSpimDataName(asd, imagePlus.getTitle());
     }
 
 }

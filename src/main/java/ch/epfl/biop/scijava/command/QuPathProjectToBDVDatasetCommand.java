@@ -5,9 +5,9 @@ import ch.epfl.biop.bdv.bioformats.command.BioformatsBigdataviewerBridgeDatasetC
 import ch.epfl.biop.bdv.bioformats.export.spimdata.BioFormatsConvertFilesToSpimData;
 import ch.epfl.biop.bdv.bioformats.imageloader.FileIndex;
 import ch.epfl.biop.bdv.bioformats.imageloader.SeriesNumber;
-import ch.epfl.biop.qupathfiji.MinimalQuPathProject;
-import ch.epfl.biop.qupathfiji.ProjectIO;
-import ch.epfl.biop.qupathfiji.QuPathEntryEntity;
+import ch.epfl.biop.spimdata.qupath.MinimalQuPathProject;
+import ch.epfl.biop.spimdata.qupath.ProjectIO;
+import ch.epfl.biop.spimdata.qupath.QuPathEntryEntity;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import mpicbg.spim.data.generic.AbstractSpimData;
@@ -18,7 +18,6 @@ import org.scijava.command.Command;
 import org.scijava.log.LogService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,7 +30,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Warning : a quapth project may have its source reordered and or removed :
+ * Warning : a qupath project may have its source reordered and or removed :
  * - not all entries will be present in the qupath project
  * Limitations : only images
  */
@@ -40,8 +39,6 @@ import java.util.Set;
         menuPath = "BigDataViewer>BDVDataset>Open [QuPath Project]"
         )
 public class QuPathProjectToBDVDatasetCommand extends BioformatsBigdataviewerBridgeDatasetCommand {
-
-    final public static String QUPATH_LINKED_PROJECT = "QUPATH_LINKED_PROJECT";
 
     @Parameter
     File quPathProject;
@@ -72,7 +69,6 @@ public class QuPathProjectToBDVDatasetCommand extends BioformatsBigdataviewerBri
                         if (!allURIs.contains(image.serverBuilder.uri)) {
                             allURIs.add(image.serverBuilder.uri);
                         }
-
                         try {
                             QuPathBioFormatsSourceIdentifier identifier = new QuPathBioFormatsSourceIdentifier();
 
@@ -118,23 +114,21 @@ public class QuPathProjectToBDVDatasetCommand extends BioformatsBigdataviewerBri
 
             spimData = BioFormatsConvertFilesToSpimData.getSpimData(openers);
 
-            // Stores the original project associated to spimdata
-            SourceAndConverterServices
-                    .getSourceAndConverterService()
-                    .setMetadata(spimData, QUPATH_LINKED_PROJECT, project);
-
             // Removing sources not present in QuPath
             spimData.getSequenceDescription().getViewSetups().keySet().forEach(key -> {
                 BasicViewSetup bvs = (BasicViewSetup) spimData.getSequenceDescription().getViewSetups().get(key);
                 FileIndex fi = bvs.getAttribute(FileIndex.class);
                 SeriesNumber sn = bvs.getAttribute(SeriesNumber.class);
 
-                boolean found = false;
+                bvs.setAttribute(new QuPathEntryEntity(-1, FilenameUtils.getBaseName(quPathProject.toString()) +"_[entry:unidentified]"));
 
                 for (QuPathBioFormatsSourceIdentifier identifier : quPathSourceIdentifiers) {
                     if (fi.getName().equals(identifier.sourceFile)) {
                         if (sn.getId() == identifier.bioformatsIndex) {
+                            System.out.println("identifier.entryID = "+identifier.entryID);
                             QuPathEntryEntity qpent = new QuPathEntryEntity(identifier.entryID, FilenameUtils.getBaseName(quPathProject.toString()) +"_[entry:"+identifier.entryID+"]");
+                            qpent.setName(FilenameUtils.getBaseName(quPathProject.toString()) +"_[entry:"+identifier.entryID+"]");
+                            qpent.setQuPathProjectionLocation(quPathProject.getAbsolutePath());
                             bvs.setAttribute(qpent);
                         }
                     }

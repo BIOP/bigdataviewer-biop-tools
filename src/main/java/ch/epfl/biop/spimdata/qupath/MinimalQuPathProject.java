@@ -1,7 +1,4 @@
-package ch.epfl.biop.qupathfiji;
-
-import mpicbg.spim.data.SpimData;
-import mpicbg.spim.data.generic.XmlIoAbstractSpimData;
+package ch.epfl.biop.spimdata.qupath;
 
 import java.util.List;
 import java.net.URI;

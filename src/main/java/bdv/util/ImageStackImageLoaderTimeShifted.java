@@ -24,6 +24,16 @@ import mpicbg.spim.data.generic.sequence.BasicSetupImgLoader;
 import mpicbg.spim.data.generic.sequence.ImgLoaderHint;
 import mpicbg.spim.data.generic.sequence.TypedBasicImgLoader;
 
+/**
+ * ImageLoader for ImagePlus, non virtual
+ * A timeshift can be specified compared to the origin
+ *
+ * see {@link VirtualStackImageLoaderTimeShifted} for more information
+ *
+ * @param <T>
+ * @param <A>
+ */
+
 public class ImageStackImageLoaderTimeShifted< T extends NumericType< T > & NativeType< T >, A extends ArrayDataAccess< A > > implements BasicImgLoader, TypedBasicImgLoader< T >
 {
     public static ImageStackImageLoaderTimeShifted< UnsignedByteType, ByteArray > createUnsignedByteInstance( final ImagePlus imp, int timeShift )
@@ -57,6 +67,14 @@ public class ImageStackImageLoaderTimeShifted< T extends NumericType< T > & Nati
     private final Function< Object, A > wrapPixels;
 
     private final int timeShift;
+
+    public ImagePlus getImagePlus() {
+        return this.imp;
+    }
+
+    public int getTimeShift() {
+        return timeShift;
+    }
 
     public ImageStackImageLoaderTimeShifted( final T type, final ImagePlus imp, final Function< Object, A > wrapPixels, int timeShift )
     {

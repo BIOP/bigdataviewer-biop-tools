@@ -1,4 +1,4 @@
-package ch.epfl.biop.qupathfiji;
+package ch.epfl.biop.spimdata.qupath;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonParser;
@@ -8,6 +8,16 @@ import java.net.URI;
 
 public class QuPathEntryEntity extends NamedEntity implements Comparable<QuPathEntryEntity>
 {
+
+    String quPathProjectionLocation;
+
+    public void setQuPathProjectionLocation(String quPathProjectionLocation) {
+        this.quPathProjectionLocation = quPathProjectionLocation;
+    }
+
+    public String getQuPathProjectionLocation() {
+        return quPathProjectionLocation;
+    }
 
     public QuPathEntryEntity(final int id, final String name)
     {

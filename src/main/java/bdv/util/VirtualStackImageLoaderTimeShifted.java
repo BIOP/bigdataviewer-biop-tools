@@ -115,9 +115,23 @@ public class VirtualStackImageLoaderTimeShifted< T extends NativeType< T >, V ex
         }
     }
 
+    final ImagePlus imp;
+
+    public ImagePlus getImagePlus() {
+        return this.imp;
+    }
+
+    int timeShift;
+
+    public int getTimeShift() {
+        return timeShift;
+    }
+
     protected VirtualStackImageLoaderTimeShifted( final ImagePlus imp, final Function< Object, A > wrapPixels, final T type, final V volatileType, final int timeOffset )
     {
         this.loader = new VirtualStackArrayLoader<>( imp, wrapPixels, getByteCount( type.getNativeTypeFactory().getPrimitiveType() ) );
+        this.imp = imp;
+        this.timeShift = timeOffset;
         dimensions = new long[] { imp.getWidth(), imp.getHeight(), imp.getNSlices() };
         cellDimensions = new int[] { imp.getWidth(), imp.getHeight(), 1 };
         final int numSetups = imp.getNChannels();

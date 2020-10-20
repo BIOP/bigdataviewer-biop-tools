@@ -50,6 +50,9 @@ public class Elastix2DSplineRegisterCommand implements Command {
     @Parameter(type = ItemIO.OUTPUT)
     RealTransform rt;
 
+    @Parameter(type = ItemIO.OUTPUT)
+    RealTransform rt_inverse;
+
     @Override
     public void run() {
 
@@ -65,5 +68,6 @@ public class Elastix2DSplineRegisterCommand implements Command {
 
         registeredSource = reg.getRegisteredSac();
         rt = reg.getRealTransform();
+        rt_inverse = reg.getRealTransformInverse();
     }
 }
