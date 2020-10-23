@@ -81,6 +81,12 @@ public class Elliptical3DTransform implements InvertibleRealTransform {
         return map;
     }
 
+    public void setParameters(Map<String, Double> parameters) {
+        parameters.entrySet().forEach(entry -> {
+            setParameters(entry.getKey(), entry.getValue());
+        });
+    }
+
     public void setParameters(Object... kv) {
         Map<String, Double> map = new LinkedHashMap<>();
         for (int i = 0; i < kv.length; i += 2)

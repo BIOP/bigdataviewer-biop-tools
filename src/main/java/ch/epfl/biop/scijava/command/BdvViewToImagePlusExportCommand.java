@@ -220,25 +220,12 @@ public class BdvViewToImagePlusExportCommand<T extends RealType<T>> implements C
             nPz = 1+(long)(zSize / (samplingZInPhysicalUnit/2.0)); // TODO : check div by 2
         }
 
-
-        // Dummy ImageFactory
-        final int[] cellDimensions = new int[] { 32, 32, 32 };
-
-        // Cached Image Factory Options
-        final DiskCachedCellImgOptions factoryOptions = options()
-                .cellDimensions( cellDimensions )
-                .cacheType( DiskCachedCellImgOptions.CacheType.BOUNDED )
-                .maxCacheSize( 1 );
-
-        // Creates cached image factory of Type UnsignedShort
-        final DiskCachedCellImgFactory<UnsignedShortType> factory = new DiskCachedCellImgFactory<>( new UnsignedShortType(), factoryOptions );
-
         // At least a pixel in all directions
         if (nPz == 0) nPz = 1;
         if (nPx == 0) nPx = 1;
         if (nPy == 0) nPy = 1;
 
-        return new EmptySourceAndConverterCreator(captureName, at3D.inverse(), nPx, nPy, nPz, factory).get();
+        return new EmptySourceAndConverterCreator(captureName, at3D.inverse(), nPx, nPy, nPz).get();
     }
 
     /**
