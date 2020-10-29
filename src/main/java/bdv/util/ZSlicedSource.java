@@ -50,7 +50,6 @@ public class ZSlicedSource< T extends NumericType<T> & NativeType<T>> extends Re
         transform.scale(xScale, yScale, zScale);
     }
 
-
     /**
      * Returns the norm of an axis after an affinetransform is applied
      * @param axis

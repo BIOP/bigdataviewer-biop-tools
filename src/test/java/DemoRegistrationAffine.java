@@ -7,10 +7,12 @@ import ch.epfl.biop.bdv.select.SelectedSourcesListener;
 import ch.epfl.biop.bdv.select.SourceSelectorBehaviour;
 import ch.epfl.biop.bdv.select.ToggleListener;
 import ch.epfl.biop.scijava.command.Elastix2DAffineRegisterCommand;
+import ch.epfl.biop.spimdata.imageplus.SpimDataFromImagePlusGetter;
 import ij.IJ;
 import ij.ImagePlus;
 import mpicbg.spim.data.SpimData;
 import mpicbg.spim.data.XmlIoSpimData;
+import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;
 import net.imglib2.RandomAccessibleInterval;
@@ -29,11 +31,11 @@ import sc.fiji.bdvpg.sourceandconverter.transform.SourceAffineTransformer;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceTransformHelper;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.Future;
 
 
 public class DemoRegistrationAffine {
-
 
     static {
         LegacyInjector.preinit();
@@ -110,8 +112,8 @@ public class DemoRegistrationAffine {
         bss.removeFromBdv();
         // Defines location of blobs image
         AffineTransform3D m = new AffineTransform3D();
-        m.rotate(2,Math.PI/10);
-        m.translate(0, 180,0);
+        m.rotate(2,Math.PI/20);
+        m.translate(0, -40,0);
 
         // Display first blobs image
         bss = BdvFunctions.show(blob, "Blobs 1", BdvOptions.options().sourceTransform(m).addTo(bdvh));
@@ -119,8 +121,8 @@ public class DemoRegistrationAffine {
 
         // Defines location of blobs image
         m.identity();
-        m.rotate(2,Math.PI/7);
-        m.translate(0,160,0);
+        m.rotate(2,Math.PI/25);
+        m.translate(0,-60,0);
 
         // Display second blobs image
         bss = BdvFunctions.show(blob, "Blobs 2", BdvOptions.options().sourceTransform(m).addTo(bdvh));
@@ -144,6 +146,18 @@ public class DemoRegistrationAffine {
         bdvh.getViewerPanel().requestRepaint();
 
 
+        ImagePlus impRGB = IJ.openImage("src/test/resources/blobsrgb.tif");
+        AbstractSpimData sdblob = (new SpimDataFromImagePlusGetter()).apply(impRGB);
+        AffineTransform3D at3D = new AffineTransform3D();
+        at3D.rotate(2,15);
+        List<BdvStackSource<?>> bssL = BdvFunctions.show(sdblob, BdvOptions.options().addTo(bdvh));
+        //SourceAndConverter rgbSac = bssL.get(0).getSources().get(0);
+        //bssL.remove(0);
+
+
+
+
+
         return bdvh;
     }
 
@@ -162,15 +176,15 @@ public class DemoRegistrationAffine {
                         .run(Elastix2DAffineRegisterCommand.class, true,
                         "sac_fixed", fixedSource,
                         "tpFixed", 0,
-                        "levelFixedSource", 2,
+                        "levelFixedSource", 0,
                         "sac_moving", movingSource,
                         "tpMoving", 0,
                         "levelMovingSource", 0,
                         "pxSizeInCurrentUnit", 1,
                         "interpolate", false,
-                        "showImagePlusRegistrationResult", true,
-                        "px",-20,
-                        "py",275,
+                        "showImagePlusRegistrationResult", false,// true,
+                        "px",-50,
+                        "py",-10,
                         "pz",0,
                         "sx",250,
                         "sy",250

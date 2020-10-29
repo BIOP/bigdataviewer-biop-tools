@@ -74,7 +74,7 @@ public class SpimDataFromImagePlusGetter implements Runnable, Function<ImagePlus
 
         int originTimePoint = ImagePlusHelper.getTimeOriginFromImagePlus(imp);
         final BasicImgLoader imgLoader;
-        if ( imp.getStack().isVirtual() )
+        //if ( imp.getStack().isVirtual() )
         {
             switch ( imp.getType() )
             {
@@ -93,7 +93,7 @@ public class SpimDataFromImagePlusGetter implements Runnable, Function<ImagePlus
                     break;
             }
         }
-        else
+        /*else
         {
             switch ( imp.getType() )
             {
@@ -108,10 +108,11 @@ public class SpimDataFromImagePlusGetter implements Runnable, Function<ImagePlus
                     break;
                 case ImagePlus.COLOR_RGB:
                 default:
+                    System.out.println("RGB");
                     imgLoader = ImageStackImageLoaderTimeShifted.createARGBInstance( imp, originTimePoint );
                     break;
             }
-        }
+        }*/
 
         final int numTimepoints = imp.getNFrames();
         final int numSetups = imp.getNChannels();
@@ -169,7 +170,6 @@ public class SpimDataFromImagePlusGetter implements Runnable, Function<ImagePlus
         final File basePath = new File( "." );
 
         final AbstractSpimData< ? > spimData = new SpimDataMinimal( basePath, seq, new ViewRegistrations( registrations ) );
-
 
         return spimData;
     }

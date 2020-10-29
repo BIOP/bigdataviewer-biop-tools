@@ -265,6 +265,10 @@ public class ImagePlusHelper {
 
             Img img = (Img)(wrapAsVolatileCachedCellImg(Views.stack(rais), new int[]{(int) rais[0].dimension(0),(int) rais[0].dimension(1),1,1}));
 
+            System.out.println(img.numDimensions());
+
+            BdvFunctions.show(img, "Nothing");
+
             imgPlus = new ImgPlus(img,//cacheRAI(Views.stack(raisList)),
 
             //imgPlus = new ImgPlus(cacheRAI(Views.stack(rais)),
@@ -282,7 +286,7 @@ public class ImagePlusHelper {
         System.out.println("ignoreSourceLut:"+ignoreSourceLut);
         System.out.println("cs:"+cs);
         // Simple Color LUT
-        if ((!ignoreSourceLut)&&(cs!=null)) {
+        if ((!ignoreSourceLut)&&(cs!=null)&&!(sac.getSpimSource().getType() instanceof ARGBType)) {
             System.out.println("Settings the settings");
             ARGBType c = cs.getColor();
             imp.setLut(LUT.createLutFromColor(new Color(ARGBType.red(c.get()), ARGBType.green(c.get()), ARGBType.blue(c.get()))));
@@ -350,7 +354,7 @@ public class ImagePlusHelper {
         if ((!ignoreSourceLut)) {
             LUT[] luts = new LUT[sacs.size()];
             for (SourceAndConverter sac:sacs) {
-                if (csMap.get(sac)!=null) {
+                if ((csMap.get(sac)!=null)&&!(sac.getSpimSource().getType() instanceof ARGBType)) {
                     ARGBType c = csMap.get(sac).getColor();
                     LUT lut;
                     if (c!=null) {
@@ -438,7 +442,10 @@ public class ImagePlusHelper {
             img = new CachedCellImg(grid, type, cache, ArrayDataAccessFactory.get(FLOAT, AccessFlags.setOf(VOLATILE)));
         } else if (DoubleType.class.isInstance(type)) {
             img = new CachedCellImg(grid, type, cache, ArrayDataAccessFactory.get(DOUBLE, AccessFlags.setOf(VOLATILE)));
+        }else if (ARGBType.class.isInstance(type)) {
+            img = new CachedCellImg(grid, type, cache, ArrayDataAccessFactory.get(INT, AccessFlags.setOf(VOLATILE)));
         } else {
+            System.err.println("Unsupported caching of type "+type.getClass().getSimpleName());
             img = null;
         }
 
