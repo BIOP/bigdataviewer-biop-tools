@@ -265,10 +265,6 @@ public class ImagePlusHelper {
 
             Img img = (Img)(wrapAsVolatileCachedCellImg(Views.stack(rais), new int[]{(int) rais[0].dimension(0),(int) rais[0].dimension(1),1,1}));
 
-            System.out.println(img.numDimensions());
-
-            BdvFunctions.show(img, "Nothing");
-
             imgPlus = new ImgPlus(img,//cacheRAI(Views.stack(raisList)),
 
             //imgPlus = new ImgPlus(cacheRAI(Views.stack(rais)),

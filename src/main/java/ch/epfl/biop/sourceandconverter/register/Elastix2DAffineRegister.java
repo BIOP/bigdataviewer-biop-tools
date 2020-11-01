@@ -78,6 +78,10 @@ public class Elastix2DAffineRegister implements Runnable {
     @Override
     public void run() {
 
+        // Check mipmap level
+        levelMipmapFixed = Math.min(levelMipmapFixed, sac_fixed.getSpimSource().getNumMipmapLevels()-1);
+        levelMipmapMoving = Math.min(levelMipmapMoving, sac_moving.getSpimSource().getNumMipmapLevels()-1);
+
         // Interpolation switch
         Interpolation interpolation;
         if (interpolate) {
@@ -112,7 +116,9 @@ public class Elastix2DAffineRegister implements Runnable {
                 movat,fi,pxSizeInCurrentUnit,pxSizeInCurrentUnit,pxSizeInCurrentUnit);
 
         ImagePlus impM = ImageJFunctions.wrap(viewMoving, "Moving");
-        //impM.show();
+        if (showResultIJ1) {
+            impM.show();
+        }
         impM = new Duplicator().run(impM); // Virtual messes up the process, don't know why
 
         at3D.identity();
@@ -121,7 +127,9 @@ public class Elastix2DAffineRegister implements Runnable {
         RandomAccessibleInterval viewFixed = RealCropper.getCroppedSampledRRAI(ipFixedimg,
                 fixat,fi,pxSizeInCurrentUnit,pxSizeInCurrentUnit,pxSizeInCurrentUnit);
         ImagePlus impF = ImageJFunctions.wrap(viewFixed, "Fixed");
-        //impF.show();
+        if (showResultIJ1) {
+            impF.show();
+        }
         impF = new Duplicator().run(impF); // Virtual messes up the process, don't know why
 
 
@@ -157,7 +165,7 @@ public class Elastix2DAffineRegister implements Runnable {
         mPatchPixToRegPatchPix.set(affine3D);
 
         if (showResultIJ1) {
-            impF.show();
+            //impF.show();
             ImagePlus transformedImage = ImagePlusFunctions.splitApplyRecompose(
                     imp -> {
                         TransformHelper th = new TransformHelper();
@@ -170,10 +178,10 @@ public class Elastix2DAffineRegister implements Runnable {
 
             transformedImage.show();
 
-            IJ.run(impF, "Enhance Contrast", "saturated=0.35");
+            /*IJ.run(impF, "Enhance Contrast", "saturated=0.35");
             IJ.run(transformedImage, "Enhance Contrast", "saturated=0.35");
             IJ.run(impF, "32-bit", "");
-            IJ.run((ImagePlus) null, "Merge Channels...", "c1=Transformed_DUP_Moving c2=DUP_Fixed create");
+            IJ.run((ImagePlus) null, "Merge Channels...", "c1=Transformed_DUP_Moving c2=DUP_Fixed create");*/
         }
 
         // Let's try something different for the transformation

@@ -11,10 +11,11 @@ import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
-@Plugin(type = Command.class, menuPath = "BigDataViewer>Sources>Register>Register Sources with Elastix (Affine, 2D)")
+@Plugin(type = Command.class,
+        menuPath = "BigDataViewer>Sources>Register>Register Sources with Elastix (Affine, 2D)")
 public class Elastix2DAffineRegisterCommand implements Command {
 
-    @Parameter
+    @Parameter(label = "Fixed source for registration", description = "fixed source")
     SourceAndConverter sac_fixed;
 
     @Parameter
