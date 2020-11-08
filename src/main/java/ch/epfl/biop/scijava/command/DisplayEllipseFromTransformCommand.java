@@ -17,7 +17,7 @@ import sc.fiji.bdvpg.services.SourceAndConverterServices;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterUtils;
 
 
-//@Plugin(type = Command.class, menuPath = "BigDataViewer>Sources>Transform>Create Ellipsoid Source")
+//@Plugin(type = Command.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>Create Ellipsoid Source")
 public class DisplayEllipseFromTransformCommand implements Command {
 
     @Parameter(type = ItemIO.OUTPUT)

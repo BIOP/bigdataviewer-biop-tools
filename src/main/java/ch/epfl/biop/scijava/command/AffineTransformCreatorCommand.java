@@ -5,9 +5,10 @@ import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 
 @Plugin(type = Command.class, initializer = "init",
-        menuPath = "BigDataViewer>Sources>Transform>New Affine Transform",
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>New Affine Transform",
         label = "Creates an affine transform and makes it accessible for other commands",
         description = "Affine transform is a 4x3 matrix; elements are separated by comma.")
 public class AffineTransformCreatorCommand implements Command {

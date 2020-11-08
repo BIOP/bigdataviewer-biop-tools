@@ -18,6 +18,7 @@ import org.scijava.command.Command;
 import org.scijava.log.LogService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,7 +37,7 @@ import java.util.Set;
  */
 
 @Plugin(type = Command.class,
-        menuPath = "BigDataViewer>BDVDataset>Open [QuPath Project]"
+        menuPath = ScijavaBdvDefaults.RootMenu+"BDVDataset>Open [QuPath Project]"
         )
 public class QuPathProjectToBDVDatasetCommand extends BioformatsBigdataviewerBridgeDatasetCommand {
 

@@ -10,6 +10,7 @@ import org.scijava.command.Command;
 import org.scijava.command.CommandService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,7 +19,7 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 
-@Plugin(type = Command.class, menuPath = "BigDataViewer>Sources>Register>AutoWarp Sources with Elastix and BigWarp (2D)")
+@Plugin(type = Command.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>AutoWarp Sources with Elastix and BigWarp (2D)")
 public class AutoWarp2DCommand implements Command {
 
     @Parameter

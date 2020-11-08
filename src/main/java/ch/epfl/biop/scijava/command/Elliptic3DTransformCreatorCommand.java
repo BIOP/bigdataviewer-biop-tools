@@ -6,8 +6,9 @@ import org.scijava.command.Command;
 import org.scijava.command.CommandService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 
-@Plugin(type = Command.class, menuPath = "BigDataViewer>Sources>Transform>New Elliptic 3D Transform")
+@Plugin(type = Command.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>New Elliptic 3D Transform")
 public class Elliptic3DTransformCreatorCommand implements Command {
 
     @Parameter

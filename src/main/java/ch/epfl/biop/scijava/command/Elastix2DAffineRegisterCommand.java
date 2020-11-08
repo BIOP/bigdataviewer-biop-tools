@@ -10,9 +10,10 @@ import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 
 @Plugin(type = Command.class,
-        menuPath = "BigDataViewer>Sources>Register>Register Sources with Elastix (Affine, 2D)")
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Register Sources with Elastix (Affine, 2D)")
 public class Elastix2DAffineRegisterCommand implements Command {
 
     @Parameter(label = "Fixed source for registration", description = "fixed source")

@@ -9,7 +9,7 @@ import org.scijava.ui.viewer.DisplayViewer;
 import javax.swing.*;
 import java.awt.*;
 
-@Plugin(type = DisplayViewer.class, priority = Priority.HIGH)
+//@Plugin(type = DisplayViewer.class, priority = Priority.HIGH)
 public class SwingAffineTransformViewer extends
         EasySwingDisplayViewer<AffineTransform3D> {
 

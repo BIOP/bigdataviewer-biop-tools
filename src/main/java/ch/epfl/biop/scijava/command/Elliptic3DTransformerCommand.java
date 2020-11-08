@@ -6,11 +6,12 @@ import ch.epfl.biop.sourceandconverter.transform.Elliptic3DTransformer;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-@Plugin(type = Command.class, menuPath = "BigDataViewer>Sources>Transform>Elliptic 3D Transform Sources")
+@Plugin(type = Command.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>Elliptic 3D Transform Sources")
 public class Elliptic3DTransformerCommand implements Command {
 
     @Parameter

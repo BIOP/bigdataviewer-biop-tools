@@ -9,6 +9,7 @@ import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterUtils;
 
@@ -18,7 +19,7 @@ import java.util.stream.Collectors;
 
 import static sc.fiji.bdvpg.bdv.navigate.ViewerTransformSyncStopper.MatrixApproxEquals;
 
-@Plugin(type = Command.class, menuPath = "BigDataViewer>Sources>Export>Show Sources (split) (IJ1)")
+@Plugin(type = Command.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Export>Show Sources (split) (IJ1)")
 public class ExportToMultipleImagePlusCommand implements Command {
 
     @Parameter

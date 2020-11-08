@@ -20,13 +20,14 @@ import org.scijava.plugin.Parameter;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.plugin.Plugin;
+import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.*;
 
 
-@Plugin(type = Command.class, initializer = "init", menuPath = "BigDataViewer>Sources>Transform>Elliptic 3D Transform Optimization")
+@Plugin(type = Command.class, initializer = "init", menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>Elliptic 3D Transform Optimization")
 public class Optimize3DEllipticalTransformCommand implements Command{
 
     @Parameter(type = ItemIO.BOTH)

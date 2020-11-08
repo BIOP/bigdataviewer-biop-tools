@@ -16,10 +16,11 @@ import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.scijava.ui.UIService;
+import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 
 // TODO : make it ok with the actual source transform, not only with RAI
 
-@Plugin(type = Command.class, menuPath = "BigDataViewer>Sources>Register>Find Line Of Symmetry (2D)")
+@Plugin(type = Command.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Find Line Of Symmetry (2D)")
 public class FindLineSymmetry2DCommand implements Command {
 
     @Parameter

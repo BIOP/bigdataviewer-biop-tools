@@ -12,12 +12,13 @@ import org.scijava.command.CommandService;
 import org.scijava.module.ModuleService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
 
-@Plugin(type = Command.class, menuPath = "BigDataViewer>Sources>Register>Align Slides (2D)")
+@Plugin(type = Command.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Align Slides (2D)")
 public class RegisterWholeSlideScans2DCommand implements Command {
 
     @Parameter(label = "Global reference image (fixed, usually, first dapi channel)")

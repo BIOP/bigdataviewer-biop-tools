@@ -6,7 +6,7 @@ import org.scijava.display.AbstractDisplay;
 import org.scijava.display.Display;
 import org.scijava.plugin.Plugin;
 
-@Plugin(type = Display.class, priority = Priority.HIGH)
+//@Plugin(type = Display.class, priority = Priority.HIGH)
 public class AffineTransformDisplay extends AbstractDisplay<AffineTransform3D> {
     public AffineTransformDisplay() {
         super(AffineTransform3D.class);

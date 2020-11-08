@@ -7,8 +7,9 @@ import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 
-@Plugin(type = Command.class, menuPath = "BigDataViewer>Sources>Register>Register Sources with Elastix (Spline, 2D)")
+@Plugin(type = Command.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Register Sources with Elastix (Spline, 2D)")
 public class Elastix2DSplineRegisterCommand implements Command {
 
     @Parameter
