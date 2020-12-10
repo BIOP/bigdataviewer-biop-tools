@@ -15,7 +15,6 @@ public class SlicerOutOfBoundFactory< T, F extends Interval & RandomAccessible< 
         this.shiftedAxis = shiftedAxis;
     }
 
-
     @Override
     public OutOfBounds<T> create(F f) {
         return new SlicerOutOfBounds<T>(f, shiftedAxis, displayerAxis);

@@ -6,7 +6,7 @@ import org.scijava.display.AbstractDisplay;
 import org.scijava.display.Display;
 import org.scijava.plugin.Plugin;
 
-@Plugin(type = Display.class, priority = Priority.LOW)
+//@Plugin(type = Display.class, priority = Priority.LOW)
 public class RealTransformDisplay extends AbstractDisplay<RealTransform> {
     public RealTransformDisplay() {
         super(RealTransform.class);

@@ -138,7 +138,7 @@
 		<scijava.deleteOtherVersions>true</scijava.deleteOtherVersions>
 
 		<bigdataviewer-playground.version>0.2.7-SNAPSHOT</bigdataviewer-playground.version>
-		<bigdataviewer-bioformats.version>0.2.9</bigdataviewer-bioformats.version>
+		<bigdataviewer-bioformats.version>0.2.12-SNAPSHOT</bigdataviewer-bioformats.version>
 		<bigdataviewer-selector.version>0.1.5</bigdataviewer-selector.version>
 		<scijava.app.directory>C:/Users/nicol/Desktop/fiji-win64-bdv-playground/Fiji.app/</scijava.app.directory>
 

@@ -194,23 +194,25 @@ public class Elastix2DSplineRegister implements Runnable {
         }
 
         if (showResultIJ1) {
-            impF.show();
-            ImagePlus transformedImage = ImagePlusFunctions.splitApplyRecompose(
-                    imp -> {
-                        TransformHelper th = new TransformHelper();
-                        th.setTransformFile(rh);
-                        th.setImage(imp);
-                        th.transform();
-                        return ((ImagePlus) (th.getTransformedImage().to(ImagePlus.class)));
-                    }
-                    ,impM);
+            synchronized (IJ.class) {
+                impF.show();
+                ImagePlus transformedImage = ImagePlusFunctions.splitApplyRecompose(
+                        imp -> {
+                            TransformHelper th = new TransformHelper();
+                            th.setTransformFile(rh);
+                            th.setImage(imp);
+                            th.transform();
+                            return ((ImagePlus) (th.getTransformedImage().to(ImagePlus.class)));
+                        }
+                        , impM);
 
-            transformedImage.show();
+                transformedImage.show();
 
-            IJ.run(impF, "Enhance Contrast", "saturated=0.35");
-            IJ.run(transformedImage, "Enhance Contrast", "saturated=0.35");
-            IJ.run(impF, "32-bit", "");
-            IJ.run((ImagePlus) null, "Merge Channels...", "c1=Transformed_DUP_Moving c2=DUP_Fixed create");
+                IJ.run(impF, "Enhance Contrast", "saturated=0.35");
+                IJ.run(transformedImage, "Enhance Contrast", "saturated=0.35");
+                IJ.run(impF, "32-bit", "");
+                IJ.run((ImagePlus) null, "Merge Channels...", "c1=Transformed_DUP_Moving c2=DUP_Fixed create");
+            }
         }
 
         List<RealPoint> fixedImageGridPointsInFixedImageCoordinates = new ArrayList<>();

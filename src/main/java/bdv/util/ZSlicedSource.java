@@ -39,7 +39,7 @@ public class ZSlicedSource< T extends NumericType<T> & NativeType<T>> extends Re
      */
     @Override
     public void getSourceTransform(int t, int level, AffineTransform3D transform) {
-        resamplingModel.getSourceTransform(t,reuseMipMaps?level:0,transform);
+        resamplingModel.getSourceTransform(t,level,transform);
         transform.set(0,0,3);
         transform.set(0,1,3);
         transform.set(0,2,3);

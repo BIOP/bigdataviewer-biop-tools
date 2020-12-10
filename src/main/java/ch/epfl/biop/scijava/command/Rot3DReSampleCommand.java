@@ -21,6 +21,7 @@ import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterUtils;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceResampler;
@@ -56,9 +57,14 @@ public class Rot3DReSampleCommand implements Command {
     @Parameter
     boolean interpolate;
 
+    @Parameter
+    SourceAndConverterService sac_service;
+
     public void run() {
 
         AbstractSpimData asd = (new SpimDataFromImagePlusGetter()).apply(imp_in);
+        sac_service.register(asd);
+        sac_service.setSpimDataName(asd, imp_in.getTitle());
         List<SourceAndConverter> sacs = SourceAndConverterServices.getSourceAndConverterService().getSourceAndConverterFromSpimdata(asd);
 
         Roi roi1 = rm.getRoi(0);
@@ -195,8 +201,10 @@ public class Rot3DReSampleCommand implements Command {
                 //);
         //for (int i = 0;i<sacs_out.length;i++)
         {
+
             channels[i] = ImageJFunctions.wrap(sacs_out[i].getSpimSource().getSource(0,0),"");
             channels[i].setDimensions(1, channels[i].getNSlices(), 1); // Set 3 dimension as Z, not as Channel
+            //channels[i].show();
         });
 
         imp_out = RGBStackMerge.mergeChannels(channels, false);

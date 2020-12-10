@@ -9,7 +9,7 @@ import org.scijava.ui.viewer.DisplayViewer;
 
 import javax.swing.*;
 
-@Plugin(type = DisplayViewer.class, priority = Priority.LOW)
+//@Plugin(type = DisplayViewer.class, priority = Priority.LOW)
 public class SwingRealTransformViewer extends
         EasySwingDisplayViewer<RealTransform> {
 

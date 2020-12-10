@@ -8,7 +8,6 @@ import net.imagej.patcher.LegacyInjector;
 import org.scijava.Context;
 import org.scijava.command.Command;
 import org.scijava.command.CommandService;
-import org.scijava.log.LogService;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.command.bdv.BdvWindowCreatorCommand;
 import sc.fiji.bdvpg.scijava.command.spimdata.SpimDataExporterCommand;
@@ -36,16 +35,17 @@ public class BdvScijavaHelper {
         }
     }
 
-    static public void addCommandToBdvHandleMenu(BdvHandle bdvh, Context ctx, Class<? extends Command> commandClass) {
-        addCommandToBdvHandleMenu(bdvh, ctx, commandClass, 0);
+    // https://github.com/scijava/scijava-ui-swing/blob/557d79230d0f70eaae8573e242f0a02c66b07d62/src/main/java/org/scijava/ui/swing/AbstractSwingUI.java
+    static public void addCommandToBdvHandleMenu(BdvHandle bdvh, Context ctx, Class<? extends Command> commandClass, int skipTopLevels, Object... args) {
+        Plugin plugin = commandClass.getDeclaredAnnotation(Plugin.class);
+        addActionToBdvHandleMenu(bdvh,plugin.menuPath(), skipTopLevels, () -> ctx.getService(CommandService.class).run(commandClass, true, args));
+
     }
 
-    // https://github.com/scijava/scijava-ui-swing/blob/557d79230d0f70eaae8573e242f0a02c66b07d62/src/main/java/org/scijava/ui/swing/AbstractSwingUI.java
-    static public void addCommandToBdvHandleMenu(BdvHandle bdvh, Context ctx, Class<? extends Command> commandClass, int skipTopLevels) {
-        Plugin plugin = commandClass.getDeclaredAnnotation(Plugin.class);
+    static public void addActionToBdvHandleMenu(BdvHandle bdvh, String pathHierarchy, int skipTopLevels, Runnable runnable) {
         if (bdvh instanceof BdvHandleFrame) {
             final JMenuBar bdvMenuBar = ( ( BdvHandleFrame ) bdvh ).getBigDataViewer().getViewerFrame().getJMenuBar();
-            List<String> path = Arrays.asList(plugin.menuPath().split(">"))
+            List<String> path = Arrays.asList(pathHierarchy.split(">"))
                     .stream()
                     .map(String::trim)
                     .collect(Collectors.toList());
@@ -54,11 +54,11 @@ public class BdvScijavaHelper {
 
             JMenuItem jmenuItemRoot = findOrCreateJMenu(bdvMenuBar, path);
             final JMenuItem jMenuItem = new JMenuItem( path.get(path.size()-1));
-            jMenuItem.addActionListener(e -> ctx.getService(CommandService.class).run(commandClass, true));
+            jMenuItem.addActionListener(e -> runnable.run());
             jmenuItemRoot.add( jMenuItem );
             bdvMenuBar.updateUI();
         } else {
-            ctx.getService(LogService.class).error(BdvScijavaHelper.class.getName()+" : Cannot put command on menu : the bdvhandle is not a frame.");
+            System.err.println(BdvScijavaHelper.class.getName()+" : Cannot put command on menu : the bdvhandle is not a frame.");
         }
     }
 
@@ -126,6 +126,8 @@ public class BdvScijavaHelper {
         clearBdvHandleMenuBar(bdvh);
         addCommandToBdvHandleMenu(bdvh, ij.context(), OpenImarisCommand.class,2);
         addCommandToBdvHandleMenu(bdvh, ij.context(), SpimDataExporterCommand.class,2);
+
+        addActionToBdvHandleMenu(bdvh,"File>Quit",0,() -> bdvh.close());
     }
 
 }

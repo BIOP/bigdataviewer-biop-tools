@@ -7,11 +7,12 @@ import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Plugin(type = Command.class, menuPath = "BigDataViewer>BDV>Get Bdv User Region")
+@Plugin(type = Command.class, menuPath = ScijavaBdvDefaults.RootMenu+"BDV>Get Bdv User Region")
 public class GetUserRectangleCommand implements Command {
 
     @Parameter
