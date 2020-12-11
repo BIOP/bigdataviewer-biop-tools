@@ -194,7 +194,7 @@ public class Elastix2DSplineRegister implements Runnable {
         }
 
         if (showResultIJ1) {
-            synchronized (IJ.class) {
+            synchronized (Elastix2DSplineRegister.class) {
                 impF.show();
                 ImagePlus transformedImage = ImagePlusFunctions.splitApplyRecompose(
                         imp -> {

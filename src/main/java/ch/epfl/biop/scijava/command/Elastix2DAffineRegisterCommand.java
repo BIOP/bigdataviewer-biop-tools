@@ -57,7 +57,10 @@ public class Elastix2DAffineRegisterCommand implements Command {
 
         RegisterHelper rh = new RegisterHelper();
         RegistrationParameters rp = new RegParamAffine_Fast();
-        rp.AutomaticScalesEstimation = true;
+        rp.AutomaticScalesEstimation = false;
+        rp.AutomaticTransformInitialization = true;
+        rp.AutomaticTransformInitializationMethod = "CenterOfGravity";
+
         double maxSize = Math.max(sx/pxSizeInCurrentUnit,sy/pxSizeInCurrentUnit);
         int nScales = 0;
 
@@ -65,9 +68,17 @@ public class Elastix2DAffineRegisterCommand implements Command {
             nScales++;
         }
         //System.out.println("nScales = "+nScales);
-        rp.NumberOfResolutions = nScales-2;
+        rp.NumberOfResolutions = Math.max(1,nScales-2);
         rp.BSplineInterpolationOrder = 1;
         rp.MaximumNumberOfIterations = 100;
+
+        rp.ImagePyramidSchedule = new Integer[2*rp.NumberOfResolutions];
+        for (int scale = 0; scale < rp.NumberOfResolutions ; scale++) {
+            rp.ImagePyramidSchedule[2*scale] = (int) Math.pow(2, rp.NumberOfResolutions-scale-1);
+            rp.ImagePyramidSchedule[2*scale+1] = (int) Math.pow(2, rp.NumberOfResolutions-scale-1);
+        }
+
+        //rp.ImagePyramidSchedule = new int[]{4,4,2,2,1,1};
         rh.addTransform(rp);
 
         Elastix2DAffineRegister reg = new Elastix2DAffineRegister(

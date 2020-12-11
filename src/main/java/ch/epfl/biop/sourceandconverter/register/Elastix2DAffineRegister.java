@@ -116,9 +116,9 @@ public class Elastix2DAffineRegister implements Runnable {
                 movat,fi,pxSizeInCurrentUnit,pxSizeInCurrentUnit,pxSizeInCurrentUnit);
 
         ImagePlus impM = ImageJFunctions.wrap(viewMoving, "Moving");
-        if (showResultIJ1) {
+        /*if (showResultIJ1) {
             impM.show();
-        }
+        }*/
         impM = new Duplicator().run(impM); // Virtual messes up the process, don't know why
 
         at3D.identity();
@@ -162,7 +162,7 @@ public class Elastix2DAffineRegister implements Runnable {
         mPatchPixToRegPatchPix.set(affine3D);
 
         if (showResultIJ1) {
-            synchronized (IJ.class) {
+            synchronized (Elastix2DAffineRegister.class) {
                 impF.show();
 
                 ImagePlus transformedImage = ImagePlusFunctions.splitApplyRecompose(
