@@ -1,10 +1,7 @@
-import bdv.util.BdvHandle;
-//import ch.epfl.biop.bdv.scijava.command.spimdata.SpimdatasetOpenXML;
 import loci.common.DebugTools;
 import net.imagej.ImageJ;
 
 import java.io.File;
-import java.util.concurrent.ExecutionException;
 
 public class WholeSlideAlignement {
 

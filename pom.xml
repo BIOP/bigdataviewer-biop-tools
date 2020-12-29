@@ -322,6 +322,6 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-
 	</dependencies>
-    </project>
+
+</project>

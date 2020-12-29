@@ -12,6 +12,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import mpicbg.spim.data.generic.sequence.BasicViewSetup;
+import net.imglib2.realtransform.AffineTransform3D;
 import org.apache.commons.io.FilenameUtils;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
@@ -65,18 +66,25 @@ public class QuPathProjectToBDVDatasetCommand extends BioformatsBigdataviewerBri
 
             List<URI> allURIs = new ArrayList<>();
             project.images.forEach(image -> {
+                QuPathBioFormatsSourceIdentifier identifier = new QuPathBioFormatsSourceIdentifier();
+                if (image.serverBuilder.builderType.equals("rotated")) {
+                    String angleDegreesStr = image.serverBuilder.rotation.substring(7);//"ROTATE_ANGLE" for instance "ROTATE_0", "ROTATE_270", etc
+                    identifier.angleRotationZAxis = (Double.valueOf(angleDegreesStr)/180.0)*Math.PI;
+                    image.serverBuilder = image.serverBuilder.builder;
+                }
+
                 if (image.serverBuilder.builderType.equals("uri")) {
                     if (image.serverBuilder.providerClassName.equals("qupath.lib.images.servers.bioformats.BioFormatsServerBuilder")) {
                         if (!allURIs.contains(image.serverBuilder.uri)) {
                             allURIs.add(image.serverBuilder.uri);
                         }
                         try {
-                            QuPathBioFormatsSourceIdentifier identifier = new QuPathBioFormatsSourceIdentifier();
 
                             URI uri = new URI(image.serverBuilder.uri.getScheme(), image.serverBuilder.uri.getHost(), image.serverBuilder.uri.getPath(), null);
                             // This appears to work more reliably than converting to a File
                             String filePath = Paths.get(uri).toString();
 
+                            identifier.uri = image.serverBuilder.uri;
                             identifier.sourceFile = filePath;
                             identifier.indexInQuPathProject = project.images.indexOf(image);
                             identifier.entryID = project.images.get(identifier.indexInQuPathProject).entryID;
@@ -110,7 +118,22 @@ public class QuPathProjectToBDVDatasetCommand extends BioformatsBigdataviewerBri
                 URI uri2 = new URI(uri.getScheme(), uri.getHost(), uri.getPath(), null);
                 // This appears to work more reliably than converting to a File
                 String filePath = Paths.get(uri2).toString();
-                openers.add(getOpener(filePath));
+                BioFormatsBdvOpener opener = getOpener(filePath);
+
+                // For rotated image server
+                AffineTransform3D at3D = new AffineTransform3D();
+
+                double zAxisRotation =
+                        quPathSourceIdentifiers.stream()
+                        .filter(identifier -> identifier.uri == uri)
+                        .findFirst()
+                        .get()
+                        .angleRotationZAxis;
+
+                at3D.rotate(2,zAxisRotation);
+                opener.setPositionPostTransform(at3D); //.flipPositionX();
+
+                openers.add(opener);
             }
 
             spimData = BioFormatsConvertFilesToSpimData.getSpimData(openers);
@@ -146,6 +169,8 @@ public class QuPathProjectToBDVDatasetCommand extends BioformatsBigdataviewerBri
         int entryID;
         String sourceFile;
         int bioformatsIndex;
+        double angleRotationZAxis = 0;
+        URI uri;
 
         public String toString() {
             String str = "";

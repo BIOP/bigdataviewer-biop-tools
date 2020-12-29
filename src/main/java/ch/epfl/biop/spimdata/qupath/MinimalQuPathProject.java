@@ -40,7 +40,9 @@ public class MinimalQuPathProject {
     }
 
     public static class ServerBuilderEntry {
-        public String builderType; // "uri"
+        public String builderType; // "uri" or "rotated"
+        public ServerBuilderEntry builder;
+        public String rotation; // for "rotated builder"
         public String providerClassName; // "qupath.lib.images.servers.bioformats.BioFormatsServerBuilder",
         public URI uri;
         public List<String> args;
