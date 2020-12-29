@@ -30,8 +30,8 @@ import mpicbg.spim.data.generic.sequence.TypedBasicImgLoader;
  *
  * see {@link VirtualStackImageLoaderTimeShifted} for more information
  *
- * @param <T>
- * @param <A>
+ * @param <T> type of the sources
+ * @param <A> TODO understand what this is
  */
 
 public class ImageStackImageLoaderTimeShifted< T extends NumericType< T > & NativeType< T >, A extends ArrayDataAccess< A > > implements BasicImgLoader, TypedBasicImgLoader< T >

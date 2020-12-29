@@ -45,37 +45,9 @@
 
 	<developers>
 		<developer>
-			<id>oburri</id>
-			<name>Olivier Burri</name>
-			<url>http://biop.epfl.ch/INFO_Facility.html</url>
-			<roles>
-				<role>founder</role>
-				<role>lead</role>
-				<role>developer</role>
-				<role>debugger</role>
-				<role>reviewer</role>
-				<role>support</role>
-				<role>maintainer</role>
-			</roles>
-		</developer>
-		<developer>
 			<id>nicokiaru</id>
 			<name>Nicolas Chiaruttini</name>
 			<url>http://imagej.net/User:NicoKiaru</url>
-			<roles>
-				<role>founder</role>
-				<role>lead</role>
-				<role>developer</role>
-				<role>debugger</role>
-				<role>reviewer</role>
-				<role>support</role>
-				<role>maintainer</role>
-			</roles>
-		</developer>
-		<developer>
-			<id>romainGuiet</id>
-			<name>Romain Guiet</name>
-			<url>http://biop.epfl.ch/INFO_Facility.html</url>
 			<roles>
 				<role>founder</role>
 				<role>lead</role>
@@ -116,19 +88,20 @@
 	</mailingLists>
 
 	<scm>
-		<connection>scm:git:git://github.com/</connection>
-		<developerConnection>scm:git:git@github.com:</developerConnection>
+		<connection>scm:git:git://github.com/BIOP/bigdataviewer-biop-tools</connection>
+		<developerConnection>scm:git:git@github.com:BIOP/bigdataviewer-biop-tools</developerConnection>
 		<tag>HEAD</tag>
-		<url>https://github.com/</url>
+		<url>https://github.com/BIOP/bigdataviewer-biop-tools/</url>
 	</scm>
 	
 	<issueManagement>
 		<system>GitHub Issues</system>
-		<url></url>
+		<url>https://github.com/BIOP/bigdataviewer-biop-tools/issues</url>
 	</issueManagement>
 
 	<ciManagement>
-		<system>None</system>
+		<system>Travis CI</system>
+		<url>https://travis-ci.com/BIOP/bigdataviewer-biop-tools</url>
 	</ciManagement>
 
 	<properties>
@@ -216,17 +189,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>net.imagej</groupId>
-			<artifactId>imagej</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
 			<groupId>org.orangepalantir</groupId>
 			<artifactId>leastsquares</artifactId>
 			<version>${leastsquares.version}</version>
@@ -267,18 +229,6 @@
 			<artifactId>bigdataviewer-spimdata-extras</artifactId>
 			<version>${bigdataviewer-spimdata-extras.version}</version>
 		</dependency>
-
-		<!--<dependency>
-			<groupId>net.preibisch</groupId>
-			<artifactId>BigStitcher</artifactId>
-			<version>0.6.2-SNAPSHOT</version>
-		</dependency>
-
-		<dependency>
-			<groupId>net.preibisch</groupId>
-			<artifactId>multiview-reconstruction</artifactId>
-			<version>0.8.1-SNAPSHOT</version>
-		</dependency>-->
 
 		<dependency>
 			<groupId>ome</groupId>

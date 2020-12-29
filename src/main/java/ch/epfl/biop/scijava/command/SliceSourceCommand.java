@@ -138,9 +138,9 @@ public class SliceSourceCommand implements Command {
 
     /**
      * Returns the norm of an axis after an affinetransform is applied
-     * @param axis
-     * @param t
-     * @return
+     * @param axis axis
+     * @param t affine transform to measure
+     * @return the norm of an axis after an affinetransform is applied
      */
     static public double getNormTransform(int axis, AffineTransform3D t) {
         double f0 = t.get(axis,0);
@@ -151,9 +151,9 @@ public class SliceSourceCommand implements Command {
 
     /**
      * Returns the distance between two RealPoint pt1 and pt2
-     * @param pt1
-     * @param pt2
-     * @return
+     * @param pt1 first point
+     * @param pt2 second point
+     * @return the distance between two RealPoint pt1 and pt2
      */
     static public double distance(RealPoint pt1, RealPoint pt2) {
         assert pt1.numDimensions()==pt2.numDimensions();
@@ -212,8 +212,8 @@ public class SliceSourceCommand implements Command {
      * AArrg indexes are back
      *
      * TODO : find a better way to order between spimdata
-     * @param sacs
-     * @return
+     * @param sacs sources
+     * @return sorted sources
      */
     public static java.util.List<SourceAndConverter<?>> sortDefault(Collection<SourceAndConverter<?>> sacs) {
         List<SourceAndConverter<?>> sortedList = new ArrayList<>(sacs.size());

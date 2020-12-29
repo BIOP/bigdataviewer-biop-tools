@@ -64,8 +64,7 @@ public class RectangleSelectorBehaviour {
     }
 
     /**
-     * Gets the overlay layer associated with the source selector
-     * @return
+     * @return the overlay layer associated with the source selector
      */
     public RectangleSelectorOverlay getRectangleSelectorOverlay() {
         return rectangleOverlay;

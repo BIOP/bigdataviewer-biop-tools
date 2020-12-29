@@ -128,6 +128,7 @@ public class WeightedVoronoiSourceGetter implements Runnable, Supplier<SourceAnd
      *
      * @param source - a RandomAccess as sourceandconverter that can be infinite
      * @param target - an IterableInterval as target
+     * @param <T> type
      */
     public static < T extends Type< T >> void copy(final RandomAccessible< T > source,
                                                    final IterableInterval< T > target )

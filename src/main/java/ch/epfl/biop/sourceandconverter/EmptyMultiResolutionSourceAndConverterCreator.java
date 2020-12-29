@@ -25,11 +25,15 @@ public class EmptyMultiResolutionSourceAndConverterCreator implements Runnable, 
 
     /**
      * Simple constructor
-     * @param name
-     * @param at3D
-     * @param nx
-     * @param ny
-     * @param nz
+     * @param name name
+     * @param at3D affine transform of the source
+     * @param nx number of voxels in x
+     * @param ny number of voxels in y
+     * @param nz number of voxels in z
+     * @param scalex downscaling factor in x between resolution levels
+     * @param scaley downscaling factor in y between resolution levels
+     * @param scalez downscaling factor in z between resolution levels
+     * @param numberOfResolutions number of resolution levels to generate
      */
     public EmptyMultiResolutionSourceAndConverterCreator(
             String name,

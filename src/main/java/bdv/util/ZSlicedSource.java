@@ -33,9 +33,9 @@ public class ZSlicedSource< T extends NumericType<T> & NativeType<T>> extends Re
 
     /** Better behaviour to just keep the scale and avoid reorienting
      *
-     * @param t
-     * @param level
-     * @param transform
+     * @param t timepoint
+     * @param level mipmap level
+     * @param transform pre initial parameter - mutated in this method
      */
     @Override
     public void getSourceTransform(int t, int level, AffineTransform3D transform) {
@@ -52,9 +52,9 @@ public class ZSlicedSource< T extends NumericType<T> & NativeType<T>> extends Re
 
     /**
      * Returns the norm of an axis after an affinetransform is applied
-     * @param axis
-     * @param t
-     * @return
+     * @param axis axis of the affine transform ( X - 0, Y - 1, Z - 2 )
+     * @param t affine transform to measure
+     * @return the norm of an axis after an affinetransform is applied
      */
     static public double getNormTransform(int axis, AffineTransform3D t) {
         double f0 = t.get(0,axis);

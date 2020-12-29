@@ -42,9 +42,9 @@ import mpicbg.spim.data.generic.sequence.TypedBasicImgLoader;
  * contrast to the imglib2 wrappers, we do not try to load all slices into
  * memory. Instead slices are stored in {@link VolatileGlobalCellCache}.
  *
- * Use {@link #createFloatInstance(ImagePlus)},
- * {@link #createUnsignedByteInstance(ImagePlus)} or
- * {@link #createUnsignedShortInstance(ImagePlus)} depending on the ImagePlus
+ * Use createFloatInstance(ImagePlus),
+ * createUnsignedByteInstance(ImagePlus) or
+ * createUnsignedShortInstance(ImagePlus) depending on the ImagePlus
  * pixel type.
  *
  * When loading images ({@link #getSetupImgLoader(int)},
@@ -52,12 +52,9 @@ import mpicbg.spim.data.generic.sequence.TypedBasicImgLoader;
  * setup id is used as the channel index of the {@link ImagePlus}, the provided
  * timepoint id is used as the frame index of the {@link ImagePlus}.
  *
- * @param <T>
- *            (non-volatile) pixel type
- * @param <V>
- *            volatile pixel type
- * @param <A>
- *            volatile array access type
+ * @param <T> (non-volatile) pixel type
+ * @param <V> volatile pixel type
+ * @param <A> volatile array access type
  *
  * @author Tobias Pietzsch &lt;tobias.pietzsch@gmail.com&gt;
  */
@@ -217,6 +214,12 @@ public class VirtualStackImageLoaderTimeShifted< T extends NativeType< T >, V ex
 
         /**
          * Create a {@link CachedCellImg} backed by the cache.
+         * @param timepointId timepoint
+         * @param level resolution level
+         * @param loadingStrategy loading strategy
+         * @param type type
+         * @param <T> type
+         * @return a {@link CachedCellImg} backed by the cache.
          */
         protected < T extends NativeType< T > > AbstractCellImg< T, A, ?, ? > prepareCachedImage( final int timepointId, final int level, final LoadingStrategy loadingStrategy, final T type )
         {

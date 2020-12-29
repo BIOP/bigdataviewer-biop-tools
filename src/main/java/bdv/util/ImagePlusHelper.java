@@ -245,9 +245,13 @@ public class ImagePlusHelper {
 
     /**
      *
-     * @param sac
-     * @param mipmapLevel
-     * @return
+     * @param sac source
+     * @param mipmapLevel mipmap level of the source to wrap
+     * @param cs converter of the source
+     * @param beginTimePoint start timepoint (included)
+     * @param endTimePoint  end timepoint (excluded)
+     * @param ignoreSourceLut useful if the converter is not a color converter (more complicated or RGB source)
+     * @return wrapped ImagePlus
      */
 
     public static ImagePlus wrap(SourceAndConverter sac, ConverterSetup cs, int mipmapLevel, int beginTimePoint, int endTimePoint, boolean ignoreSourceLut) {
@@ -294,7 +298,13 @@ public class ImagePlusHelper {
 
     /**
      *
-     * @return
+     * @param sacs sources
+     * @param csMap converter setup of each sources
+     * @param mipmapMap mipmap level of each source
+     * @param beginTimePoint start timepoint (included)
+     * @param endTimePoint  end timepoint (excluded)
+     * @param ignoreSourceLut useful if the converter is not a color converter (more complicated or RGB source)
+     * @return wrapped sources as a multichannel ImagePlus
      */
     public static ImagePlus wrap(List<SourceAndConverter> sacs,
                                  Map<SourceAndConverter,ConverterSetup> csMap,

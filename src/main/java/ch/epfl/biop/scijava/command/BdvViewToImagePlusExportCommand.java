@@ -33,7 +33,7 @@ import static net.imglib2.cache.img.DiskCachedCellImgOptions.options;
 
 /**
  * Stack is virtual and cached by default
- * @param <T>
+ * @param <T> non-volatile pixel type
  */
 
 @Plugin(type = Command.class,
@@ -230,9 +230,9 @@ public class BdvViewToImagePlusExportCommand<T extends RealType<T>> implements C
 
     /**
      * Returns the norm of an axis after an affinetransform is applied
-     * @param axis
-     * @param t
-     * @return
+     * @param axis axis of the affine transform
+     * @param t affine transform measured
+     * @return the norm of an axis after an affinetransform is applied
      */
     static public double getNormTransform(int axis, AffineTransform3D t) {
         double f0 = t.get(axis,0);
@@ -243,9 +243,9 @@ public class BdvViewToImagePlusExportCommand<T extends RealType<T>> implements C
 
     /**
      * Returns the distance between two RealPoint pt1 and pt2
-     * @param pt1
-     * @param pt2
-     * @return
+     * @param pt1 first point
+     * @param pt2 second point
+     * @return the distance between two RealPoint pt1 and pt2
      */
     static public double distance(RealPoint pt1, RealPoint pt2) {
         assert pt1.numDimensions()==pt2.numDimensions();
