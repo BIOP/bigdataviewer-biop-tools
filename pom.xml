@@ -127,6 +127,9 @@
 		<!--<bigwarp_fiji.version>6.0.3-SNAPSHOT</bigwarp_fiji.version>-->
 		<bigwarp_fiji.version>6.0.2</bigwarp_fiji.version>
 
+
+		<!-- NB: Deploy releases to the SciJava Maven repository. -->
+		<releaseProfiles>deploy-to-scijava</releaseProfiles>
 	</properties>
 
 	<repositories>
