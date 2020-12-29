@@ -121,17 +121,19 @@ public class QuPathProjectToBDVDatasetCommand extends BioformatsBigdataviewerBri
                 BioFormatsBdvOpener opener = getOpener(filePath);
 
                 // For rotated image server
-                AffineTransform3D at3D = new AffineTransform3D();
+                //if (!ignoreRotations) {
+                    AffineTransform3D at3D = new AffineTransform3D();
 
-                double zAxisRotation =
-                        quPathSourceIdentifiers.stream()
-                        .filter(identifier -> identifier.uri == uri)
-                        .findFirst()
-                        .get()
-                        .angleRotationZAxis;
+                    double zAxisRotation =
+                            quPathSourceIdentifiers.stream()
+                                    .filter(identifier -> identifier.uri == uri)
+                                    .findFirst()
+                                    .get()
+                                    .angleRotationZAxis;
 
-                at3D.rotate(2,zAxisRotation);
-                opener.setPositionPostTransform(at3D); //.flipPositionX();
+                    at3D.rotate(2, zAxisRotation);
+                    opener.setPositionPostTransform(at3D); //.flipPositionX();
+                //}
 
                 openers.add(opener);
             }
