@@ -69,7 +69,11 @@ public class QuPathProjectToBDVDatasetCommand extends BioformatsBigdataviewerBri
                 QuPathBioFormatsSourceIdentifier identifier = new QuPathBioFormatsSourceIdentifier();
                 if (image.serverBuilder.builderType.equals("rotated")) {
                     String angleDegreesStr = image.serverBuilder.rotation.substring(7);//"ROTATE_ANGLE" for instance "ROTATE_0", "ROTATE_270", etc
-                    identifier.angleRotationZAxis = (Double.valueOf(angleDegreesStr)/180.0)*Math.PI;
+                    if (angleDegreesStr.equals("NONE")) {
+                        identifier.angleRotationZAxis = 0;
+                    } else {
+                        identifier.angleRotationZAxis = (Double.valueOf(angleDegreesStr) / 180.0) * Math.PI;
+                    }
                     image.serverBuilder = image.serverBuilder.builder;
                 }
 
