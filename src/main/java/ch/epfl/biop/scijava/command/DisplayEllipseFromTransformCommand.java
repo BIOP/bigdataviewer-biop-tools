@@ -14,7 +14,7 @@ import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterUtils;
+import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
 
 
 //@Plugin(type = Command.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>Create Ellipsoid Source")
@@ -57,7 +57,7 @@ public class DisplayEllipseFromTransformCommand implements Command {
         ws.updateTransform(e3Dt.inverse());
         ws.setIsTransformed(true);
 
-        sac_out = SourceAndConverterUtils.createSourceAndConverter(ws);
+        sac_out = SourceAndConverterHelper.createSourceAndConverter(ws);
 
         e3Dt.updateNotifiers.add(() -> {
             ws.updateTransform(e3Dt.inverse());

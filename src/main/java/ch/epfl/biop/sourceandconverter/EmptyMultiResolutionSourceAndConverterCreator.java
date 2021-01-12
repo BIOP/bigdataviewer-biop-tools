@@ -4,7 +4,7 @@ import bdv.util.EmptyMultiresolutionSource;
 import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
 import net.imglib2.realtransform.AffineTransform3D;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterUtils;
+import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
 import sc.fiji.bdvpg.sourceandconverter.importer.EmptySourceAndConverterCreator;
 
 import java.util.function.Supplier;
@@ -64,7 +64,7 @@ public class EmptyMultiResolutionSourceAndConverterCreator implements Runnable, 
 
         SourceAndConverter sac;
 
-        sac = SourceAndConverterUtils.createSourceAndConverter(src);
+        sac = SourceAndConverterHelper.createSourceAndConverter(src);
 
         return sac;
     }

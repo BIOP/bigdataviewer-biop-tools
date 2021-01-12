@@ -23,7 +23,7 @@ import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterUtils;
+import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceResampler;
 
 import java.util.List;
@@ -181,7 +181,7 @@ public class Rot3DReSampleCommand implements Command {
 
         SourceAndConverter model;
 
-        model = SourceAndConverterUtils.createSourceAndConverter(src);
+        model = SourceAndConverterHelper.createSourceAndConverter(src);
 
         if (model == null) {
             System.out.println("model is nul");
