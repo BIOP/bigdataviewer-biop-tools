@@ -1,6 +1,7 @@
 package ch.epfl.biop.scijava.command;
 
 import bdv.tools.brightness.ConverterSetup;
+import bdv.util.BdvStackSource;
 import bdv.util.ImagePlusHelper;
 import bdv.viewer.SourceAndConverter;
 import ij.ImagePlus;
@@ -81,9 +82,22 @@ public class ExportToMultipleImagePlusCommand implements Command {
             }
         }
 
+        List<SourceAndConverter<?>> sacs0nonSorted = new ArrayList<>();
+
+        sacSortedPerLocation.values().stream().map(l -> l.get(0)).forEach(sac -> sacs0nonSorted.add(sac));
+
+        List<SourceAndConverter<?>> sacs0Sorted = sorter.apply(sacs0nonSorted);
+
+        Map<Integer, AffineTransform3D> indexToLocation = new HashMap<>();
+
         sacSortedPerLocation.keySet().stream().forEach(location -> {
+            SourceAndConverter sac0 = sacSortedPerLocation.get(location).get(0);
+            indexToLocation.put(sacs0Sorted.indexOf(sac0), location);
+        });
 
-
+        indexToLocation.keySet().stream().sorted().forEach(idx -> {
+            AffineTransform3D location = indexToLocation.get(idx);
+        //sacSortedPerLocation.keySet().stream().forEach(location -> {
 
             ImagePlus imp_out = ImagePlusHelper.wrap(sacSortedPerLocation.get(location).stream().map(sac -> (SourceAndConverter) sac).collect(Collectors.toList()), mapSacToCs, mapSacToMml, timepointBegin, timepointEnd, false );
 

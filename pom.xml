@@ -107,13 +107,13 @@
 		<package-name>ch.epfl.biop.bigdataviewerBiopTools</package-name>
 		<scijava.deleteOtherVersions>true</scijava.deleteOtherVersions>
 
-		<bigdataviewer-playground.version>0.2.7</bigdataviewer-playground.version>
-		<bigdataviewer-bioformats.version>0.2.12</bigdataviewer-bioformats.version>
-		<bigdataviewer-selector.version>0.1.5</bigdataviewer-selector.version>
+		<bigdataviewer-playground.version>0.2.8-SNAPSHOT</bigdataviewer-playground.version>
+		<bigdataviewer-bioformats.version>0.2.13</bigdataviewer-bioformats.version>
+		<bigdataviewer-selector.version>0.1.6-SNAPSHOT</bigdataviewer-selector.version>
 		<scijava.app.directory>C:/Users/nicol/Desktop/fiji-win64-bdv-playground/Fiji.app/</scijava.app.directory>
 
-		<bigdataviewer-core.version>10.0.2</bigdataviewer-core.version>
-		<bigdataviewer-vistools.version>1.0.0-beta-23</bigdataviewer-vistools.version>
+		<bigdataviewer-core.version>10.1.1-SNAPSHOT-IMARIS</bigdataviewer-core.version>
+		<bigdataviewer-vistools.version>1.0.0-beta-26</bigdataviewer-vistools.version>
 		<imglib2-cache.version>1.0.0-beta-15</imglib2-cache.version>
 
 		<leastsquares.version>1.0.0</leastsquares.version>
@@ -121,8 +121,8 @@
 		<image-transform-converters.version>0.1.3</image-transform-converters.version>
 
 		<bigdataviewer-spimdata-extras.version>0.1.0</bigdataviewer-spimdata-extras.version>
-		<!--<bigwarp_fiji.version>6.0.3-SNAPSHOT</bigwarp_fiji.version>-->
-		<bigwarp_fiji.version>6.0.2</bigwarp_fiji.version>
+		<bigwarp_fiji.version>6.0.3-SNAPSHOT</bigwarp_fiji.version>
+		<!--<bigwarp_fiji.version>6.0.2</bigwarp_fiji.version>-->
 
 
 		<!-- NB: Deploy releases to the SciJava Maven repository. -->
@@ -150,6 +150,12 @@
 		<dependency>
 			<groupId>sc.fiji</groupId>
 			<artifactId>bigdataviewer-vistools</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>ch.epfl.biop</groupId>
+			<artifactId>bigdataviewer-selector</artifactId>
+			<version>${bigdataviewer-selector.version}</version>
 		</dependency>
 
 		<dependency>
