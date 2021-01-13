@@ -1,23 +1,15 @@
-package ch.epfl.biop.scijava.command.bdv.userdefinedregion;
+package ch.epfl.biop.bdv.userdefinedregion;
 
-import bdv.tools.boundingbox.RenderBoxHelper;
-import bdv.tools.boundingbox.TransformedBox;
 import bdv.util.BdvOverlay;
 import bdv.viewer.SourceAndConverter;
 import bdv.viewer.ViewerPanel;
 import ch.epfl.biop.bdv.select.SourceSelectorBehaviour;
 import ch.epfl.biop.bdv.select.SourceSelectorOverlay;
-import net.imglib2.FinalRealInterval;
-import net.imglib2.RealInterval;
 import net.imglib2.RealPoint;
-import net.imglib2.realtransform.AffineTransform3D;
-import org.scijava.ui.behaviour.ClickBehaviour;
 import org.scijava.ui.behaviour.DragBehaviour;
 import org.scijava.ui.behaviour.util.Behaviours;
 
 import java.awt.*;
-import java.awt.geom.GeneralPath;
-import java.util.List;
 import java.util.*;
 
 /**

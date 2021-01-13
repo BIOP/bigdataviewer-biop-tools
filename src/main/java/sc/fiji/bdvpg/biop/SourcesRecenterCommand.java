@@ -1,4 +1,4 @@
-package ch.epfl.biop.scijava.command;
+package sc.fiji.bdvpg.biop;
 
 import bdv.viewer.SourceAndConverter;
 import net.imglib2.realtransform.AffineTransform3D;
@@ -12,11 +12,14 @@ import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterAndTimeRange;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceTransformHelper;
 
-@Plugin(type = Command.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>Center Sources")
+@Plugin(type = Command.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>Recenter sources")
 public class SourcesRecenterCommand implements Command {
 
     @Parameter
     int timePoint = 0;
+
+    @Parameter
+    double cx, cy, cz;
 
     @Parameter(label = "Sources", type = ItemIO.BOTH)
     public SourceAndConverter[] sacs;
@@ -42,9 +45,9 @@ public class SourcesRecenterCommand implements Command {
             AffineTransform3D at3DCenter = new AffineTransform3D();
             at3DCenter.concatenate(at3D.inverse());
             at3DCenter.translate(-sx/2, -sy/2,0);
-            at3D.set(0,0,3);
-            at3D.set(0,1,3);
-            at3D.set(0,2,3);
+            at3D.set(cx,0,3);
+            at3D.set(cy,1,3);
+            at3D.set(cz,2,3);
             at3DCenter.preConcatenate(at3D);
 
             switch (mode) {

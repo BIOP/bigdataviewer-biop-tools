@@ -1,4 +1,4 @@
-package ch.epfl.biop.scijava.command;
+package sc.fiji.bdvpg.biop;
 
 import bdv.tools.brightness.ConverterSetup;
 import bdv.util.BdvStackSource;

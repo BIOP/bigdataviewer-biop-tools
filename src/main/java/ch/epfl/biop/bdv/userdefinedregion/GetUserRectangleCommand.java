@@ -1,4 +1,4 @@
-package ch.epfl.biop.scijava.command.bdv.userdefinedregion;
+package ch.epfl.biop.bdv.userdefinedregion;
 
 import bdv.util.BdvHandle;
 import net.imagej.ImageJ;

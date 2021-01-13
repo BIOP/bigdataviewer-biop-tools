@@ -1,13 +1,9 @@
-package ch.epfl.biop.scijava.command.bdv.userdefinedregion;
+package ch.epfl.biop.bdv.userdefinedregion;
 
 import bdv.util.BdvFunctions;
 import bdv.util.BdvHandle;
 import bdv.util.BdvOptions;
 import bdv.util.BdvStackSource;
-import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.bdv.select.SelectedSourcesListener;
-import ch.epfl.biop.bdv.select.SourceSelectorBehaviour;
-import ch.epfl.biop.bdv.select.ToggleListener;
 import ij.IJ;
 import ij.ImagePlus;
 import mpicbg.spim.data.SpimData;
@@ -15,11 +11,6 @@ import mpicbg.spim.data.XmlIoSpimData;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.realtransform.AffineTransform3D;
-import org.scijava.ui.behaviour.ClickBehaviour;
-import org.scijava.ui.behaviour.io.InputTriggerConfig;
-import org.scijava.ui.behaviour.util.Behaviours;
-
-import java.util.Collection;
 
 /**
  * Source Selector Behaviour Demo

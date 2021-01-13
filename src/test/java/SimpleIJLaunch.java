@@ -1,11 +1,7 @@
 
-import ch.epfl.biop.scijava.command.ExportToImagePlusCommand;
 import loci.common.DebugTools;
 import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;
-import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
-
 
 
 public class SimpleIJLaunch {
