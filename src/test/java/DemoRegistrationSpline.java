@@ -7,6 +7,7 @@ import ch.epfl.biop.bdv.select.SelectedSourcesListener;
 import ch.epfl.biop.bdv.select.SourceSelectorBehaviour;
 import ch.epfl.biop.bdv.select.ToggleListener;
 import ch.epfl.biop.scijava.command.Elastix2DSplineRegisterCommand;
+import ch.epfl.biop.scijava.command.Elastix2DSplineRegisterServerCommand;
 import ij.IJ;
 import ij.ImagePlus;
 import mpicbg.spim.data.SpimData;
@@ -181,12 +182,61 @@ public class DemoRegistrationSpline {
 
         ClickBehaviour delete = (x, y) -> bdvh.getViewerPanel().state().removeSources(ssb.getSelectedSources());
 
-        ClickBehaviour register = (x,y) -> {
+        ClickBehaviour registerLocal = (x,y) -> {
             if ((movingSource==null)||(fixedSource==null)) {
                 bdvh.getViewerPanel().showMessage("Please define a fixed and a moving source");
             } else {
                 // Go for the registration - on a selected rectangle
                 Future<CommandModule> task = ij.context().getService(CommandService.class).run(Elastix2DSplineRegisterCommand.class, true,
+                        "sac_fixed", fixedSource,
+                        "tpFixed", 0,
+                        "levelFixedSource", 0,
+                        "sac_moving", movingSource,
+                        "tpMoving", 0,
+                        "levelMovingSource", 0,
+                        "pxSizeInCurrentUnit", 5,
+                        "interpolate", false,
+                        //"showImagePlusRegistrationResult", true,
+                        "showImagePlusRegistrationResult", false,
+                        "px",-90,
+                        "py",175,
+                        "pz",0,
+                        "sx",350,
+                        "sy",350
+                );
+
+                Thread t = new Thread(() -> {
+                    try {
+                        RealTransform rt = (RealTransform) task.get().getOutput("rt");
+                        SourceAndConverter transformedSource = new SourceRealTransformer(null, rt).apply(movingSource);
+                        //bdvh.getViewerPanel().state().removeSource(movingSource);
+                        //bdvh.getViewerPanel().state().addSource(transformedSource);
+                        SourceAndConverterServices
+                                .getSourceAndConverterDisplayService()
+                                .show(transformedSource, fixedSource);
+
+                        BdvHandle bdvh_new = SourceAndConverterServices
+                                .getSourceAndConverterDisplayService()
+                                .getActiveBdv();
+
+                        AffineTransform3D view = bdvh.getViewerPanel().state().getViewerTransform();
+                        bdvh_new.getViewerPanel().state().setViewerTransform(view);
+                                //.register(movingSource);
+                        //bdvh.getViewerPanel().requestRepaint();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                });
+                t.start();
+            }
+        };
+
+        ClickBehaviour registerRemote = (x,y) -> {
+            if ((movingSource==null)||(fixedSource==null)) {
+                bdvh.getViewerPanel().showMessage("Please define a fixed and a moving source");
+            } else {
+                // Go for the registration - on a selected rectangle
+                Future<CommandModule> task = ij.context().getService(CommandService.class).run(Elastix2DSplineRegisterServerCommand.class, true,
                         "sac_fixed", fixedSource,
                         "tpFixed", 0,
                         "levelFixedSource", 0,
@@ -222,7 +272,7 @@ public class DemoRegistrationSpline {
 
                         AffineTransform3D view = bdvh.getViewerPanel().state().getViewerTransform();
                         bdvh_new.getViewerPanel().state().setViewerTransform(view);
-                                //.register(movingSource);
+                        //.register(movingSource);
                         //bdvh.getViewerPanel().requestRepaint();
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -233,7 +283,8 @@ public class DemoRegistrationSpline {
         };
 
         editor.behaviour(delete, "remove-sources-from-bdv", new String[]{"DELETE"});
-        editor.behaviour(register, "register-sources", new String[]{"R"});
+        editor.behaviour(registerLocal, "register-sources-local", new String[]{"R"});
+        editor.behaviour(registerRemote, "register-sources-remote", new String[]{"S"});
 
         // One way to chain the behaviour : install and uninstall on source selector toggling:
         // The delete key will act only when the source selection mode is on

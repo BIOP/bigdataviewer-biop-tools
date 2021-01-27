@@ -7,6 +7,7 @@ import ch.epfl.biop.bdv.select.SelectedSourcesListener;
 import ch.epfl.biop.bdv.select.SourceSelectorBehaviour;
 import ch.epfl.biop.bdv.select.ToggleListener;
 import ch.epfl.biop.scijava.command.Elastix2DAffineRegisterCommand;
+import ch.epfl.biop.scijava.command.Elastix2DAffineRegisterServerCommand;
 import ch.epfl.biop.spimdata.imageplus.SpimDataFromImagePlusGetter;
 import ij.IJ;
 import ij.ImagePlus;
@@ -163,7 +164,7 @@ public class DemoRegistrationAffine {
 
         ClickBehaviour delete = (x, y) -> bdvh.getViewerPanel().state().removeSources(ssb.getSelectedSources());
 
-        ClickBehaviour register = (x,y) -> {
+        ClickBehaviour registerLocal = (x,y) -> {
             if ((movingSource==null)||(fixedSource==null)) {
                 bdvh.getViewerPanel().showMessage("Please define a fixed and a moving source");
             } else {
@@ -184,10 +185,47 @@ public class DemoRegistrationAffine {
                             "py",-10,
                             "pz",0,
                             "sx",250,
-                            "sy",250,
-                            //"serverURL","" // Local
-                            "serverURL", "http://15.188.34.238:8090", //http://localhost:8090"
-                            "taskInfo", ""
+                            "sy",250
+                        );
+
+                Thread t = new Thread(() -> {
+                    try {
+                        AffineTransform3D at3d = (AffineTransform3D) task.get().getOutput("at3D");
+                        SourceTransformHelper.mutate(at3d, new SourceAndConverterAndTimeRange(movingSource,0));
+                        bdvh.getViewerPanel().requestRepaint();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                });
+                t.start();
+            }
+        };
+
+        ClickBehaviour registerRemote = (x,y) -> {
+            if ((movingSource==null)||(fixedSource==null)) {
+                bdvh.getViewerPanel().showMessage("Please define a fixed and a moving source");
+            } else {
+                // Go for the registration - on a selected rectangle
+                Future<CommandModule> task = ij.context()
+                        .getService(CommandService.class)
+                        .run(Elastix2DAffineRegisterServerCommand.class, true,
+                                "sac_fixed", fixedSource,
+                                "tpFixed", 0,
+                                "levelFixedSource", 0,
+                                "sac_moving", movingSource,
+                                "tpMoving", 0,
+                                "levelMovingSource", 0,
+                                "pxSizeInCurrentUnit", 1,
+                                "interpolate", false,
+                                "showImagePlusRegistrationResult", false,// true,
+                                "px",-50,
+                                "py",-10,
+                                "pz",0,
+                                "sx",250,
+                                "sy",250,
+                                //"serverURL","" // Local
+                                "serverURL", "http://15.188.34.238:8090", //http://localhost:8090"
+                                "taskInfo", ""
                         );
 
                 Thread t = new Thread(() -> {
@@ -204,7 +242,8 @@ public class DemoRegistrationAffine {
         };
 
         editor.behaviour(delete, "remove-sources-from-bdv", new String[]{"DELETE"});
-        editor.behaviour(register, "register-sources", new String[]{"R"});
+        editor.behaviour(registerLocal, "register-sources-local", new String[]{"R"});
+        editor.behaviour(registerRemote, "register-sources-remote", new String[]{"S"});
 
         // One way to chain the behaviour : install and uninstall on source selector toggling:
         // The delete key will act only when the source selection mode is on

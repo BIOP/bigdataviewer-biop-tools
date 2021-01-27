@@ -149,7 +149,6 @@ public class Elastix2DAffineRegister implements Runnable {
         rh.setFixedImage(impF);
 
         rh.align(et);
-        //rh.to(RHZipFile.class);
 
         File fTransform = new File(rh.getFinalTransformFile());
 

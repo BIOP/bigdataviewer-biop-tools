@@ -4,14 +4,13 @@ import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.sourceandconverter.register.Elastix2DSplineRegister;
 import net.imglib2.realtransform.RealTransform;
 import org.scijava.ItemIO;
-import org.scijava.ItemVisibility;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 
-@Plugin(type = Command.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Register Sources with Elastix (Spline, 2D)")
-public class Elastix2DSplineRegisterCommand implements Command {
+@Plugin(type = Command.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Register Sources with Elastix on Server (Spline, 2D)")
+public class Elastix2DSplineRegisterServerCommand implements Command {
 
     @Parameter
     SourceAndConverter sac_fixed;
@@ -55,11 +54,11 @@ public class Elastix2DSplineRegisterCommand implements Command {
     @Parameter(type = ItemIO.OUTPUT)
     RealTransform rt_inverse;
 
-    /*@Parameter(persist = false, required = false)
+    @Parameter(persist = false, required = false)
     String serverURL = null;
 
     @Parameter(persist = false, required = false)
-    String taskInfo = null;*/
+    String taskInfo = null;
 
     @Override
     public void run() {
@@ -73,8 +72,8 @@ public class Elastix2DSplineRegisterCommand implements Command {
                 showImagePlusRegistrationResult);
         reg.setInterpolate(interpolate);
 
-        //if ((serverURL!=null)&&(serverURL.trim()!="")) reg.setRegistrationServer(serverURL);
-        //if ((taskInfo!=null)&&(taskInfo.trim()!="")) reg.setRegistrationInfo(taskInfo);
+        if ((serverURL!=null)&&(serverURL.trim()!="")) reg.setRegistrationServer(serverURL);
+        if ((taskInfo!=null)&&(taskInfo.trim()!="")) reg.setRegistrationInfo(taskInfo);
 
         reg.run();
 

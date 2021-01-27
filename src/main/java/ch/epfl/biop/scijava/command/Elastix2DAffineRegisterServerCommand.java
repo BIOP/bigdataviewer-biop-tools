@@ -13,8 +13,8 @@ import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 
 @Plugin(type = Command.class,
-        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Register Sources with Elastix (Affine, 2D)")
-public class Elastix2DAffineRegisterCommand implements Command {
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Register Sources with Elastix on Server (Affine, 2D)")
+public class Elastix2DAffineRegisterServerCommand implements Command {
 
     @Parameter(label = "Fixed source for registration", description = "fixed source")
     SourceAndConverter sac_fixed;
@@ -52,11 +52,11 @@ public class Elastix2DAffineRegisterCommand implements Command {
     @Parameter(type = ItemIO.OUTPUT)
     AffineTransform3D at3D;
 
-    /*@Parameter(persist = false, required = false)
+    @Parameter(persist = false, required = false)
     String serverURL = null;
 
     @Parameter(persist = false, required = false)
-    String taskInfo = null;*/
+    String taskInfo = null;
 
     @Override
     public void run() {
@@ -95,8 +95,8 @@ public class Elastix2DAffineRegisterCommand implements Command {
                 showImagePlusRegistrationResult);
         reg.setInterpolate(interpolate);
 
-        //if ((serverURL!=null)&&(serverURL.trim()!="")) reg.setRegistrationServer(serverURL);
-        //if ((taskInfo!=null)&&(taskInfo.trim()!="")) rh.setExtraRegisterInfo(taskInfo);
+        if ((serverURL!=null)&&(serverURL.trim()!="")) reg.setRegistrationServer(serverURL);
+        if ((taskInfo!=null)&&(taskInfo.trim()!="")) rh.setExtraRegisterInfo(taskInfo);
 
         reg.run();
 
