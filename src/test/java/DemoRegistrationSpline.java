@@ -195,12 +195,15 @@ public class DemoRegistrationSpline {
                         "levelMovingSource", 0,
                         "pxSizeInCurrentUnit", 5,
                         "interpolate", false,
-                        "showImagePlusRegistrationResult", true,
+                        //"showImagePlusRegistrationResult", true,
+                        "showImagePlusRegistrationResult", false,
                         "px",-90,
                         "py",175,
                         "pz",0,
                         "sx",350,
-                        "sy",350
+                        "sy",350,
+                        "serverURL", "http://15.188.34.238:8090",
+                        "taskInfo", ""
                 );
 
                 Thread t = new Thread(() -> {

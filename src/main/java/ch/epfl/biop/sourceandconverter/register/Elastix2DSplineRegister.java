@@ -8,10 +8,12 @@ import bigwarp.BigWarp;
 import ch.epfl.biop.fiji.imageplusutils.ImagePlusFunctions;
 import ch.epfl.biop.java.utilities.roi.ConvertibleRois;
 import ch.epfl.biop.java.utilities.roi.types.RealPointList;
-import ch.epfl.biop.wrappers.elastix.RegParamBSpline_Default;
-import ch.epfl.biop.wrappers.elastix.RegisterHelper;
-import ch.epfl.biop.wrappers.elastix.RegistrationParameters;
+import ch.epfl.biop.wrappers.DefaultElastixTask;
+import ch.epfl.biop.wrappers.elastix.*;
+import ch.epfl.biop.wrappers.transformix.DefaultTransformixTask;
+import ch.epfl.biop.wrappers.transformix.RemoteTransformixTask;
 import ch.epfl.biop.wrappers.transformix.TransformHelper;
+import ch.epfl.biop.wrappers.transformix.TransformixTask;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.plugin.Duplicator;
@@ -38,7 +40,7 @@ public class Elastix2DSplineRegister implements Runnable {
     int levelMipmapFixed, levelMipmapMoving;
     int tpMoving,tpFixed;
 
-    RegisterHelper rh;
+    RegisterHelper rh = new RegisterHelper();
 
     RealTransform realTransformOut;
 
@@ -54,6 +56,14 @@ public class Elastix2DSplineRegister implements Runnable {
 
     int nbControlPointsX;
 
+    TransformixTask tt = new DefaultTransformixTask();
+
+    ElastixTask et = new DefaultElastixTask();
+
+    public void setRegistrationServer(String serverURL) {
+        tt = new RemoteTransformixTask(serverURL);
+        et = new RemoteElastixTask(serverURL);
+    }
 
     public Elastix2DSplineRegister(SourceAndConverter sac_fixed,
                                    int levelMipmapFixed,
@@ -139,9 +149,6 @@ public class Elastix2DSplineRegister implements Runnable {
         //impF.show();
         impF = new Duplicator().run(impF); // Virtual messes up the process, don't know why
 
-        
-        rh = new RegisterHelper();
-
         rh.setMovingImage(impM);
         rh.setFixedImage(impF);
 
@@ -182,7 +189,7 @@ public class Elastix2DSplineRegister implements Runnable {
 
         rh.addTransform(rp);
 
-        rh.align();
+        rh.align(et);
 
         File fTransform = new File(rh.getFinalTransformFile());
 
@@ -201,7 +208,7 @@ public class Elastix2DSplineRegister implements Runnable {
                             TransformHelper th = new TransformHelper();
                             th.setTransformFile(rh);
                             th.setImage(imp);
-                            th.transform();
+                            th.transform(tt);
                             return ((ImagePlus) (th.getTransformedImage().to(ImagePlus.class)));
                         }
                         , impM);
@@ -234,7 +241,7 @@ public class Elastix2DSplineRegister implements Runnable {
         rois.set(rpl);
 
         th.setRois(rois);
-        th.transform();
+        th.transform(tt);
         ConvertibleRois tr_rois = th.getTransformedRois();
 
         RealPointList rpl_tr = (RealPointList) tr_rois.to(RealPointList.class);
@@ -319,4 +326,7 @@ public class Elastix2DSplineRegister implements Runnable {
         return realTransformInverseOut;
     }
 
+    public void setRegistrationInfo(String taskInfo) {
+        rh.setExtraRegisterInfo(taskInfo);
+    }
 }

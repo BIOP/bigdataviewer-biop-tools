@@ -4,6 +4,7 @@ import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.sourceandconverter.register.Elastix2DSplineRegister;
 import net.imglib2.realtransform.RealTransform;
 import org.scijava.ItemIO;
+import org.scijava.ItemVisibility;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
@@ -54,6 +55,12 @@ public class Elastix2DSplineRegisterCommand implements Command {
     @Parameter(type = ItemIO.OUTPUT)
     RealTransform rt_inverse;
 
+    @Parameter(persist = false, required = false)
+    String serverURL = null;
+
+    @Parameter(persist = false, required = false)
+    String taskInfo = null;
+
     @Override
     public void run() {
 
@@ -65,6 +72,10 @@ public class Elastix2DSplineRegisterCommand implements Command {
                 px,py,pz,sx,sy,
                 showImagePlusRegistrationResult);
         reg.setInterpolate(interpolate);
+
+        if ((serverURL!=null)&&(serverURL.trim()!="")) reg.setRegistrationServer(serverURL);
+        if ((taskInfo!=null)&&(taskInfo.trim()!="")) reg.setRegistrationInfo(taskInfo);
+
         reg.run();
 
         registeredSource = reg.getRegisteredSac();

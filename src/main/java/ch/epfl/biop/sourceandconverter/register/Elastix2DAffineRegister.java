@@ -5,8 +5,14 @@ import bdv.viewer.Interpolation;
 import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.fiji.imageplusutils.ImagePlusFunctions;
+import ch.epfl.biop.wrappers.DefaultElastixTask;
+import ch.epfl.biop.wrappers.elastix.ElastixTask;
 import ch.epfl.biop.wrappers.elastix.RegisterHelper;
+import ch.epfl.biop.wrappers.elastix.RemoteElastixTask;
+import ch.epfl.biop.wrappers.transformix.DefaultTransformixTask;
+import ch.epfl.biop.wrappers.transformix.RemoteTransformixTask;
 import ch.epfl.biop.wrappers.transformix.TransformHelper;
+import ch.epfl.biop.wrappers.transformix.TransformixTask;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.plugin.Duplicator;
@@ -40,6 +46,15 @@ public class Elastix2DAffineRegister implements Runnable {
     boolean interpolate = false;
 
     boolean showResultIJ1;
+
+    TransformixTask tt = new DefaultTransformixTask();
+
+    ElastixTask et = new DefaultElastixTask();
+
+    public void setRegistrationServer(String serverURL) {
+        tt = new RemoteTransformixTask(serverURL);
+        et = new RemoteElastixTask(serverURL);
+    }
 
     public Elastix2DAffineRegister(SourceAndConverter sac_fixed,
                                    int levelMipmapFixed,
@@ -133,7 +148,7 @@ public class Elastix2DAffineRegister implements Runnable {
         rh.setMovingImage(impM);
         rh.setFixedImage(impF);
 
-        rh.align();
+        rh.align(et);
         //rh.to(RHZipFile.class);
 
         File fTransform = new File(rh.getFinalTransformFile());
@@ -170,7 +185,7 @@ public class Elastix2DAffineRegister implements Runnable {
                             TransformHelper th = new TransformHelper();
                             th.setTransformFile(rh);
                             th.setImage(imp);
-                            th.transform();
+                            th.transform(tt);
                             return ((ImagePlus) (th.getTransformedImage().to(ImagePlus.class)));
                         }
                         , impM);

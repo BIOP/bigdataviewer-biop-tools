@@ -52,6 +52,12 @@ public class Elastix2DAffineRegisterCommand implements Command {
     @Parameter(type = ItemIO.OUTPUT)
     AffineTransform3D at3D;
 
+    @Parameter(persist = false, required = false)
+    String serverURL = null;
+
+    @Parameter(persist = false, required = false)
+    String taskInfo = null;
+
     @Override
     public void run() {
 
@@ -67,7 +73,7 @@ public class Elastix2DAffineRegisterCommand implements Command {
         while (Math.pow(2,nScales)<maxSize) {
             nScales++;
         }
-        //System.out.println("nScales = "+nScales);
+
         rp.NumberOfResolutions = Math.max(1,nScales-2);
         rp.BSplineInterpolationOrder = 1;
         rp.MaximumNumberOfIterations = 100;
@@ -78,7 +84,6 @@ public class Elastix2DAffineRegisterCommand implements Command {
             rp.ImagePyramidSchedule[2*scale+1] = (int) Math.pow(2, rp.NumberOfResolutions-scale-1);
         }
 
-        //rp.ImagePyramidSchedule = new int[]{4,4,2,2,1,1};
         rh.addTransform(rp);
 
         Elastix2DAffineRegister reg = new Elastix2DAffineRegister(
@@ -89,6 +94,10 @@ public class Elastix2DAffineRegisterCommand implements Command {
                 px,py,pz,sx,sy,
                 showImagePlusRegistrationResult);
         reg.setInterpolate(interpolate);
+
+        if ((serverURL!=null)&&(serverURL.trim()!="")) reg.setRegistrationServer(serverURL);
+        if ((taskInfo!=null)&&(taskInfo.trim()!="")) rh.setExtraRegisterInfo(taskInfo);
+
         reg.run();
 
         registeredSource = reg.getRegisteredSac();

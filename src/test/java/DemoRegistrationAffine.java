@@ -171,21 +171,24 @@ public class DemoRegistrationAffine {
                 Future<CommandModule> task = ij.context()
                         .getService(CommandService.class)
                         .run(Elastix2DAffineRegisterCommand.class, true,
-                        "sac_fixed", fixedSource,
-                        "tpFixed", 0,
-                        "levelFixedSource", 0,
-                        "sac_moving", movingSource,
-                        "tpMoving", 0,
-                        "levelMovingSource", 0,
-                        "pxSizeInCurrentUnit", 1,
-                        "interpolate", false,
-                        "showImagePlusRegistrationResult", false,// true,
-                        "px",-50,
-                        "py",-10,
-                        "pz",0,
-                        "sx",250,
-                        "sy",250
-                );
+                            "sac_fixed", fixedSource,
+                            "tpFixed", 0,
+                            "levelFixedSource", 0,
+                            "sac_moving", movingSource,
+                            "tpMoving", 0,
+                            "levelMovingSource", 0,
+                            "pxSizeInCurrentUnit", 1,
+                            "interpolate", false,
+                            "showImagePlusRegistrationResult", false,// true,
+                            "px",-50,
+                            "py",-10,
+                            "pz",0,
+                            "sx",250,
+                            "sy",250,
+                            //"serverURL","" // Local
+                            "serverURL", "http://15.188.34.238:8090", //http://localhost:8090"
+                            "taskInfo", ""
+                        );
 
                 Thread t = new Thread(() -> {
                     try {

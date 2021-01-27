@@ -23,7 +23,7 @@
 
 	<groupId>ch.epfl.biop</groupId>
 	<artifactId>bigdataviewer-biop-tools</artifactId>
-	<version>0.2.3-SNAPSHOT</version>
+	<version>0.2.3-SNAPSHOT-local</version>
 
 	<name>Biop Bigdataviewer Tools and Plugins </name>
 	<description>Big data viewer tools BIOP - EPFL</description>
@@ -117,7 +117,7 @@
 		<imglib2-cache.version>1.0.0-beta-15</imglib2-cache.version>
 
 		<leastsquares.version>1.0.0</leastsquares.version>
-		<ijl-utilities-wrappers.version>0.3.16</ijl-utilities-wrappers.version>
+		<ijl-utilities-wrappers.version>0.3.17-SNAPSHOT-LOCAL</ijl-utilities-wrappers.version>
 		<image-transform-converters.version>0.1.3</image-transform-converters.version>
 
 		<bigdataviewer-spimdata-extras.version>0.1.0</bigdataviewer-spimdata-extras.version>
@@ -278,6 +278,12 @@
 					<artifactId>xml-apis</artifactId>
 				</exclusion>
 			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>ch.epfl.biop</groupId>
+			<artifactId>simple_registration_server</artifactId>
+			<version>0.1.0-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 
