@@ -5,7 +5,7 @@ import bdv.viewer.Interpolation;
 import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.fiji.imageplusutils.ImagePlusFunctions;
-import ch.epfl.biop.wrappers.DefaultElastixTask;
+import ch.epfl.biop.wrappers.elastix.DefaultElastixTask;
 import ch.epfl.biop.wrappers.elastix.ElastixTask;
 import ch.epfl.biop.wrappers.elastix.RegisterHelper;
 import ch.epfl.biop.wrappers.elastix.RemoteElastixTask;
@@ -29,7 +29,7 @@ import sc.fiji.bdvpg.sourceandconverter.transform.SourceAffineTransformer;
 import java.io.File;
 import java.io.IOException;
 
-public class Elastix2DAffineRegister implements Runnable {
+public class Elastix2DAffineRegister {
 
     SourceAndConverter sac_fixed, sac_moving;
     int levelMipmapFixed, levelMipmapMoving;
@@ -90,8 +90,7 @@ public class Elastix2DAffineRegister implements Runnable {
         this.interpolate = interpolate;
     }
 
-    @Override
-    public void run() {
+    public boolean run() {
 
         // Check mipmap level
         levelMipmapFixed = Math.min(levelMipmapFixed, sac_fixed.getSpimSource().getNumMipmapLevels()-1);
@@ -148,7 +147,12 @@ public class Elastix2DAffineRegister implements Runnable {
         rh.setMovingImage(impM);
         rh.setFixedImage(impF);
 
-        rh.align(et);
+        try {
+            rh.align(et);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
 
         File fTransform = new File(rh.getFinalTransformFile());
 
@@ -157,6 +161,7 @@ public class Elastix2DAffineRegister implements Runnable {
             et = ElastixTransform.load(fTransform);
         } catch (IOException e) {
             e.printStackTrace();
+            return false;
         }
 
         assert et.getClass()== ElastixAffineTransform2D.class;
@@ -295,6 +300,8 @@ public class Elastix2DAffineRegister implements Runnable {
         affineTransformOut.set(newMatrix);
 
         affineTransformOut = atMoving.concatenate(affineTransformOut.inverse());
+
+        return true; // success
 
     }
 

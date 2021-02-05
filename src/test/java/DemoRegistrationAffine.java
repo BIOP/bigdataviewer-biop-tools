@@ -224,7 +224,7 @@ public class DemoRegistrationAffine {
                                 "sx",250,
                                 "sy",250,
                                 //"serverURL","" // Local
-                                "serverURL", "http://15.188.34.238:8090", //http://localhost:8090"
+                                "serverURL", "http://localhost:8090",//"http://15.188.34.238:8090", //http://localhost:8090"
                                 "taskInfo", ""
                         );
 

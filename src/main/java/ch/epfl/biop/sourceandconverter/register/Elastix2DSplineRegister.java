@@ -8,7 +8,7 @@ import bigwarp.BigWarp;
 import ch.epfl.biop.fiji.imageplusutils.ImagePlusFunctions;
 import ch.epfl.biop.java.utilities.roi.ConvertibleRois;
 import ch.epfl.biop.java.utilities.roi.types.RealPointList;
-import ch.epfl.biop.wrappers.DefaultElastixTask;
+import ch.epfl.biop.wrappers.elastix.DefaultElastixTask;
 import ch.epfl.biop.wrappers.elastix.*;
 import ch.epfl.biop.wrappers.transformix.DefaultTransformixTask;
 import ch.epfl.biop.wrappers.transformix.RemoteTransformixTask;
@@ -188,8 +188,11 @@ public class Elastix2DSplineRegister implements Runnable {
         rp.FinalGridSpacingInVoxels = (int) dX;
 
         rh.addTransform(rp);
-
-        rh.align(et);
+        try {
+            rh.align(et);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         File fTransform = new File(rh.getFinalTransformFile());
 

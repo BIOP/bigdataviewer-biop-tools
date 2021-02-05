@@ -52,6 +52,9 @@ public class Elastix2DAffineRegisterServerCommand implements Command {
     @Parameter(type = ItemIO.OUTPUT)
     AffineTransform3D at3D;
 
+    @Parameter(type = ItemIO.OUTPUT)
+    boolean success; // No issue during remote registration ?
+
     @Parameter(persist = false, required = false)
     String serverURL = null;
 
@@ -98,9 +101,12 @@ public class Elastix2DAffineRegisterServerCommand implements Command {
         if ((serverURL!=null)&&(serverURL.trim()!="")) reg.setRegistrationServer(serverURL);
         if ((taskInfo!=null)&&(taskInfo.trim()!="")) rh.setExtraRegisterInfo(taskInfo);
 
-        reg.run();
+        success = reg.run();
+        System.out.println("Success="+success);
 
-        registeredSource = reg.getRegisteredSac();
-        at3D = reg.getAffineTransform();
+        if (success) {
+            registeredSource = reg.getRegisteredSac();
+            at3D = reg.getAffineTransform();
+        }
     }
 }

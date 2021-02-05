@@ -252,7 +252,7 @@ public class DemoRegistrationSpline {
                         "pz",0,
                         "sx",350,
                         "sy",350,
-                        "serverURL", "http://15.188.34.238:8090",
+                        "serverURL", "http://localhost:8090",//"http://15.188.34.238:8090",
                         "taskInfo", ""
                 );
 
