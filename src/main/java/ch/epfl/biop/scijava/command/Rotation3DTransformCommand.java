@@ -9,10 +9,11 @@ import org.scijava.command.InteractiveCommand;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
+import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
 
-@Plugin(type = Command.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>Rotation 3D Transform")
-public class Rotation3DTransformCommand extends InteractiveCommand {
+@Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>Rotation 3D Transform")
+public class Rotation3DTransformCommand extends InteractiveCommand implements BdvPlaygroundActionCommand {
 
     @Parameter
     SourceAndConverter[] sacs;

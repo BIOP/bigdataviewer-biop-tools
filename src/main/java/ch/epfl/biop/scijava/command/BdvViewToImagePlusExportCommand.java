@@ -17,6 +17,7 @@ import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.bdv.BdvHandleHelper;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
+import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
 import sc.fiji.bdvpg.sourceandconverter.importer.EmptySourceAndConverterCreator;
@@ -34,9 +35,9 @@ import static net.imglib2.cache.img.DiskCachedCellImgOptions.options;
  * @param <T> non-volatile pixel type
  */
 
-@Plugin(type = Command.class,
+@Plugin(type = BdvPlaygroundActionCommand.class,
         menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Export>Current View To ImagePlus")
-public class BdvViewToImagePlusExportCommand<T extends RealType<T>> implements Command {
+public class BdvViewToImagePlusExportCommand<T extends RealType<T>> implements BdvPlaygroundActionCommand {
 
     @Parameter(label = "BigDataViewer Frame")
     public BdvHandle bdv_h;

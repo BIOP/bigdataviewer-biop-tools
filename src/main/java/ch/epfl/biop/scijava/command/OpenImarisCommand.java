@@ -7,12 +7,13 @@ import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
+import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 
 import java.io.File;
 import java.io.IOException;
 
-@Plugin(type = Command.class, menuPath = ScijavaBdvDefaults.RootMenu+"BDVDataset>Open Imaris")
-public class OpenImarisCommand implements Command {
+@Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"BDVDataset>Open Imaris")
+public class OpenImarisCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(label = "Imaris File")
     public File file;

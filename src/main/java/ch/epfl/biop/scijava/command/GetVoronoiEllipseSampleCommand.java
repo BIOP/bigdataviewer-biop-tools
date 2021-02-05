@@ -7,9 +7,10 @@ import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
+import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 
-@Plugin(type = Command.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Create Elliptic Voronoi Source")
-public class GetVoronoiEllipseSampleCommand implements Command {
+@Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Create Elliptic Voronoi Source")
+public class GetVoronoiEllipseSampleCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(type = ItemIO.OUTPUT)
     SourceAndConverter sampleSource;

@@ -10,6 +10,7 @@ import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
+import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
 
@@ -18,8 +19,8 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-@Plugin(type = Command.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Export>Show Sources (IJ1)")
-public class ExportToImagePlusCommand implements Command {
+@Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Export>Show Sources (IJ1)")
+public class ExportToImagePlusCommand implements BdvPlaygroundActionCommand {
 
     @Parameter
     public SourceAndConverter[] sacs;

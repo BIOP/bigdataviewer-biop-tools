@@ -13,6 +13,7 @@ import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
+import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
 import sc.fiji.bdvpg.sourceandconverter.importer.EmptySourceAndConverterCreator;
@@ -25,8 +26,8 @@ import java.util.stream.Collectors;
 
 import static net.imglib2.cache.img.DiskCachedCellImgOptions.options;
 
-@Plugin(type = Command.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>Slice Source")
-public class SliceSourceCommand implements Command {
+@Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>Slice Source")
+public class SliceSourceCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(label = "BigDataViewer Frame")
     public BdvHandle bdv_h;

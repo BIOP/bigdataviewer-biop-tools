@@ -11,10 +11,11 @@ import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
+import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 
-@Plugin(type = Command.class,
+@Plugin(type = BdvPlaygroundActionCommand.class,
         menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Register Sources with Elastix on Server (Affine, 2D)")
-public class Elastix2DAffineRegisterServerCommand implements Command {
+public class Elastix2DAffineRegisterServerCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(label = "Fixed source for registration", description = "fixed source")
     SourceAndConverter sac_fixed;

@@ -21,6 +21,7 @@ import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
@@ -30,8 +31,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-@Plugin(type = Command.class, menuPath = "Image>Stacks>Rotation 3D Resample")
-public class Rot3DReSampleCommand implements Command {
+@Plugin(type = BdvPlaygroundActionCommand.class, menuPath = "Image>Stacks>Rotation 3D Resample")
+public class Rot3DReSampleCommand implements BdvPlaygroundActionCommand {
 
     @Parameter
     ImagePlus imp_in;

@@ -15,6 +15,7 @@ import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.util.Behaviours;
 import sc.fiji.bdvpg.behaviour.EditorBehaviourUnInstaller;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
+import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 import sc.fiji.bdvpg.scijava.command.bdv.BdvSourcesRemoverCommand;
 import sc.fiji.bdvpg.scijava.command.source.*;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
@@ -28,9 +29,9 @@ import java.util.stream.Collectors;
 import static sc.fiji.bdvpg.bdv.navigate.ViewerTransformSyncStopper.MatrixApproxEquals;
 import static sc.fiji.bdvpg.scijava.services.SourceAndConverterService.getCommandName;
 
-@Plugin(type = Command.class,
+@Plugin(type = BdvPlaygroundActionCommand.class,
         menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Bdv Overview")
-public class OverviewerCommand implements Command {
+public class OverviewerCommand implements BdvPlaygroundActionCommand {
 
     @Parameter
     public BdvHandle bdvh;

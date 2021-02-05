@@ -12,13 +12,14 @@ import org.scijava.command.CommandService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
+import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
 
-@Plugin(type = Command.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Align Slides (2D)")
-public class RegisterWholeSlideScans2DCommand implements Command {
+@Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Align Slides (2D)")
+public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(label = "Global reference image (fixed, usually, first dapi channel)")
     SourceAndConverter globalRefSource;
