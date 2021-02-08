@@ -23,7 +23,7 @@
 
 	<groupId>ch.epfl.biop</groupId>
 	<artifactId>bigdataviewer-biop-tools</artifactId>
-	<version>0.2.3-SNAPSHOT</version>
+	<version>0.2.3</version>
 
 	<name>Biop Bigdataviewer Tools and Plugins </name>
 	<description>Big data viewer tools BIOP - EPFL</description>
@@ -87,7 +87,7 @@
 	<scm>
 		<connection>scm:git:git://github.com/BIOP/bigdataviewer-biop-tools</connection>
 		<developerConnection>scm:git:git@github.com:BIOP/bigdataviewer-biop-tools</developerConnection>
-		<tag>HEAD</tag>
+		<tag>bigdataviewer-biop-tools-0.2.3</tag>
 		<url>https://github.com/BIOP/bigdataviewer-biop-tools/</url>
 	</scm>
 	
