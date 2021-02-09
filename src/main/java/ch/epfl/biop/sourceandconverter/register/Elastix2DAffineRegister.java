@@ -13,6 +13,7 @@ import ch.epfl.biop.wrappers.transformix.DefaultTransformixTask;
 import ch.epfl.biop.wrappers.transformix.RemoteTransformixTask;
 import ch.epfl.biop.wrappers.transformix.TransformHelper;
 import ch.epfl.biop.wrappers.transformix.TransformixTask;
+//import ij.IJ;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.plugin.Duplicator;

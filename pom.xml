@@ -107,7 +107,7 @@
 		<package-name>ch.epfl.biop.bigdataviewerBiopTools</package-name>
 		<scijava.deleteOtherVersions>true</scijava.deleteOtherVersions>
 
-		<bigdataviewer-playground.version>0.2.9</bigdataviewer-playground.version>
+		<bigdataviewer-playground.version>0.2.10</bigdataviewer-playground.version>
 		<bigdataviewer-bioformats.version>0.2.14</bigdataviewer-bioformats.version>
 		<bigdataviewer-selector.version>0.1.8</bigdataviewer-selector.version>
 		<scijava.app.directory>C:/Users/nicol/Desktop/fiji-win64-bdv-playground/Fiji.app/</scijava.app.directory>
