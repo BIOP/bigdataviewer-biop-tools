@@ -35,7 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class Elastix2DSplineRegister implements Runnable {
+public class Elastix2DSplineRegister {
 
     SourceAndConverter sac_fixed, sac_moving;
     int levelMipmapFixed, levelMipmapMoving;
@@ -101,8 +101,7 @@ public class Elastix2DSplineRegister implements Runnable {
         this.interpolate = interpolate;
     }
 
-    @Override
-    public void run() {
+    public boolean run() {
 
         // Interpolation switch
         Interpolation interpolation;
@@ -193,6 +192,7 @@ public class Elastix2DSplineRegister implements Runnable {
             rh.align(et);
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
 
         File fTransform = new File(rh.getFinalTransformFile());
@@ -202,6 +202,7 @@ public class Elastix2DSplineRegister implements Runnable {
             et = ElastixTransform.load(fTransform);
         } catch (IOException e) {
             e.printStackTrace();
+            return false;
         }
 
         if (showResultIJ1) {
@@ -315,6 +316,8 @@ public class Elastix2DSplineRegister implements Runnable {
                 new WrappedIterativeInvertibleRealTransform<>(new ThinplateSplineTransform( coordsMoving, coordsFixed ));
 
         realTransformInverseOut = new Wrapped2DTransformAs3D(invTransformPatch);
+
+        return true; // success
 
     }
 

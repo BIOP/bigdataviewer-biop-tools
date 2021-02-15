@@ -103,7 +103,6 @@ public class Elastix2DAffineRegisterServerCommand implements BdvPlaygroundAction
         if ((taskInfo!=null)&&(taskInfo.trim()!="")) rh.setExtraRegisterInfo(taskInfo);
 
         success = reg.run();
-        System.out.println("Success="+success);
 
         if (success) {
             registeredSource = reg.getRegisteredSac();

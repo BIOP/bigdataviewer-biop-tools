@@ -55,6 +55,9 @@ public class Elastix2DSplineRegisterServerCommand implements BdvPlaygroundAction
     @Parameter(type = ItemIO.OUTPUT)
     RealTransform rt_inverse;
 
+    @Parameter(type = ItemIO.OUTPUT)
+    boolean success; // No issue during remote registration ?
+
     @Parameter(persist = false, required = false)
     String serverURL = null;
 
@@ -71,15 +74,18 @@ public class Elastix2DSplineRegisterServerCommand implements BdvPlaygroundAction
                 pxSizeInCurrentUnit,
                 px,py,pz,sx,sy,
                 showImagePlusRegistrationResult);
+
         reg.setInterpolate(interpolate);
 
         if ((serverURL!=null)&&(serverURL.trim()!="")) reg.setRegistrationServer(serverURL);
         if ((taskInfo!=null)&&(taskInfo.trim()!="")) reg.setRegistrationInfo(taskInfo);
 
-        reg.run();
+        success = reg.run();
 
-        registeredSource = reg.getRegisteredSac();
-        rt = reg.getRealTransform();
-        rt_inverse = reg.getRealTransformInverse();
+        if (success) {
+            registeredSource = reg.getRegisteredSac();
+            rt = reg.getRealTransform();
+            rt_inverse = reg.getRealTransformInverse();
+        }
     }
 }
