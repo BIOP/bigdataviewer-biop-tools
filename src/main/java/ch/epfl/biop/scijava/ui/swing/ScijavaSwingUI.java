@@ -36,7 +36,7 @@ public class ScijavaSwingUI {
         return panel;
     }
 
-    static private Module createModule(Context context, Class commandClass, Object... args) throws ModuleException {
+    static public Module createModule(Context context, Class commandClass, Object... args) throws ModuleException {
         Module module = context.getService(CommandService.class).getCommand(commandClass).createModule();
         context.inject(module);
         preprocessWithoutHarvesting(context,module);
@@ -65,7 +65,7 @@ public class ScijavaSwingUI {
         }
     }
 
-    static private JPanel createModulePanel(Context context,Module module) throws ModuleException {
+    static public JPanel createModulePanel(Context context,Module module) throws ModuleException {
         SwingInputHarvester swingInputHarvester = new SwingInputHarvester();
         context.inject(swingInputHarvester);
         InputPanel<JPanel, JPanel> inputPanel = new SwingInputPanel();
