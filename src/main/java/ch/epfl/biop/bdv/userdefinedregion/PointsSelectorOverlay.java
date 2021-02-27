@@ -6,13 +6,16 @@ import bdv.viewer.ViewerPanel;
 import ch.epfl.biop.bdv.select.SourceSelectorBehaviour;
 import ch.epfl.biop.bdv.select.SourceSelectorOverlay;
 import net.imglib2.RealPoint;
+import org.scijava.ui.behaviour.ClickBehaviour;
 import org.scijava.ui.behaviour.DragBehaviour;
 import org.scijava.ui.behaviour.util.Behaviours;
 
 import java.awt.*;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
+ *
  * TODO : update javadoc, which is wrong
  *
  * Displays box overlays on top of visible sources of all visible {@link SourceAndConverter} of a {@link ViewerPanel}
@@ -46,84 +49,35 @@ import java.util.*;
  *
  */
 
-public class RectangleSelectorOverlay extends BdvOverlay {
+public class PointsSelectorOverlay extends BdvOverlay {
 
     final ViewerPanel viewer;
 
-    boolean isCurrentlySelecting = false;
-
-    int xCurrentSelectStart, yCurrentSelectStart, xCurrentSelectEnd, yCurrentSelectEnd;
-
-    RealPoint ptStartGlobal, ptEndGlobal;
+    RealPoint currentPt;
 
     private int canvasWidth;
 
     private int canvasHeight;
 
-    final RectangleSelectorBehaviour rsb;
+    final PointsSelectorBehaviour psb;
 
     Map<String, SourceSelectorOverlay.OverlayStyle> styles = new HashMap<>();
 
-    final String message;
+    String message;
 
-    public RectangleSelectorOverlay(ViewerPanel viewer, RectangleSelectorBehaviour rsb, String message) {
-        this.message = message;
-        this.rsb = rsb;
+    public PointsSelectorOverlay(ViewerPanel viewer, PointsSelectorBehaviour psb, String message) {
+        this.message = message + " - press escape to exit";
+        this.psb = psb;
         this.viewer = viewer;
-        styles.put("SELECTED", new RectangleSelectorOverlay.SelectedOverlayStyle());
+        styles.put("SELECTED", new PointsSelectorOverlay.SelectedOverlayStyle());
 
-        ptStartGlobal = new RealPoint(3);
-        ptEndGlobal = new RealPoint(3);
+        currentPt = new RealPoint(3);
     }
 
     protected void addSelectionBehaviours(Behaviours behaviours) {
-        behaviours.behaviour( new RectangleSelectSourcesBehaviour( RectangleSelectorBehaviour.SET ), "select-set-rectangle", new String[] { "button1" });
-    }
+        behaviours.behaviour( new AddPointBehaviour( RectangleSelectorBehaviour.SET ), "select-set-rectangle", new String[] { "button1" });
+        //behaviours.behaviour( (ClickBehaviour) (x,y) -> psb.userDone = true , "user-is-done", new String[] { "Q", "CTRL C" });
 
-    synchronized void startCurrentSelection(int x, int y) {
-        xCurrentSelectStart = x;
-        yCurrentSelectStart = y;
-        viewer.displayToGlobalCoordinates(xCurrentSelectStart,yCurrentSelectStart, ptStartGlobal);
-    }
-
-    synchronized void updateCurrentSelection(int xCurrent, int yCurrent) {
-        xCurrentSelectEnd = xCurrent;
-        yCurrentSelectEnd = yCurrent;
-        isCurrentlySelecting = true;
-        viewer.displayToGlobalCoordinates(xCurrentSelectEnd,yCurrentSelectEnd, ptEndGlobal);
-    }
-
-    synchronized void endCurrentSelection(int x, int y, String mode) {
-        xCurrentSelectEnd = x;
-        yCurrentSelectEnd = y;
-        isCurrentlySelecting = false;
-        // Selection is done : but we need to access the trigger keys to understand what's happening
-
-        viewer.displayToGlobalCoordinates(xCurrentSelectEnd,yCurrentSelectEnd, ptEndGlobal);
-
-        rsb.processSelectionEvent(ptStartGlobal, ptEndGlobal);
-    }
-
-    Rectangle getCurrentSelectionRectangle() {
-        int x0, y0, w, h;
-        if (xCurrentSelectStart>xCurrentSelectEnd) {
-            x0 = xCurrentSelectEnd;
-            w = xCurrentSelectStart-xCurrentSelectEnd;
-        } else {
-            x0 = xCurrentSelectStart;
-            w = xCurrentSelectEnd-xCurrentSelectStart;
-        }
-        if (yCurrentSelectStart>yCurrentSelectEnd) {
-            y0 = yCurrentSelectEnd;
-            h = yCurrentSelectStart-yCurrentSelectEnd;
-        } else {
-            y0 = yCurrentSelectStart;
-            h = yCurrentSelectEnd-yCurrentSelectStart;
-        }
-        // Hack : allows selection on double or single click
-        if (w==0) w = 1;
-        if (h==0) h = 1;
-        return new Rectangle(x0, y0, w, h);
     }
 
     Font font = new Font("Courier", Font.PLAIN, 20);
@@ -134,9 +88,14 @@ public class RectangleSelectorOverlay extends BdvOverlay {
         g.setPaint( styles.get("SELECTED").getBackColor() );
         g.setFont(font);
         g.drawString(message, 50, viewer.getHeight()-50);
-        if (isCurrentlySelecting) {
-            g.draw(getCurrentSelectionRectangle());
-        }
+
+        g.setColor( styles.get("SELECTED").getFrontColor());
+
+        psb.getPoints().forEach(pt -> {
+            RealPoint localC = new RealPoint(pt);
+            viewer.state().getViewerTransform().apply(localC, localC);
+            g.drawOval((int) (localC.getDoublePosition(0)-10), (int) (localC.getDoublePosition(1)-10), 20,20);
+        });
 
     }
 
@@ -210,36 +169,22 @@ public class RectangleSelectorOverlay extends BdvOverlay {
     /**
      * Drag Selection Behaviour
      */
-    class RectangleSelectSourcesBehaviour implements DragBehaviour {
+    class AddPointBehaviour implements ClickBehaviour {
 
         final String mode;
 
-        public RectangleSelectSourcesBehaviour(String mode) {
+        public AddPointBehaviour(String mode) {
             this.mode = mode;
         }
 
         @Override
-        public void init(int x, int y) {
-            startCurrentSelection(x,y);
-            viewer.setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
-            switch(mode) {
-                case SourceSelectorBehaviour.SET :
-                    viewer.showMessage("Set Selection" );
-                    break;
-            }
-        }
-
-        @Override
-        public void drag(int x, int y) {
-            updateCurrentSelection(x,y);
+        public void click(int x, int y) {
+            RealPoint ptGlobalCoordinates = new RealPoint(3);
+            viewer.displayToGlobalCoordinates(x,y, ptGlobalCoordinates);
             viewer.getDisplay().repaint();
+            psb.addPoint(ptGlobalCoordinates);
         }
 
-        @Override
-        public void end(int x, int y) {
-            endCurrentSelection(x,y,mode);
-            viewer.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-        }
     }
 
 }

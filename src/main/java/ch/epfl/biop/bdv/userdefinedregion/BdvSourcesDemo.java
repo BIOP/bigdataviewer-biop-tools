@@ -16,13 +16,13 @@ import net.imglib2.realtransform.AffineTransform3D;
  * Source Selector Behaviour Demo
  */
 
-public class BdvRectangleSelectorDemo {
+public class BdvSourcesDemo {
 
     static public void main(String... args) throws Exception {
         // Creates a demo bdv frame with demo images
         BdvHandle bdvh = initAndShowSources();
 
-        RectangleSelectorBehaviour rsb = new RectangleSelectorBehaviour(bdvh);
+        RectangleSelectorBehaviour rsb = new RectangleSelectorBehaviour(bdvh, "Please select a rectangle");
         rsb.install();
         rsb.waitForSelection(10000);
         rsb.uninstall();

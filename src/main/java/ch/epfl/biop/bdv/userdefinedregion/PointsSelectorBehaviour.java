@@ -1,9 +1,11 @@
 package ch.epfl.biop.bdv.userdefinedregion;
 
+import bdv.util.BdvFunctions;
 import bdv.util.BdvHandle;
 import bdv.util.BdvOptions;
 import bdv.util.BdvOverlaySource;
 import bdv.viewer.ViewerPanel;
+import ch.epfl.biop.bdv.select.SelectedSourcesListener;
 import net.imglib2.RealPoint;
 import org.scijava.ui.behaviour.Behaviour;
 import org.scijava.ui.behaviour.ClickBehaviour;
@@ -12,29 +14,26 @@ import org.scijava.ui.behaviour.util.Behaviours;
 import org.scijava.ui.behaviour.util.TriggerBehaviourBindings;
 
 import javax.swing.*;
-import java.util.*;
-
-import static bdv.util.BdvFunctions.showOverlay;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Appends and controls a {@link RectangleSelectorBehaviour} in a {@link BdvHandle}
+ * Appends and controls a {@link PointsSelectorBehaviour} in a {@link BdvHandle}
  *
- * It is used in conjuncion with a BdvOverlay layer RectangleSelectorOverlay which can be retrieved with
- * {@link RectangleSelectorBehaviour#getRectangleSelectorOverlay()}
+ * It is used in conjuncion with a BdvOverlay layer {@link PointsSelectorOverlay} which can be retrieved with
+ * {@link PointsSelectorBehaviour#getPointsSelectorOverlay()}
  *
- * The selections can be triggered by GUI actions in the linked RectangleSelectorOverlay or
+ * The selections can be triggered by GUI actions in the linked {@link PointsSelectorOverlay} or
  * directly programmatically
  *
  * @author Nicolas Chiaruttini, BIOP, EPFL, 2020
  */
 
-public class RectangleSelectorBehaviour {
+public class PointsSelectorBehaviour {
 
-    final public static String RECTANGLE_SELECTOR_MAP = "sources-selector";
+    final public static String POINTS_SELECTOR_MAP = "points-selector";
 
-    final public static String SET = "SET";
-
-    final RectangleSelectorOverlay rectangleOverlay;
+    final PointsSelectorOverlay pointsOverlay;
 
     BdvOverlaySource bos;
 
@@ -52,12 +51,12 @@ public class RectangleSelectorBehaviour {
      * Construct a SourceSelectorBehaviour
      * @param bdvh BdvHandle associated to this behaviour
      */
-    public RectangleSelectorBehaviour(BdvHandle bdvh, String message) {
+    public PointsSelectorBehaviour(BdvHandle bdvh, String message) {
         this.bdvh = bdvh;
         this.triggerbindings = bdvh.getTriggerbindings();
         this.viewer = bdvh.getViewerPanel();
 
-        rectangleOverlay = new RectangleSelectorOverlay(viewer, this, message);
+        pointsOverlay = new PointsSelectorOverlay(viewer, this, message);
 
         behaviours = new Behaviours( new InputTriggerConfig(), "bdv" );
     }
@@ -65,8 +64,8 @@ public class RectangleSelectorBehaviour {
     /**
      * @return the overlay layer associated with the source selector
      */
-    public RectangleSelectorOverlay getRectangleSelectorOverlay() {
-        return rectangleOverlay;
+    public PointsSelectorOverlay getPointsSelectorOverlay() {
+        return pointsOverlay;
     }
 
     /**
@@ -112,19 +111,18 @@ public class RectangleSelectorBehaviour {
      */
     synchronized void install() {
         isInstalled = true;
-        rectangleOverlay.addSelectionBehaviours(behaviours);
+        pointsOverlay.addSelectionBehaviours(behaviours);
         behaviours.behaviour(new ClickBehaviour() {
             @Override
             public void click(int x, int y) {
-                uninstall();
+                uninstall(); userDone = true;
             }
         }, "cancel-set-rectangle", new String[]{"ESCAPE"});
 
 
-        triggerbindings.addBehaviourMap(RECTANGLE_SELECTOR_MAP, behaviours.getBehaviourMap());
-        triggerbindings.addInputTriggerMap(RECTANGLE_SELECTOR_MAP, behaviours.getInputTriggerMap(), "transform", "bdv");
-        //bos = BdvFunctions.showOverlay(rectangleOverlay, "Selector_Overlay", BdvOptions.options().addTo(bdvh));
-        bos = showOverlay(rectangleOverlay, "Selector_Overlay", BdvOptions.options().addTo(bdvh));
+        triggerbindings.addBehaviourMap(POINTS_SELECTOR_MAP, behaviours.getBehaviourMap());
+        triggerbindings.addInputTriggerMap(POINTS_SELECTOR_MAP, behaviours.getInputTriggerMap(), "transform", "bdv");
+        bos = BdvFunctions.showOverlay(pointsOverlay, "Selector_Overlay", BdvOptions.options().addTo(bdvh));
         bdvh.getKeybindings().addInputMap("blocking-source-selector", new InputMap(), "bdv", "navigation");
     }
 
@@ -138,19 +136,19 @@ public class RectangleSelectorBehaviour {
     synchronized void uninstall() {
         isInstalled = false;
         bos.removeFromBdv();
-        triggerbindings.removeBehaviourMap( RECTANGLE_SELECTOR_MAP );
-        triggerbindings.removeInputTriggerMap( RECTANGLE_SELECTOR_MAP );
+        triggerbindings.removeBehaviourMap( POINTS_SELECTOR_MAP );
+        triggerbindings.removeInputTriggerMap( POINTS_SELECTOR_MAP );
         bdvh.getKeybindings().removeInputMap("blocking-source-selector");
     }
 
-    volatile boolean rectangleSelected = false;
-    volatile RealPoint startPt = null;
-    volatile RealPoint endPt = null;
+    volatile List<RealPoint> points = new ArrayList<>();
 
-    void processSelectionEvent(RealPoint start, RealPoint end) {
-        rectangleSelected = true;
-        startPt = start;
-        endPt = end;
+    List<RealPoint> getPoints() {
+        return new ArrayList<>(points);
+    }
+
+    void addPoint(RealPoint newPt) {
+        points.add(newPt);
     }
 
     public List<RealPoint> waitForSelection() {
@@ -160,7 +158,7 @@ public class RectangleSelectorBehaviour {
     public List<RealPoint> waitForSelection(int timeOutInMs) {
         int totalTime = 0;
         if (timeOutInMs>0) {
-            while ((endPt==null)&&(totalTime<timeOutInMs)) {
+            while (!(isUserDone())&&(totalTime<timeOutInMs)) {
                 try {
                     Thread.sleep(33);
                     totalTime+=33;
@@ -169,7 +167,7 @@ public class RectangleSelectorBehaviour {
                 }
             }
         } else {
-            while ((endPt==null)) {
+            while (!(isUserDone())) {
                 try {
                     Thread.sleep(33);
                 } catch (InterruptedException e) {
@@ -178,17 +176,14 @@ public class RectangleSelectorBehaviour {
             }
         }
 
-        if (endPt==null) {
-            return null;
-        } else {
-            List<RealPoint> pts = new ArrayList<>();
-            pts.add(startPt);
-            pts.add(endPt);
-            startPt = null;
-            endPt = null;
-            return pts;
-        }
+        userDone = false;
+        return points;
+    }
 
+    volatile boolean userDone = false;
+
+    private boolean isUserDone() {
+        return userDone;
     }
 
 }

@@ -12,8 +12,8 @@ import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import java.util.ArrayList;
 import java.util.List;
 
-@Plugin(type = Command.class, menuPath = ScijavaBdvDefaults.RootMenu+"BDV>Get Bdv User Rectangle")
-public class GetUserRectangleCommand implements Command {
+@Plugin(type = Command.class, menuPath = ScijavaBdvDefaults.RootMenu+"BDV>Get Bdv User Points")
+public class GetUserPointsCommand implements Command {
 
     @Parameter
     BdvHandle bdvh;
@@ -29,10 +29,10 @@ public class GetUserRectangleCommand implements Command {
 
     @Override
     public void run() {
-        RectangleSelectorBehaviour rsb = new RectangleSelectorBehaviour(bdvh, messageForUser);
-        rsb.install();
-        pts = rsb.waitForSelection(timeOutInMs);
-        rsb.uninstall();
+        PointsSelectorBehaviour psb = new PointsSelectorBehaviour(bdvh, messageForUser);
+        psb.install();
+        pts = psb.waitForSelection(timeOutInMs);
+        psb.uninstall();
     }
 
 
@@ -42,7 +42,7 @@ public class GetUserRectangleCommand implements Command {
         ij.ui().showUI();
         BdvHandle bdvh = BdvSourcesDemo.initAndShowSources();
 
-        ij.command().run(GetUserRectangleCommand.class, true, "bdvh", bdvh, "timeOutInMs", -1,"messageForUser", "Please select a rectangle");
+        ij.command().run(GetUserPointsCommand.class, true, "bdvh", bdvh, "timeOutInMs", -1, "messageForUser", "Please click points" );
 
     }
 }
