@@ -124,8 +124,8 @@ public class RectangleSelectorBehaviour {
         triggerbindings.addBehaviourMap(RECTANGLE_SELECTOR_MAP, behaviours.getBehaviourMap());
         triggerbindings.addInputTriggerMap(RECTANGLE_SELECTOR_MAP, behaviours.getInputTriggerMap(), "transform", "bdv");
         //bos = BdvFunctions.showOverlay(rectangleOverlay, "Selector_Overlay", BdvOptions.options().addTo(bdvh));
-        bos = showOverlay(rectangleOverlay, "Selector_Overlay", BdvOptions.options().addTo(bdvh));
-        bdvh.getKeybindings().addInputMap("blocking-source-selector", new InputMap(), "bdv", "navigation");
+        bos = showOverlay(rectangleOverlay, "Rectangle_Selector_Overlay", BdvOptions.options().addTo(bdvh));
+        bdvh.getKeybindings().addInputMap("blocking-source-selector_rectangle", new InputMap(), "bdv", "navigation");
     }
 
     public void addBehaviour(Behaviour behaviour, String behaviourName, String[] triggers) {

@@ -13,6 +13,7 @@ import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
+import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
 
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
@@ -64,10 +65,10 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
             CommandModule cm = cs.run(Elastix2DAffineRegisterCommand.class, true,
                     "sac_fixed", globalRefSource,
                     "tpFixed", 0,
-                    "levelFixedSource", 5,
+                    "levelFixedSource", SourceAndConverterHelper.bestLevel(globalRefSource,0,0.01),
                     "sac_moving", currentRefSource,
                     "tpMoving", 0,
-                    "levelMovingSource", 5,
+                    "levelMovingSource", SourceAndConverterHelper.bestLevel(currentRefSource,0,0.01),
                     "px", topLeftX,
                     "py", topLeftY,
                     "pz", 0,
@@ -83,13 +84,13 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
             log.accept("----------- Second registration - Precise Affine");
 
             // More precise rigid registration
-            cm = cs.run(Elastix2DAffineRegisterCommand.class, true,
+            /*cm = cs.run(Elastix2DAffineRegisterCommand.class, true,
                     "sac_fixed", globalRefSource,
                     "tpFixed", 0,
-                    "levelFixedSource", 4,
+                    "levelFixedSource", SourceAndConverterHelper.bestLevel(globalRefSource,0,0.005),
                     "sac_moving", firstRegSrc,
                     "tpMoving", 0,
-                    "levelMovingSource", 4,
+                    "levelMovingSource", SourceAndConverterHelper.bestLevel(firstRegSrc,0,0.005),
                     "px", topLeftX,
                     "py", topLeftY,
                     "pz", 0,
@@ -101,17 +102,17 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
             ).get();
 
             AffineTransform3D at2 = (AffineTransform3D) cm.getOutput("at3D");
-            SourceAndConverter secondRegSrc = (SourceAndConverter) cm.getOutput("registeredSource");
+            SourceAndConverter secondRegSrc = (SourceAndConverter) cm.getOutput("registeredSource");*/
 
             log.accept("----------- Precise Warping based on particular locations");
             ThinplateSplineTransform tst =
                     (ThinplateSplineTransform) cs.run(AutoWarp2DCommand.class, true,
                             "sac_fixed", globalRefSource,
-                            "sac_moving", secondRegSrc,
+                            "sac_moving", firstRegSrc,
                             "tpFixed", 0,
-                            "levelFixedSource", 2,
+                            "levelFixedSource", SourceAndConverterHelper.bestLevel(globalRefSource,0,0.001),
                             "tpMoving", 0,
-                            "levelMovingSource", 2,
+                            "levelMovingSource", SourceAndConverterHelper.bestLevel(firstRegSrc,0,0.001),
                             "ptListCoordinates", ptListCoordinates,
                             "zLocation", 0,
                             "sx", 0.5, // 500 microns
@@ -125,7 +126,9 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
             log.accept("----------- Computing global transformation");
 
             rts = new RealTransformSequence();
+            AffineTransform3D at2 = new AffineTransform3D();
             ((RealTransformSequence)rts).add(at1.concatenate(at2).inverse());
+            //((RealTransformSequence)rts).add(at1);
             ((RealTransformSequence)rts).add(tst);
 
         } catch (InterruptedException e) {

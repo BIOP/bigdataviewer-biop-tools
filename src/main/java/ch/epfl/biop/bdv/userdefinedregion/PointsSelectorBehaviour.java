@@ -17,6 +17,7 @@ import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import static bdv.util.BdvFunctions.showOverlay;
 /**
  * Appends and controls a {@link PointsSelectorBehaviour} in a {@link BdvHandle}
  *
@@ -115,15 +116,15 @@ public class PointsSelectorBehaviour {
         behaviours.behaviour(new ClickBehaviour() {
             @Override
             public void click(int x, int y) {
+                bos.removeFromBdv();
                 uninstall(); userDone = true;
             }
-        }, "cancel-set-rectangle", new String[]{"ESCAPE"});
-
+        }, "cancel-set-points", new String[]{"ESCAPE"});
 
         triggerbindings.addBehaviourMap(POINTS_SELECTOR_MAP, behaviours.getBehaviourMap());
         triggerbindings.addInputTriggerMap(POINTS_SELECTOR_MAP, behaviours.getInputTriggerMap(), "transform", "bdv");
-        bos = BdvFunctions.showOverlay(pointsOverlay, "Selector_Overlay", BdvOptions.options().addTo(bdvh));
-        bdvh.getKeybindings().addInputMap("blocking-source-selector", new InputMap(), "bdv", "navigation");
+        bos = showOverlay(pointsOverlay, "Point_Selector_Overlay", BdvOptions.options().addTo(bdvh));
+        bdvh.getKeybindings().addInputMap("blocking-source-selector_points", new InputMap(), "bdv", "navigation");
     }
 
     public void addBehaviour(Behaviour behaviour, String behaviourName, String[] triggers) {
@@ -135,7 +136,7 @@ public class PointsSelectorBehaviour {
      */
     synchronized void uninstall() {
         isInstalled = false;
-        bos.removeFromBdv();
+        //bos.removeFromBdv(); // NPE ??
         triggerbindings.removeBehaviourMap( POINTS_SELECTOR_MAP );
         triggerbindings.removeInputTriggerMap( POINTS_SELECTOR_MAP );
         bdvh.getKeybindings().removeInputMap("blocking-source-selector");
