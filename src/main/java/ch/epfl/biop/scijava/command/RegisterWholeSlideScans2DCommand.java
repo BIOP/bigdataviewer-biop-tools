@@ -1,6 +1,11 @@
 package ch.epfl.biop.scijava.command;
 
+import bdv.util.RealTransformHelper;
 import bdv.viewer.SourceAndConverter;
+import ch.epfl.biop.bdv.bioformats.command.BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand;
+import ch.epfl.biop.bdv.bioformats.command.BioformatsBigdataviewerBridgeDatasetCommand;
+import net.imagej.ImageJ;
+import net.imglib2.RealPoint;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.realtransform.RealTransform;
 import net.imglib2.realtransform.RealTransformSequence;
@@ -13,8 +18,10 @@ import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
+import sc.fiji.bdvpg.scijava.command.bdv.BdvSourcesShowCommand;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
 
+import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
@@ -52,7 +59,7 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
     boolean showDetails;
 
     @Parameter(type = ItemIO.OUTPUT)
-    RealTransform rts;
+    ThinplateSplineTransform tst;
 
     @Override
     public void run() {
@@ -105,7 +112,7 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
             SourceAndConverter secondRegSrc = (SourceAndConverter) cm.getOutput("registeredSource");*/
 
             log.accept("----------- Precise Warping based on particular locations");
-            ThinplateSplineTransform tst =
+            ThinplateSplineTransform tst_temp =
                     (ThinplateSplineTransform) cs.run(AutoWarp2DCommand.class, true,
                             "sac_fixed", globalRefSource,
                             "sac_moving", firstRegSrc,
@@ -125,17 +132,59 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
 
             log.accept("----------- Computing global transformation");
 
-            rts = new RealTransformSequence();
+            //RealTransformSequence
+            RealTransformSequence rts = new RealTransformSequence();
             AffineTransform3D at2 = new AffineTransform3D();
-            ((RealTransformSequence)rts).add(at1.concatenate(at2).inverse());
-            //((RealTransformSequence)rts).add(at1);
-            ((RealTransformSequence)rts).add(tst);
+            rts.add(at1.concatenate(at2).inverse());
+            //rts.add(at1);
+            rts.add(tst_temp);
+
+            ArrayList<RealPoint> pts_Fixed = new ArrayList<>();
+            ArrayList<RealPoint> pts_Moving = new ArrayList<>();
+
+            String[] coordsXY = ptListCoordinates.split(",");
+
+            for (int i = 0;i<coordsXY.length;i+=2) {
+                RealPoint pt_fixed = new RealPoint(Double.valueOf(coordsXY[i]),Double.valueOf(coordsXY[i+1]),0);
+                pts_Fixed.add(pt_fixed);
+                RealPoint pt_moving = new RealPoint(3);
+                rts.apply(pt_fixed, pt_moving);
+                pts_Moving.add(pt_moving);
+            }
+
+            tst = RealTransformHelper.getTransform(pts_Moving, pts_Fixed);
 
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
             e.printStackTrace();
         }
+
+    }
+
+    public static void main(String... args) throws Exception {
+        final ImageJ ij = new ImageJ();
+        ij.ui().showUI();
+
+        CommandService cs = ij.command();
+
+        //cs.run(BioformatsBigdataviewerBridgeDatasetCommand.class,true);
+
+        cs.run(BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand.class,true,
+                "unit","MILLIMETER",
+                //"files","",
+                "splitRGBChannels",false).get();
+
+        cs.run(BdvSourcesShowCommand.class,true,
+                "autoContrast",true,
+                "adjustViewOnSource",true,
+                "is2D",true,
+                "windowTitle","Test Registration",
+                "interpolate",false,
+                "nTimepoints",1,
+                "projector","Sum Projector",
+                "sacs","SpimData 0>Channel>1").get();
+
 
     }
 }

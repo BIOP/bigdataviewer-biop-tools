@@ -101,7 +101,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
                                "bottomRightX", Math.max(corners.get(0).getDoublePosition(0),corners.get(1).getDoublePosition(0) ),
                                "bottomRightY", Math.max(corners.get(0).getDoublePosition(1),corners.get(1).getDoublePosition(1) ),
                                "showDetails", true
-                    ).get().getOutput("rts");
+                    ).get().getOutput("tst");
 
             // Now transforms all the sources required to be transformed
 
