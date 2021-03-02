@@ -80,9 +80,11 @@ public class RealTransformHelper {
         }
     }
 
-    public static ThinplateSplineTransform getTransform(List<RealPoint> moving_pts, List<RealPoint> fixed_pts) {
+    public static ThinplateSplineTransform getTransform(List<RealPoint> moving_pts, List<RealPoint> fixed_pts, boolean force2d) {
         int nbDimensions = moving_pts.get(0).numDimensions();
         int nbLandmarks = moving_pts.size();
+
+        if (force2d) nbDimensions = 2;
 
         double[][] tgtPts = new double[nbDimensions][nbLandmarks];
         double[][] srcPts = new double[nbDimensions][nbLandmarks];

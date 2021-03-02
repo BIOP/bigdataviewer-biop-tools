@@ -1,9 +1,11 @@
 package ch.epfl.biop.scijava.command;
 
+import bdv.tools.brightness.ConverterSetup;
 import bdv.util.BdvHandle;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.bdv.userdefinedregion.GetUserPointsCommand;
 import ch.epfl.biop.bdv.userdefinedregion.GetUserRectangleCommand;
+import ij.gui.WaitForUserDialog;
 import net.imglib2.RealPoint;
 import net.imglib2.realtransform.RealTransform;
 import org.scijava.ItemIO;
@@ -11,13 +13,20 @@ import org.scijava.ItemVisibility;
 import org.scijava.command.CommandService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import sc.fiji.bdvpg.bdv.BdvHandleHelper;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
+import sc.fiji.bdvpg.scijava.command.source.BigWarpLauncherCommand;
 import sc.fiji.bdvpg.scijava.services.SourceAndConverterBdvDisplayService;
+import sc.fiji.bdvpg.services.SourceAndConverterServices;
+import sc.fiji.bdvpg.sourceandconverter.register.BigWarpLauncher;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceRealTransformer;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static bdv.util.RealTransformHelper.BigWarpFileFromRealTransform;
 
 @Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Wizard Align Slides (2D)")
 public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionCommand{
@@ -40,11 +49,8 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
     @Parameter
     BdvHandle bdvh;
 
-    /*@Parameter(label = "Pixel size used for registration (physical unit)")
-    double pixelPhysicalSizeUsedForRegistration;
-
-    @Parameter(label = "Field of view size for registration (physical unit)")
-    double fovSize;*/
+    @Parameter
+    boolean manualEditRegistration;
 
     @Parameter
     SourceAndConverterBdvDisplayService sacbds;
@@ -54,6 +60,11 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
 
     @Parameter(type = ItemIO.OUTPUT)
     RealTransform transformation;
+
+    Runnable waitForUser = () -> {
+        WaitForUserDialog dialog = new WaitForUserDialog("Choose slice","Please perform carefully your registration then press ok.");
+        dialog.show();
+    };
 
     @Override
     public void run() {
@@ -102,6 +113,47 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
                                "bottomRightY", Math.max(corners.get(0).getDoublePosition(1),corners.get(1).getDoublePosition(1) ),
                                "showDetails", true
                     ).get().getOutput("tst");
+
+            if (manualEditRegistration) {
+                // The user wants big warp to correct landmark points
+                List<SourceAndConverter> movingSacs = Arrays.stream(new SourceAndConverter[]{moving}).collect(Collectors.toList());
+
+                List<SourceAndConverter> fixedSacs = Arrays.stream(new SourceAndConverter[]{fixed}).collect(Collectors.toList());
+
+                List<ConverterSetup> converterSetups = Arrays.stream(new SourceAndConverter[]{moving}).map(src -> SourceAndConverterServices.getSourceAndConverterDisplayService().getConverterSetup(src)).collect(Collectors.toList());
+
+                converterSetups.addAll(Arrays.stream(new SourceAndConverter[]{fixed}).map(src -> SourceAndConverterServices.getSourceAndConverterDisplayService().getConverterSetup(src)).collect(Collectors.toList()));
+
+                // Launch BigWarp
+                BigWarpLauncher bwl = new BigWarpLauncher(movingSacs, fixedSacs, "Big Warp", converterSetups);
+                bwl.set2d();
+                bwl.run();
+
+                // Output bdvh handles -> will be put in the object service
+                BdvHandle bdvhQ = bwl.getBdvHandleQ();
+                BdvHandle bdvhP = bwl.getBdvHandleP();
+
+                bdvhP.getViewerPanel().state().setViewerTransform(BdvHandleHelper.getViewerTransformWithNewCenter(bdvhP, new double[]{0,0,0}));
+                bdvhQ.getViewerPanel().state().setViewerTransform(BdvHandleHelper.getViewerTransformWithNewCenter(bdvhQ, new double[]{0,0,0}));
+
+
+                SourceAndConverterServices.getSourceAndConverterDisplayService().pairClosing(bdvhQ,bdvhP);
+
+                bdvhP.getViewerPanel().requestRepaint();
+                bdvhQ.getViewerPanel().requestRepaint();
+
+                bwl.getBigWarp().getLandmarkFrame().repaint();
+
+                bwl.getBigWarp().loadLandmarks(BigWarpFileFromRealTransform(transformation));
+                bwl.getBigWarp().setInLandmarkMode(true);
+                bwl.getBigWarp().setIsMovingDisplayTransformed(true);
+
+                waitForUser.run();
+
+                transformation = bwl.getBigWarp().getTransformation();
+
+                bwl.getBigWarp().closeAll();
+            }
 
             // Now transforms all the sources required to be transformed
 

@@ -6,10 +6,8 @@ import ch.epfl.biop.bdv.bioformats.command.BasicOpenFilesWithBigdataviewerBiofor
 import ch.epfl.biop.bdv.bioformats.command.BioformatsBigdataviewerBridgeDatasetCommand;
 import net.imagej.ImageJ;
 import net.imglib2.RealPoint;
-import net.imglib2.realtransform.AffineTransform3D;
-import net.imglib2.realtransform.RealTransform;
-import net.imglib2.realtransform.RealTransformSequence;
-import net.imglib2.realtransform.ThinplateSplineTransform;
+import net.imglib2.realtransform.*;
+import net.imglib2.realtransform.inverse.WrappedIterativeInvertibleRealTransform;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.command.CommandModule;
@@ -59,7 +57,7 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
     boolean showDetails;
 
     @Parameter(type = ItemIO.OUTPUT)
-    ThinplateSplineTransform tst;
+    RealTransform tst;
 
     @Override
     public void run() {
@@ -152,7 +150,11 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
                 pts_Moving.add(pt_moving);
             }
 
-            tst = RealTransformHelper.getTransform(pts_Moving, pts_Fixed);
+            tst = new Wrapped2DTransformAs3D(
+                    new WrappedIterativeInvertibleRealTransform<>(
+                            RealTransformHelper.getTransform(pts_Moving, pts_Fixed,true)
+                    )
+            );
 
         } catch (InterruptedException e) {
             e.printStackTrace();
