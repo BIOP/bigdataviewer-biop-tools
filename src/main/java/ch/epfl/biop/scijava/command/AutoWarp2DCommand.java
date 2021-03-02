@@ -121,7 +121,7 @@ public class AutoWarp2DCommand implements BdvPlaygroundActionCommand {
 
                 String str = "xi ="+pt.getDoublePosition(0)+"\t xf ="+ptCorr.getDoublePosition(0)+"\n";
                 str+="yi ="+pt.getDoublePosition(1)+"\t yf ="+ptCorr.getDoublePosition(1);
-                //System.out.println(str);
+                System.out.println(str);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             } catch (ExecutionException e) {
