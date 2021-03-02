@@ -3,13 +3,11 @@ package ch.epfl.biop.scijava.command;
 import bdv.util.RealTransformHelper;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.bdv.bioformats.command.BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand;
-import ch.epfl.biop.bdv.bioformats.command.BioformatsBigdataviewerBridgeDatasetCommand;
 import net.imagej.ImageJ;
 import net.imglib2.RealPoint;
 import net.imglib2.realtransform.*;
 import net.imglib2.realtransform.inverse.WrappedIterativeInvertibleRealTransform;
 import org.scijava.ItemIO;
-import org.scijava.command.Command;
 import org.scijava.command.CommandModule;
 import org.scijava.command.CommandService;
 import org.scijava.plugin.Parameter;
@@ -23,8 +21,8 @@ import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
-
-@Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Align Slides (2D)")
+@Plugin(type = BdvPlaygroundActionCommand.class,
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Align Slides (2D)")
 public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(label = "Global reference image (fixed, usually, first dapi channel)")
@@ -59,6 +57,9 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
     @Parameter(type = ItemIO.OUTPUT)
     RealTransform tst;
 
+    @Parameter
+    boolean verbose;
+
     @Override
     public void run() {
 
@@ -86,32 +87,9 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
             AffineTransform3D at1 = (AffineTransform3D) cm.getOutput("at3D");
             SourceAndConverter firstRegSrc = (SourceAndConverter) cm.getOutput("registeredSource");
 
-            log.accept("----------- Second registration - Precise Affine");
-
-            // More precise rigid registration
-            /*cm = cs.run(Elastix2DAffineRegisterCommand.class, true,
-                    "sac_fixed", globalRefSource,
-                    "tpFixed", 0,
-                    "levelFixedSource", SourceAndConverterHelper.bestLevel(globalRefSource,0,0.005),
-                    "sac_moving", firstRegSrc,
-                    "tpMoving", 0,
-                    "levelMovingSource", SourceAndConverterHelper.bestLevel(firstRegSrc,0,0.005),
-                    "px", topLeftX,
-                    "py", topLeftY,
-                    "pz", 0,
-                    "sx", bottomRightX-topLeftX,
-                    "sy", bottomRightY-topLeftY,
-                    "pxSizeInCurrentUnit", 0.0025, // 2.5 micron per pixel
-                    "interpolate", false,
-                    "showImagePlusRegistrationResult", showDetails
-            ).get();
-
-            AffineTransform3D at2 = (AffineTransform3D) cm.getOutput("at3D");
-            SourceAndConverter secondRegSrc = (SourceAndConverter) cm.getOutput("registeredSource");*/
-
             log.accept("----------- Precise Warping based on particular locations");
-            ThinplateSplineTransform tst_temp =
-                    (ThinplateSplineTransform) cs.run(AutoWarp2DCommand.class, true,
+            RealTransform tst_temp =
+                    (RealTransform) cs.run(AutoWarp2DCommand.class, true,
                             "sac_fixed", globalRefSource,
                             "sac_moving", firstRegSrc,
                             "tpFixed", 0,
@@ -125,7 +103,8 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
                             "pxSizeInCurrentUnit", 0.001, //1 micron per pixel
                             "interpolate", false,
                             "showPoints", showDetails,//true,
-                            "parallel", !showDetails//false,
+                            "parallel", !showDetails,//false,
+                            "verbose", verbose
                     ).get().getOutput("tst");
 
             log.accept("----------- Computing global transformation");
@@ -134,7 +113,6 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
             RealTransformSequence rts = new RealTransformSequence();
             AffineTransform3D at2 = new AffineTransform3D();
             rts.add(at1.concatenate(at2).inverse());
-            //rts.add(at1);
             rts.add(tst_temp);
 
             ArrayList<RealPoint> pts_Fixed = new ArrayList<>();
@@ -170,11 +148,8 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
 
         CommandService cs = ij.command();
 
-        //cs.run(BioformatsBigdataviewerBridgeDatasetCommand.class,true);
-
         cs.run(BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand.class,true,
                 "unit","MILLIMETER",
-                //"files","",
                 "splitRGBChannels",false).get();
 
         cs.run(BdvSourcesShowCommand.class,true,
@@ -186,7 +161,5 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
                 "nTimepoints",1,
                 "projector","Sum Projector",
                 "sacs","SpimData 0>Channel>1").get();
-
-
     }
 }

@@ -86,21 +86,21 @@ public class RealTransformHelper {
 
         if (force2d) nbDimensions = 2;
 
-        double[][] tgtPts = new double[nbDimensions][nbLandmarks];
-        double[][] srcPts = new double[nbDimensions][nbLandmarks];
+        double[][] mPts = new double[nbDimensions][nbLandmarks];
+        double[][] fPts = new double[nbDimensions][nbLandmarks];
 
         for (int i = 0;i<nbLandmarks;i++) {
             for (int d = 0; d<nbDimensions; d++) {
-                srcPts[d][i] = fixed_pts.get(i).getDoublePosition(d);
-                //System.out.println("srcPts["+d+"]["+i+"]=" +srcPts[d][i]);
+                fPts[d][i] = fixed_pts.get(i).getDoublePosition(d);
+                //System.out.println("fPts["+d+"]["+i+"]=" +fPts[d][i]);
             }
             for (int d = 0; d<nbDimensions; d++) {
-                tgtPts[d][i] = moving_pts.get(i).getDoublePosition(d);
-                //System.out.println("tgtPts["+d+"]["+i+"]=" +tgtPts[d][i]);
+                mPts[d][i] = moving_pts.get(i).getDoublePosition(d);
+                //System.out.println("mPts["+d+"]["+i+"]=" +mPts[d][i]);
             }
         }
 
-        return new ThinplateSplineTransform(srcPts, tgtPts);
+        return new ThinplateSplineTransform(fPts, mPts);
     }
 
 }
