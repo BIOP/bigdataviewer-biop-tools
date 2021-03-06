@@ -50,6 +50,12 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
     @Parameter
     BdvHandle bdvh;
 
+    //@Parameter(label = "Perform automated registration (affine elastix)")
+    //boolean performAutomatedAffineRegistration = true;
+
+    //@Parameter(label = "Perform automated registration ()")
+    //boolean performAutomatedAffineRegistration = true;
+
     @Parameter(label = "Manually edit landmarks after automated registration")
     boolean manualEditRegistration = true;
 
