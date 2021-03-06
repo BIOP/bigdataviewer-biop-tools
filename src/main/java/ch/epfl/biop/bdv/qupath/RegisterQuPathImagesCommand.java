@@ -5,9 +5,7 @@ import bdv.util.RealTransformHelper;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.bdv.command.register.Wizard2DWholeScanRegisterCommand;
 import ch.epfl.biop.spimdata.qupath.QuPathEntryEntity;
-import net.imglib2.realtransform.AffineTransform3D;
-import net.imglib2.realtransform.RealTransform;
-import net.imglib2.realtransform.RealTransformSequence;
+import net.imglib2.realtransform.*;
 import org.apache.commons.io.FileUtils;
 import org.scijava.Context;
 import org.scijava.command.Command;
@@ -75,7 +73,8 @@ public class RegisterQuPathImagesCommand implements Command {
                     "sourcesToTransform", new SourceAndConverter[]{moving_source}
                     ).get().getOutput("transformation");
 
-            RealTransformSequence transformSequence = new RealTransformSequence();
+            RealTransform transformSequence;
+
 
             // Because QuPath works in pixel coordinates and bdv playground in real space coordinates
             // We need to account for this
@@ -89,9 +88,26 @@ public class RegisterQuPathImagesCommand implements Command {
 
             fixed_source.getSpimSource().getSourceTransform(0,0,fixedToPixel);
 
-            transformSequence.add(fixedToPixel);
-            transformSequence.add(rt);
-            transformSequence.add(movingToPixel.inverse());
+            if (rt instanceof InvertibleRealTransform) {
+                InvertibleRealTransformSequence irts = new InvertibleRealTransformSequence();
+
+                irts.add(fixedToPixel);
+                irts.add((InvertibleRealTransform) rt);
+                irts.add(movingToPixel.inverse());
+
+                transformSequence = irts;
+
+            } else {
+                RealTransformSequence rts = new RealTransformSequence();
+
+                rts.add(fixedToPixel);
+                rts.add(rt);
+                rts.add(movingToPixel.inverse());
+
+                transformSequence = rts;
+            }
+
+
 
             String jsonMovingToFixed = RealTransformHelper.serialize(transformSequence, scijavaCtx);
             System.out.println(jsonMovingToFixed);
