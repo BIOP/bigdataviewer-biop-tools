@@ -107,10 +107,7 @@ public class RegisterQuPathImagesCommand implements Command {
                 transformSequence = rts;
             }
 
-
-
             String jsonMovingToFixed = RealTransformHelper.serialize(transformSequence, scijavaCtx);
-            System.out.println(jsonMovingToFixed);
 
             QuPathEntryEntity movingEntity = QuPathBdvHelper.getQuPathEntityFromSource(moving_source);
             QuPathEntryEntity fixedEntity = QuPathBdvHelper.getQuPathEntityFromSource(fixed_source);

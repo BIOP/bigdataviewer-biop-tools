@@ -1,10 +1,16 @@
 package net.imglib2.realtransform;
 
 import com.google.gson.*;
+import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.services.serializers.plugins.IClassRuntimeAdapter;
 
 import java.lang.reflect.Type;
 
+/**
+ * This adapter is located in this package in order to access the protected transforms field
+ * of a {@link InvertibleRealTransformSequence}
+ */
+@Plugin(type = IClassRuntimeAdapter.class)
 public class InvertibleRealTransformSequenceAdapter implements IClassRuntimeAdapter<RealTransform, InvertibleRealTransformSequence> {
     @Override
     public Class<? extends RealTransform> getBaseClass() {
