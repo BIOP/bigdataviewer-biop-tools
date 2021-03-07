@@ -84,7 +84,7 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
                     "sx", bottomRightX-topLeftX,
                     "sy", bottomRightY-topLeftY,
                     "pxSizeInCurrentUnit", 0.01, // in mm
-                    "interpolate", false,
+                    "interpolate", true,
                     "showImagePlusRegistrationResult", showDetails
             ).get();
             AffineTransform3D at1 = (AffineTransform3D) cm.getOutput("at3D");
@@ -104,7 +104,7 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
                             "sx", 0.5, // 500 microns
                             "sy", 0.5, // 500 microns
                             "pxSizeInCurrentUnit", 0.001, //1 micron per pixel
-                            "interpolate", false,
+                            "interpolate", true,
                             "showPoints", showDetails,//true,
                             "parallel", !showDetails,//false,
                             "verbose", verbose

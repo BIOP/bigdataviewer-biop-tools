@@ -24,16 +24,22 @@ import sc.fiji.bdvpg.sourceandconverter.transform.SourceRealTransformer;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 import static bdv.util.RealTransformHelper.BigWarpFileFromRealTransform;
 
-@Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Wizard Align Slides (2D)")
+@Plugin(type = BdvPlaygroundActionCommand.class,
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Wizard Align Slides (2D)",
+        headless = false // User interface required
+        )
 public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionCommand{
 
     @Parameter(visibility = ItemVisibility.MESSAGE)
-    String message = "TODO : explain what this wizard does";
+    String message = "<html><h2>Automated WSI registration wizard</h2><br/>"+
+            "Images should be opened with bigdataviewer-playground<br/>"+
+            "Automated registrations requires elastix.<br/>"+
+            "</html>";
 
     @Parameter
     CommandService cs;
@@ -50,16 +56,16 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
     @Parameter
     BdvHandle bdvh;
 
-    //@Parameter(label = "Perform automated registration (affine elastix)")
-    //boolean performAutomatedAffineRegistration = true;
+    @Parameter(label = "0 - Auto affine registration")
+    boolean automatedAffineRegistration = true;
 
-    //@Parameter(label = "Perform automated registration ()")
-    //boolean performAutomatedAffineRegistration = true;
+    @Parameter(label = "1 - Auto spline registration")
+    boolean automatedSplineRegistration = true;
 
-    @Parameter(label = "Manually edit landmarks after automated registration")
-    boolean manualEditRegistration = true;
+    @Parameter(label = "2 - Manual spline registration (BigWarp)")
+    boolean manualSplineRegistration = true;
 
-    @Parameter(label = "Show results of automated registration")
+    @Parameter(label = "Show results of automated registrations (breaks parallelization)")
     boolean showDetails = false;
 
     @Parameter
@@ -74,8 +80,8 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
     @Parameter(type = ItemIO.OUTPUT)
     RealTransform transformation;
 
-    Consumer<String> waitForUser = (str) -> {
-        WaitForUserDialog dialog = new WaitForUserDialog("Click ok when done.",str);
+    BiConsumer<String,String> waitForUser = (windowtitle, message) -> {
+        WaitForUserDialog dialog = new WaitForUserDialog(windowtitle,message);
         dialog.show();
     };
 
@@ -91,7 +97,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
 
         try {
 
-            waitForUser.accept("Fit the image onto the bdv window.");
+            waitForUser.accept("Prepare your bigdataviewer window","Fit the image onto the bdv window.");
             // Ask the user to select the region that should be aligned ( a rectangle )
             List<RealPoint> corners = (List<RealPoint>) cs
                     .run(GetUserRectangleCommand.class, true,
@@ -137,7 +143,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
                                "verbose", verbose
                     ).get().getOutput("tst");
 
-            if (manualEditRegistration) {
+            if (manualSplineRegistration) {
                 // The user wants big warp to correct landmark points
                 List<SourceAndConverter> movingSacs = Arrays.stream(new SourceAndConverter[]{moving}).collect(Collectors.toList());
 
@@ -176,7 +182,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
                 bdvhP.getViewerPanel().state().setViewerTransform(newLocation);
                 bdvhQ.getViewerPanel().state().setViewerTransform(newLocation);
                 
-                waitForUser.accept("Please perform carefully your registration then press ok.");
+                waitForUser.accept("Manual spline registration", "Please perform carefully your registration then press ok.");
 
                 transformation = bwl.getBigWarp().getTransformation();
 

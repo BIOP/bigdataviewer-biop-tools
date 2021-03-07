@@ -3,11 +3,11 @@ package ch.epfl.biop.bdv.command.register;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.sourceandconverter.register.Elastix2DAffineRegister;
 import ch.epfl.biop.wrappers.elastix.RegParamAffine_Fast;
+import ch.epfl.biop.wrappers.elastix.RegParamRigid_Default;
 import ch.epfl.biop.wrappers.elastix.RegisterHelper;
 import ch.epfl.biop.wrappers.elastix.RegistrationParameters;
 import net.imglib2.realtransform.AffineTransform3D;
 import org.scijava.ItemIO;
-import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
@@ -26,7 +26,7 @@ public class Elastix2DAffineRegisterCommand implements BdvPlaygroundActionComman
     @Parameter
     int levelFixedSource;
 
-    @Parameter
+    @Parameter(label = "Moving source for registration", description = "moving source")
     SourceAndConverter sac_moving;
 
     @Parameter
@@ -63,7 +63,8 @@ public class Elastix2DAffineRegisterCommand implements BdvPlaygroundActionComman
     public void run() {
 
         RegisterHelper rh = new RegisterHelper();
-        RegistrationParameters rp = new RegParamAffine_Fast();
+        RegistrationParameters rp = new RegParamAffine_Fast(); // new RegParamRigid_Default();//
+
         rp.AutomaticScalesEstimation = false;
         rp.AutomaticTransformInitialization = true;
         rp.AutomaticTransformInitializationMethod = "CenterOfGravity";

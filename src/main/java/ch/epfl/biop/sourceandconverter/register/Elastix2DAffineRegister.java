@@ -17,7 +17,11 @@ import ch.epfl.biop.wrappers.transformix.TransformixTask;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.plugin.Duplicator;
+import itc.converters.ElastixAffine2DToAffineTransform2D;
+import itc.converters.ElastixAffine2DToAffineTransform3D;
+import itc.converters.ElastixEuler2DToAffineTransform3D;
 import itc.transforms.elastix.ElastixAffineTransform2D;
+import itc.transforms.elastix.ElastixEulerTransform2D;
 import itc.transforms.elastix.ElastixTransform;
 import net.imglib2.FinalRealInterval;
 import net.imglib2.RandomAccessibleInterval;
@@ -165,18 +169,40 @@ public class Elastix2DAffineRegister {
             return false;
         }
 
-        assert et.getClass()== ElastixAffineTransform2D.class;
+        //Double[] m2D;
 
-        Double[] m2D = et.TransformParameters;
+        AffineTransform3D affine3D;
 
-        // https://elastix.lumc.nl/doxygen/parameter.html
-        // Here we assume the rotation point is the center of the image
-        final AffineTransform3D affine3D = new AffineTransform3D();
-        affine3D.set(new double[][] {
-                {m2D[0], m2D[1], 0,   m2D[4]},
-                {m2D[2], m2D[3], 0,   m2D[5]},
-                {0     ,      0, 1,        0},
-                {0.    ,      0, 0,        1}});
+        if (et.getClass() == ElastixAffineTransform2D.class) {
+            //m2D = et.TransformParameters;
+            //affine3D = ElastixAffine2DToAffineTransform2D
+            // https://elastix.lumc.nl/doxygen/parameter.html
+            // Here we assume the rotation point is the center of the image
+            /*affine3D.set(new double[][] {
+                    {m2D[0], m2D[1], 0,   m2D[4]},
+                    {m2D[2], m2D[3], 0,   m2D[5]},
+                    {0     ,      0, 1,        0},
+                    {0.    ,      0, 0,        1}});*/
+
+            affine3D = ElastixAffine2DToAffineTransform3D.convert((ElastixAffineTransform2D)et);
+
+        } else {
+            if (et.getClass() == ElastixEulerTransform2D.class) {
+                //affine3D = new AffineTransform3D();
+                affine3D = ElastixEuler2DToAffineTransform3D.convert((ElastixEulerTransform2D)et);
+                //affine3D = new AffineTransform3D();
+                /*System.err.println("Error : elastix transform class expected : "
+                        +ElastixAffineTransform2D.class.getSimpleName()
+                        +" vs obtained : "+et.getClass().getSimpleName());
+                return false;*/
+            } else {
+                System.err.println("Error : elastix transform class expected : "+
+                    ElastixAffineTransform2D.class.getSimpleName()+" or "+
+                    ElastixEulerTransform2D.class.getSimpleName()+
+                    " vs obtained : "+et.getClass().getSimpleName());
+                return false;
+            }
+        }
 
         AffineTransform3D mPatchPixToRegPatchPix = new AffineTransform3D();
         mPatchPixToRegPatchPix.set(affine3D);
@@ -214,8 +240,8 @@ public class Elastix2DAffineRegister {
         AffineTransform3D nonRegisteredPatchTransformPixToGLobal = new AffineTransform3D();
         nonRegisteredPatchTransformPixToGLobal.identity();
         nonRegisteredPatchTransformPixToGLobal.scale(pxSizeInCurrentUnit);
-        double cx = px+sx/2.0;
-        double cy = py+sy/2.0;
+        double cx = px;//+sx/2.0;
+        double cy = py;//+sy/2.0;
         double cz = pz;
 
         nonRegisteredPatchTransformPixToGLobal.translate(cx,cy,cz);
