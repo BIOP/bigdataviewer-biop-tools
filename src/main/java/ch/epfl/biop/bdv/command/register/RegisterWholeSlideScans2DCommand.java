@@ -1,5 +1,6 @@
 package ch.epfl.biop.bdv.command.register;
 
+import bdv.util.BigWarpHelper;
 import bdv.util.RealTransformHelper;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.bdv.bioformats.command.BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand;
@@ -132,7 +133,7 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
 
             tst = new Wrapped2DTransformAs3D(
                     new WrappedIterativeInvertibleRealTransform<>(
-                            RealTransformHelper.getTransform(pts_Moving, pts_Fixed,true)
+                            BigWarpHelper.getTransform(pts_Moving, pts_Fixed,true)
                     )
             );
 
