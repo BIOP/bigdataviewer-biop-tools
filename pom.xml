@@ -120,7 +120,7 @@
 
 		<leastsquares.version>1.0.0</leastsquares.version>
 		<ijl-utilities-wrappers.version>0.3.17</ijl-utilities-wrappers.version>
-		<image-transform-converters.version>0.1.4-SNAPSHOT-local</image-transform-converters.version>
+		<image-transform-converters.version>0.1.4-SNAPSHOT</image-transform-converters.version>
 
 		<bigdataviewer-spimdata-extras.version>0.1.0</bigdataviewer-spimdata-extras.version>
 

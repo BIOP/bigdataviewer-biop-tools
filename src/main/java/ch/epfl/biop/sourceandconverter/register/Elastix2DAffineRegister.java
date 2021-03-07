@@ -13,11 +13,9 @@ import ch.epfl.biop.wrappers.transformix.DefaultTransformixTask;
 import ch.epfl.biop.wrappers.transformix.RemoteTransformixTask;
 import ch.epfl.biop.wrappers.transformix.TransformHelper;
 import ch.epfl.biop.wrappers.transformix.TransformixTask;
-//import ij.IJ;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.plugin.Duplicator;
-import itc.converters.ElastixAffine2DToAffineTransform2D;
 import itc.converters.ElastixAffine2DToAffineTransform3D;
 import itc.converters.ElastixEuler2DToAffineTransform3D;
 import itc.transforms.elastix.ElastixAffineTransform2D;
@@ -135,9 +133,7 @@ public class Elastix2DAffineRegister {
                 movat,fi,pxSizeInCurrentUnit,pxSizeInCurrentUnit,pxSizeInCurrentUnit);
 
         ImagePlus impM = ImageJFunctions.wrap(viewMoving, "Moving");
-        /*if (showResultIJ1) {
-            impM.show();
-        }*/
+
         impM = new Duplicator().run(impM); // Virtual messes up the process, don't know why
 
         at3D.identity();
@@ -147,7 +143,6 @@ public class Elastix2DAffineRegister {
                 fixat,fi,pxSizeInCurrentUnit,pxSizeInCurrentUnit,pxSizeInCurrentUnit);
         ImagePlus impF = ImageJFunctions.wrap(viewFixed, "Fixed");
         impF = new Duplicator().run(impF); // Virtual messes up the process, don't know why
-
 
         rh.setMovingImage(impM);
         rh.setFixedImage(impF);
@@ -161,7 +156,7 @@ public class Elastix2DAffineRegister {
 
         File fTransform = new File(rh.getFinalTransformFile());
 
-        ElastixTransform et = null;
+        ElastixTransform et;
         try {
             et = ElastixTransform.load(fTransform);
         } catch (IOException e) {
@@ -169,39 +164,18 @@ public class Elastix2DAffineRegister {
             return false;
         }
 
-        //Double[] m2D;
-
         AffineTransform3D affine3D;
 
         if (et.getClass() == ElastixAffineTransform2D.class) {
-            //m2D = et.TransformParameters;
-            //affine3D = ElastixAffine2DToAffineTransform2D
-            // https://elastix.lumc.nl/doxygen/parameter.html
-            // Here we assume the rotation point is the center of the image
-            /*affine3D.set(new double[][] {
-                    {m2D[0], m2D[1], 0,   m2D[4]},
-                    {m2D[2], m2D[3], 0,   m2D[5]},
-                    {0     ,      0, 1,        0},
-                    {0.    ,      0, 0,        1}});*/
-
             affine3D = ElastixAffine2DToAffineTransform3D.convert((ElastixAffineTransform2D)et);
-
+        } else if (et.getClass() == ElastixEulerTransform2D.class) {
+            affine3D = ElastixEuler2DToAffineTransform3D.convert((ElastixEulerTransform2D)et);
         } else {
-            if (et.getClass() == ElastixEulerTransform2D.class) {
-                //affine3D = new AffineTransform3D();
-                affine3D = ElastixEuler2DToAffineTransform3D.convert((ElastixEulerTransform2D)et);
-                //affine3D = new AffineTransform3D();
-                /*System.err.println("Error : elastix transform class expected : "
-                        +ElastixAffineTransform2D.class.getSimpleName()
-                        +" vs obtained : "+et.getClass().getSimpleName());
-                return false;*/
-            } else {
-                System.err.println("Error : elastix transform class expected : "+
-                    ElastixAffineTransform2D.class.getSimpleName()+" or "+
-                    ElastixEulerTransform2D.class.getSimpleName()+
-                    " vs obtained : "+et.getClass().getSimpleName());
-                return false;
-            }
+            System.err.println("Error : elastix transform class expected : "+
+                ElastixAffineTransform2D.class.getSimpleName()+" or "+
+                ElastixEulerTransform2D.class.getSimpleName()+
+                " vs obtained : "+et.getClass().getSimpleName());
+            return false;
         }
 
         AffineTransform3D mPatchPixToRegPatchPix = new AffineTransform3D();
@@ -228,25 +202,18 @@ public class Elastix2DAffineRegister {
                 IJ.run(impF, "32-bit", "");
                 IJ.run((ImagePlus) null, "Merge Channels...", "c1=Transformed_DUP_Moving c2=DUP_Fixed create");
             }
-
-            /*IJ.run(impF, "Enhance Contrast", "saturated=0.35");
-            IJ.run(transformedImage, "Enhance Contrast", "saturated=0.35");
-            IJ.run(impF, "32-bit", "");
-            IJ.run((ImagePlus) null, "Merge Channels...", "c1=Transformed_DUP_Moving c2=DUP_Fixed create");*/
         }
 
-        // Let's try something different for the transformation
-        // This
-        AffineTransform3D nonRegisteredPatchTransformPixToGLobal = new AffineTransform3D();
-        nonRegisteredPatchTransformPixToGLobal.identity();
-        nonRegisteredPatchTransformPixToGLobal.scale(pxSizeInCurrentUnit);
-        double cx = px;//+sx/2.0;
-        double cy = py;//+sy/2.0;
+        AffineTransform3D nonRegisteredPatchTransformPixToGlobal = new AffineTransform3D();
+        nonRegisteredPatchTransformPixToGlobal.identity();
+        nonRegisteredPatchTransformPixToGlobal.scale(pxSizeInCurrentUnit);
+        double cx = px;
+        double cy = py;
         double cz = pz;
 
-        nonRegisteredPatchTransformPixToGLobal.translate(cx,cy,cz);
+        nonRegisteredPatchTransformPixToGlobal.translate(cx,cy,cz);
 
-        AffineTransform3D nonRegPatchGlobalToPix = nonRegisteredPatchTransformPixToGLobal.inverse();
+        AffineTransform3D nonRegPatchGlobalToPix = nonRegisteredPatchTransformPixToGlobal.inverse();
 
         RealPoint nonRegUNorm = getMatrixAxis(nonRegPatchGlobalToPix,0);
         RealPoint nonRegVNorm = getMatrixAxis(nonRegPatchGlobalToPix,1);
@@ -285,8 +252,8 @@ public class Elastix2DAffineRegister {
         // Computes new location in real coordinates
         // Removes translation for this computation
         AffineTransform3D mPatchPixToGlobal = new AffineTransform3D();
-        mPatchPixToGlobal.set(nonRegisteredPatchTransformPixToGLobal);
-        mPatchPixToGlobal = nonRegisteredPatchTransformPixToGLobal.concatenate(mPatchPixToRegPatchPix);
+        mPatchPixToGlobal.set(nonRegisteredPatchTransformPixToGlobal);
+        mPatchPixToGlobal = nonRegisteredPatchTransformPixToGlobal.concatenate(mPatchPixToRegPatchPix);
 
         double shiftX = mPatchPixToGlobal.get(0,3);
         double shiftY = mPatchPixToGlobal.get(1,3);

@@ -63,7 +63,7 @@ public class Elastix2DAffineRegisterCommand implements BdvPlaygroundActionComman
     public void run() {
 
         RegisterHelper rh = new RegisterHelper();
-        RegistrationParameters rp = new RegParamAffine_Fast(); // new RegParamRigid_Default();//
+        RegistrationParameters rp =  new RegParamAffine_Fast(); //
 
         rp.AutomaticScalesEstimation = false;
         rp.AutomaticTransformInitialization = true;
