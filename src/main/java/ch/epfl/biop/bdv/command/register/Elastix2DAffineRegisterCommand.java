@@ -3,7 +3,6 @@ package ch.epfl.biop.bdv.command.register;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.sourceandconverter.register.Elastix2DAffineRegister;
 import ch.epfl.biop.wrappers.elastix.RegParamAffine_Fast;
-import ch.epfl.biop.wrappers.elastix.RegParamRigid_Default;
 import ch.epfl.biop.wrappers.elastix.RegisterHelper;
 import ch.epfl.biop.wrappers.elastix.RegistrationParameters;
 import net.imglib2.realtransform.AffineTransform3D;
@@ -13,51 +12,70 @@ import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 
+/**
+ * This command automatically computes the number of scales needed for registration
+ * It resamples the original sources in order to allow for a registration based on a specific
+ * region and not on the whole image. This also allows to register landmark regions
+ * on big images. See {@link RegisterWholeSlideScans2DCommand}
+ */
+
 @Plugin(type = BdvPlaygroundActionCommand.class,
-        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Register Sources with Elastix (Affine, 2D)")
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Register Sources with Elastix (Affine, 2D)",
+        description = "Performs an affine registration in 2D between 2 sources. Low level command which\n"+
+                      "requires many parameters. For more user friendly command, use wizards instead.\n"+
+                      "Outputs a registered source as well as the transform to apply to the moving source."  )
 public class Elastix2DAffineRegisterCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(label = "Fixed source for registration", description = "fixed source")
     SourceAndConverter sac_fixed;
 
-    @Parameter
+    @Parameter(label = "Timepoint of the fixed source")
     int tpFixed;
 
-    @Parameter
+    @Parameter(label = "Resolution level of the fixed source (0 = highest)")
     int levelFixedSource;
 
     @Parameter(label = "Moving source for registration", description = "moving source")
     SourceAndConverter sac_moving;
 
-    @Parameter
+    @Parameter(label = "Timepoint of the moving source")
     int tpMoving;
 
-    @Parameter
+    @Parameter(label = "Resolution level of the moving source (0 = highest)")
     int levelMovingSource;
 
-    @Parameter
-    double px,py,pz,sx,sy;
+    @Parameter(label = "ROI used for registration (px)")
+    double px;
 
-    @Parameter
+    @Parameter(label = "ROI used for registration (py)")
+    double py;
+
+    @Parameter(label = "ROI used for registration (pz)")
+    double pz;
+
+    @Parameter(label = "ROI used for registration (sx)")
+    double sx;
+
+    @Parameter(label = "ROI used for registration (sy)")
+    double sy;
+
+    @Parameter(label = "Pixel size in physical unit used for image resampling")
     double pxSizeInCurrentUnit;
 
-    @Parameter
+    @Parameter(label = "Check box to interpolate the resampled images")
     boolean interpolate;
 
-    @Parameter
+    @Parameter(label = "Inspect registration result in ImageJ 1 windows (do not work with RGB images)")
     boolean showImagePlusRegistrationResult = false;
+
+    @Parameter(label = "Number of iterations for each scale (default 100)")
+    int maxIterationNumber = 100;
 
     @Parameter(type = ItemIO.OUTPUT)
     SourceAndConverter registeredSource;
 
     @Parameter(type = ItemIO.OUTPUT)
     AffineTransform3D at3D;
-
-    /*@Parameter(persist = false, required = false)
-    String serverURL = null;
-
-    @Parameter(persist = false, required = false)
-    String taskInfo = null;*/
 
     @Override
     public void run() {
@@ -70,6 +88,7 @@ public class Elastix2DAffineRegisterCommand implements BdvPlaygroundActionComman
         rp.AutomaticTransformInitializationMethod = "CenterOfGravity";
 
         double maxSize = Math.max(sx/pxSizeInCurrentUnit,sy/pxSizeInCurrentUnit);
+
         int nScales = 0;
 
         while (Math.pow(2,nScales)<maxSize) {
@@ -78,7 +97,7 @@ public class Elastix2DAffineRegisterCommand implements BdvPlaygroundActionComman
 
         rp.NumberOfResolutions = Math.max(1,nScales-2);
         rp.BSplineInterpolationOrder = 1;
-        rp.MaximumNumberOfIterations = 100;
+        rp.MaximumNumberOfIterations = maxIterationNumber;
 
         rp.ImagePyramidSchedule = new Integer[2*rp.NumberOfResolutions];
         for (int scale = 0; scale < rp.NumberOfResolutions ; scale++) {
@@ -96,9 +115,6 @@ public class Elastix2DAffineRegisterCommand implements BdvPlaygroundActionComman
                 px,py,pz,sx,sy,
                 showImagePlusRegistrationResult);
         reg.setInterpolate(interpolate);
-
-        //if ((serverURL!=null)&&(serverURL.trim()!="")) reg.setRegistrationServer(serverURL);
-        //if ((taskInfo!=null)&&(taskInfo.trim()!="")) rh.setExtraRegisterInfo(taskInfo);
 
         reg.run();
 
