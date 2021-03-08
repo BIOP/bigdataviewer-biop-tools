@@ -158,12 +158,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
 
                 List<ConverterSetup> converterSetups = Arrays.stream(new SourceAndConverter[]{moving}).map(src -> SourceAndConverterServices.getSourceAndConverterDisplayService().getConverterSetup(src)).collect(Collectors.toList());
 
-                Map<ConverterSetup, double[]> displaysettings = new HashMap<>();
-
                 converterSetups.addAll(Arrays.stream(new SourceAndConverter[]{fixed}).map(src -> SourceAndConverterServices.getSourceAndConverterDisplayService().getConverterSetup(src)).collect(Collectors.toList()));
-
-                // Stores display settings before BigWarp (TODO in BigWarpLauncher directly)
-                converterSetups.forEach(setup -> displaysettings.put(setup, new double[]{setup.getDisplayRangeMin(), setup.getDisplayRangeMax()}));
 
                 // Launch BigWarp
                 BigWarpLauncher bwl = new BigWarpLauncher(movingSacs, fixedSacs, "Big Warp", converterSetups);
@@ -173,11 +168,6 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
                 // Output bdvh handles -> will be put in the object service
                 BdvHandle bdvhQ = bwl.getBdvHandleQ();
                 BdvHandle bdvhP = bwl.getBdvHandleP();
-
-                // Restores display settings
-                displaysettings.keySet().forEach(setup ->
-                        setup.setDisplayRange(displaysettings.get(setup)[0], displaysettings.get(setup)[1])
-                );
 
                 SourceAndConverterServices.getSourceAndConverterDisplayService().pairClosing(bdvhQ,bdvhP);
 
@@ -191,11 +181,13 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
                 bwl.getBigWarp().setIsMovingDisplayTransformed(true);
 
                 // Adjusting BigWarp View on user ROI
-                double sizeX = (topLeftX-bottomRightX)*1.25f; // 25% margin
+                double sizeX = Math.abs((topLeftX-bottomRightX)*1.25f); // 25% margin
 
                 AffineTransform3D at3D = new AffineTransform3D();
+                bdvhP.getViewerPanel().state().getViewerTransform(at3D);
+
                 if (sizeX!=0) {
-                    at3D.scale(bdvhP.getViewerPanel().getWidth() / sizeX  );
+                    at3D.scale(bdvhP.getViewerPanel().getWidth() / (sizeX*at3D.get(0,0))  );
                     bdvhP.getViewerPanel().state().setViewerTransform(at3D);
                     bdvhQ.getViewerPanel().state().setViewerTransform(at3D);
                 }
