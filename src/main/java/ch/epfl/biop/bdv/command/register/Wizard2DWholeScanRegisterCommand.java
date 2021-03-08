@@ -66,6 +66,9 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
     @Parameter(label = "2 - Manual spline registration (BigWarp)")
     boolean manualSplineRegistration = true;
 
+    @Parameter(label = "Number of iterations for each scale (default 100)")
+    int maxIterationNumberPerScale = 100;
+
     @Parameter(label = "Show results of automated registrations (breaks parallelization)")
     boolean showDetails = false;
 
@@ -145,7 +148,8 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
                                "showDetails", showDetails,
                                "verbose", verbose,
                                "performFirstCoarseAffineRegistration",  automatedAffineRegistration,
-                               "performSecondSplineRegistration", automatedSplineRegistration
+                               "performSecondSplineRegistration", automatedSplineRegistration,
+                               "maxIterationNumberPerScale", maxIterationNumberPerScale
                     ).get().getOutput("tst");
 
             if (manualSplineRegistration) {

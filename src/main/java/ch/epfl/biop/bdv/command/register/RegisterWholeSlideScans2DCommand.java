@@ -52,6 +52,9 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
     @Parameter
     double bottomRightY;
 
+    @Parameter(label = "Number of iterations for each scale (default 100)")
+    int maxIterationNumberPerScale = 100;
+
     @Parameter
     CommandService cs;
 
@@ -92,7 +95,8 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
                         "pxSizeInCurrentUnit", 0.01, // in mm
                         "interpolate", true,
                         "showImagePlusRegistrationResult", showDetails,
-                        "automaticTransformInitialization", false
+                        "automaticTransformInitialization", false,
+                        "maxIterationNumberPerScale", maxIterationNumberPerScale
                 ).get();
                 at1 = (AffineTransform3D) cm.getOutput("at3D");
                 firstRegSrc = (SourceAndConverter) cm.getOutput("registeredSource");
@@ -117,7 +121,8 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
                                 "interpolate", true,
                                 "showPoints", showDetails,//true,
                                 "parallel", !showDetails,//false,
-                                "verbose", verbose
+                                "verbose", verbose,
+                                "maxIterationNumberPerScale", maxIterationNumberPerScale
                         ).get().getOutput("tst");
             } else {
                 // Let's put landmarks on each corner in case the user wants to edit the registration later

@@ -50,6 +50,9 @@ public class Elastix2DSparsePointsRegisterCommand extends SelectSourcesForRegist
     @Parameter
     boolean verbose = false;
 
+    @Parameter(label = "Number of iterations for each scale (default 100)")
+    int maxIterationNumberPerScale = 100;
+
     @Parameter
     CommandService cs;
 
@@ -100,7 +103,8 @@ public class Elastix2DSparsePointsRegisterCommand extends SelectSourcesForRegist
                         "pxSizeInCurrentUnit", pxSizeInCurrentUnit,
                         "interpolate", interpolate,
                         "showImagePlusRegistrationResult", showPoints,
-                        "automaticTransformInitialization", false
+                        "automaticTransformInitialization", false,
+                        "maxIterationNumberPerScale", maxIterationNumberPerScale
                 ).get().getOutput("at3D");
 
                 RealPoint ptCorr = new RealPoint(3);
