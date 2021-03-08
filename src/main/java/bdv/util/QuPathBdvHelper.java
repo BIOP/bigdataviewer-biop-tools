@@ -39,8 +39,8 @@ public class QuPathBdvHelper {
     /**
      * Returns the QuPathEntity from a source directly linked to a dataset generated
      * from a qupath project. Returns null is there's not any
-     * @param source
-     * @return
+     * @param source source which should be linked to q QuPath dataset
+     * @return its corresponding {@link QuPathEntryEntity}
      */
     public static QuPathEntryEntity getQuPathEntityFromSource(SourceAndConverter source) {
 
@@ -67,8 +67,8 @@ public class QuPathBdvHelper {
      * See implementation details of
      *      {@link SourceAndConverterInspector#getRootSourceAndConverter(Source)} to check the exact
      *      definition of a derived Source
-     * @param source
-     * @return
+     * @param source bdv source
+     * @return corresponding {@link QuPathEntryEntity}
      */
     public static QuPathEntryEntity getQuPathEntityFromDerivedSource(SourceAndConverter source) {
         return getQuPathEntityFromSource(SourceAndConverterInspector.getRootSourceAndConverter(source));
@@ -76,9 +76,9 @@ public class QuPathBdvHelper {
 
     /**
      *
-     * @param entryEntity
-     * @return
-     * @throws Exception
+     * @param entryEntity qupathEntry Entity, contained in a bdv dataset
+     * @return the data folder of the image within QuPath project
+     * @throws Exception if the folder is not present
      */
     public static File getDataEntryFolder(QuPathEntryEntity entryEntity) throws Exception {
         String filePath = new File(entryEntity.getQuPathProjectionLocation()).getParent();
@@ -96,17 +96,18 @@ public class QuPathBdvHelper {
 
     /**
      *
-     * @param entryEntity
-     * @return
-     * @throws Exception
+     * @param source bdv source
+     * @return the file of the data of this source
+     * @throws Exception if the file is not found
      */
     public static File getDataEntryFolder(SourceAndConverter source) throws Exception {
         return getDataEntryFolder(getQuPathEntityFromDerivedSource(source));
     }
 
     /**
-     *
-     * @return
+     * @param source bdv source
+     * @return the file of the QupathProject from this source
+     * @throws Exception if the file is not found
      */
     public static File getQuPathProjectFile(SourceAndConverter source) throws Exception {
         if (isSourceLinkedToQuPath(source)) {
@@ -118,8 +119,9 @@ public class QuPathBdvHelper {
     }
 
     /**
-     *
-     * @return
+     * @param entity qupathEntry Entity, contained in a bdv dataset
+     * @return qupath project file
+     * @throws Exception if the file is not found
      */
     public static File getQuPathProjectFile(QuPathEntryEntity entity) throws Exception {
         File quPathProject = new File(entity.getQuPathProjectionLocation());

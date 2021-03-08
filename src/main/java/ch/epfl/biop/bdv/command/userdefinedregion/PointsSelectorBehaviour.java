@@ -49,6 +49,7 @@ public class PointsSelectorBehaviour {
     /**
      * Construct a SourceSelectorBehaviour
      * @param bdvh BdvHandle associated to this behaviour
+     * @param message to display to the user as overlay on bdv
      */
     public PointsSelectorBehaviour(BdvHandle bdvh, String message) {
         this.bdvh = bdvh;

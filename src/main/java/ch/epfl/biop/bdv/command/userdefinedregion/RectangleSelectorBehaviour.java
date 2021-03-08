@@ -50,7 +50,8 @@ public class RectangleSelectorBehaviour {
 
     /**
      * Construct a SourceSelectorBehaviour
-     * @param bdvh BdvHandle associated to this behaviour
+     * @param bdvh BdvHandle associated to this behaviour$
+     * @param message to display to the user as overlay on bdv
      */
     public RectangleSelectorBehaviour(BdvHandle bdvh, String message) {
         this.bdvh = bdvh;
