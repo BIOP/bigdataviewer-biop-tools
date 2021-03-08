@@ -1,6 +1,5 @@
 package ch.epfl.biop.bdv.command;
 
-import bdv.util.BdvHandle;
 import bdv.viewer.SourceAndConverter;
 import net.imagej.ops.OpService;
 import net.imglib2.*;
