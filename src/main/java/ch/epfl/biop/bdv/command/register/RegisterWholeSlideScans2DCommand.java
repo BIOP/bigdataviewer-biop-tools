@@ -34,8 +34,11 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
     @Parameter(label = "Locations of interest for warping registration", style = "text area")
     String ptListCoordinates = "15,10,\n -30,-40,\n ";
 
-    @Parameter(label = "Make a first affine registration before warping")
+    @Parameter(label = "Make a first affine registration on defined regions")
     boolean performFirstCoarseAffineRegistration;
+
+    @Parameter(label = "Make a second spline registration with landmarks")
+    boolean performSecondSplineRegistration;
 
     @Parameter
     double topLeftX;
@@ -88,31 +91,41 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
                         "sy", bottomRightY - topLeftY,
                         "pxSizeInCurrentUnit", 0.01, // in mm
                         "interpolate", true,
-                        "showImagePlusRegistrationResult", showDetails
+                        "showImagePlusRegistrationResult", showDetails,
+                        "automaticTransformInitialization", false
                 ).get();
                 at1 = (AffineTransform3D) cm.getOutput("at3D");
                 firstRegSrc = (SourceAndConverter) cm.getOutput("registeredSource");
             }
 
             log.accept("----------- Precise Warping based on particular locations");
-            RealTransform tst_temp =
-                    (RealTransform) cs.run(Elastix2DSparsePointsRegisterCommand.class, true,
-                            "sac_fixed", globalRefSource,
-                            "sac_moving", firstRegSrc,
-                            "tpFixed", 0,
-                            "levelFixedSource", SourceAndConverterHelper.bestLevel(globalRefSource,0,0.001),
-                            "tpMoving", 0,
-                            "levelMovingSource", SourceAndConverterHelper.bestLevel(firstRegSrc,0,0.001),
-                            "ptListCoordinates", ptListCoordinates,
-                            "zLocation", 0,
-                            "sx", 0.5, // 500 microns
-                            "sy", 0.5, // 500 microns
-                            "pxSizeInCurrentUnit", 0.001, //1 micron per pixel
-                            "interpolate", true,
-                            "showPoints", showDetails,//true,
-                            "parallel", !showDetails,//false,
-                            "verbose", verbose
-                    ).get().getOutput("tst");
+            RealTransform tst_temp = new AffineTransform3D(); // Identity transform applied if no warping
+            if (performSecondSplineRegistration) {
+                tst_temp =
+                        (RealTransform) cs.run(Elastix2DSparsePointsRegisterCommand.class, true,
+                                "sac_fixed", globalRefSource,
+                                "sac_moving", firstRegSrc,
+                                "tpFixed", 0,
+                                "levelFixedSource", SourceAndConverterHelper.bestLevel(globalRefSource, 0, 0.001),
+                                "tpMoving", 0,
+                                "levelMovingSource", SourceAndConverterHelper.bestLevel(firstRegSrc, 0, 0.001),
+                                "ptListCoordinates", ptListCoordinates,
+                                "zLocation", 0,
+                                "sx", 0.5, // 500 microns
+                                "sy", 0.5, // 500 microns
+                                "pxSizeInCurrentUnit", 0.001, //1 micron per pixel
+                                "interpolate", true,
+                                "showPoints", showDetails,//true,
+                                "parallel", !showDetails,//false,
+                                "verbose", verbose
+                        ).get().getOutput("tst");
+            } else {
+                // Let's put landmarks on each corner in case the user wants to edit the registration later
+                ptListCoordinates  = topLeftX+","+topLeftY+",";
+                ptListCoordinates += bottomRightX+","+topLeftY+",";
+                ptListCoordinates += bottomRightX+","+bottomRightY+",";
+                ptListCoordinates += topLeftX+","+bottomRightY;
+            }
 
             log.accept("----------- Computing global transformation");
 

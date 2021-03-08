@@ -45,7 +45,7 @@ public class Elastix2DAffineRegisterCommand extends AbstractElastix2DRegistratio
             rp.AutomaticTransformInitialization = false;
         }
 
-        double maxSize = Math.max(sx/pxSizeInCurrentUnit,sy/pxSizeInCurrentUnit);
+        double maxSize = Math.min(sx/pxSizeInCurrentUnit,sy/pxSizeInCurrentUnit);
 
         int nScales = 0;
 
@@ -53,7 +53,8 @@ public class Elastix2DAffineRegisterCommand extends AbstractElastix2DRegistratio
             nScales++;
         }
 
-        rp.NumberOfResolutions = Math.max(1,nScales-2);
+        rp.NumberOfResolutions = Math.max(1,nScales-6); // Starts with 2^6 pixels = 64 pixels
+
         rp.BSplineInterpolationOrder = 1;
         rp.MaximumNumberOfIterations = maxIterationNumberPerScale;
 
@@ -74,9 +75,13 @@ public class Elastix2DAffineRegisterCommand extends AbstractElastix2DRegistratio
                 showImagePlusRegistrationResult);
         reg.setInterpolate(interpolate);
 
-        reg.run();
+        boolean success = reg.run();
 
-        registeredSource = reg.getRegisteredSac();
-        at3D = reg.getAffineTransform();
+        if (success) {
+            registeredSource = reg.getRegisteredSac();
+            at3D = reg.getAffineTransform();
+        } else {
+            System.err.println("Error during registration");
+        }
     }
 }

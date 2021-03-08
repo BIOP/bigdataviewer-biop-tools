@@ -159,7 +159,7 @@ public class Elastix2DAffineRegister {
         ElastixTransform et;
         try {
             et = ElastixTransform.load(fTransform);
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return false;
         }

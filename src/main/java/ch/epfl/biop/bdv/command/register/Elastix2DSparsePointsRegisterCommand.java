@@ -99,7 +99,8 @@ public class Elastix2DSparsePointsRegisterCommand extends SelectSourcesForRegist
                         "sy",sy,
                         "pxSizeInCurrentUnit", pxSizeInCurrentUnit,
                         "interpolate", interpolate,
-                        "showImagePlusRegistrationResult", showPoints
+                        "showImagePlusRegistrationResult", showPoints,
+                        "automaticTransformInitialization", false
                 ).get().getOutput("at3D");
 
                 RealPoint ptCorr = new RealPoint(3);
@@ -112,6 +113,9 @@ public class Elastix2DSparsePointsRegisterCommand extends SelectSourcesForRegist
             } catch (InterruptedException e) {
                 e.printStackTrace();
             } catch (ExecutionException e) {
+                e.printStackTrace();
+            } catch (Exception e) {
+                System.err.println("Error during registration");
                 e.printStackTrace();
             }
         });

@@ -22,6 +22,7 @@ import sc.fiji.bdvpg.services.SourceAndConverterServices;
 import sc.fiji.bdvpg.sourceandconverter.register.BigWarpLauncher;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceRealTransformer;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -85,52 +86,54 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
         dialog.show();
     };
 
+    // Rectangle properties
+    List<RealPoint> corners;
+    double topLeftX, topLeftY, bottomRightX, bottomRightY, cx, cy;
+
+
+    List<RealPoint> landmarks = new ArrayList<>();
+
     @Override
     public void run() {
-        // Make source the relevant sources are displayed
-        if (!bdvh.getViewerPanel().state().containsSource(fixed)) {
-            sacbds.show(bdvh,fixed);
-        }
-        if (!bdvh.getViewerPanel().state().containsSource(moving)) {
-            sacbds.show(bdvh,moving);
+        // Make sure the relevant sources are displayed
+
+        showImagesIfNecessary();
+
+        waitForUser.accept("Prepare your bigdataviewer window","Fit the image onto the bdv window.");
+
+        if ((!automatedAffineRegistration)&&(!automatedSplineRegistration)&&(!manualSplineRegistration)) {
+            System.err.println("You need to select at least one sort of registration!");
+            return;
         }
 
         try {
 
-            waitForUser.accept("Prepare your bigdataviewer window","Fit the image onto the bdv window.");
-            // Ask the user to select the region that should be aligned ( a rectangle )
-            List<RealPoint> corners = (List<RealPoint>) cs
-                    .run(GetUserRectangleCommand.class, true,
-                    "messageForUser", "Select a rectangular region for the region you'd like to register.",
-                            "timeOutInMs",-1)
-                    .get().getOutput("pts");
+            // Ask the user to select the region that should be aligned ( a rectangle ) - in any case
+            getUserRectangle();
 
-            // Ask the user to select the points where the fine tuning should be performed
-            List<RealPoint> ptsForRegistration = (List<RealPoint>) cs
-                    .run(GetUserPointsCommand.class, true,
-                            "messageForUser", "Select the position of the landmarks that will be used for the registration.",
-                            "timeOutInMs",-1)
-                    .get().getOutput("pts");
+            if (automatedSplineRegistration) {
+                // Ask the user to select the points where the fine tuning should be performed
+                getUserLandmarks();
+                if (landmarks.size()<4) {
+                    System.err.println("At least 4 points should be selected");
+                    return;
+                }
+            } else {
+                // Let's keep corners for editing registration
+                for (RealPoint pt : corners) {
+                    landmarks.add(new RealPoint(pt)); // points are being copied
+                }
+            }
 
+            // Conversion of RealPoints to String representation for next command launching
             String ptCoords = "";
-
-            if (ptsForRegistration.size()<4) {
-                System.err.println("At least 4 points should be selected");
-                return;
+            if (automatedSplineRegistration) {
+                for (RealPoint pt : landmarks) {
+                    ptCoords += pt.getDoublePosition(0) + "," + pt.getDoublePosition(1) + ",";
+                }
             }
 
-            for (RealPoint pt : ptsForRegistration) {
-                ptCoords+=pt.getDoublePosition(0)+","+pt.getDoublePosition(1)+",";
-            }
-
-            double topLeftX = Math.min(corners.get(0).getDoublePosition(0),corners.get(1).getDoublePosition(0) );
-            double topLeftY = Math.min(corners.get(0).getDoublePosition(1),corners.get(1).getDoublePosition(1) );
-            double bottomRightX = Math.max(corners.get(0).getDoublePosition(0),corners.get(1).getDoublePosition(0) );
-            double bottomRightY = Math.max(corners.get(0).getDoublePosition(1),corners.get(1).getDoublePosition(1) );
-
-            double cx = (topLeftX+bottomRightY)/2.0;
-            double cy = (topLeftY+bottomRightY)/2.0;
-
+            // Coarse and spline registration - if selected by the user
             transformation = (RealTransform) cs.run(RegisterWholeSlideScans2DCommand.class, true,
                         "globalRefSource", fixed,
                                "currentRefSource", moving,
@@ -140,7 +143,9 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
                                "bottomRightX", bottomRightX,
                                "bottomRightY", bottomRightY,
                                "showDetails", showDetails,
-                               "verbose", verbose
+                               "verbose", verbose,
+                               "performFirstCoarseAffineRegistration",  automatedAffineRegistration,
+                               "performSecondSplineRegistration", automatedSplineRegistration
                     ).get().getOutput("tst");
 
             if (manualSplineRegistration) {
@@ -173,7 +178,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
                 bwl.getBigWarp().getLandmarkFrame().repaint();
 
                 bwl.getBigWarp().loadLandmarks(BigWarpFileFromRealTransform(transformation));
-                //bwl.getBigWarp().setInLandmarkMode(true);
+
                 bwl.getBigWarp().setIsMovingDisplayTransformed(true);
 
                 AffineTransform3D newLocation = BdvHandleHelper.getViewerTransformWithNewCenter(bdvhP, new double[]{cx,cy,0});
@@ -201,5 +206,43 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
             e.printStackTrace();
         }
 
+    }
+
+    private void getUserLandmarks() throws Exception {
+        landmarks = (List<RealPoint>) cs
+                .run(GetUserPointsCommand.class, true,
+                        "messageForUser", "Select the position of the landmarks that will be used for the registration (at least 4).",
+                        "timeOutInMs", -1)
+                .get().getOutput("pts");
+    }
+
+    private void getUserRectangle() throws Exception {
+        corners = (List<RealPoint>) cs
+                .run(GetUserRectangleCommand.class, true,
+                        "messageForUser", "Select a rectangular region for the region you'd like to register.",
+                        "timeOutInMs", -1)
+                .get().getOutput("pts");
+
+        topLeftX = Math.min(corners.get(0).getDoublePosition(0),corners.get(1).getDoublePosition(0) );
+        topLeftY = Math.min(corners.get(0).getDoublePosition(1),corners.get(1).getDoublePosition(1) );
+        bottomRightX = Math.max(corners.get(0).getDoublePosition(0),corners.get(1).getDoublePosition(0) );
+        bottomRightY = Math.max(corners.get(0).getDoublePosition(1),corners.get(1).getDoublePosition(1) );
+
+        cx = (topLeftX+bottomRightY)/2.0;
+        cy = (topLeftY+bottomRightY)/2.0;
+    }
+
+    private void showImagesIfNecessary() {
+        if (!bdvh.getViewerPanel().state().containsSource(fixed)) {
+            sacbds.show(bdvh,fixed);
+        }
+
+        if (!bdvh.getViewerPanel().state().containsSource(moving)) {
+            sacbds.show(bdvh,moving);
+        }
+    }
+
+    void fitBdvOnRectangle(BdvHandle bdvh) {
+        // TODO
     }
 }
