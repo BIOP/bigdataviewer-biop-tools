@@ -167,13 +167,13 @@ public class RectangleSelectorOverlay extends BdvOverlay {
     }
 
     public class SelectedOverlayStyle implements SourceSelectorOverlay.OverlayStyle {
-        Color backColor = new Color(0xF7BF18);
+        Color backColor = new Color(0xF8E7A3);
 
         Color frontColor = new Color(0xC7F718);
 
         Color intersectionFillColor = new Color(0x30B66A00, true );
 
-        Stroke normalStroke = new BasicStroke();
+        Stroke normalStroke = new BasicStroke(3);
 
         Stroke intersectionStroke = new BasicStroke( 1f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1f, new float[] { 10f, 10f }, 0f );
 

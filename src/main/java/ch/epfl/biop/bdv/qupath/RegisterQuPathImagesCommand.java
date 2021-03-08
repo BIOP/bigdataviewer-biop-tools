@@ -75,14 +75,12 @@ public class RegisterQuPathImagesCommand implements Command {
 
             RealTransform transformSequence;
 
-
             // Because QuPath works in pixel coordinates and bdv playground in real space coordinates
             // We need to account for this
 
             AffineTransform3D movingToPixel = new AffineTransform3D();
 
             moving_source.getSpimSource().getSourceTransform(0,0,movingToPixel);
-
 
             AffineTransform3D fixedToPixel = new AffineTransform3D();
 

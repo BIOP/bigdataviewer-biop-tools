@@ -22,9 +22,7 @@ import sc.fiji.bdvpg.services.SourceAndConverterServices;
 import sc.fiji.bdvpg.sourceandconverter.register.BigWarpLauncher;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceRealTransformer;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
@@ -160,7 +158,12 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
 
                 List<ConverterSetup> converterSetups = Arrays.stream(new SourceAndConverter[]{moving}).map(src -> SourceAndConverterServices.getSourceAndConverterDisplayService().getConverterSetup(src)).collect(Collectors.toList());
 
+                Map<ConverterSetup, double[]> displaysettings = new HashMap<>();
+
                 converterSetups.addAll(Arrays.stream(new SourceAndConverter[]{fixed}).map(src -> SourceAndConverterServices.getSourceAndConverterDisplayService().getConverterSetup(src)).collect(Collectors.toList()));
+
+                // Stores display settings before BigWarp (TODO in BigWarpLauncher directly)
+                converterSetups.forEach(setup -> displaysettings.put(setup, new double[]{setup.getDisplayRangeMin(), setup.getDisplayRangeMax()}));
 
                 // Launch BigWarp
                 BigWarpLauncher bwl = new BigWarpLauncher(movingSacs, fixedSacs, "Big Warp", converterSetups);
@@ -171,8 +174,10 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
                 BdvHandle bdvhQ = bwl.getBdvHandleQ();
                 BdvHandle bdvhP = bwl.getBdvHandleP();
 
-                bdvhP.getViewerPanel().state().setViewerTransform(BdvHandleHelper.getViewerTransformWithNewCenter(bdvhP, new double[]{0,0,0}));
-                bdvhQ.getViewerPanel().state().setViewerTransform(BdvHandleHelper.getViewerTransformWithNewCenter(bdvhQ, new double[]{0,0,0}));
+                // Restores display settings
+                displaysettings.keySet().forEach(setup ->
+                        setup.setDisplayRange(displaysettings.get(setup)[0], displaysettings.get(setup)[1])
+                );
 
                 SourceAndConverterServices.getSourceAndConverterDisplayService().pairClosing(bdvhQ,bdvhP);
 
@@ -185,11 +190,19 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
 
                 bwl.getBigWarp().setIsMovingDisplayTransformed(true);
 
-                AffineTransform3D newLocation = BdvHandleHelper.getViewerTransformWithNewCenter(bdvhP, new double[]{cx,cy,0});
+                // Adjusting BigWarp View on user ROI
+                double sizeX = (topLeftX-bottomRightX)*1.25f; // 25% margin
 
-                // Center window on the center of the user rectangle
-                bdvhP.getViewerPanel().state().setViewerTransform(newLocation);
-                bdvhQ.getViewerPanel().state().setViewerTransform(newLocation);
+                AffineTransform3D at3D = new AffineTransform3D();
+                if (sizeX!=0) {
+                    at3D.scale(bdvhP.getViewerPanel().getWidth() / sizeX  );
+                    bdvhP.getViewerPanel().state().setViewerTransform(at3D);
+                    bdvhQ.getViewerPanel().state().setViewerTransform(at3D);
+                }
+
+                // Centers bdv on ROI center
+                fitBdvOnUserROI(bdvhQ);
+                fitBdvOnUserROI(bdvhP);
                 
                 waitForUser.accept("Manual spline registration", "Please perform carefully your registration then press ok.");
 
@@ -232,7 +245,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
         bottomRightX = Math.max(corners.get(0).getDoublePosition(0),corners.get(1).getDoublePosition(0) );
         bottomRightY = Math.max(corners.get(0).getDoublePosition(1),corners.get(1).getDoublePosition(1) );
 
-        cx = (topLeftX+bottomRightY)/2.0;
+        cx = (topLeftX+bottomRightX)/2.0;
         cy = (topLeftY+bottomRightY)/2.0;
     }
 
@@ -246,7 +259,8 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
         }
     }
 
-    void fitBdvOnRectangle(BdvHandle bdvh) {
-        // TODO
+    void fitBdvOnUserROI(BdvHandle bdvh) {
+        AffineTransform3D newCenter = BdvHandleHelper.getViewerTransformWithNewCenter(bdvh, new double[]{cx,cy,0});
+        bdvh.getViewerPanel().state().setViewerTransform(newCenter);
     }
 }
