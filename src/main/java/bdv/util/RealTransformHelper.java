@@ -131,7 +131,7 @@ public class RealTransformHelper {
      */ // TODO : use this function instead of the one in imagetoatlas package
     public static void registerTransformAdapters(final GsonBuilder gsonbuilder, Context scijavaCtx) {
         // AffineTransform3D serialization
-        //gsonbuilder.registerTypeAdapter(AffineTransform3D.class, new AffineTransform3DAdapter());
+        gsonbuilder.registerTypeAdapter(AffineTransform3D.class, new AffineTransform3DAdapter());
 
         Map<Class<?>, List<Class<?>>> runTimeAdapters = new HashMap<>();
         scijavaCtx.getService(BdvPlaygroundObjectAdapterService.class)

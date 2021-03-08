@@ -12,7 +12,6 @@ public class SimpleIJLaunch {
 
     static public void main(String... args) {
         // create the ImageJ application context with all available services
-
         DebugTools.enableIJLogging(false);
         DebugTools.enableLogging("INFO");
 
