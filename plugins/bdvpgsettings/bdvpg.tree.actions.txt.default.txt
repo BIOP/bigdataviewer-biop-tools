@@ -30,6 +30,7 @@
   "Save BDVDataset",
   "Inspect Sources",
   "PopupLine",
+  "Filter Sources Based on Name",
   "Add Metadata To Sources",
   "Make Metadata Filter Node",
   "PopupLine",
