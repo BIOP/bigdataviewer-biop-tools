@@ -1,6 +1,5 @@
 package ch.epfl.biop.bdv.command.register;
 
-import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.sourceandconverter.register.Elastix2DAffineRegister;
 import ch.epfl.biop.wrappers.elastix.RegParamAffine_Fast;
 import ch.epfl.biop.wrappers.elastix.RegisterHelper;
@@ -24,55 +23,10 @@ import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
         description = "Performs an affine registration in 2D between 2 sources. Low level command which\n"+
                       "requires many parameters. For more user friendly command, use wizards instead.\n"+
                       "Outputs a registered source as well as the transform to apply to the moving source."  )
-public class Elastix2DAffineRegisterCommand implements BdvPlaygroundActionCommand {
+public class Elastix2DAffineRegisterCommand extends AbstractElastix2DRegistrationInRectangleCommand implements BdvPlaygroundActionCommand {
 
-    @Parameter(label = "Fixed source for registration", description = "fixed source")
-    SourceAndConverter sac_fixed;
-
-    @Parameter(label = "Timepoint of the fixed source")
-    int tpFixed;
-
-    @Parameter(label = "Resolution level of the fixed source (0 = highest)")
-    int levelFixedSource;
-
-    @Parameter(label = "Moving source for registration", description = "moving source")
-    SourceAndConverter sac_moving;
-
-    @Parameter(label = "Timepoint of the moving source")
-    int tpMoving;
-
-    @Parameter(label = "Resolution level of the moving source (0 = highest)")
-    int levelMovingSource;
-
-    @Parameter(label = "ROI used for registration (px)")
-    double px;
-
-    @Parameter(label = "ROI used for registration (py)")
-    double py;
-
-    @Parameter(label = "ROI used for registration (pz)")
-    double pz;
-
-    @Parameter(label = "ROI used for registration (sx)")
-    double sx;
-
-    @Parameter(label = "ROI used for registration (sy)")
-    double sy;
-
-    @Parameter(label = "Pixel size in physical unit used for image resampling")
-    double pxSizeInCurrentUnit;
-
-    @Parameter(label = "Check box to interpolate the resampled images")
-    boolean interpolate;
-
-    @Parameter(label = "Inspect registration result in ImageJ 1 windows (do not work with RGB images)")
-    boolean showImagePlusRegistrationResult = false;
-
-    @Parameter(label = "Number of iterations for each scale (default 100)")
-    int maxIterationNumber = 100;
-
-    @Parameter(type = ItemIO.OUTPUT)
-    SourceAndConverter registeredSource;
+    @Parameter(label = "Starts by aligning gravity centers")
+    boolean automaticTransformInitialization = false;
 
     @Parameter(type = ItemIO.OUTPUT)
     AffineTransform3D at3D;
@@ -84,8 +38,12 @@ public class Elastix2DAffineRegisterCommand implements BdvPlaygroundActionComman
         RegistrationParameters rp =  new RegParamAffine_Fast(); //
 
         rp.AutomaticScalesEstimation = false;
-        rp.AutomaticTransformInitialization = true;
-        rp.AutomaticTransformInitializationMethod = "CenterOfGravity";
+        if (automaticTransformInitialization) {
+            rp.AutomaticTransformInitialization = true;
+            rp.AutomaticTransformInitializationMethod = "CenterOfGravity";
+        } else {
+            rp.AutomaticTransformInitialization = false;
+        }
 
         double maxSize = Math.max(sx/pxSizeInCurrentUnit,sy/pxSizeInCurrentUnit);
 
@@ -97,7 +55,7 @@ public class Elastix2DAffineRegisterCommand implements BdvPlaygroundActionComman
 
         rp.NumberOfResolutions = Math.max(1,nScales-2);
         rp.BSplineInterpolationOrder = 1;
-        rp.MaximumNumberOfIterations = maxIterationNumber;
+        rp.MaximumNumberOfIterations = maxIterationNumberPerScale;
 
         rp.ImagePyramidSchedule = new Integer[2*rp.NumberOfResolutions];
         for (int scale = 0; scale < rp.NumberOfResolutions ; scale++) {

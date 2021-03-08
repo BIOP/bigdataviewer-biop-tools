@@ -4,7 +4,6 @@ import bdv.util.RealCropper;
 import bdv.viewer.Interpolation;
 import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
-import bigwarp.BigWarp;
 import ch.epfl.biop.fiji.imageplusutils.ImagePlusFunctions;
 import ch.epfl.biop.java.utilities.roi.ConvertibleRois;
 import ch.epfl.biop.java.utilities.roi.types.RealPointList;
@@ -14,11 +13,9 @@ import ch.epfl.biop.wrappers.transformix.DefaultTransformixTask;
 import ch.epfl.biop.wrappers.transformix.RemoteTransformixTask;
 import ch.epfl.biop.wrappers.transformix.TransformHelper;
 import ch.epfl.biop.wrappers.transformix.TransformixTask;
-//import ij.IJ;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.plugin.Duplicator;
-import itc.transforms.elastix.ElastixAffineTransform2D;
 import itc.transforms.elastix.ElastixTransform;
 import net.imglib2.FinalRealInterval;
 import net.imglib2.RandomAccessibleInterval;
@@ -57,6 +54,8 @@ public class Elastix2DSplineRegister {
 
     int nbControlPointsX;
 
+    int numberOfIterationPerScale;
+
     TransformixTask tt = new DefaultTransformixTask();
 
     ElastixTask et = new DefaultElastixTask();
@@ -80,6 +79,7 @@ public class Elastix2DSplineRegister {
                                    double pz,
                                    double sx,
                                    double sy,
+                                   int numberOfIterationPerScale,
                                    boolean showResultIJ1) {
         this.sac_fixed = sac_fixed;
         this.sac_moving = sac_moving;
@@ -95,6 +95,7 @@ public class Elastix2DSplineRegister {
         this.tpMoving = tpMoving;
         this.showResultIJ1 = showResultIJ1;
         this.nbControlPointsX = nbControlPointsX;
+        this.numberOfIterationPerScale = numberOfIterationPerScale;
     }
 
     public void setInterpolate(boolean interpolate) {
@@ -163,7 +164,7 @@ public class Elastix2DSplineRegister {
         //System.out.println("nScales = "+nScales);
         rp.NumberOfResolutions = nScales-2;
         rp.BSplineInterpolationOrder = 1;
-        rp.MaximumNumberOfIterations = 200;
+        rp.MaximumNumberOfIterations = numberOfIterationPerScale;
         //rp.Metric = "AdvancedNormalizedCorrelation";
         /*rp.AutomaticScalesEstimation = true;
         rp.NumberOfResolutions = 8;
@@ -197,7 +198,7 @@ public class Elastix2DSplineRegister {
 
         File fTransform = new File(rh.getFinalTransformFile());
 
-        ElastixTransform et = null;
+        ElastixTransform et;
         try {
             et = ElastixTransform.load(fTransform);
         } catch (IOException e) {

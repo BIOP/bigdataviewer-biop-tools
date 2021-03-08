@@ -1,11 +1,8 @@
 package ch.epfl.biop.bdv.command.register;
 
 import bdv.util.BigWarpHelper;
-import bdv.util.RealTransformHelper;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.bdv.bioformats.command.BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand;
-import ch.epfl.biop.bdv.command.register.AutoWarp2DCommand;
-import ch.epfl.biop.bdv.command.register.Elastix2DAffineRegisterCommand;
 import net.imagej.ImageJ;
 import net.imglib2.RealPoint;
 import net.imglib2.realtransform.*;
@@ -36,6 +33,9 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
 
     @Parameter(label = "Locations of interest for warping registration", style = "text area")
     String ptListCoordinates = "15,10,\n -30,-40,\n ";
+
+    @Parameter(label = "Make a first affine registration before warping")
+    boolean performFirstCoarseAffineRegistration;
 
     @Parameter
     double topLeftX;
@@ -68,31 +68,35 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
 
         // Approximate rigid registration
         try {
+            AffineTransform3D at1 = new AffineTransform3D();
+            SourceAndConverter firstRegSrc = currentRefSource;
 
-            log.accept("----------- First registration - Coarse Affine");
+            if (performFirstCoarseAffineRegistration) {
+                log.accept("----------- First registration - Coarse Affine");
 
-            CommandModule cm = cs.run(Elastix2DAffineRegisterCommand.class, true,
-                    "sac_fixed", globalRefSource,
-                    "tpFixed", 0,
-                    "levelFixedSource", SourceAndConverterHelper.bestLevel(globalRefSource,0,0.01),
-                    "sac_moving", currentRefSource,
-                    "tpMoving", 0,
-                    "levelMovingSource", SourceAndConverterHelper.bestLevel(currentRefSource,0,0.01),
-                    "px", topLeftX,
-                    "py", topLeftY,
-                    "pz", 0,
-                    "sx", bottomRightX-topLeftX,
-                    "sy", bottomRightY-topLeftY,
-                    "pxSizeInCurrentUnit", 0.01, // in mm
-                    "interpolate", true,
-                    "showImagePlusRegistrationResult", showDetails
-            ).get();
-            AffineTransform3D at1 = (AffineTransform3D) cm.getOutput("at3D");
-            SourceAndConverter firstRegSrc = (SourceAndConverter) cm.getOutput("registeredSource");
+                CommandModule cm = cs.run(Elastix2DAffineRegisterCommand.class, true,
+                        "sac_fixed", globalRefSource,
+                        "tpFixed", 0,
+                        "levelFixedSource", SourceAndConverterHelper.bestLevel(globalRefSource, 0, 0.01),
+                        "sac_moving", currentRefSource,
+                        "tpMoving", 0,
+                        "levelMovingSource", SourceAndConverterHelper.bestLevel(currentRefSource, 0, 0.01),
+                        "px", topLeftX,
+                        "py", topLeftY,
+                        "pz", 0,
+                        "sx", bottomRightX - topLeftX,
+                        "sy", bottomRightY - topLeftY,
+                        "pxSizeInCurrentUnit", 0.01, // in mm
+                        "interpolate", true,
+                        "showImagePlusRegistrationResult", showDetails
+                ).get();
+                at1 = (AffineTransform3D) cm.getOutput("at3D");
+                firstRegSrc = (SourceAndConverter) cm.getOutput("registeredSource");
+            }
 
             log.accept("----------- Precise Warping based on particular locations");
             RealTransform tst_temp =
-                    (RealTransform) cs.run(AutoWarp2DCommand.class, true,
+                    (RealTransform) cs.run(Elastix2DSparsePointsRegisterCommand.class, true,
                             "sac_fixed", globalRefSource,
                             "sac_moving", firstRegSrc,
                             "tpFixed", 0,
@@ -112,7 +116,6 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
 
             log.accept("----------- Computing global transformation");
 
-            //RealTransformSequence
             RealTransformSequence rts = new RealTransformSequence();
             AffineTransform3D at2 = new AffineTransform3D();
             rts.add(at1.concatenate(at2).inverse());

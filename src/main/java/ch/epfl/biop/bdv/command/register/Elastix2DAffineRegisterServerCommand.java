@@ -1,13 +1,11 @@
 package ch.epfl.biop.bdv.command.register;
 
-import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.sourceandconverter.register.Elastix2DAffineRegister;
 import ch.epfl.biop.wrappers.elastix.RegParamAffine_Fast;
 import ch.epfl.biop.wrappers.elastix.RegisterHelper;
 import ch.epfl.biop.wrappers.elastix.RegistrationParameters;
 import net.imglib2.realtransform.AffineTransform3D;
 import org.scijava.ItemIO;
-import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
@@ -15,40 +13,10 @@ import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
         menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Register Sources with Elastix on Server (Affine, 2D)")
-public class Elastix2DAffineRegisterServerCommand implements BdvPlaygroundActionCommand {
+public class Elastix2DAffineRegisterServerCommand extends AbstractElastix2DRegistrationInRectangleCommand implements BdvPlaygroundActionCommand {
 
-    @Parameter(label = "Fixed source for registration", description = "fixed source")
-    SourceAndConverter sac_fixed;
-
-    @Parameter
-    int tpFixed;
-
-    @Parameter
-    int levelFixedSource;
-
-    @Parameter
-    SourceAndConverter sac_moving;
-
-    @Parameter
-    int tpMoving;
-
-    @Parameter
-    int levelMovingSource;
-
-    @Parameter
-    double px,py,pz,sx,sy;
-
-    @Parameter
-    double pxSizeInCurrentUnit;
-
-    @Parameter
-    boolean interpolate;
-
-    @Parameter
-    boolean showImagePlusRegistrationResult = false;
-
-    @Parameter(type = ItemIO.OUTPUT)
-    SourceAndConverter registeredSource;
+    @Parameter(label = "Starts by aligning gravity centers")
+    boolean automaticTransformInitialization = false;
 
     @Parameter(type = ItemIO.OUTPUT)
     AffineTransform3D at3D;
@@ -68,8 +36,12 @@ public class Elastix2DAffineRegisterServerCommand implements BdvPlaygroundAction
         RegisterHelper rh = new RegisterHelper();
         RegistrationParameters rp = new RegParamAffine_Fast();
         rp.AutomaticScalesEstimation = false;
-        rp.AutomaticTransformInitialization = true;
-        rp.AutomaticTransformInitializationMethod = "CenterOfGravity";
+        if (automaticTransformInitialization) {
+            rp.AutomaticTransformInitialization = true;
+            rp.AutomaticTransformInitializationMethod = "CenterOfGravity";
+        } else {
+            rp.AutomaticTransformInitialization = false;
+        }
 
         double maxSize = Math.max(sx/pxSizeInCurrentUnit,sy/pxSizeInCurrentUnit);
         int nScales = 0;
@@ -80,7 +52,7 @@ public class Elastix2DAffineRegisterServerCommand implements BdvPlaygroundAction
 
         rp.NumberOfResolutions = Math.max(1,nScales-2);
         rp.BSplineInterpolationOrder = 1;
-        rp.MaximumNumberOfIterations = 100;
+        rp.MaximumNumberOfIterations = maxIterationNumberPerScale;
 
         rp.ImagePyramidSchedule = new Integer[2*rp.NumberOfResolutions];
         for (int scale = 0; scale < rp.NumberOfResolutions ; scale++) {

@@ -1,6 +1,5 @@
 package ch.epfl.biop.bdv.command.register;
 
-import bdv.viewer.SourceAndConverter;
 import net.imglib2.RealPoint;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.realtransform.RealTransform;
@@ -28,27 +27,9 @@ import java.util.stream.Stream;
                 "is a thin plate spline transform object that can be applied to other sources then \n" +
                 "edited in BigWarp.")
 
-public class AutoWarp2DCommand implements BdvPlaygroundActionCommand {
+public class Elastix2DSparsePointsRegisterCommand extends SelectSourcesForRegistrationCommand implements BdvPlaygroundActionCommand {
 
-    @Parameter(label = "Fixed source")
-    SourceAndConverter sac_fixed;
-
-    @Parameter(label = "Timepoint of the fixed source")
-    int tpFixed;
-
-    @Parameter(label = "Resolution level of the fixed source")
-    int levelFixedSource;
-
-    @Parameter(label = "Moving source")
-    SourceAndConverter sac_moving;
-
-    @Parameter(label = "Timepoint of the moving source")
-    int tpMoving;
-
-    @Parameter(label = "Resolution level of the moving source")
-    int levelMovingSource;
-
-    @Parameter(label = "Size in physical units of each fov used for the registration")
+    @Parameter(label = "Size in physical units of each fov used for the registration of each point")
     double sx,sy;
 
     @Parameter(label = "Location in z (default 0)")
@@ -60,16 +41,10 @@ public class AutoWarp2DCommand implements BdvPlaygroundActionCommand {
     @Parameter(type = ItemIO.OUTPUT)
     RealTransform tst;
 
-    @Parameter(label = "Pixel size in physical unit used for sampling both the fixed and moving source")
-    double pxSizeInCurrentUnit;
-
-    @Parameter(label = "Interpolate sampled sources")
-    boolean interpolate;
-
     @Parameter(label = "Parallel registration of points of interests")
     boolean parallel;
 
-    @Parameter(label = "Show point of interests registration (parallel cannot be true)")
+    @Parameter(label = "Show point of interests registration in ImageJ1 (disables parallelisation)")
     boolean showPoints;
 
     @Parameter
@@ -87,7 +62,7 @@ public class AutoWarp2DCommand implements BdvPlaygroundActionCommand {
 
         if (showPoints) {
             parallel=false; // Cannot parallelize with IJ1 functions
-            log.accept("Cannot run parallel Autowarp if showPoints is true");
+            log.accept("Cannot run parallel registrations if showPoints is true.");
         }
 
         ArrayList<RealPoint> pts_Fixed = new ArrayList<>();
