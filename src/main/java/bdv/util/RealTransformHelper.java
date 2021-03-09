@@ -7,6 +7,7 @@ import net.imglib2.realtransform.*;
 import net.imglib2.realtransform.inverse.WrappedIterativeInvertibleRealTransform;
 import org.scijava.Context;
 import org.scijava.InstantiableException;
+import sc.fiji.bdvpg.services.serializers.AffineTransform3DAdapter;
 import sc.fiji.bdvpg.services.serializers.RuntimeTypeAdapterFactory;
 import sc.fiji.bdvpg.services.serializers.plugins.BdvPlaygroundObjectAdapterService;
 import sc.fiji.bdvpg.services.serializers.plugins.IClassAdapter;
@@ -124,13 +125,12 @@ public class RealTransformHelper {
     }
 
     // ------------------------------------------------ Serialization / Deserialization
-    /* Registers all RealTransform adapters found within
+    /** Registers all RealTransform adapters found within
     * BdvPlaygroundObjectAdapterService:
     * - IClassAdapter
     * - IClassRuntimeAdapter
     *  */
     public static void registerTransformAdapters(final GsonBuilder gsonbuilder, Context scijavaCtx) {
-
         log.accept("IClassAdapters : ");
         scijavaCtx.getService(BdvPlaygroundObjectAdapterService.class)
                 .getAdapters(IClassAdapter.class)
@@ -139,22 +139,19 @@ public class RealTransformHelper {
                         IClassAdapter<?> adapter = pi.createInstance();
                         if (RealTransform.class.isAssignableFrom(adapter.getAdapterClass())) {
                             log.accept("\t "+adapter.getAdapterClass());
-                            gsonbuilder.registerTypeHierarchyAdapter(adapter.getAdapterClass(), adapter);
+                            gsonbuilder.registerTypeAdapter(adapter.getAdapterClass(), adapter);
                         }
                     } catch (InstantiableException e) {
                         e.printStackTrace();
                     }
                 });
 
-
         Map<Class<?>, List<Class<?>>> runTimeAdapters = new HashMap<>();
-
-        // Register all Runtype Adapters
         scijavaCtx.getService(BdvPlaygroundObjectAdapterService.class)
                 .getAdapters(IClassRuntimeAdapter.class)
                 .forEach(pi -> {
                             try {
-                                IClassRuntimeAdapter<?,?> adapter = pi.createInstance();
+                                IClassRuntimeAdapter adapter = pi.createInstance();
                                 if (runTimeAdapters.containsKey(adapter.getBaseClass())) {
                                     runTimeAdapters.get(adapter.getBaseClass()).add(adapter.getRunTimeClass());
                                 } else {
@@ -168,9 +165,23 @@ public class RealTransformHelper {
                         }
                 );
 
+        scijavaCtx.getService(BdvPlaygroundObjectAdapterService.class)
+                .getAdapters(IClassRuntimeAdapter.class)
+                .forEach(pi -> {
+                    try {
+                        IClassRuntimeAdapter adapter = pi.createInstance();
+                        if (adapter.getBaseClass().equals(RealTransform.class)) {
+                            gsonbuilder.registerTypeHierarchyAdapter(adapter.getRunTimeClass(), adapter);
+                        }
+                    } catch (InstantiableException e) {
+                        e.printStackTrace();
+                    }
+                });
+
+
         log.accept("IRunTimeClassAdapters : ");
         runTimeAdapters.keySet().forEach(baseClass -> {
-            if (baseClass.isAssignableFrom(RealTransform.class)) {
+            if (baseClass.equals(RealTransform.class)) {
                 log.accept("\t " + baseClass);
                 RuntimeTypeAdapterFactory factory = RuntimeTypeAdapterFactory.of(baseClass);
                 runTimeAdapters.get(baseClass).forEach(subClass -> {
