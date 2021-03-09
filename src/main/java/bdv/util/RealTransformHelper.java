@@ -2,21 +2,18 @@ package bdv.util;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.opencsv.CSVReader;
 import jitk.spline.ThinPlateR2LogRSplineKernelTransform;
-import net.imglib2.RealPoint;
 import net.imglib2.realtransform.*;
 import net.imglib2.realtransform.inverse.WrappedIterativeInvertibleRealTransform;
 import org.scijava.Context;
 import org.scijava.InstantiableException;
-import sc.fiji.bdvpg.services.serializers.AffineTransform3DAdapter;
 import sc.fiji.bdvpg.services.serializers.RuntimeTypeAdapterFactory;
 import sc.fiji.bdvpg.services.serializers.plugins.BdvPlaygroundObjectAdapterService;
+import sc.fiji.bdvpg.services.serializers.plugins.IClassAdapter;
 import sc.fiji.bdvpg.services.serializers.plugins.IClassRuntimeAdapter;
 import sc.fiji.bdvpg.services.serializers.plugins.ThinPlateSplineTransformAdapter;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -26,6 +23,8 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 public class RealTransformHelper {
+
+    public static Consumer<String> log = System.out::println;
 
     public static String BigWarpFileFromRealTransform(RealTransform rt) {
         try {
@@ -38,7 +37,7 @@ public class RealTransformHelper {
             }
 
             if (rt instanceof WrappedIterativeInvertibleRealTransform) {
-                rt = ((WrappedIterativeInvertibleRealTransform)rt).getTransform();
+                rt = ((WrappedIterativeInvertibleRealTransform<?>)rt).getTransform();
             }
 
             if (rt instanceof BoundedRealTransform) {
@@ -49,12 +48,13 @@ public class RealTransformHelper {
                 }
 
                 if (rt instanceof WrappedIterativeInvertibleRealTransform) {
-                    rt = ((WrappedIterativeInvertibleRealTransform)rt).getTransform();
+                    rt = ((WrappedIterativeInvertibleRealTransform<?>)rt).getTransform();
                 }
             }
 
             if (!(rt instanceof ThinplateSplineTransform)) {
                 System.err.println("Cannot edit the transform : it's not of class thinplatesplinetransform");
+                return null;
             }
 
             ThinplateSplineTransform tst = (ThinplateSplineTransform) rt;
@@ -123,22 +123,38 @@ public class RealTransformHelper {
         return gsonbuider.create();
     }
 
-    public static Consumer<String> log = (str) -> System.out.println(str);
-
     // ------------------------------------------------ Serialization / Deserialization
-    /*
-        Register the RealTransformAdapters from Bdv-playground
-     */ // TODO : use this function instead of the one in imagetoatlas package
+    /* Registers all RealTransform adapters found within
+    * BdvPlaygroundObjectAdapterService:
+    * - IClassAdapter
+    * - IClassRuntimeAdapter
+    *  */
     public static void registerTransformAdapters(final GsonBuilder gsonbuilder, Context scijavaCtx) {
-        // AffineTransform3D serialization
-        gsonbuilder.registerTypeAdapter(AffineTransform3D.class, new AffineTransform3DAdapter());
+
+        log.accept("IClassAdapters : ");
+        scijavaCtx.getService(BdvPlaygroundObjectAdapterService.class)
+                .getAdapters(IClassAdapter.class)
+                .forEach(pi -> {
+                    try {
+                        IClassAdapter<?> adapter = pi.createInstance();
+                        if (RealTransform.class.isAssignableFrom(adapter.getAdapterClass())) {
+                            log.accept("\t "+adapter.getAdapterClass());
+                            gsonbuilder.registerTypeHierarchyAdapter(adapter.getAdapterClass(), adapter);
+                        }
+                    } catch (InstantiableException e) {
+                        e.printStackTrace();
+                    }
+                });
+
 
         Map<Class<?>, List<Class<?>>> runTimeAdapters = new HashMap<>();
+
+        // Register all Runtype Adapters
         scijavaCtx.getService(BdvPlaygroundObjectAdapterService.class)
                 .getAdapters(IClassRuntimeAdapter.class)
                 .forEach(pi -> {
                             try {
-                                IClassRuntimeAdapter adapter = pi.createInstance();
+                                IClassRuntimeAdapter<?,?> adapter = pi.createInstance();
                                 if (runTimeAdapters.containsKey(adapter.getBaseClass())) {
                                     runTimeAdapters.get(adapter.getBaseClass()).add(adapter.getRunTimeClass());
                                 } else {
@@ -152,23 +168,9 @@ public class RealTransformHelper {
                         }
                 );
 
-        scijavaCtx.getService(BdvPlaygroundObjectAdapterService.class)
-                .getAdapters(IClassRuntimeAdapter.class)
-                .forEach(pi -> {
-                    try {
-                        IClassRuntimeAdapter adapter = pi.createInstance();
-                        if (adapter.getBaseClass().equals(RealTransform.class)) {
-                            gsonbuilder.registerTypeHierarchyAdapter(adapter.getRunTimeClass(), adapter);
-                        }
-                    } catch (InstantiableException e) {
-                        e.printStackTrace();
-                    }
-                });
-
-
         log.accept("IRunTimeClassAdapters : ");
         runTimeAdapters.keySet().forEach(baseClass -> {
-            if (baseClass.equals(RealTransform.class)) {
+            if (baseClass.isAssignableFrom(RealTransform.class)) {
                 log.accept("\t " + baseClass);
                 RuntimeTypeAdapterFactory factory = RuntimeTypeAdapterFactory.of(baseClass);
                 runTimeAdapters.get(baseClass).forEach(subClass -> {
@@ -179,6 +181,5 @@ public class RealTransformHelper {
             }
         });
     }
-
 
 }
