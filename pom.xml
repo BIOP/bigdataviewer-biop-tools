@@ -87,7 +87,6 @@
 	<scm>
 		<connection>scm:git:git://github.com/BIOP/bigdataviewer-biop-tools</connection>
 		<developerConnection>scm:git:git@github.com:BIOP/bigdataviewer-biop-tools</developerConnection>
-		<tag>bigdataviewer-biop-tools-0.2.9</tag>
 		<url>https://github.com/BIOP/bigdataviewer-biop-tools/</url>
 	</scm>
 	
