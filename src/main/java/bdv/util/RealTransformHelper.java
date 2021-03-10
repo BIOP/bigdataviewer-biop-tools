@@ -124,12 +124,6 @@ public class RealTransformHelper {
         return gsonbuider.create();
     }
 
-    // ------------------------------------------------ Serialization / Deserialization
-    /** Registers all RealTransform adapters found within
-    * BdvPlaygroundObjectAdapterService:
-    * - IClassAdapter
-    * - IClassRuntimeAdapter
-    *  */
     public static void registerTransformAdapters(final GsonBuilder gsonbuilder, Context scijavaCtx) {
         log.accept("IClassAdapters : ");
         scijavaCtx.getService(BdvPlaygroundObjectAdapterService.class)
