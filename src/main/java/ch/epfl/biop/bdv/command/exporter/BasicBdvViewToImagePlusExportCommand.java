@@ -7,6 +7,7 @@ import bdv.viewer.SourceAndConverter;
 import ij.ImagePlus;
 import net.imglib2.RealPoint;
 import net.imglib2.realtransform.AffineTransform3D;
+import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.RealType;
 import org.scijava.ItemIO;
 import org.scijava.plugin.Parameter;
@@ -25,22 +26,22 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * Export sources as an ImagePlus object according to the orientation
- * of a bdv window.
+ * This command is a simplified version of {@link BdvViewToImagePlusExportCommand} where
+ * reasonable default settings are being set.
  *
- * Many options are available for a full control of the way the export from bdv source to
- * a resliced ImagePlus can be performed.
+ * The mipmap levels necessary for the sampling are estimated, all sources present in a bdv
+ * window are exported, the size of the export is the window size, a composite window is created
+ * by default.
  *
- * See {@link BasicBdvViewToImagePlusExportCommand} for a more simpler command with
- * reasonable estimated default values
+ * The freedom is still let free for interpolation, z
  *
  * Stack is virtual and cached by default
  * @param <T> non-volatile pixel type
  */
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
-        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Export>Current BDV View To ImagePlus")
-public class BdvViewToImagePlusExportCommand<T extends RealType<T>> implements BdvPlaygroundActionCommand {
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Export>Current BDV View To ImagePlus (Basic)")
+public class BasicBdvViewToImagePlusExportCommand<T extends RealType<T>> implements BdvPlaygroundActionCommand {
 
     @Parameter(label = "BigDataViewer Frame")
     public BdvHandle bdv_h;
@@ -48,50 +49,49 @@ public class BdvViewToImagePlusExportCommand<T extends RealType<T>> implements B
     @Parameter(label = "Capture Name")
     String captureName = "Capture_00";
 
-    @Parameter(required = false)
+    //@Parameter(label = "Include all sources from current Bdv Frame")
+    boolean allSources = true;
+
+    //@Parameter(label="Mipmap level, 0 for highest resolution")
+    //public int mipmapLevel = -1; // Automatically found with best resolution
+
+    //@Parameter(label="Match bdv frame window size", persist=false, callback = "matchXYBDVFrame")
+    public boolean matchWindowSize=true;
+
     SourceAndConverter[] sacs;
 
-    @Parameter(label = "Include all sources from current Bdv Frame")
-    boolean allSources;
+    //@Parameter(label = "Total Size X (physical unit)", callback = "matchXYBDVFrame")
+    //public double xSize = 100;
 
-    @Parameter(label="Mipmap level, 0 for highest resolution")
-    public int mipmapLevel = 0;
-
-    @Parameter(label="Match bdv frame window size", persist=false, callback = "matchXYBDVFrame")
-    public boolean matchWindowSize=false;
-
-    @Parameter(label = "Total Size X (physical unit)", callback = "matchXYBDVFrame")
-    public double xSize = 100;
-
-    @Parameter(label = "Total Size Y (physical unit)", callback = "matchXYBDVFrame")
-    public double ySize = 100;
+    //@Parameter(label = "Total Size Y (physical unit)", callback = "matchXYBDVFrame")
+    //public double ySize = 100;
 
     @Parameter(label = "Half Thickness Z (above and below, physical unit, 0 for a single slice)")
     public double zSize = 100;
 
-    @Parameter(label = "Start Timepoint (included, starts at 0)")
+    @Parameter(label = "Start Timepoint (starts at 0)")
     public int timepointBegin = 0;
 
-    @Parameter(label = "End Timepoint (excluded)")
-    public int timepointEnd = 0;
+    @Parameter(label = "Number of Timepoints (min 1)", min="1")
+    public int numberOfTimePoints = 1;
 
-    @Parameter(label = "XY Pixel size sampling (physical unit)", callback = "changePhysicalSampling")
+    //@Parameter(label = "End Timepoint (excluded)")
+    //public int timepointEnd = 0;
+
+    @Parameter(label = "Output pixel size (physical unit)")
     public double samplingXYInPhysicalUnit = 1;
 
-    @Parameter(label = "Z Pixel size sampling (physical unit)", callback = "changePhysicalSampling")
+    @Parameter(label = "Z Pixel size sampling (physical unit)")
     public double samplingZInPhysicalUnit = 1;
 
     @Parameter(label = "Interpolate")
     public boolean interpolate = true;
 
-    @Parameter(label = "Ignore Source LUT (check for RGB)")
-    public boolean ignoreSourceLut = false;
+    //@Parameter(label = "Ignore Source LUT (check for RGB)")
+    //public boolean ignoreSourceLut = false;
 
-    @Parameter(label = "Make Composite")
+    //@Parameter(label = "Make Composite")
     public boolean makeComposite = true;
-
-    @Parameter(label = "Cache the resampled image")
-    public boolean cacheImage = true;
 
     // Output imageplus window
     @Parameter(type = ItemIO.OUTPUT)
@@ -108,14 +108,22 @@ public class BdvViewToImagePlusExportCommand<T extends RealType<T>> implements B
 
     AffineTransform3D at3D;
 
+    double xSize, ySize;
+
     @Override
     public void run() {
 
+        if (numberOfTimePoints<1) {
+            System.err.println("Cannot get a negative number of timepoints");
+            return;
+        }
+
+        final int timepointEnd = timepointBegin+numberOfTimePoints;
         // Sanity checks
         // 1. Timepoints : at least one timepoint
-        if (timepointEnd<=timepointBegin) {
+        /*if (timepointEnd<=timepointBegin) {
             timepointEnd = timepointBegin+1;
-        }
+        }*/
 
         // 2. At least one source
         if (allSources) {
@@ -123,12 +131,12 @@ public class BdvViewToImagePlusExportCommand<T extends RealType<T>> implements B
                 errlog.accept("No source present in Bdv. Abort command.");
                 return;
             }
-        } else {
+        } /*else {
             if ((sacs==null)||(sacs.length==0)) {
                 errlog.accept("No selected source. Abort command.");
                 return;
             }
-        }
+        }*/
 
         if (allSources) {
             sourceList = sorter.apply(bdv_h.getViewerPanel().state().getSources());
@@ -149,6 +157,17 @@ public class BdvViewToImagePlusExportCommand<T extends RealType<T>> implements B
             return;
         }
 
+        boolean ignoreSourceLut;
+
+        // Ignore LUT if a single source is ARGBType
+        if (sourceList.stream().filter(src -> src.getSpimSource().getType() instanceof ARGBType).findFirst().isPresent()) {
+            ignoreSourceLut = true;
+        } else {
+            ignoreSourceLut = false;
+        }
+
+        matchXYBDVFrame();
+
         SourceAndConverter model = createModelSource();
 
         if (makeComposite) {
@@ -161,7 +180,7 @@ public class BdvViewToImagePlusExportCommand<T extends RealType<T>> implements B
         // The core of it : resampling each source with the model
         List<SourceAndConverter> resampledSourceList = sourceList
                 .stream()
-                .map(sac -> new SourceResampler(sac,model,true, cacheImage, interpolate).get())
+                .map(sac -> new SourceResampler(sac,model,true, true, interpolate).get())
                 .collect(Collectors.toList());
 
         resampledSourceList.forEach(sac -> {
@@ -177,8 +196,13 @@ public class BdvViewToImagePlusExportCommand<T extends RealType<T>> implements B
             Map<SourceAndConverter, ConverterSetup> mapCS = new HashMap<>();
             sourceList.forEach(src -> mapCS.put(resampledSourceList.get(sourceList.indexOf(src)), bdv_h.getConverterSetups().getConverterSetup(src)));
 
+
             Map<SourceAndConverter, Integer> mapMipmap = new HashMap<>();
-            sourceList.forEach(src -> mapMipmap.put(resampledSourceList.get(sourceList.indexOf(src)), mipmapLevel));
+            sourceList.forEach(src -> {
+                int mipmapLevel = SourceAndConverterHelper.bestLevel(src, timepointBegin, samplingXYInPhysicalUnit);
+                System.out.println("Mipmap level chosen for source ["+src.getSpimSource().getName()+"] : "+mipmapLevel);
+                mapMipmap.put(resampledSourceList.get(sourceList.indexOf(src)), mipmapLevel);
+            });
 
             compositeImage = ImagePlusHelper.wrap(
                     resampledSourceList,
@@ -192,6 +216,8 @@ public class BdvViewToImagePlusExportCommand<T extends RealType<T>> implements B
             ImagePlusHelper.storeExtendedCalibrationToImagePlus(compositeImage, at3D.inverse(), unitOfFirstSource, timepointBegin);
         } else {
             resampledSourceList.forEach(source -> {
+                int mipmapLevel = SourceAndConverterHelper.bestLevel(sourceList.get(0), timepointBegin, samplingXYInPhysicalUnit);
+                System.out.println("Mipmap level chosen for source ["+source.getSpimSource().getName()+"] : "+mipmapLevel);
                 ImagePlus singleChannel = ImagePlusHelper.wrap(
                         source,
                         bdv_h.getConverterSetups().getConverterSetup(sourceList.get(resampledSourceList.indexOf(source))),
@@ -199,6 +225,7 @@ public class BdvViewToImagePlusExportCommand<T extends RealType<T>> implements B
                         timepointBegin,
                         timepointEnd,
                         ignoreSourceLut);
+                System.out.println("Done!");
                 singleChannelImages.put(source, singleChannel);
                 singleChannel.setTitle(source.getSpimSource().getName());
                 ImagePlusHelper.storeExtendedCalibrationToImagePlus(singleChannel, at3D.inverse(), unitOfFirstSource, timepointBegin);
@@ -223,7 +250,7 @@ public class BdvViewToImagePlusExportCommand<T extends RealType<T>> implements B
         // Center on the display center of the viewer ...
         at3D.translate(-w / 2, -h / 2, 0);
         // Getting an image independent of the view scaling unit (not sure)
-        double xNorm = getNormTransform(0, at3D);//trans
+        double xNorm = BdvViewToImagePlusExportCommand.getNormTransform(0, at3D);//trans
         at3D.scale(1/xNorm);
 
         at3D.scale(1./samplingXYInPhysicalUnit, 1./samplingXYInPhysicalUnit, 1./samplingZInPhysicalUnit);
@@ -244,35 +271,6 @@ public class BdvViewToImagePlusExportCommand<T extends RealType<T>> implements B
         if (nPy == 0) nPy = 1;
 
         return new EmptySourceAndConverterCreator(captureName, at3D.inverse(), nPx, nPy, nPz).get();
-    }
-
-    /**
-     * Returns the norm of an axis after an affinetransform is applied
-     * @param axis axis of the affine transform
-     * @param t affine transform measured
-     * @return the norm of an axis after an affinetransform is applied
-     */
-    static public double getNormTransform(int axis, AffineTransform3D t) {
-        double f0 = t.get(axis,0);
-        double f1 = t.get(axis,1);
-        double f2 = t.get(axis,2);
-        return Math.sqrt(f0 * f0 + f1 * f1 + f2 * f2);
-    }
-
-    /**
-     * Returns the distance between two RealPoint pt1 and pt2
-     * @param pt1 first point
-     * @param pt2 second point
-     * @return the distance between two RealPoint pt1 and pt2
-     */
-    static public double distance(RealPoint pt1, RealPoint pt2) {
-        assert pt1.numDimensions()==pt2.numDimensions();
-        double dsquared = 0;
-        for (int i=0;i<pt1.numDimensions();i++) {
-            double diff = pt1.getDoublePosition(i)-pt2.getDoublePosition(i);
-            dsquared+=diff*diff;
-        }
-        return Math.sqrt(dsquared);
     }
 
     // -- Initializers --
@@ -299,8 +297,8 @@ public class BdvViewToImagePlusExportCommand<T extends RealType<T>> implements B
             bdv_h.getViewerPanel().displayToGlobalCoordinates(h,0, ptBottomLeft);
 
             // Gets physical size of pixels based on window size, image sampling size and user requested pixel size
-            this.xSize=distance(ptTopLeft, ptTopRight);
-            this.ySize=distance(ptTopLeft, ptBottomLeft);
+            this.xSize=BdvViewToImagePlusExportCommand.distance(ptTopLeft, ptTopRight);
+            this.ySize=BdvViewToImagePlusExportCommand.distance(ptTopLeft, ptBottomLeft);
         }
     }
 
