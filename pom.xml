@@ -241,6 +241,51 @@
 			<version>${elastix_registration_server.version}</version>
 		</dependency>
 
+
+		<dependency>
+			<groupId>ome</groupId>
+			<artifactId>formats-bsd</artifactId>
+			<exclusions>
+				<exclusion>
+					<!-- NB: Exclude problematic uber-JAR that bundles commons-io. -->
+					<groupId>ch.systems.cisd</groupId>
+					<artifactId>jhdf5</artifactId>
+				</exclusion>
+				<exclusion>
+					<!-- NB: Exclude problematic xalan bundle -->
+					<groupId>xalan</groupId>
+					<artifactId>xalan</artifactId>
+				</exclusion>
+				<exclusion>
+					<!-- NB: Exclude problematic xml-apis bundle -->
+					<groupId>xml-apis</groupId>
+					<artifactId>xml-apis</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>ome</groupId>
+			<artifactId>formats-gpl</artifactId>
+			<exclusions>
+				<exclusion>
+					<!-- NB: Exclude problematic uber-JAR that bundles commons-io. -->
+					<groupId>ch.systems.cisd</groupId>
+					<artifactId>jhdf5</artifactId>
+				</exclusion>
+				<exclusion>
+					<!-- NB: Exclude problematic xalan bundle -->
+					<groupId>xalan</groupId>
+					<artifactId>xalan</artifactId>
+				</exclusion>
+				<exclusion>
+					<!-- NB: Exclude problematic xml-apis bundle -->
+					<groupId>xml-apis</groupId>
+					<artifactId>xml-apis</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
 	</dependencies>
 
 
