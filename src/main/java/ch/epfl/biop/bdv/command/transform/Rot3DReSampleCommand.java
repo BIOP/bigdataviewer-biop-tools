@@ -1,61 +1,73 @@
 package ch.epfl.biop.bdv.command.transform;
 
-import bdv.util.RandomAccessibleIntervalSource;
-import bdv.viewer.Source;
+import bdv.tools.brightness.ConverterSetup;
+import bdv.util.ImagePlusHelper;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.spimdata.imageplus.SpimDataFromImagePlusGetter;
 import ij.ImagePlus;
 import ij.gui.PointRoi;
 import ij.gui.Roi;
 import ij.measure.Calibration;
-import ij.plugin.RGBStackMerge;
 import ij.plugin.frame.RoiManager;
 import mpicbg.spim.data.generic.AbstractSpimData;
-import net.imglib2.img.array.ArrayImg;
-import net.imglib2.img.array.ArrayImgs;
-import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.util.LinAlgHelpers;
-import net.imglib2.util.Util;
 import org.scijava.ItemIO;
-import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
+import sc.fiji.bdvpg.sourceandconverter.importer.EmptySourceAndConverterCreator;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceResampler;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
-@Plugin(type = BdvPlaygroundActionCommand.class, menuPath = "Image>Stacks>Rotation 3D Resample")
+/**
+ * Reorients an ImagePlus in 3D
+ */
+
+@Plugin(type = BdvPlaygroundActionCommand.class, menuPath = "Image>Stacks>Rotation 3D Resample",
+description = "Required : two point roi in the ROI Manager and an ImagePlus. " +
+        "This command reorients a 3D IJ1 image (ImagePlus) by creating another IJ1 image where" +
+        "the two points Roi are aligned in Z. Hyperstakcs are supporteda and metadata (original pixel size)" +
+        "matters.")
 public class Rot3DReSampleCommand implements BdvPlaygroundActionCommand {
 
     @Parameter
     ImagePlus imp_in;
 
-    //@Parameter(type = ItemIO.OUTPUT)
-    //SourceAndConverter[] sacs_out;
-
     @Parameter
     RoiManager rm;
 
-    @Parameter
-    double radiusx, radiusy, radiusz;
+    @Parameter(label = "Final Image Size X (physical unit)")
+    double radiusx;
 
-    @Parameter
-    double voxFX, voxFY, voxFZ;
+    @Parameter(label = "Final Image Size Y (physical unit)")
+    double radiusy;
 
-    @Parameter
-    boolean alignX;
+    @Parameter(label = "Final Image Size Z (physical unit)")
+    double radiusz;
+
+    @Parameter(label = "Final Voxel Size X (physical unit)")
+    double voxFX;
+
+    @Parameter(label = "Final Voxel Size Y (physical unit)")
+    double voxFY;
+
+    @Parameter(label = "Final Voxel Size Z (physical unit)")
+    double voxFZ;
+
+    @Parameter(label = "Align X axis (default true)")
+    boolean alignX = true;
 
     @Parameter(type = ItemIO.OUTPUT)
     ImagePlus imp_out;
 
-    @Parameter
+    @Parameter(label = "Interpolate pixel values during resampling.")
     boolean interpolate;
 
     @Parameter
@@ -67,6 +79,15 @@ public class Rot3DReSampleCommand implements BdvPlaygroundActionCommand {
         sac_service.register(asd);
         sac_service.setSpimDataName(asd, imp_in.getTitle());
         List<SourceAndConverter> sacs = SourceAndConverterServices.getSourceAndConverterService().getSourceAndConverterFromSpimdata(asd);
+
+        if (rm.getCount()<2) {
+            System.err.println("Error : 2 point Rois should be present in the Roi Manager to reorient a stack");
+            return;
+        }
+
+        if (rm.getCount()>2) {
+            System.out.println("Ignoring rois with index > 1");
+        }
 
         Roi roi1 = rm.getRoi(0);
         Roi roi2 = rm.getRoi(1);
@@ -174,41 +195,36 @@ public class Rot3DReSampleCommand implements BdvPlaygroundActionCommand {
 
         at3D.concatenate(translateCenterBwd);
 
-        // Need to make the model
-
-        ArrayImg rai = ArrayImgs.unsignedBytes((long) nx,(long) ny,(long) nz);
-
-        Source src = new RandomAccessibleIntervalSource(rai, Util.getTypeFromInterval(rai), at3D, "Dummy");
-
         SourceAndConverter model;
 
-        model = SourceAndConverterHelper.createSourceAndConverter(src);
+        model = new EmptySourceAndConverterCreator("dummy", at3D, (long) nx,(long) ny,(long) nz).get();//SourceAndConverterHelper.createSourceAndConverter(src);
 
         if (model == null) {
-            System.out.println("model is nul");
+            System.out.println("model is null");
         }
+
         SourceResampler sampler = new SourceResampler(null, model, false, false, interpolate);
 
-        if (sacs == null) {
-            System.out.println("sacs is null");
-        }
-        SourceAndConverter[] sacs_out = sacs.stream().map(sampler::apply).collect(Collectors.toList())
-                       .toArray(new SourceAndConverter[sacs.size()]);
+        List<SourceAndConverter> reoriented_sources = sacs.stream().map(sampler::apply).collect(Collectors.toList());
 
-        ImagePlus[] channels = new ImagePlus[sacs_out.length];
+        Map<SourceAndConverter, ConverterSetup> mapCS = new HashMap<>();
+        reoriented_sources.forEach(sac -> mapCS.put(sac,
+                    SourceAndConverterServices
+                        .getSourceAndConverterDisplayService()
+                        .getConverterSetup(sac)
+                ));
 
+        Map<SourceAndConverter, Integer> mapMipmap = new HashMap<>();
+        reoriented_sources.forEach(sac -> mapMipmap.put(sac, 0)); // Only one resolution exists
 
-        IntStream.range(0,sacs_out.length).parallel().forEach(i ->
-                //);
-        //for (int i = 0;i<sacs_out.length;i++)
-        {
+        imp_out = ImagePlusHelper.wrap(
+                reoriented_sources,
+                mapCS,
+                mapMipmap,
+                0,
+                imp_in.getNFrames(),
+                false);
 
-            channels[i] = ImageJFunctions.wrap(sacs_out[i].getSpimSource().getSource(0,0),"");
-            channels[i].setDimensions(1, channels[i].getNSlices(), 1); // Set 3 dimension as Z, not as Channel
-            //channels[i].show();
-        });
-
-        imp_out = RGBStackMerge.mergeChannels(channels, false);
         imp_out.setTitle("Reoriented_"+imp_in.getTitle());
 
         // Calibration in the limit of what's possible to know and set
@@ -226,7 +242,7 @@ public class Rot3DReSampleCommand implements BdvPlaygroundActionCommand {
 
         calibration.setUnit(imp_in.getCalibration().getUnit());
 
-        imp_out.setCalibration(calibration);
+        imp_out.setCalibration(calibration);/**/
     }
 
 }

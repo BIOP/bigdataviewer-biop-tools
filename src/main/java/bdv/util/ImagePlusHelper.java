@@ -422,9 +422,9 @@ public class ImagePlusHelper {
             final int[] blockSize) {
 
         final long[] dimensions = Intervals.dimensionsAsLongArray(source);
-        for (long dimension : dimensions) {
+        /*for (long dimension : dimensions) {
             System.out.println(dimension);
-        }
+        }*/
 
         final CellGrid grid = new CellGrid(dimensions, blockSize);
 
