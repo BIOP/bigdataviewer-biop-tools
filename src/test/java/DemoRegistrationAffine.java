@@ -180,7 +180,7 @@ public class DemoRegistrationAffine {
                             "levelMovingSource", 0,
                             "pxSizeInCurrentUnit", 1,
                             "interpolate", false,
-                            "showImagePlusRegistrationResult",  true,
+                            "showImagePlusRegistrationResult", true,
                             "px",-50,
                             "py",-10,
                             "pz",0,

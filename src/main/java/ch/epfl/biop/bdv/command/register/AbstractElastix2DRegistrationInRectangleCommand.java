@@ -1,6 +1,6 @@
 package ch.epfl.biop.bdv.command.register;
 
-import bdv.viewer.SourceAndConverter;
+import net.imglib2.realtransform.AffineTransform3D;
 import org.scijava.ItemIO;
 import org.scijava.plugin.Parameter;
 
@@ -27,6 +27,16 @@ abstract class AbstractElastix2DRegistrationInRectangleCommand extends SelectSou
     @Parameter(label = "Number of iterations for each scale (default 100)")
     int maxIterationNumberPerScale = 100;
 
+    @Parameter(label = "Minimal image size in pixel for initial downscaling (ignored if the original image is too small)")
+    int minPixSize = 32;
+
+    @Parameter(label = "Starts by aligning gravity centers")
+    boolean automaticTransformInitialization = false;
+
     @Parameter(type = ItemIO.OUTPUT)
-    SourceAndConverter registeredSource;
+    AffineTransform3D at3D;
+
+    @Parameter
+    boolean verbose = false;
+
 }

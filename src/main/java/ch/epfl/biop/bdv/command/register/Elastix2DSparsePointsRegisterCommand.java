@@ -56,6 +56,9 @@ public class Elastix2DSparsePointsRegisterCommand extends SelectSourcesForRegist
     @Parameter
     CommandService cs;
 
+    @Parameter
+    int minPixSize = 32;
+
     public Consumer<String> log = s -> {};
 
     @Override
@@ -104,7 +107,9 @@ public class Elastix2DSparsePointsRegisterCommand extends SelectSourcesForRegist
                         "interpolate", interpolate,
                         "showImagePlusRegistrationResult", showPoints,
                         "automaticTransformInitialization", false,
-                        "maxIterationNumberPerScale", maxIterationNumberPerScale
+                        "maxIterationNumberPerScale", maxIterationNumberPerScale,
+                        "minPixSize", 32,
+                        "verbose", verbose
                 ).get().getOutput("at3D");
 
                 RealPoint ptCorr = new RealPoint(3);

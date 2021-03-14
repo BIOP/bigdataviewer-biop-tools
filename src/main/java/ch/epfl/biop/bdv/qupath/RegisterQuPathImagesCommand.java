@@ -5,6 +5,7 @@ import bdv.util.RealTransformHelper;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.bdv.command.register.Wizard2DWholeScanRegisterCommand;
 import ch.epfl.biop.spimdata.qupath.QuPathEntryEntity;
+import ij.gui.WaitForUserDialog;
 import net.imglib2.realtransform.*;
 import org.apache.commons.io.FileUtils;
 import org.scijava.Context;
@@ -32,6 +33,9 @@ public class RegisterQuPathImagesCommand implements Command {
 
     @Parameter
     Context scijavaCtx;
+
+    @Parameter
+    boolean verbose = false;
 
     @Override
     public void run() {
@@ -70,6 +74,7 @@ public class RegisterQuPathImagesCommand implements Command {
             RealTransform rt = (RealTransform) cs.run(Wizard2DWholeScanRegisterCommand.class, true,
                     "fixed", fixed_source,
                     "moving", moving_source,
+                    "verbose", verbose,
                     "sourcesToTransform", new SourceAndConverter[]{moving_source}
                     ).get().getOutput("transformation");
 
@@ -116,6 +121,8 @@ public class RegisterQuPathImagesCommand implements Command {
             String movingToFixedLandmarkName = "transform_"+moving_series_index+"_"+fixed_series_index+".json";
 
             FileUtils.writeStringToFile(new File(moving_entry_folder.getAbsolutePath(), movingToFixedLandmarkName), jsonMovingToFixed, Charset.defaultCharset());
+
+            new WaitForUserDialog("Registration finished", "Transformation file successfully written to QuPath project.").show();
 
         } catch (Exception e) {
             e.printStackTrace();

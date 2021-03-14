@@ -36,7 +36,7 @@ public class Elastix2DSplineRegisterCommand extends AbstractElastix2DRegistratio
 
         reg.run();
 
-        registeredSource = reg.getRegisteredSac();
+        //registeredSource = reg.getRegisteredSac();
         rt = reg.getRealTransform();
         rt_inverse = reg.getRealTransformInverse();
     }

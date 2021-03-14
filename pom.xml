@@ -107,8 +107,8 @@
 		<bigwarp_fiji.version>6.1.0</bigwarp_fiji.version>
 
 		<leastsquares.version>1.0.0</leastsquares.version>
-		<ijl-utilities-wrappers.version>0.3.17</ijl-utilities-wrappers.version>
-		<image-transform-converters.version>0.1.4</image-transform-converters.version>
+		<ijl-utilities-wrappers.version>0.3.18</ijl-utilities-wrappers.version>
+		<image-transform-converters.version>0.1.5</image-transform-converters.version>
 
 		<bigdataviewer-spimdata-extras.version>0.1.0</bigdataviewer-spimdata-extras.version>
 

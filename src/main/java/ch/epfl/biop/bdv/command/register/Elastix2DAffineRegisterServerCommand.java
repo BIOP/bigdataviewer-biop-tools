@@ -15,12 +15,6 @@ import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
         menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Register Sources with Elastix on Server (Affine, 2D)")
 public class Elastix2DAffineRegisterServerCommand extends AbstractElastix2DRegistrationInRectangleCommand implements BdvPlaygroundActionCommand {
 
-    @Parameter(label = "Starts by aligning gravity centers")
-    boolean automaticTransformInitialization = false;
-
-    @Parameter(type = ItemIO.OUTPUT)
-    AffineTransform3D at3D;
-
     @Parameter(type = ItemIO.OUTPUT)
     boolean success; // No issue during remote registration ?
 
@@ -34,6 +28,10 @@ public class Elastix2DAffineRegisterServerCommand extends AbstractElastix2DRegis
     public void run() {
 
         RegisterHelper rh = new RegisterHelper();
+        if (verbose) {
+            rh.verbose();
+        }
+
         RegistrationParameters rp = new RegParamAffine_Fast();
         rp.AutomaticScalesEstimation = false;
         if (automaticTransformInitialization) {
@@ -50,7 +48,14 @@ public class Elastix2DAffineRegisterServerCommand extends AbstractElastix2DRegis
             nScales++;
         }
 
-        rp.NumberOfResolutions = Math.max(1,nScales-2);
+        int nScalesSkipped = 0;
+
+        while (Math.pow(2,nScalesSkipped)<minPixSize) {
+            nScalesSkipped++;
+        }
+
+        rp.NumberOfResolutions = Math.max(1,nScales-nScalesSkipped); // Starts with 2^nScalesSkipped pixels
+
         rp.BSplineInterpolationOrder = 1;
         rp.MaximumNumberOfIterations = maxIterationNumberPerScale;
 
@@ -77,7 +82,7 @@ public class Elastix2DAffineRegisterServerCommand extends AbstractElastix2DRegis
         success = reg.run();
 
         if (success) {
-            registeredSource = reg.getRegisteredSac();
+            //registeredSource = reg.getRegisteredSac();
             at3D = reg.getAffineTransform();
         }
     }

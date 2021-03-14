@@ -49,7 +49,7 @@ public class Elastix2DSplineRegisterServerCommand extends AbstractElastix2DRegis
         success = reg.run();
 
         if (success) {
-            registeredSource = reg.getRegisteredSac();
+            //registeredSource = reg.getRegisteredSac();
             rt = reg.getRealTransform();
             rt_inverse = reg.getRealTransformInverse();
         }

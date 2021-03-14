@@ -4,9 +4,6 @@ import ch.epfl.biop.sourceandconverter.register.Elastix2DAffineRegister;
 import ch.epfl.biop.wrappers.elastix.RegParamAffine_Fast;
 import ch.epfl.biop.wrappers.elastix.RegisterHelper;
 import ch.epfl.biop.wrappers.elastix.RegistrationParameters;
-import net.imglib2.realtransform.AffineTransform3D;
-import org.scijava.ItemIO;
-import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
@@ -22,19 +19,17 @@ import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
         menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Register Sources with Elastix (Affine, 2D)",
         description = "Performs an affine registration in 2D between 2 sources. Low level command which\n"+
                       "requires many parameters. For more user friendly command, use wizards instead.\n"+
-                      "Outputs a registered source as well as the transform to apply to the moving source."  )
+                      "Outputs the transform to apply to the moving source."  )
 public class Elastix2DAffineRegisterCommand extends AbstractElastix2DRegistrationInRectangleCommand implements BdvPlaygroundActionCommand {
-
-    @Parameter(label = "Starts by aligning gravity centers")
-    boolean automaticTransformInitialization = false;
-
-    @Parameter(type = ItemIO.OUTPUT)
-    AffineTransform3D at3D;
 
     @Override
     public void run() {
 
         RegisterHelper rh = new RegisterHelper();
+        if (verbose) {
+            rh.verbose();
+        }
+
         RegistrationParameters rp =  new RegParamAffine_Fast(); //
 
         rp.AutomaticScalesEstimation = false;
@@ -53,7 +48,13 @@ public class Elastix2DAffineRegisterCommand extends AbstractElastix2DRegistratio
             nScales++;
         }
 
-        rp.NumberOfResolutions = Math.max(1,nScales-6); // Starts with 2^6 pixels = 64 pixels
+        int nScalesSkipped = 0;
+
+        while (Math.pow(2,nScalesSkipped)<minPixSize) {
+            nScalesSkipped++;
+        }
+
+        rp.NumberOfResolutions = Math.max(1,nScales-nScalesSkipped); // Starts with 2^nScalesSkipped pixels
 
         rp.BSplineInterpolationOrder = 1;
         rp.MaximumNumberOfIterations = maxIterationNumberPerScale;
@@ -78,7 +79,7 @@ public class Elastix2DAffineRegisterCommand extends AbstractElastix2DRegistratio
         boolean success = reg.run();
 
         if (success) {
-            registeredSource = reg.getRegisteredSac();
+            //registeredSource = reg.getRegisteredSac();
             at3D = reg.getAffineTransform();
         } else {
             System.err.println("Error during registration");

@@ -16,6 +16,7 @@ import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 import sc.fiji.bdvpg.scijava.command.bdv.BdvSourcesShowCommand;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
+import sc.fiji.bdvpg.sourceandconverter.transform.SourceAffineTransformer;
 
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
@@ -96,10 +97,13 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
                         "interpolate", true,
                         "showImagePlusRegistrationResult", showDetails,
                         "automaticTransformInitialization", false,
-                        "maxIterationNumberPerScale", maxIterationNumberPerScale
+                        "maxIterationNumberPerScale", maxIterationNumberPerScale,
+                        "minPixSize", 32,
+                        "verbose", verbose
                 ).get();
                 at1 = (AffineTransform3D) cm.getOutput("at3D");
-                firstRegSrc = (SourceAndConverter) cm.getOutput("registeredSource");
+                //firstRegSrc = (SourceAndConverter) cm.getOutput("registeredSource");
+                firstRegSrc = new SourceAffineTransformer(at1).apply(currentRefSource);
             }
 
             log.accept("----------- Precise Warping based on particular locations");
@@ -122,7 +126,9 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
                                 "showPoints", showDetails,//true,
                                 "parallel", !showDetails,//false,
                                 "verbose", verbose,
-                                "maxIterationNumberPerScale", maxIterationNumberPerScale
+                                "maxIterationNumberPerScale", maxIterationNumberPerScale,
+                                "minPixSize", 32,
+                                "verbose", verbose
                         ).get().getOutput("tst");
             } else {
                 // Let's put landmarks on each corner in case the user wants to edit the registration later

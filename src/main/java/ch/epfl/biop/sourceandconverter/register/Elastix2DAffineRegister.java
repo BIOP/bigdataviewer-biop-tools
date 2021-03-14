@@ -183,24 +183,29 @@ public class Elastix2DAffineRegister {
 
         if (showResultIJ1) {
             synchronized (Elastix2DAffineRegister.class) {
-                impF.show();
+                if (impM.getBitDepth() != 24) {
+                    impF.show();
+                    ImagePlus transformedImage = ImagePlusFunctions.splitApplyRecompose(
+                            imp -> {
+                                TransformHelper th = new TransformHelper();
+                                //th.verbose();
+                                th.setTransformFile(rh);
+                                th.setImage(imp);
+                                th.transform(tt);
+                                return ((ImagePlus) (th.getTransformedImage().to(ImagePlus.class)));
+                            }
+                            , impM);
 
-                ImagePlus transformedImage = ImagePlusFunctions.splitApplyRecompose(
-                        imp -> {
-                            TransformHelper th = new TransformHelper();
-                            th.setTransformFile(rh);
-                            th.setImage(imp);
-                            th.transform(tt);
-                            return ((ImagePlus) (th.getTransformedImage().to(ImagePlus.class)));
-                        }
-                        , impM);
+                    transformedImage.show();
 
-                transformedImage.show();
+                    IJ.run(impF, "Enhance Contrast", "saturated=0.35");
+                    IJ.run(transformedImage, "Enhance Contrast", "saturated=0.35");
+                    IJ.run(impF, "32-bit", "");
+                    IJ.run((ImagePlus) null, "Merge Channels...", "c1=Transformed_DUP_Moving c2=DUP_Fixed create");
 
-                IJ.run(impF, "Enhance Contrast", "saturated=0.35");
-                IJ.run(transformedImage, "Enhance Contrast", "saturated=0.35");
-                IJ.run(impF, "32-bit", "");
-                IJ.run((ImagePlus) null, "Merge Channels...", "c1=Transformed_DUP_Moving c2=DUP_Fixed create");
+                } else {
+                    System.err.println("Cannot transform RGB imagej1 images.");
+                }
             }
         }
 

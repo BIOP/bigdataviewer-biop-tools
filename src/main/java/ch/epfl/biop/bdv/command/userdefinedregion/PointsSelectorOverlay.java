@@ -85,7 +85,7 @@ public class PointsSelectorOverlay extends BdvOverlay {
     public synchronized void draw(Graphics2D g) {
         g.setStroke( styles.get("SELECTED").getNormalStroke() );
         g.setPaint( styles.get("SELECTED").getBackColor() );
-        g.setFont(font);
+        g.setFont( font );
         g.drawString(message, 50, viewer.getHeight()-50);
 
         g.setColor( styles.get("SELECTED").getFrontColor());
