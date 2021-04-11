@@ -32,6 +32,12 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
     @Parameter(label = "Index of current reference image (moving, dapi channel of scan i)")
     SourceAndConverter currentRefSource;
 
+    @Parameter(label = "Background offset value for moving image")
+    double background_offset_value_moving = 0;
+
+    @Parameter(label = "Background offset value for fixed image")
+    double background_offset_value_fixed = 0;
+
     @Parameter(label = "Locations of interest for warping registration", style = "text area")
     String ptListCoordinates = "15,10,\n -30,-40,\n ";
 
@@ -99,6 +105,8 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
                         "automaticTransformInitialization", false,
                         "maxIterationNumberPerScale", maxIterationNumberPerScale,
                         "minPixSize", 32,
+                        "background_offset_value_moving", background_offset_value_moving,
+                        "background_offset_value_fixed", background_offset_value_fixed,
                         "verbose", verbose
                 ).get();
                 at1 = (AffineTransform3D) cm.getOutput("at3D");
@@ -128,6 +136,8 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
                                 "verbose", verbose,
                                 "maxIterationNumberPerScale", maxIterationNumberPerScale,
                                 "minPixSize", 32,
+                                "background_offset_value_moving", background_offset_value_moving,
+                                "background_offset_value_fixed", background_offset_value_fixed,
                                 "verbose", verbose
                         ).get().getOutput("tst");
             } else {

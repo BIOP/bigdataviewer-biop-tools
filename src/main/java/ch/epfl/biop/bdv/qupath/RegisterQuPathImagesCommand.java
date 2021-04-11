@@ -75,6 +75,8 @@ public class RegisterQuPathImagesCommand implements Command {
                     "fixed", fixed_source,
                     "moving", moving_source,
                     "verbose", verbose,
+                    "background_offset_value_moving", 0,
+                    "background_offset_value_fixed", 0,
                     "sourcesToTransform", new SourceAndConverter[]{moving_source}
                     ).get().getOutput("transformation");
 

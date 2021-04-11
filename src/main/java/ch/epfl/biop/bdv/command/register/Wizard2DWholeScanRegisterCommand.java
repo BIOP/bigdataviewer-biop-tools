@@ -46,6 +46,12 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
     @Parameter(label = "Fixed reference source")
     SourceAndConverter fixed;
 
+    @Parameter(label = "Background offset value for moving image")
+    double background_offset_value_moving = 0;
+
+    @Parameter(label = "Background offset value for fixed image")
+    double background_offset_value_fixed = 0;
+
     @Parameter(label = "Moving source used for registration to the reference")
     SourceAndConverter moving;
 
@@ -147,7 +153,9 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
                                "verbose", verbose,
                                "performFirstCoarseAffineRegistration",  automatedAffineRegistration,
                                "performSecondSplineRegistration", automatedSplineRegistration,
-                               "maxIterationNumberPerScale", maxIterationNumberPerScale
+                               "maxIterationNumberPerScale", maxIterationNumberPerScale,
+                               "background_offset_value_moving", background_offset_value_moving,
+                               "background_offset_value_fixed", background_offset_value_fixed
                     ).get().getOutput("tst");
 
             if (manualSplineRegistration) {

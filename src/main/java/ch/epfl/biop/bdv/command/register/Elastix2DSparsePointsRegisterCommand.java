@@ -29,6 +29,12 @@ import java.util.stream.Stream;
 
 public class Elastix2DSparsePointsRegisterCommand extends SelectSourcesForRegistrationCommand implements BdvPlaygroundActionCommand {
 
+    @Parameter(label = "Background offset value for moving image")
+    double background_offset_value_moving = 0;
+
+    @Parameter(label = "Background offset value for fixed image")
+    double background_offset_value_fixed = 0;
+
     @Parameter(label = "Size in physical units of each fov used for the registration of each point")
     double sx,sy;
 
@@ -108,6 +114,8 @@ public class Elastix2DSparsePointsRegisterCommand extends SelectSourcesForRegist
                         "showImagePlusRegistrationResult", showPoints,
                         "automaticTransformInitialization", false,
                         "maxIterationNumberPerScale", maxIterationNumberPerScale,
+                        "background_offset_value_moving", background_offset_value_moving,
+                        "background_offset_value_fixed", background_offset_value_fixed,
                         "minPixSize", 32,
                         "verbose", verbose
                 ).get().getOutput("at3D");

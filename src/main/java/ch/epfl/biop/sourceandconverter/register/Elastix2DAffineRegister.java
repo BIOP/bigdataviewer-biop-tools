@@ -50,6 +50,10 @@ public class Elastix2DAffineRegister {
 
     boolean showResultIJ1;
 
+    double background_offset_value_moving = 0;
+
+    double background_offset_value_fixed = 0;
+
     TransformixTask tt = new DefaultTransformixTask();
 
     ElastixTask et = new DefaultElastixTask();
@@ -72,6 +76,8 @@ public class Elastix2DAffineRegister {
                                    double pz,
                                    double sx,
                                    double sy,
+                                   double background_offset_value_moving,
+                                   double background_offset_value_fixed,
                                    boolean showResultIJ1) {
         this.rh = rh;
         this.sac_fixed = sac_fixed;
@@ -86,6 +92,8 @@ public class Elastix2DAffineRegister {
         this.levelMipmapMoving = levelMipmapMoving;
         this.tpFixed = tpFixed;
         this.tpMoving = tpMoving;
+        this.background_offset_value_moving = background_offset_value_moving;
+        this.background_offset_value_fixed = background_offset_value_fixed;
         this.showResultIJ1 = showResultIJ1;
     }
 
@@ -136,6 +144,10 @@ public class Elastix2DAffineRegister {
 
         impM = new Duplicator().run(impM); // Virtual messes up the process, don't know why
 
+        if (background_offset_value_moving!=0) {
+            impM.getProcessor().subtract(background_offset_value_moving);
+        }
+
         at3D.identity();
         at3D.translate(-px,-py,-pz);
         AffineTransform3D fixat = at3D.concatenate(atFixed);
@@ -143,6 +155,10 @@ public class Elastix2DAffineRegister {
                 fixat,fi,pxSizeInCurrentUnit,pxSizeInCurrentUnit,pxSizeInCurrentUnit);
         ImagePlus impF = ImageJFunctions.wrap(viewFixed, "Fixed");
         impF = new Duplicator().run(impF); // Virtual messes up the process, don't know why
+
+        if (background_offset_value_fixed!=0) {
+            impF.getProcessor().subtract(background_offset_value_fixed);
+        }
 
         rh.setMovingImage(impM);
         rh.setFixedImage(impF);

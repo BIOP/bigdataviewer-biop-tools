@@ -73,6 +73,8 @@ public class Elastix2DAffineRegisterCommand extends AbstractElastix2DRegistratio
                 rh,
                 pxSizeInCurrentUnit,
                 px,py,pz,sx,sy,
+                background_offset_value_moving,
+                background_offset_value_fixed,
                 showImagePlusRegistrationResult);
         reg.setInterpolate(interpolate);
 

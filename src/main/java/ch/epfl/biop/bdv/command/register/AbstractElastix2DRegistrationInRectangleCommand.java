@@ -39,4 +39,10 @@ abstract class AbstractElastix2DRegistrationInRectangleCommand extends SelectSou
     @Parameter
     boolean verbose = false;
 
+    @Parameter(label = "Background offset value for moving image")
+    double background_offset_value_moving = 0;
+
+    @Parameter(label = "Background offset value for fixed image")
+    double background_offset_value_fixed = 0;
+
 }

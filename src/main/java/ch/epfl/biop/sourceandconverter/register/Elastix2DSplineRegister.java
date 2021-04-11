@@ -60,6 +60,10 @@ public class Elastix2DSplineRegister {
 
     ElastixTask et = new DefaultElastixTask();
 
+    double background_offset_value_moving = 0;
+
+    double background_offset_value_fixed = 0;
+
     public void setRegistrationServer(String serverURL) {
         tt = new RemoteTransformixTask(serverURL);
         et = new RemoteElastixTask(serverURL);
@@ -80,6 +84,8 @@ public class Elastix2DSplineRegister {
                                    double sx,
                                    double sy,
                                    int numberOfIterationPerScale,
+                                   double background_offset_value_moving,
+                                   double background_offset_value_fixed,
                                    boolean showResultIJ1) {
         this.sac_fixed = sac_fixed;
         this.sac_moving = sac_moving;
@@ -95,6 +101,8 @@ public class Elastix2DSplineRegister {
         this.tpMoving = tpMoving;
         this.showResultIJ1 = showResultIJ1;
         this.nbControlPointsX = nbControlPointsX;
+        this.background_offset_value_fixed = background_offset_value_fixed;
+        this.background_offset_value_moving = background_offset_value_moving;
         this.numberOfIterationPerScale = numberOfIterationPerScale;
     }
 
@@ -141,6 +149,10 @@ public class Elastix2DSplineRegister {
         //impM.show();
         impM = new Duplicator().run(impM); // Virtual messes up the process, don't know why
 
+        if (background_offset_value_moving!=0) {
+            impM.getProcessor().subtract(background_offset_value_moving);
+        }
+
         at3D.identity();
         at3D.translate(-px,-py,-pz);
         AffineTransform3D fixat = at3D.concatenate(atFixed);
@@ -149,6 +161,10 @@ public class Elastix2DSplineRegister {
         ImagePlus impF = ImageJFunctions.wrap(viewFixed, "Fixed");
         //impF.show();
         impF = new Duplicator().run(impF); // Virtual messes up the process, don't know why
+
+        if (background_offset_value_fixed!=0) {
+            impF.getProcessor().subtract(background_offset_value_fixed);
+        }
 
         rh.setMovingImage(impM);
         rh.setFixedImage(impF);
