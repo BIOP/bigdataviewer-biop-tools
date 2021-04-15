@@ -92,7 +92,7 @@ public class EditSourcesWarpingCommand implements BdvPlaygroundActionCommand {
 
         waitForUser.run();
 
-        rt = bwl.getBigWarp().getTransformation();
+        rt = bwl.getBigWarp().getBwTransform().getTransformation();
 
         bwl.getBigWarp().closeAll();
 
