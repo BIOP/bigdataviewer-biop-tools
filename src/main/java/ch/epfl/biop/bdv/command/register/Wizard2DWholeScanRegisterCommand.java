@@ -206,7 +206,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
                 
                 waitForUser.accept("Manual spline registration", "Please perform carefully your registration then press ok.");
 
-                transformation = bwl.getBigWarp().getTransformation();
+                transformation = bwl.getBigWarp().getBwTransform().getTransformation();
 
                 bwl.getBigWarp().closeAll();
             }

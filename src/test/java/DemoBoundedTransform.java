@@ -91,7 +91,7 @@ public class DemoBoundedTransform {
                     .register(sac);
         }
 
-        BoundedRealTransform brt = new BoundedRealTransform(bwl.getBigWarp().getTransformation(0), new FinalRealInterval(new double[]{20,20,20}, new double[]{150,150,150}));
+        BoundedRealTransform brt = new BoundedRealTransform(bwl.getBigWarp().getBwTransform().getTransformation(0), new FinalRealInterval(new double[]{20,20,20}, new double[]{150,150,150}));
 
         SourceAndConverter tr = new SourceRealTransformer(null,brt).apply(sacFixed);
         SourceAndConverterServices.getSourceAndConverterDisplayService()
