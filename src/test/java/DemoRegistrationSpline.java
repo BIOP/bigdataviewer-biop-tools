@@ -197,7 +197,7 @@ public class DemoRegistrationSpline {
                         "pxSizeInCurrentUnit", 5,
                         "interpolate", false,
                         //"showImagePlusRegistrationResult", true,
-                        "showImagePlusRegistrationResult", false,
+                        //"showImagePlusRegistrationResult", false,
                         "px",-90,
                         "py",175,
                         "pz",0,

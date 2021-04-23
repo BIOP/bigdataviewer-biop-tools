@@ -26,6 +26,7 @@ import org.scijava.ui.behaviour.ClickBehaviour;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.util.Behaviours;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterAndTimeRange;
+import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceTransformHelper;
 
 import java.util.Collection;
