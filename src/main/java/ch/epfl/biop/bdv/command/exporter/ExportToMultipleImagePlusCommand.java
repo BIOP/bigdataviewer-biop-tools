@@ -1,7 +1,6 @@
 package ch.epfl.biop.bdv.command.exporter;
 
 import bdv.tools.brightness.ConverterSetup;
-import bdv.util.ImagePlusHelper;
 import bdv.viewer.SourceAndConverter;
 import ij.ImagePlus;
 import net.imglib2.realtransform.AffineTransform3D;
@@ -12,6 +11,7 @@ import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
+import spimdata.imageplus.ImagePlusHelper;
 
 import java.util.*;
 import java.util.function.Function;
