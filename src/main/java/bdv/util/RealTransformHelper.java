@@ -7,12 +7,10 @@ import net.imglib2.realtransform.*;
 import net.imglib2.realtransform.inverse.WrappedIterativeInvertibleRealTransform;
 import org.scijava.Context;
 import org.scijava.InstantiableException;
-import sc.fiji.bdvpg.services.serializers.AffineTransform3DAdapter;
-import sc.fiji.bdvpg.services.serializers.RuntimeTypeAdapterFactory;
-import sc.fiji.bdvpg.services.serializers.plugins.BdvPlaygroundObjectAdapterService;
-import sc.fiji.bdvpg.services.serializers.plugins.IClassAdapter;
-import sc.fiji.bdvpg.services.serializers.plugins.IClassRuntimeAdapter;
-import sc.fiji.bdvpg.services.serializers.plugins.ThinPlateSplineTransformAdapter;
+import sc.fiji.persist.DefaultScijavaAdapterService;
+import sc.fiji.persist.IClassAdapter;
+import sc.fiji.persist.IClassRuntimeAdapter;
+import sc.fiji.persist.RuntimeTypeAdapterFactory;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -126,7 +124,7 @@ public class RealTransformHelper {
 
     public static void registerTransformAdapters(final GsonBuilder gsonbuilder, Context scijavaCtx) {
         log.accept("IClassAdapters : ");
-        scijavaCtx.getService(BdvPlaygroundObjectAdapterService.class)
+        scijavaCtx.getService(DefaultScijavaAdapterService.class)
                 .getAdapters(IClassAdapter.class)
                 .forEach(pi -> {
                     try {
@@ -141,7 +139,7 @@ public class RealTransformHelper {
                 });
 
         Map<Class<?>, List<Class<?>>> runTimeAdapters = new HashMap<>();
-        scijavaCtx.getService(BdvPlaygroundObjectAdapterService.class)
+        scijavaCtx.getService(DefaultScijavaAdapterService.class)
                 .getAdapters(IClassRuntimeAdapter.class)
                 .forEach(pi -> {
                             try {
@@ -159,7 +157,7 @@ public class RealTransformHelper {
                         }
                 );
 
-        scijavaCtx.getService(BdvPlaygroundObjectAdapterService.class)
+        scijavaCtx.getService(DefaultScijavaAdapterService.class)
                 .getAdapters(IClassRuntimeAdapter.class)
                 .forEach(pi -> {
                     try {

@@ -33,19 +33,19 @@ import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.sourceandconverter.transform.SourceMosaicZSlicer;
 import com.google.gson.*;
 import org.scijava.plugin.Plugin;
-import sc.fiji.bdvpg.services.SourceAndConverterSerializer;
+import sc.fiji.bdvpg.scijava.adapter.source.ISourceAdapter;
+import sc.fiji.bdvpg.services.SourceAndConverterAdapter;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
-import sc.fiji.bdvpg.services.serializers.plugins.ISourceAdapter;
 
 import java.lang.reflect.Type;
 
 @Plugin(type = ISourceAdapter.class)
 public class ZSlicedSourceAdapter implements ISourceAdapter<ZSlicedSource> {
 
-    SourceAndConverterSerializer sacSerializer;
+    SourceAndConverterAdapter sacSerializer;
 
     @Override
-    public void setSacSerializer(SourceAndConverterSerializer sacSerializer) {
+    public void setSacSerializer(SourceAndConverterAdapter sacSerializer) {
         this.sacSerializer = sacSerializer;
     }
 

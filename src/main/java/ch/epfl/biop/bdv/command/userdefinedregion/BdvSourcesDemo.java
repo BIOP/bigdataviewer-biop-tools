@@ -74,7 +74,7 @@ public class BdvSourcesDemo {
         m.scale(0.75);
         m.translate(150,100,0);
 
-        bdvh.getViewerPanel().setCurrentViewerTransform(m);
+        bdvh.getViewerPanel().state().setViewerTransform(m);
         bdvh.getViewerPanel().requestRepaint();
 
         return bdvh;

@@ -3,7 +3,7 @@ package bdv.util;
 import com.google.gson.*;
 import net.imglib2.realtransform.RealTransform;
 import org.scijava.plugin.Plugin;
-import sc.fiji.bdvpg.services.serializers.plugins.IClassRuntimeAdapter;
+import sc.fiji.persist.IClassRuntimeAdapter;
 
 import java.lang.reflect.Type;
 import java.util.Map;
@@ -18,6 +18,11 @@ public class Elliptical3DTransformRealTransformAdapter implements IClassRuntimeA
     @Override
     public Class<? extends Elliptical3DTransform> getRunTimeClass() {
         return Elliptical3DTransform.class;
+    }
+
+    @Override
+    public boolean useCustomAdapter() {
+        return true;
     }
 
     @Override
@@ -39,7 +44,7 @@ public class Elliptical3DTransformRealTransformAdapter implements IClassRuntimeA
 
         JsonObject obj = new JsonObject();
 
-        obj.addProperty("type", Elliptical3DTransform.class.getSimpleName());
+        //obj.addProperty("type", Elliptical3DTransform.class.getSimpleName());
 
         obj.add("ellipse_params", jsonSerializationContext.serialize(rt.getParameters()));
 

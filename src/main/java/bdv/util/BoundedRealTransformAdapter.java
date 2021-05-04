@@ -5,7 +5,7 @@ import net.imglib2.FinalRealInterval;
 import net.imglib2.realtransform.InvertibleRealTransform;
 import net.imglib2.realtransform.RealTransform;
 import org.scijava.plugin.Plugin;
-import sc.fiji.bdvpg.services.serializers.plugins.IClassRuntimeAdapter;
+import sc.fiji.persist.IClassRuntimeAdapter;
 
 import java.lang.reflect.Type;
 
@@ -19,6 +19,11 @@ public class BoundedRealTransformAdapter implements IClassRuntimeAdapter<RealTra
     @Override
     public Class<? extends BoundedRealTransform> getRunTimeClass() {
         return BoundedRealTransform.class;
+    }
+
+    @Override
+    public boolean useCustomAdapter() {
+        return true;
     }
 
     @Override
@@ -46,11 +51,11 @@ public class BoundedRealTransformAdapter implements IClassRuntimeAdapter<RealTra
 
         JsonObject obj = new JsonObject();
 
-        obj.addProperty("type", BoundedRealTransform.class.getSimpleName());
+        //obj.addProperty("type", BoundedRealTransform.class.getSimpleName());
 
         FinalRealInterval fri = new FinalRealInterval(brt.getInterval());
 
-        obj.add("realTransform", jsonSerializationContext.serialize(brt.getTransform()));
+        obj.add("realTransform", jsonSerializationContext.serialize(brt.getTransform(), RealTransform.class));
 
         obj.add("interval_min", jsonSerializationContext.serialize(fri.minAsDoubleArray()));
 

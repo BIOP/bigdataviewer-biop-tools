@@ -3,7 +3,6 @@ package ch.epfl.biop.bdv.command.transform;
 import bdv.tools.brightness.ConverterSetup;
 import bdv.util.ImagePlusHelper;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.spimdata.imageplus.SpimDataFromImagePlusGetter;
 import ij.ImagePlus;
 import ij.gui.PointRoi;
 import ij.gui.Roi;
@@ -20,6 +19,7 @@ import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
 import sc.fiji.bdvpg.sourceandconverter.importer.EmptySourceAndConverterCreator;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceResampler;
+import spimdata.imageplus.SpimDataFromImagePlusGetter;
 
 import java.util.HashMap;
 import java.util.List;

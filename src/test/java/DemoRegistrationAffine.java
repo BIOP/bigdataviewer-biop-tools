@@ -8,7 +8,6 @@ import ch.epfl.biop.bdv.select.SourceSelectorBehaviour;
 import ch.epfl.biop.bdv.select.ToggleListener;
 import ch.epfl.biop.bdv.command.register.Elastix2DAffineRegisterCommand;
 import ch.epfl.biop.bdv.command.register.Elastix2DAffineRegisterServerCommand;
-import ch.epfl.biop.spimdata.imageplus.SpimDataFromImagePlusGetter;
 import ij.IJ;
 import ij.ImagePlus;
 import mpicbg.spim.data.SpimData;
@@ -28,6 +27,7 @@ import org.scijava.ui.behaviour.util.Behaviours;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterAndTimeRange;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceTransformHelper;
+import spimdata.imageplus.SpimDataFromImagePlusGetter;
 
 import java.util.Collection;
 import java.util.List;

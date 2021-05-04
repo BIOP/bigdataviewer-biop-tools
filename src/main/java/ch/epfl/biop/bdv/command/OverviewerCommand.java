@@ -195,7 +195,7 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
         });
     }
 
-    public static String[] getPopupActionsOnWrappedSource() {
+    /*public static String[] getPopupActionsOnWrappedSource() {
         String[] editorPopupActions = {
                 "Inspect Sources",
                 getCommandName(SourceAndConverterProjectionModeChangerCommand.class)};
@@ -216,7 +216,7 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
                 getCommandName(BdvSourcesRemoverCommand.class),
                 getCommandName(SourcesInvisibleMakerCommand.class)};
         return editorPopupActions;
-    }
+    }*/
 
     public Function<Collection<SourceAndConverter<?>>,List<SourceAndConverter<?>>> sorter = sacs1ist -> SourceAndConverterHelper.sortDefaultGeneric(sacs1ist);
 
