@@ -96,7 +96,7 @@ public class RealTransformHelper {
      * of RealTransform object
      * @param rt real transform
      * @return serialized string from the real transform
-     */
+     *
     public static String serialize(RealTransform rt, Context context) {
         return getRealTransformAdapter(context).toJson(rt);
     }
@@ -107,7 +107,7 @@ public class RealTransformHelper {
      * @param jsonString result of a realtransform serialization
      * @param context scijava context - necessary to find all serializers
      * @return the realtransform deserialized from this string
-     */
+     *
     public static RealTransform deserialize(String jsonString, Context context) {
         return getRealTransformAdapter(context).fromJson(jsonString, RealTransform.class);
     }
@@ -183,6 +183,6 @@ public class RealTransformHelper {
                 gsonbuilder.registerTypeAdapterFactory(factory);
             }
         });
-    }
+    }*/
 
 }

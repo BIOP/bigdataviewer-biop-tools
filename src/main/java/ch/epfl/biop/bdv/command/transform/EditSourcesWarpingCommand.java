@@ -57,12 +57,12 @@ public class EditSourcesWarpingCommand implements BdvPlaygroundActionCommand {
 
         List<SourceAndConverter> movingSacs = Arrays.stream(movingSources).collect(Collectors.toList());
 
-        List<ConverterSetup> converterSetups = Arrays.stream(movingSources).map(src -> SourceAndConverterServices.getSourceAndConverterDisplayService().getConverterSetup(src)).collect(Collectors.toList());
+        List<ConverterSetup> converterSetups = Arrays.stream(movingSources).map(src -> SourceAndConverterServices.getBdvDisplayService().getConverterSetup(src)).collect(Collectors.toList());
         List<SourceAndConverter> fixedSacs;
 
         if (fixedSources!=null) {
             fixedSacs = Arrays.stream(fixedSources).collect(Collectors.toList());
-            converterSetups.addAll(Arrays.stream(fixedSources).map(src -> SourceAndConverterServices.getSourceAndConverterDisplayService().getConverterSetup(src)).collect(Collectors.toList()));
+            converterSetups.addAll(Arrays.stream(fixedSources).map(src -> SourceAndConverterServices.getBdvDisplayService().getConverterSetup(src)).collect(Collectors.toList()));
         } else {
             fixedSacs = new ArrayList<>();
         }
@@ -79,7 +79,7 @@ public class EditSourcesWarpingCommand implements BdvPlaygroundActionCommand {
         bdvhP.getViewerPanel().state().setViewerTransform(BdvHandleHelper.getViewerTransformWithNewCenter(bdvhP, new double[]{0,0,0}));
         bdvhQ.getViewerPanel().state().setViewerTransform(BdvHandleHelper.getViewerTransformWithNewCenter(bdvhQ, new double[]{0,0,0}));
 
-        SourceAndConverterServices.getSourceAndConverterDisplayService().pairClosing(bdvhQ,bdvhP);
+        SourceAndConverterServices.getBdvDisplayService().pairClosing(bdvhQ,bdvhP);
 
         bdvhP.getViewerPanel().requestRepaint();
         bdvhQ.getViewerPanel().requestRepaint();

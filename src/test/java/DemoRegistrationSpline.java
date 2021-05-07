@@ -212,11 +212,11 @@ public class DemoRegistrationSpline {
                         //bdvh.getViewerPanel().state().removeSource(movingSource);
                         //bdvh.getViewerPanel().state().addSource(transformedSource);
                         SourceAndConverterServices
-                                .getSourceAndConverterDisplayService()
+                                .getBdvDisplayService()
                                 .show(transformedSource, fixedSource);
 
                         BdvHandle bdvh_new = SourceAndConverterServices
-                                .getSourceAndConverterDisplayService()
+                                .getBdvDisplayService()
                                 .getActiveBdv();
 
                         AffineTransform3D view = bdvh.getViewerPanel().state().getViewerTransform();
@@ -263,11 +263,11 @@ public class DemoRegistrationSpline {
                         //bdvh.getViewerPanel().state().removeSource(movingSource);
                         //bdvh.getViewerPanel().state().addSource(transformedSource);
                         SourceAndConverterServices
-                                .getSourceAndConverterDisplayService()
+                                .getBdvDisplayService()
                                 .show(transformedSource, fixedSource);
 
                         BdvHandle bdvh_new = SourceAndConverterServices
-                                .getSourceAndConverterDisplayService()
+                                .getBdvDisplayService()
                                 .getActiveBdv();
 
                         AffineTransform3D view = bdvh.getViewerPanel().state().getViewerTransform();

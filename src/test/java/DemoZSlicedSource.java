@@ -39,14 +39,14 @@ public class DemoZSlicedSource {
         ij.ui().showUI();
 
         // load and convert the famous blobs image// Gets active BdvHandle instance
-        BdvHandle bdv = SourceAndConverterServices.getSourceAndConverterDisplayService().getActiveBdv();
+        BdvHandle bdv = SourceAndConverterServices.getBdvDisplayService().getActiveBdv();
         // Import SpimData
         new SpimDataFromXmlImporter("src/test/resources/mri-stack.xml").run();
 
         final List<SourceAndConverter> sacs = SourceAndConverterServices.getSourceAndConverterService().getSourceAndConverters();
 
         sacs.forEach( sac -> {
-            SourceAndConverterServices.getSourceAndConverterDisplayService().show( bdv, sac );
+            SourceAndConverterServices.getBdvDisplayService().show( bdv, sac );
             new ViewerTransformAdjuster( bdv, sac ).run();
             new BrightnessAutoAdjuster( sac, 0 ).run();
         } );

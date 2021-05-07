@@ -147,7 +147,7 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
         });
 
         SourceAndConverterServices
-                .getSourceAndConverterDisplayService()
+                .getBdvDisplayService()
                 .show(bdvh, sacsToDisplay.toArray(new SourceAndConverter[sacsToDisplay.size()]));
 
         AffineTransform3D currentViewLocation = new AffineTransform3D();
@@ -157,7 +157,7 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
         bdvh.getViewerPanel().state().setViewerTransform(currentViewLocation);
 
 
-        SourceSelectorBehaviour ssb = (SourceSelectorBehaviour) SourceAndConverterServices.getSourceAndConverterDisplayService().getDisplayMetadata(
+        SourceSelectorBehaviour ssb = (SourceSelectorBehaviour) SourceAndConverterServices.getBdvDisplayService().getDisplayMetadata(
                 bdvh, SourceSelectorBehaviour.class.getSimpleName());
 
         new EditorBehaviourUnInstaller(bdvh).run();

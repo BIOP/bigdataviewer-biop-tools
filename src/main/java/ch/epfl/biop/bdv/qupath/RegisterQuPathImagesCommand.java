@@ -15,6 +15,7 @@ import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
+import sc.fiji.persist.ScijavaGsonHelper;
 
 import java.io.File;
 import java.nio.charset.Charset;
@@ -112,7 +113,7 @@ public class RegisterQuPathImagesCommand implements Command {
                 transformSequence = rts;
             }
 
-            String jsonMovingToFixed = RealTransformHelper.serialize(transformSequence, scijavaCtx);
+            String jsonMovingToFixed = ScijavaGsonHelper.getGson(scijavaCtx).toJson(transformSequence, RealTransform.class);
 
             QuPathEntryEntity movingEntity = QuPathBdvHelper.getQuPathEntityFromSource(moving_source);
             QuPathEntryEntity fixedEntity = QuPathBdvHelper.getQuPathEntityFromSource(fixed_source);

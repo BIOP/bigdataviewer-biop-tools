@@ -86,7 +86,7 @@ public class Rotation3DTransformCommand extends InteractiveCommand implements Bd
                 if (sac!=null) {
                     if (sac.getSpimSource() instanceof TransformedSource) {
                         ((TransformedSource) sac.getSpimSource()).setFixedTransform(at3D);
-                        SourceAndConverterServices.getSourceAndConverterDisplayService().updateDisplays(sac);
+                        SourceAndConverterServices.getBdvDisplayService().updateDisplays(sac);
                     }
                 }
             }

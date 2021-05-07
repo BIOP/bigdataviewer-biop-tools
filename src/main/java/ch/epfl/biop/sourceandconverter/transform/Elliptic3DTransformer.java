@@ -45,7 +45,7 @@ public class Elliptic3DTransformer implements Runnable, Function<SourceAndConver
                 ws.updateTransform(e3Dt);
                 vws.updateTransform(e3Dt);
                 SourceAndConverterServices
-                        .getSourceAndConverterDisplayService()
+                        .getBdvDisplayService()
                         .getDisplaysOf(out).forEach(bdvHandle -> bdvHandle.getViewerPanel().requestRepaint());
             }); // TODO avoid memory leak...
 
@@ -58,7 +58,7 @@ public class Elliptic3DTransformer implements Runnable, Function<SourceAndConver
             e3Dt.updateNotifiers.add(() -> {
                 ws.updateTransform(e3Dt);
                 SourceAndConverterServices
-                        .getSourceAndConverterDisplayService()
+                        .getBdvDisplayService()
                         .getDisplaysOf(out).forEach(bdvHandle -> bdvHandle.getViewerPanel().requestRepaint());
             }); // TODO avoid memory leak...
 

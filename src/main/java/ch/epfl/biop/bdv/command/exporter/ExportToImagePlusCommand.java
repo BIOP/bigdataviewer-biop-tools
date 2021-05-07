@@ -51,7 +51,7 @@ public class ExportToImagePlusCommand implements BdvPlaygroundActionCommand {
         Map<SourceAndConverter, Integer> mapSacToMml = new HashMap<>();
 
         for (SourceAndConverter sac : sacs) {
-            mapSacToCs.put(sac,SourceAndConverterServices.getSourceAndConverterDisplayService().getConverterSetup(sac));
+            mapSacToCs.put(sac,SourceAndConverterServices.getBdvDisplayService().getConverterSetup(sac));
             mapSacToMml.put(sac, level);
         }
 

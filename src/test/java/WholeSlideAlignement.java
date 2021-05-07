@@ -37,10 +37,10 @@ public class WholeSlideAlignement {
                 .toArray(new SourceAndConverter[0]);
 
         SourceAndConverterServices
-                .getSourceAndConverterDisplayService()
+                .getBdvDisplayService()
                 .show(sources);
 
-        BdvHandle bdvh = SourceAndConverterServices.getSourceAndConverterDisplayService().getActiveBdv();
+        BdvHandle bdvh = SourceAndConverterServices.getBdvDisplayService().getActiveBdv();
 
         for (SourceAndConverter source : sources) {
             new BrightnessAutoAdjuster(source, 0).run();

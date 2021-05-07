@@ -46,7 +46,7 @@ public class SourcesAffineTransformCommand implements BdvPlaygroundActionCommand
         });
 
         SourceAndConverterServices
-                .getSourceAndConverterDisplayService()
+                .getBdvDisplayService()
                 .updateDisplays(sources_in);
     }
 }

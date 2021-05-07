@@ -164,9 +164,9 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
 
                 List<SourceAndConverter> fixedSacs = Arrays.stream(new SourceAndConverter[]{fixed}).collect(Collectors.toList());
 
-                List<ConverterSetup> converterSetups = Arrays.stream(new SourceAndConverter[]{moving}).map(src -> SourceAndConverterServices.getSourceAndConverterDisplayService().getConverterSetup(src)).collect(Collectors.toList());
+                List<ConverterSetup> converterSetups = Arrays.stream(new SourceAndConverter[]{moving}).map(src -> SourceAndConverterServices.getBdvDisplayService().getConverterSetup(src)).collect(Collectors.toList());
 
-                converterSetups.addAll(Arrays.stream(new SourceAndConverter[]{fixed}).map(src -> SourceAndConverterServices.getSourceAndConverterDisplayService().getConverterSetup(src)).collect(Collectors.toList()));
+                converterSetups.addAll(Arrays.stream(new SourceAndConverter[]{fixed}).map(src -> SourceAndConverterServices.getBdvDisplayService().getConverterSetup(src)).collect(Collectors.toList()));
 
                 // Launch BigWarp
                 BigWarpLauncher bwl = new BigWarpLauncher(movingSacs, fixedSacs, "Big Warp", converterSetups);
@@ -177,7 +177,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
                 BdvHandle bdvhQ = bwl.getBdvHandleQ();
                 BdvHandle bdvhP = bwl.getBdvHandleP();
 
-                SourceAndConverterServices.getSourceAndConverterDisplayService().pairClosing(bdvhQ,bdvhP);
+                SourceAndConverterServices.getBdvDisplayService().pairClosing(bdvhQ,bdvhP);
 
                 bdvhP.getViewerPanel().requestRepaint();
                 bdvhQ.getViewerPanel().requestRepaint();

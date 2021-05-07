@@ -24,7 +24,7 @@ public class DemoEllipticalSource {
 
         // Creates a BdvHandle
         BdvHandle bdvHandle = SourceAndConverterServices
-                .getSourceAndConverterDisplayService().getActiveBdv();
+                .getBdvDisplayService().getActiveBdv();
 
         final String filePath = "src/test/resources/mri-stack.xml";
         // Import SpimData

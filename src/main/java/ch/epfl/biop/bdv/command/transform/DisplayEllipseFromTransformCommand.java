@@ -62,7 +62,7 @@ public class DisplayEllipseFromTransformCommand implements Command {
         e3Dt.updateNotifiers.add(() -> {
             ws.updateTransform(e3Dt.inverse());
             SourceAndConverterServices
-                    .getSourceAndConverterDisplayService()
+                    .getBdvDisplayService()
                     .getDisplaysOf(sac_out).forEach(bdvHandle -> bdvHandle.getViewerPanel().requestRepaint());
         });
 
