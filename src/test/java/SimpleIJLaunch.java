@@ -1,7 +1,12 @@
 
+import ch.epfl.biop.bdv.bioformats.command.BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand;
+import ij.IJ;
 import loci.common.DebugTools;
 import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;
+import sc.fiji.bdvpg.scijava.processors.SpimDataPostprocessor;
+
+import java.util.concurrent.ExecutionException;
 
 
 public class SimpleIJLaunch {
@@ -17,6 +22,21 @@ public class SimpleIJLaunch {
 
         final ImageJ ij = new ImageJ();
         ij.ui().showUI();
+
+        try {
+            ij.command().run(BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand.class, true,
+                    "unit","MILLIMETER",
+                    "splitrgbchannels", false
+                    ).get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+
+        SpimDataPostprocessor p;
+        System.out.println("Done.");
+        //IJ.run("Open [BioFormats Bdv Bridge (Basic)]", "unit=MILLIMETER splitrgbchannels=false");
 
         /*((SourceAndConverterService)(SourceAndConverterServices
                 .getSourceAndConverterService()))
