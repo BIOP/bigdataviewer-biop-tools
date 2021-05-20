@@ -29,6 +29,7 @@ public class DemoShuffledSpimData {
 
         ij.ui().showUI();
 
+        System.out.println(KunalDataset.class.getSimpleName());
         // load and convert the famous blobs image// Gets active BdvHandle instance
         BdvHandle bdv = SourceAndConverterServices.getBdvDisplayService().getActiveBdv();
         // Import SpimData

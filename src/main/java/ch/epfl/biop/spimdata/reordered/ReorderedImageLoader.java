@@ -121,6 +121,10 @@ public class  ReorderedImageLoader<T extends AbstractViewerSetupImgLoader & Mult
         cache = new VolatileGlobalCellCache(sq);
     }
 
+    public ISetupOrder getOrder() {
+        return order;
+    }
+
     public ReorderedSetupLoader getSetupImgLoader(int setupId) {
         if (imgLoaders.containsKey(setupId)) {
             return imgLoaders.get(setupId);
