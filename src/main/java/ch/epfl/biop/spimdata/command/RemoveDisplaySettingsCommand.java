@@ -1,4 +1,4 @@
-package ch.epfl.biop.spimdata.reordered;
+package ch.epfl.biop.spimdata.command;
 
 import mpicbg.spim.data.SpimData;
 import mpicbg.spim.data.XmlIoSpimData;

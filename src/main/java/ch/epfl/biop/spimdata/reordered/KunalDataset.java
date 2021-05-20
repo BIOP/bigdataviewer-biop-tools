@@ -82,7 +82,7 @@ public class KunalDataset implements ISetupOrder {
                 .keySet()
                 .stream().map(this::originToReorderedLocation)
                 .mapToInt(viewId -> viewId.getTimePointId())
-                .max().getAsInt();
+                .max().getAsInt()+1;
 
         logger.debug("Reordered spimdata max timepoint = "+maxTimePoint);
 
