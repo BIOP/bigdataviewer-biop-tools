@@ -26,6 +26,13 @@ import sc.fiji.bdvpg.spimdata.importer.SpimDataFromXmlImporter;
 
 import java.util.List;
 
+
+/**
+ * NOT WORKING!! A Clone for affine transform or for the outofbounds stuff should be pu somewhere
+ *
+ * TO FIX (if the source is resampled, as in ABBA, that works however)
+ *
+ */
 public class DemoZSlicedSource {
 
     static {
