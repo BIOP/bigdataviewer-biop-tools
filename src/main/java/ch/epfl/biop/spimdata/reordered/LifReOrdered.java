@@ -18,19 +18,17 @@ import java.util.Map;
 import java.util.stream.IntStream;
 
 /**
- * The famous Kunal makes gigantic lif images on the SP8.
- *
- * The issue is that these images have timepoints splitted along series
+ * Gigantic tiled timelapse images on the SP8-FLIM end up being detected as all being timepoint 0
  *
  * This class is using {@link ReorderedImageLoader} in order to turn viewsetups into extra timepoints
  *
  */
 
-public class KunalDataset implements ISetupOrder {
+public class LifReOrdered implements ISetupOrder {
 
     transient AbstractSpimData spimdataOrigin;
 
-    transient protected static Logger logger = LoggerFactory.getLogger(KunalDataset.class);
+    transient protected static Logger logger = LoggerFactory.getLogger(LifReOrdered.class);
 
     final int nTiles;
 
@@ -38,7 +36,7 @@ public class KunalDataset implements ISetupOrder {
 
     final String spimdataOriginPath;
 
-    public KunalDataset(String spimdataOriginPath, int nTiles, int nChannels) {
+    public LifReOrdered(String spimdataOriginPath, int nTiles, int nChannels) {
         this.spimdataOriginPath = spimdataOriginPath;
         this.nTiles = nTiles;
         this.nChannels = nChannels;

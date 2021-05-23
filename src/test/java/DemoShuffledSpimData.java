@@ -1,12 +1,11 @@
 import bdv.util.BdvHandle;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.spimdata.reordered.KunalDataset;
+import ch.epfl.biop.spimdata.reordered.LifReOrdered;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;
 import sc.fiji.bdvpg.bdv.navigate.ViewerTransformAdjuster;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
-import sc.fiji.bdvpg.spimdata.importer.SpimDataFromXmlImporter;
 
 import java.util.List;
 
@@ -29,7 +28,7 @@ public class DemoShuffledSpimData {
 
         ij.ui().showUI();
 
-        System.out.println(KunalDataset.class.getSimpleName());
+        System.out.println(LifReOrdered.class.getSimpleName());
         // load and convert the famous blobs image// Gets active BdvHandle instance
         BdvHandle bdv = SourceAndConverterServices.getBdvDisplayService().getActiveBdv();
         // Import SpimData
@@ -48,7 +47,7 @@ public class DemoShuffledSpimData {
         new ViewerTransformAdjuster( bdv, sacs.get(0) ).run();*/
 
         System.out.println("Reordering dataset");
-        KunalDataset kd = new KunalDataset("N:\\Temp Oli\\Kunal\\lifkunal-nico_v3.xml",16,4);
+        LifReOrdered kd = new LifReOrdered("N:\\Temp Oli\\Kunal\\lifkunal-nico_v3.xml",16,4);
         kd.initialize();
         AbstractSpimData reshuffled = kd.constructSpimData();
 

@@ -78,8 +78,8 @@ public class XmlIoReorderedImgLoader implements XmlIoBasicImgLoader< ReorderedIm
                  } else {
                 throw new UnsupportedOperationException("Unknown ISetupOrder class "+orderClassName+" vs expected "+KunalDataset.class.getSimpleName());
             }*/
-            System.out.println("ISetupOrder class "+orderClassName+" vs expected "+KunalDataset.class.getSimpleName());
-            ISetupOrder order = gson.fromJson(orderString, KunalDataset.class);
+            System.out.println("ISetupOrder class "+orderClassName+" vs expected "+ LifReOrdered.class.getSimpleName());
+            ISetupOrder order = gson.fromJson(orderString, LifReOrdered.class);
             order.initialize();
             return new ReorderedImageLoader( order, sequenceDescription, numFetcherThreads, numPriorities);
 
