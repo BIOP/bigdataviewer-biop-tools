@@ -10,6 +10,8 @@ import org.scijava.ItemIO;
 import org.scijava.command.CommandService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 
@@ -28,6 +30,8 @@ import java.util.stream.Stream;
                 "edited in BigWarp.")
 
 public class Elastix2DSparsePointsRegisterCommand extends SelectSourcesForRegistrationCommand implements BdvPlaygroundActionCommand {
+
+    private static Logger logger = LoggerFactory.getLogger(Elastix2DSparsePointsRegisterCommand.class);
 
     @Parameter(label = "Background offset value for moving image")
     double background_offset_value_moving = 0;
@@ -70,11 +74,11 @@ public class Elastix2DSparsePointsRegisterCommand extends SelectSourcesForRegist
     @Override
     public void run() {
 
-        if (verbose) log = s -> System.out.println(s);
+        if (verbose) log = logger::info;
 
         if (showPoints) {
             parallel=false; // Cannot parallelize with IJ1 functions
-            log.accept("Cannot run parallel registrations if showPoints is true.");
+            logger.warn("Cannot run parallel registrations if showPoints is true.");
         }
 
         ArrayList<RealPoint> pts_Fixed = new ArrayList<>();
@@ -132,7 +136,7 @@ public class Elastix2DSparsePointsRegisterCommand extends SelectSourcesForRegist
             } catch (ExecutionException e) {
                 e.printStackTrace();
             } catch (Exception e) {
-                System.err.println("Error during registration");
+                logger.error("Error during registration");
                 e.printStackTrace();
             }
         });

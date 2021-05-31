@@ -9,6 +9,8 @@ import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.view.ExtendedRandomAccessibleInterval;
 import net.imglib2.view.Views;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -16,6 +18,8 @@ import java.util.List;
 import java.util.function.BiConsumer;
 
 public class EmptyMultiresolutionSource implements Source<UnsignedShortType>, Serializable {
+
+    private static Logger logger = LoggerFactory.getLogger(EmptyMultiresolutionSource.class);
 
     EmptyMultiresolutionSource.EmptyMultiresolutionSourceParams params;
 
@@ -41,7 +45,7 @@ public class EmptyMultiresolutionSource implements Source<UnsignedShortType>, Se
                 fun, UnsignedShortType::new);
 
         if (numberOfResolutions<=0) {
-            System.err.println("Number of resolution issue, this value cannot be below 1");
+            logger.warn("Number of resolution issue, this value cannot be below 1, value ("+numberOfResolutions+")overriden to 1");
             numberOfResolutions = 1;
         }
         params.numberOfResolutions = numberOfResolutions;

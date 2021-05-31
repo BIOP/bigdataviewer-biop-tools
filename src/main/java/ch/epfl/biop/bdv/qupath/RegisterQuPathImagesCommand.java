@@ -3,6 +3,7 @@ package ch.epfl.biop.bdv.qupath;
 import bdv.util.QuPathBdvHelper;
 import bdv.util.RealTransformHelper;
 import bdv.viewer.SourceAndConverter;
+import ch.epfl.biop.bdv.command.register.RegisterWholeSlideScans2DCommand;
 import ch.epfl.biop.bdv.command.register.Wizard2DWholeScanRegisterCommand;
 import ch.epfl.biop.spimdata.qupath.QuPathEntryEntity;
 import ij.gui.WaitForUserDialog;
@@ -13,6 +14,8 @@ import org.scijava.command.Command;
 import org.scijava.command.CommandService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 import sc.fiji.persist.ScijavaGsonHelper;
@@ -22,6 +25,8 @@ import java.nio.charset.Charset;
 
 @Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Wizard Align Slides For QuPath")
 public class RegisterQuPathImagesCommand implements Command {
+
+    private static Logger logger = LoggerFactory.getLogger(RegisterQuPathImagesCommand.class);
 
     @Parameter(label = "Fixed source from a QuPath generated dataset (see Open QuPath Project)")
     SourceAndConverter fixed_source;
@@ -45,11 +50,11 @@ public class RegisterQuPathImagesCommand implements Command {
             // Several checks before we even start the registration
             //  - Is there an associated qupath project ?
             if (!QuPathBdvHelper.isSourceDirectlyLinkedToQuPath(fixed_source)) {
-                System.err.println("Error : the fixed source is not associated to a QuPath project");
+                logger.error("Error : the fixed source is not associated to a QuPath project");
                 return;
             }
             if (!QuPathBdvHelper.isSourceDirectlyLinkedToQuPath(moving_source)) {
-                System.err.println("Error : the moving source is not associated to a QuPath project");
+                logger.error("Error : the moving source is not associated to a QuPath project");
                 return;
             }
 
@@ -58,7 +63,7 @@ public class RegisterQuPathImagesCommand implements Command {
             String qupathProjectFixed = QuPathBdvHelper.getQuPathProjectFile(fixed_source).getAbsolutePath();
 
             if (!qupathProjectMoving.equals(qupathProjectFixed)) {
-                System.err.println("Error : the moving source and the fixed source are not from the same qupath project");
+                logger.error("Error : the moving source and the fixed source are not from the same qupath project");
                 return;
             }
 
@@ -67,7 +72,7 @@ public class RegisterQuPathImagesCommand implements Command {
             File fixed_entry_folder = QuPathBdvHelper.getDataEntryFolder(fixed_source);
 
             if (moving_entry_folder.getAbsolutePath().equals(fixed_entry_folder.getAbsolutePath())) {
-                System.err.println("Error : the moving source and the fixed source should be in a different entry ( do not select two channels of the same image)");
+                logger.error("Error : the moving source and the fixed source should be in a different entry ( do not select two channels of the same image)");
                 return;
             }
 

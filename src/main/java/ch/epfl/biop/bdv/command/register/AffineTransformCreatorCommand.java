@@ -1,10 +1,13 @@
 package ch.epfl.biop.bdv.command.register;
 
+import ch.epfl.biop.bdv.command.importer.QuPathProjectToBDVDatasetCommand;
 import net.imglib2.realtransform.AffineTransform3D;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 
 @Plugin(type = Command.class, initializer = "init",
@@ -13,6 +16,8 @@ import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
                      +"An affine transform is a 4x3 matrix; elements are separated by comma.",
         headless = true)
 public class AffineTransformCreatorCommand implements Command {
+
+    private static Logger logger = LoggerFactory.getLogger(AffineTransformCreatorCommand.class);
 
     @Parameter(label = "Affine Transform Matrix", style = "text area")
     String stringMatrix = "1,0,0,0,\n 0,1,0,0,\n 0,0,1,0, \n 0,0,0,1";
@@ -44,7 +49,7 @@ public class AffineTransformCreatorCommand implements Command {
         String[] strNumber = inputString.split(",");
         double[] mat = new double[16];
         if (strNumber.length!=16) {
-            System.err.println("matrix has not enough elements");
+            logger.error("Matrix has not enough elements, 16 expected, "+strNumber.length+" provided.");
             return null;
         }
         for (int i=0;i<16;i++) {

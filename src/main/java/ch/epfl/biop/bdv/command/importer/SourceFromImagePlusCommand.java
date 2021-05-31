@@ -2,7 +2,6 @@ package ch.epfl.biop.bdv.command.importer;
 
 import ij.ImagePlus;
 import mpicbg.spim.data.generic.AbstractSpimData;
-import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;

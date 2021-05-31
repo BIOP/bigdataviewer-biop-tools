@@ -142,7 +142,9 @@ public class QuPathBdvHelper {
         SourceAndConverterServices.getSourceAndConverterService()
                 .getSourceAndConverterFromSpimdata(asd);*/
 
-        return null; // TODO
+        throw new UnsupportedOperationException("getAllChannels currently unimplemented");
+
+        //return null; // TODO
     }
 
 }

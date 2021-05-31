@@ -44,8 +44,6 @@ public class Elliptical3DTransformRealTransformAdapter implements IClassRuntimeA
 
         JsonObject obj = new JsonObject();
 
-        //obj.addProperty("type", Elliptical3DTransform.class.getSimpleName());
-
         obj.add("ellipse_params", jsonSerializationContext.serialize(rt.getParameters()));
 
         return obj;

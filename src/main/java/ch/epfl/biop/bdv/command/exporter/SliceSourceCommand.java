@@ -12,6 +12,8 @@ import net.imglib2.type.numeric.integer.UnsignedShortType;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
@@ -28,6 +30,8 @@ import static net.imglib2.cache.img.DiskCachedCellImgOptions.options;
 
 @Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>Slice Source")
 public class SliceSourceCommand implements BdvPlaygroundActionCommand {
+
+    private static Logger logger = LoggerFactory.getLogger(SliceSourceCommand.class);
 
     @Parameter(label = "BigDataViewer Frame")
     public BdvHandle bdv_h;
@@ -64,10 +68,7 @@ public class SliceSourceCommand implements BdvPlaygroundActionCommand {
     @Parameter(label = "cache")
     public boolean cache = false;
 
-
     String unitOfFirstSource=" ";
-
-    public Consumer<String> errlog = (s) -> System.err.println(s);
 
     java.util.List<SourceAndConverter<?>> sourceList;
 
@@ -77,7 +78,7 @@ public class SliceSourceCommand implements BdvPlaygroundActionCommand {
     public void run() {
 
         if ((sacs==null)||(sacs.length==0)) {
-            errlog.accept("No selected source. Abort command.");
+            logger.info("No selected source. Abort command.");
             return;
         }
 

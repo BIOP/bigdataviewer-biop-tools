@@ -14,6 +14,8 @@ import org.scijava.ItemVisibility;
 import org.scijava.command.CommandService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import sc.fiji.bdvpg.bdv.BdvHandleHelper;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
@@ -33,6 +35,8 @@ import static bdv.util.RealTransformHelper.BigWarpFileFromRealTransform;
         headless = false // User interface required
         )
 public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionCommand{
+
+    private static Logger logger = LoggerFactory.getLogger(Wizard2DWholeScanRegisterCommand.class);
 
     @Parameter(visibility = ItemVisibility.MESSAGE)
     String message = "<html><h2>Automated WSI registration wizard</h2><br/>"+
@@ -122,7 +126,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
                 // Ask the user to select the points where the fine tuning should be performed
                 getUserLandmarks();
                 if (landmarks.size()<4) {
-                    System.err.println("At least 4 points should be selected");
+                    logger.error("At least 4 points should be selected");
                     return;
                 }
             } else {

@@ -11,6 +11,8 @@ import net.imglib2.type.numeric.RealType;
 import org.scijava.ItemIO;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import sc.fiji.bdvpg.bdv.BdvHandleHelper;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
@@ -42,6 +44,8 @@ import java.util.stream.Collectors;
 @Plugin(type = BdvPlaygroundActionCommand.class,
         menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Export>Current BDV View To ImagePlus (Basic)")
 public class BasicBdvViewToImagePlusExportCommand<T extends RealType<T>> implements BdvPlaygroundActionCommand {
+
+    private static Logger logger = LoggerFactory.getLogger(BasicBdvViewToImagePlusExportCommand.class);
 
     @Parameter(label = "BigDataViewer Frame")
     public BdvHandle bdv_h;
@@ -102,8 +106,6 @@ public class BasicBdvViewToImagePlusExportCommand<T extends RealType<T>> impleme
 
     String unitOfFirstSource=" ";
 
-    public Consumer<String> errlog = (s) -> System.err.println(s);
-
     List<SourceAndConverter<?>> sourceList;
 
     AffineTransform3D at3D;
@@ -128,7 +130,7 @@ public class BasicBdvViewToImagePlusExportCommand<T extends RealType<T>> impleme
         // 2. At least one source
         if (allSources) {
             if (bdv_h.getViewerPanel().state().getSources().size()==0) {
-                errlog.accept("No source present in Bdv. Abort command.");
+                logger.info("No source present in Bdv. Abort command.");
                 return;
             }
         } /*else {
@@ -172,7 +174,7 @@ public class BasicBdvViewToImagePlusExportCommand<T extends RealType<T>> impleme
 
         if (makeComposite) {
             if (sourceList.stream().map(sac -> sac.getSpimSource().getType().getClass()).distinct().count()>1) {
-                errlog.accept("Cannot make composite because all sources are not of the same type");
+                logger.warn("Cannot make composite because all sources are not of the same type");
                 makeComposite = false;
             }
         }

@@ -5,6 +5,7 @@ import ch.epfl.biop.bdv.bioformats.command.BioformatsBigdataviewerBridgeDatasetC
 import ch.epfl.biop.bdv.bioformats.export.spimdata.BioFormatsConvertFilesToSpimData;
 import ch.epfl.biop.bdv.bioformats.imageloader.FileIndex;
 import ch.epfl.biop.bdv.bioformats.imageloader.SeriesNumber;
+import ch.epfl.biop.bdv.command.exporter.BdvViewToImagePlusExportCommand;
 import ch.epfl.biop.spimdata.qupath.MinimalQuPathProject;
 import ch.epfl.biop.spimdata.qupath.ProjectIO;
 import ch.epfl.biop.spimdata.qupath.QuPathEntryEntity;
@@ -19,6 +20,8 @@ import org.scijava.command.Command;
 import org.scijava.log.LogService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 
 import java.io.File;
@@ -42,14 +45,13 @@ import java.util.Set;
         )
 public class QuPathProjectToBDVDatasetCommand extends BioformatsBigdataviewerBridgeDatasetCommand {
 
+    private static Logger logger = LoggerFactory.getLogger(QuPathProjectToBDVDatasetCommand.class);
+
     @Parameter
     File quPathProject;
 
     @Parameter(type = ItemIO.OUTPUT)
     AbstractSpimData spimData;
-
-    @Parameter
-    LogService ls;
 
     @Override
     public void run() {
@@ -110,10 +112,10 @@ public class QuPathProjectToBDVDatasetCommand extends BioformatsBigdataviewerBri
                         }
 
                     } else {
-                        ls.error("Unsupported "+image.serverBuilder.providerClassName+" class name provider");
+                        logger.error("Unsupported "+image.serverBuilder.providerClassName+" class name provider");
                     }
                 } else {
-                    ls.error("Unsupported "+image.serverBuilder.builderType+" server builder");
+                    logger.error("Unsupported "+image.serverBuilder.builderType+" server builder");
                 }
             });
 

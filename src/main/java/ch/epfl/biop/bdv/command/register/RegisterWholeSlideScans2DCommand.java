@@ -12,6 +12,8 @@ import org.scijava.command.CommandModule;
 import org.scijava.command.CommandService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 import sc.fiji.bdvpg.scijava.command.bdv.BdvSourcesShowCommand;
@@ -25,6 +27,8 @@ import java.util.function.Consumer;
 @Plugin(type = BdvPlaygroundActionCommand.class,
         menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Align Slides (2D)")
 public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionCommand {
+
+    private static Logger logger = LoggerFactory.getLogger(RegisterWholeSlideScans2DCommand.class);
 
     @Parameter(label = "Global reference image (fixed, usually, first dapi channel)")
     SourceAndConverter globalRefSource;
@@ -65,8 +69,6 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
     @Parameter
     CommandService cs;
 
-    Consumer<String> log = s -> System.out.println(s);
-
     @Parameter
     boolean showDetails;
 
@@ -85,7 +87,7 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
             SourceAndConverter firstRegSrc = currentRefSource;
 
             if (performFirstCoarseAffineRegistration) {
-                log.accept("----------- First registration - Coarse Affine");
+                logger.info("----------- First registration - Coarse Affine");
 
                 CommandModule cm = cs.run(Elastix2DAffineRegisterCommand.class, true,
                         "sac_fixed", globalRefSource,
@@ -114,7 +116,7 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
                 firstRegSrc = new SourceAffineTransformer(at1).apply(currentRefSource);
             }
 
-            log.accept("----------- Precise Warping based on particular locations");
+            logger.info("----------- Precise Warping based on particular locations");
             RealTransform tst_temp = new AffineTransform3D(); // Identity transform applied if no warping
             if (performSecondSplineRegistration) {
                 tst_temp =
@@ -148,7 +150,7 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
                 ptListCoordinates += topLeftX+","+bottomRightY;
             }
 
-            log.accept("----------- Computing global transformation");
+            logger.info("----------- Computing global transformation");
 
             RealTransformSequence rts = new RealTransformSequence();
             AffineTransform3D at2 = new AffineTransform3D();

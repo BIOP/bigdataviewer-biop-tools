@@ -8,12 +8,16 @@ import net.imglib2.realtransform.AffineTransform3D;
 import org.scijava.ItemIO;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
         menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Register Sources with Elastix on Server (Affine, 2D)")
 public class Elastix2DAffineRegisterServerCommand extends AbstractElastix2DRegistrationInRectangleCommand implements BdvPlaygroundActionCommand {
+
+    private static Logger logger = LoggerFactory.getLogger(Elastix2DAffineRegisterServerCommand.class);
 
     @Parameter(type = ItemIO.OUTPUT)
     boolean success; // No issue during remote registration ?
@@ -86,6 +90,8 @@ public class Elastix2DAffineRegisterServerCommand extends AbstractElastix2DRegis
         if (success) {
             //registeredSource = reg.getRegisteredSac();
             at3D = reg.getAffineTransform();
+        } else {
+            logger.error("Error during registration");
         }
     }
 }

@@ -5,12 +5,17 @@ import net.imglib2.FinalRealInterval;
 import net.imglib2.realtransform.InvertibleRealTransform;
 import net.imglib2.realtransform.RealTransform;
 import org.scijava.plugin.Plugin;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import sc.fiji.persist.IClassRuntimeAdapter;
 
 import java.lang.reflect.Type;
 
 @Plugin(type = IClassRuntimeAdapter.class)
 public class BoundedRealTransformAdapter implements IClassRuntimeAdapter<RealTransform, BoundedRealTransform> {
+
+    private static Logger logger = LoggerFactory.getLogger(BoundedRealTransformAdapter.class);
+
     @Override
     public Class<? extends RealTransform> getBaseClass() {
         return RealTransform.class;
@@ -33,7 +38,7 @@ public class BoundedRealTransformAdapter implements IClassRuntimeAdapter<RealTra
         RealTransform rt = jsonDeserializationContext.deserialize(obj.get("realTransform"), RealTransform.class);
 
         if (!(rt instanceof InvertibleRealTransform)) {
-            System.err.println("Error during deserialization of BoundedRealTransform : The serialized transform is not invertible");
+            logger.error("Error during deserialization of BoundedRealTransform : The serialized transform is not invertible");
             return null;
         }
 
@@ -50,8 +55,6 @@ public class BoundedRealTransformAdapter implements IClassRuntimeAdapter<RealTra
     public JsonElement serialize(BoundedRealTransform brt, Type type, JsonSerializationContext jsonSerializationContext) {
 
         JsonObject obj = new JsonObject();
-
-        //obj.addProperty("type", BoundedRealTransform.class.getSimpleName());
 
         FinalRealInterval fri = new FinalRealInterval(brt.getInterval());
 

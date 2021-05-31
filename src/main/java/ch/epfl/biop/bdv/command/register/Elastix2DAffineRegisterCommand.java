@@ -5,6 +5,8 @@ import ch.epfl.biop.wrappers.elastix.RegParamAffine_Fast;
 import ch.epfl.biop.wrappers.elastix.RegisterHelper;
 import ch.epfl.biop.wrappers.elastix.RegistrationParameters;
 import org.scijava.plugin.Plugin;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 
@@ -21,6 +23,8 @@ import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
                       "requires many parameters. For more user friendly command, use wizards instead.\n"+
                       "Outputs the transform to apply to the moving source."  )
 public class Elastix2DAffineRegisterCommand extends AbstractElastix2DRegistrationInRectangleCommand implements BdvPlaygroundActionCommand {
+
+    private static Logger logger = LoggerFactory.getLogger(Elastix2DAffineRegisterCommand.class);
 
     @Override
     public void run() {
@@ -84,7 +88,7 @@ public class Elastix2DAffineRegisterCommand extends AbstractElastix2DRegistratio
             //registeredSource = reg.getRegisteredSac();
             at3D = reg.getAffineTransform();
         } else {
-            System.err.println("Error during registration");
+            logger.error("Error during registration");
         }
     }
 }
