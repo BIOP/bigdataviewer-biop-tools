@@ -62,15 +62,17 @@ public class QuPathProjectToBDVDatasetCommand extends BioformatsBigdataviewerBri
 
             MinimalQuPathProject project = gson.fromJson(projectJson, MinimalQuPathProject.class);
 
-            System.out.println(project.uri);
+            logger.debug("Opening QuPath project "+project.uri);
 
             Set<QuPathBioFormatsSourceIdentifier> quPathSourceIdentifiers = new HashSet<>();
 
             List<URI> allURIs = new ArrayList<>();
             project.images.forEach(image -> {
+                logger.debug("Opening qupath image "+image);
                 QuPathBioFormatsSourceIdentifier identifier = new QuPathBioFormatsSourceIdentifier();
                 if (image.serverBuilder.builderType.equals("rotated")) {
                     String angleDegreesStr = image.serverBuilder.rotation.substring(7);//"ROTATE_ANGLE" for instance "ROTATE_0", "ROTATE_270", etc
+                    logger.debug("Rotated image server ("+angleDegreesStr+")");
                     if (angleDegreesStr.equals("NONE")) {
                         identifier.angleRotationZAxis = 0;
                     } else {
@@ -80,6 +82,7 @@ public class QuPathProjectToBDVDatasetCommand extends BioformatsBigdataviewerBri
                 }
 
                 if (image.serverBuilder.builderType.equals("uri")) {
+                    logger.debug("URI image server");
                     if (image.serverBuilder.providerClassName.equals("qupath.lib.images.servers.bioformats.BioFormatsServerBuilder")) {
                         if (!allURIs.contains(image.serverBuilder.uri)) {
                             allURIs.add(image.serverBuilder.uri);
@@ -98,16 +101,17 @@ public class QuPathProjectToBDVDatasetCommand extends BioformatsBigdataviewerBri
                             int seriesArgIndex =  image.serverBuilder.args.indexOf("--series");
 
                             if (seriesArgIndex==-1) {
-                                System.err.println("Series not found in qupath project server builder!");
+                                logger.error("Series not found in qupath project server builder!");
                                 identifier.bioformatsIndex = -1;
                             } else {
                                 identifier.bioformatsIndex = Integer.valueOf(image.serverBuilder.args.get(seriesArgIndex + 1));
                             }
 
-                            System.out.println(identifier);
+                            logger.debug(identifier.toString());
                             quPathSourceIdentifiers.add(identifier);
 
                         } catch (URISyntaxException e) {
+                            logger.error("URI Syntax error "+e.getMessage());
                             e.printStackTrace();
                         }
 
@@ -157,7 +161,7 @@ public class QuPathProjectToBDVDatasetCommand extends BioformatsBigdataviewerBri
                 for (QuPathBioFormatsSourceIdentifier identifier : quPathSourceIdentifiers) {
                     if (fi.getName().equals(identifier.sourceFile)) {
                         if (sn.getId() == identifier.bioformatsIndex) {
-                            System.out.println("identifier.entryID = "+identifier.entryID);
+                            logger.debug("identifier.entryID = "+identifier.entryID);
                             QuPathEntryEntity qpent = new QuPathEntryEntity(identifier.entryID, FilenameUtils.getBaseName(quPathProject.toString()) +"_[entry:"+identifier.entryID+"]");
                             qpent.setName(FilenameUtils.getBaseName(quPathProject.toString()) +"_[entry:"+identifier.entryID+"]");
                             qpent.setQuPathProjectionLocation(quPathProject.getAbsolutePath());
@@ -168,6 +172,7 @@ public class QuPathProjectToBDVDatasetCommand extends BioformatsBigdataviewerBri
             });
 
         } catch (IOException | URISyntaxException e) {
+            logger.error("Exception thrown: "+e.getMessage());
             e.printStackTrace();
         }
     }
