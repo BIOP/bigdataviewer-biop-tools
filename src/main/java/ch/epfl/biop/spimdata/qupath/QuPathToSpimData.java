@@ -94,6 +94,7 @@ public class QuPathToSpimData {
             project.images.forEach(image -> {
                 logger.debug("Opening qupath image "+image);
                 QuPathImageLoader.QuPathBioFormatsSourceIdentifier identifier = new QuPathImageLoader.QuPathBioFormatsSourceIdentifier();
+
                 if (image.serverBuilder.builderType.equals("rotated")) {
                     String angleDegreesStr = image.serverBuilder.rotation.substring(7);//"ROTATE_ANGLE" for instance "ROTATE_0", "ROTATE_270", etc
                     logger.debug("Rotated image server ("+angleDegreesStr+")");
@@ -167,6 +168,9 @@ public class QuPathToSpimData {
                             VoxelDimensions voxDims = BioFormatsMetaDataHelper.getSeriesVoxelDimensions(omeMeta, identifier.bioformatsIndex,
                                     opener.u, opener.voxSizeReferenceFrameLength);
 
+                            QuPathEntryEntity qpentry = new QuPathEntryEntity(identifier.entryID);
+                            qpentry.setName(QuPathEntryEntity.getNameFromURIAndSerie(identifier.uri, identifier.bioformatsIndex));
+
                             channels.forEach(
                                     iCh -> {
                                         QuPathImageLoader.QuPathEntryAndChannel usc = new QuPathImageLoader.QuPathEntryAndChannel(identifier, iCh);
@@ -188,6 +192,7 @@ public class QuPathToSpimData {
                                         vs.setAttribute(fi);
                                         SeriesNumber sn = new SeriesNumber(identifier.bioformatsIndex);
                                         vs.setAttribute(sn);
+                                        vs.setAttribute(qpentry);
 
                                         // Attempt to set color
                                         Displaysettings ds = new Displaysettings(viewSetupCounter);

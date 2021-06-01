@@ -55,8 +55,12 @@ public class QuPathImageLoader implements ViewerImgLoader, MultiResolutionImgLoa
 
     Map<Integer, QuPathEntryAndChannel> viewSetupToQuPathEntryAndChannel = new HashMap<>();
 
-    public QuPathImageLoader(URI quPathProject, BioFormatsBdvOpener openerModel, final AbstractSequenceDescription<?, ?, ?> sequenceDescription, int numFetcherThreads, int numPriorities) {
+    final URI quPathProject;
+    final BioFormatsBdvOpener openerModel;
 
+    public QuPathImageLoader(URI quPathProject, BioFormatsBdvOpener openerModel, final AbstractSequenceDescription<?, ?, ?> sequenceDescription, int numFetcherThreads, int numPriorities) {
+        this.quPathProject = quPathProject;
+        this.openerModel = openerModel;
         this.sequenceDescription = sequenceDescription;
         this.numFetcherThreads = numFetcherThreads;
         this.numPriorities = numPriorities;
@@ -203,6 +207,14 @@ public class QuPathImageLoader implements ViewerImgLoader, MultiResolutionImgLoa
     @Override
     public CacheControl getCacheControl() {
         return cache;
+    }
+
+    public URI getProjectURI() {
+        return quPathProject;
+    }
+
+    public BioFormatsBdvOpener  getModelOpener() {
+        return openerModel;
     }
 
     public static class QuPathBioFormatsSourceIdentifier {
