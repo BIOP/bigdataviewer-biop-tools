@@ -1,5 +1,6 @@
 package ch.epfl.biop.bdv.command.importer;
 
+import ch.epfl.biop.bdv.bioformats.BioFormatsMetaDataHelper;
 import ch.epfl.biop.bdv.bioformats.bioformatssource.BioFormatsBdvOpener;
 import ch.epfl.biop.bdv.bioformats.command.BioformatsBigdataviewerBridgeDatasetCommand;
 import ch.epfl.biop.bdv.bioformats.export.spimdata.BioFormatsConvertFilesToSpimData;
@@ -9,11 +10,14 @@ import ch.epfl.biop.bdv.command.exporter.BdvViewToImagePlusExportCommand;
 import ch.epfl.biop.spimdata.qupath.MinimalQuPathProject;
 import ch.epfl.biop.spimdata.qupath.ProjectIO;
 import ch.epfl.biop.spimdata.qupath.QuPathEntryEntity;
+import ch.epfl.biop.spimdata.qupath.QuPathToSpimData;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import mpicbg.spim.data.generic.sequence.BasicViewSetup;
 import net.imglib2.realtransform.AffineTransform3D;
+import ome.units.quantity.Length;
+import ome.units.unit.Unit;
 import org.apache.commons.io.FilenameUtils;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
@@ -53,9 +57,30 @@ public class QuPathProjectToBDVDatasetCommand extends BioformatsBigdataviewerBri
     @Parameter(type = ItemIO.OUTPUT)
     AbstractSpimData spimData;
 
+    /*@Parameter(required = false, label="Physical units of the dataset", choices = {"MILLIMETER","MICROMETER","NANOMETER"})
+    public String unit = "MILLIMETER";
+
+    @Parameter(label = "Split RGB channels")
+    boolean splitrgbchannels;*/
+
     @Override
     public void run() {
+
+        //BioformatsBigdataviewerBridgeDatasetCommand settings = new BioformatsBigdataviewerBridgeDatasetCommand();
+        //settings.splitrgbchannels = splitrgbchannels;
+        //settings.unit = unit;
+
         try {
+            spimData = (new QuPathToSpimData()).getSpimDataInstance(
+                    //new URI(Paths.get(quPathProject.getAbsolutePath()).toString()),
+                    quPathProject.toURI(),
+                    getOpener("")
+                    );
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        /*try {
 
             JsonObject projectJson = ProjectIO.loadRawProject(quPathProject);
             Gson gson = new Gson();
@@ -174,21 +199,54 @@ public class QuPathProjectToBDVDatasetCommand extends BioformatsBigdataviewerBri
         } catch (IOException | URISyntaxException e) {
             logger.error("Exception thrown: "+e.getMessage());
             e.printStackTrace();
-        }
+        }*/
     }
 
-    public static class QuPathBioFormatsSourceIdentifier {
-        int indexInQuPathProject;
-        int entryID;
-        String sourceFile;
-        int bioformatsIndex;
-        double angleRotationZAxis = 0;
-        URI uri;
-
-        public String toString() {
-            String str = "";
-            str+="sourceFile:"+sourceFile+"[bf:"+bioformatsIndex+" - qp:"+indexInQuPathProject+"]";
-            return str;
+    public BioFormatsBdvOpener getOpener(String datalocation) {
+        Unit bfUnit = BioFormatsMetaDataHelper.getUnitFromString(this.unit);
+        Length positionReferenceFrameLength = new Length(this.refframesizeinunitlocation, bfUnit);
+        Length voxSizeReferenceFrameLength = new Length(this.refframesizeinunitvoxsize, bfUnit);
+        BioFormatsBdvOpener opener = BioFormatsBdvOpener.getOpener()
+                .location(datalocation).unit(this.unit)
+                //.auto()
+                .ignoreMetadata();
+        if (!this.switchzandc.equals("AUTO")) {
+            opener = opener.switchZandC(this.switchzandc.equals("TRUE"));
         }
+
+        if (!this.usebioformatscacheblocksize) {
+            opener = opener.cacheBlockSize(this.cachesizex, this.cachesizey, this.cachesizez);
+        }
+
+        if (!this.positioniscenter.equals("AUTO")) {
+            if (this.positioniscenter.equals("TRUE")) {
+                opener = opener.centerPositionConvention();
+            } else {
+                opener = opener.cornerPositionConvention();
+            }
+        }
+
+        if (!this.flippositionx.equals("AUTO") && this.flippositionx.equals("TRUE")) {
+            opener = opener.flipPositionX();
+        }
+
+        if (!this.flippositiony.equals("AUTO") && this.flippositiony.equals("TRUE")) {
+            opener = opener.flipPositionY();
+        }
+
+        if (!this.flippositionz.equals("AUTO") && this.flippositionz.equals("TRUE")) {
+            opener = opener.flipPositionZ();
+        }
+
+        opener = opener.unit(this.unit);
+        opener = opener.positionReferenceFrameLength(positionReferenceFrameLength);
+        opener = opener.voxSizeReferenceFrameLength(voxSizeReferenceFrameLength);
+        if (this.splitrgbchannels) {
+            opener = opener.splitRGBChannels();
+        }
+
+        return opener;
     }
+
+
 }

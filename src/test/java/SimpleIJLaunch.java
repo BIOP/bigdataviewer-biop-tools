@@ -17,13 +17,13 @@ public class SimpleIJLaunch {
 
     static public void main(String... args) {
         // create the ImageJ application context with all available services
-        DebugTools.enableIJLogging(false);
-        DebugTools.enableLogging("INFO");
+        //DebugTools.enableIJLogging(false);
+        //DebugTools.enableLogging("INFO");
 
         final ImageJ ij = new ImageJ();
         ij.ui().showUI();
 
-        try {
+       /* try {
             ij.command().run(BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand.class, true,
                     "unit","MILLIMETER",
                     "splitrgbchannels", false
@@ -35,7 +35,7 @@ public class SimpleIJLaunch {
         }
 
         SpimDataPostprocessor p;
-        System.out.println("Done.");
+        System.out.println("Done.");*/
         //IJ.run("Open [BioFormats Bdv Bridge (Basic)]", "unit=MILLIMETER splitrgbchannels=false");
 
         /*((SourceAndConverterService)(SourceAndConverterServices
