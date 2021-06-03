@@ -187,7 +187,7 @@ public class QuPathImageLoader implements ViewerImgLoader, MultiResolutionImgLoa
         } else {
             QuPathEntryAndChannel qec = viewSetupToQuPathEntryAndChannel.get(setupId);
             BioFormatsBdvOpener opener = this.openerMap.get(qec.entry.uri);
-            int iS = qec.entry.bioformatsIndex-1;
+            int iS = qec.entry.bioformatsIndex;
             int iC = qec.iChannel;
             logger.debug("loading qupath entry number = "+qec.entry+" setupId = "+setupId+" channel "+iC);
 
