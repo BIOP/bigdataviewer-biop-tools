@@ -28,7 +28,8 @@ import java.util.*;
 import java.util.stream.IntStream;
 
 /**
- * See BioFormatsConvertFilesToSpimData
+ * See documentation in {@link QuPathImageLoader}
+ * @author Nicolas Chiaruttini, EPFL, BIOP, 2021
  */
 
 public class QuPathToSpimData {
