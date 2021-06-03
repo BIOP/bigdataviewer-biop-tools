@@ -170,7 +170,7 @@ public class QuPathToSpimData {
 
                             QuPathEntryEntity qpentry = new QuPathEntryEntity(identifier.entryID);
                             qpentry.setName(QuPathEntryEntity.getNameFromURIAndSerie(identifier.uri, identifier.bioformatsIndex));
-
+                            qpentry.setQuPathProjectionLocation(Paths.get(quPathProject).toString());
                             channels.forEach(
                                     iCh -> {
                                         QuPathImageLoader.QuPathEntryAndChannel usc = new QuPathImageLoader.QuPathEntryAndChannel(identifier, iCh);
