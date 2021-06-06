@@ -216,6 +216,7 @@ public class BasicBdvViewToImagePlusExportCommand<T extends RealType<T>> impleme
 
             compositeImage.setTitle(BdvHandleHelper.getWindowTitle(bdv_h));
             ImagePlusHelper.storeExtendedCalibrationToImagePlus(compositeImage, at3D.inverse(), unitOfFirstSource, timepointBegin);
+            compositeImage.show();
         } else {
             resampledSourceList.forEach(source -> {
                 int mipmapLevel = SourceAndConverterHelper.bestLevel(sourceList.get(0), timepointBegin, samplingXYInPhysicalUnit);
@@ -235,6 +236,7 @@ public class BasicBdvViewToImagePlusExportCommand<T extends RealType<T>> impleme
                     singleChannel.show();
                 } else {
                     compositeImage = singleChannel;
+                    compositeImage.show();
                 }
             });
         }

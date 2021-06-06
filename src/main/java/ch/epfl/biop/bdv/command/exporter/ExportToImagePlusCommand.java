@@ -74,6 +74,7 @@ public class ExportToImagePlusCommand implements BdvPlaygroundActionCommand {
         imp_out.setTitle(sourceList.get(0).getSpimSource().getName());
 
         ImagePlusHelper.storeExtendedCalibrationToImagePlus(imp_out,at3D,unit,timepointBegin);
+        imp_out.show();
 
     }
 

@@ -119,6 +119,8 @@ public class ExportToMultipleImagePlusCommand implements BdvPlaygroundActionComm
             imps_out.add(imp_out);
 
         });
+
+        imps_out.forEach(ImagePlus::show);
     }
 
 

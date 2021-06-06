@@ -191,6 +191,7 @@ public class BdvViewToImagePlusExportCommand<T extends RealType<T>> implements B
 
             compositeImage.setTitle(BdvHandleHelper.getWindowTitle(bdv_h));
             ImagePlusHelper.storeExtendedCalibrationToImagePlus(compositeImage, at3D.inverse(), unitOfFirstSource, timepointBegin);
+            compositeImage.show();
         } else {
             resampledSourceList.forEach(source -> {
                 ImagePlus singleChannel = ImagePlusHelper.wrap(
@@ -207,6 +208,7 @@ public class BdvViewToImagePlusExportCommand<T extends RealType<T>> implements B
                     singleChannel.show();
                 } else {
                     compositeImage = singleChannel;
+                    compositeImage.show();
                 }
             });
         }
