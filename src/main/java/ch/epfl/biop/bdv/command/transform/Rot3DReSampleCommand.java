@@ -219,11 +219,11 @@ public class Rot3DReSampleCommand implements BdvPlaygroundActionCommand {
 
         imp_out = ImagePlusHelper.wrap(
                 reoriented_sources,
-                mapCS,
+                //mapCS,
                 mapMipmap,
                 0,
                 imp_in.getNFrames(),
-                false);
+                1);
 
         imp_out.setTitle("Reoriented_"+imp_in.getTitle());
 

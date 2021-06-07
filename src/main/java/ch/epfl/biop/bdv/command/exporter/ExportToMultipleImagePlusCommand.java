@@ -1,6 +1,5 @@
 package ch.epfl.biop.bdv.command.exporter;
 
-import bdv.tools.brightness.ConverterSetup;
 import bdv.viewer.SourceAndConverter;
 import ij.ImagePlus;
 import net.imglib2.realtransform.AffineTransform3D;
@@ -9,7 +8,6 @@ import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
 import spimdata.imageplus.ImagePlusHelper;
 
@@ -28,41 +26,34 @@ public class ExportToMultipleImagePlusCommand implements BdvPlaygroundActionComm
     @Parameter
     public int level;
 
-    @Parameter
-    public int timepointBegin;
+    @Parameter(label = "Start Timepoint (starts at 0)")
+    public int timepointbegin = 0;
 
-    @Parameter
-    public int timepointEnd;
+    @Parameter(label = "Number of timepoints", min = "1")
+    public int numtimepoints = 1;
+
+    @Parameter(label = "Time step", min = "1")
+    public int timestep = 1;
 
     @Parameter(type = ItemIO.OUTPUT)
     public List<ImagePlus> imps_out = new ArrayList<>();
 
-    List<SourceAndConverter<?>> sourceList;
-
     @Override
     public void run() {
 
-        // Sanity checks
-        // 1. Timepoints : at least one timepoint
-        if (timepointEnd<=timepointBegin) {
-            timepointEnd = timepointBegin+1;
-        }
-
-        Map<SourceAndConverter, ConverterSetup> mapSacToCs = new HashMap<>();
         Map<SourceAndConverter, Integer> mapSacToMml = new HashMap<>();
 
         for (SourceAndConverter sac : sacs) {
-            mapSacToCs.put(sac,SourceAndConverterServices.getBdvDisplayService().getConverterSetup(sac));
             mapSacToMml.put(sac, level);
         }
 
-        sourceList = sorter.apply(Arrays.asList(sacs));
+        List<SourceAndConverter<?>> sourceList = sorter.apply(Arrays.asList(sacs));
 
         // Sort according to location = affine transform 3d of sources
 
         List<AffineTransform3D> locations = sourceList.stream().map(sac -> {
             AffineTransform3D at3d = new AffineTransform3D();
-            sac.getSpimSource().getSourceTransform(timepointBegin, level, at3d);
+            sac.getSpimSource().getSourceTransform(timepointbegin, level, at3d);
             return at3d;
         }).collect(Collectors.toList());
 
@@ -96,34 +87,23 @@ public class ExportToMultipleImagePlusCommand implements BdvPlaygroundActionComm
 
         indexToLocation.keySet().stream().sorted().forEach(idx -> {
             AffineTransform3D location = indexToLocation.get(idx);
-        //sacSortedPerLocation.keySet().stream().forEach(location -> {
-
-            ImagePlus imp_out = ImagePlusHelper.wrap(sacSortedPerLocation.get(location).stream().map(sac -> (SourceAndConverter) sac).collect(Collectors.toList()), mapSacToCs, mapSacToMml, timepointBegin, timepointEnd, false );
-
+            ImagePlus imp_out = ImagePlusHelper.wrap(sacSortedPerLocation.get(location).stream().map(sac -> (SourceAndConverter) sac).collect(Collectors.toList()), mapSacToMml, timepointbegin, numtimepoints, timestep);
             AffineTransform3D at3D = new AffineTransform3D();
-            sacSortedPerLocation.get(location).get(0).getSpimSource().getSourceTransform(timepointBegin, level, at3D);
-
+            sacSortedPerLocation.get(location).get(0).getSpimSource().getSourceTransform(timepointbegin, level, at3D);
             String unit = "px";
-
             if (sacSortedPerLocation.get(location).get(0).getSpimSource().getVoxelDimensions() != null) {
                 unit = sacSortedPerLocation.get(location).get(0).getSpimSource().getVoxelDimensions().unit();
                 if (unit==null) {
                     unit = "px";
                 }
             }
-
             imp_out.setTitle(sacSortedPerLocation.get(location).get(0).getSpimSource().getName());
-
-            ImagePlusHelper.storeExtendedCalibrationToImagePlus(imp_out,at3D,unit,timepointBegin);
-
+            ImagePlusHelper.storeExtendedCalibrationToImagePlus(imp_out,at3D,unit, timepointbegin);
             imps_out.add(imp_out);
-
         });
-
         imps_out.forEach(ImagePlus::show);
     }
 
-
-    public Function<Collection<SourceAndConverter<?>>,List<SourceAndConverter<?>>> sorter = sacs1ist -> SourceAndConverterHelper.sortDefaultGeneric(sacs1ist);
+    public Function<Collection<SourceAndConverter<?>>,List<SourceAndConverter<?>>> sorter = sacslist -> SourceAndConverterHelper.sortDefaultGeneric(sacslist);
 
 }
