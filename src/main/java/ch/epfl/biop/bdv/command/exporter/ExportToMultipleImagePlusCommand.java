@@ -85,7 +85,7 @@ public class ExportToMultipleImagePlusCommand implements BdvPlaygroundActionComm
             indexToLocation.put(sacs0Sorted.indexOf(sac0), location);
         });
 
-        indexToLocation.keySet().stream().sorted().forEach(idx -> {
+        indexToLocation.keySet().stream().parallel().sorted().forEach(idx -> {
             AffineTransform3D location = indexToLocation.get(idx);
             ImagePlus imp_out = ImagePlusHelper.wrap(sacSortedPerLocation.get(location).stream().map(sac -> (SourceAndConverter) sac).collect(Collectors.toList()), mapSacToMml, timepointbegin, numtimepoints, timestep);
             AffineTransform3D at3D = new AffineTransform3D();
