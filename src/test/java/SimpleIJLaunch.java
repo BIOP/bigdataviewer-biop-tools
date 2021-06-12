@@ -23,6 +23,9 @@ public class SimpleIJLaunch {
         final ImageJ ij = new ImageJ();
         ij.ui().showUI();
 
+        //DebugTools.enableIJLogging(true);
+        //DebugTools.setRootLevel("DEBUG");
+
        /* try {
             ij.command().run(BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand.class, true,
                     "unit","MILLIMETER",

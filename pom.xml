@@ -115,6 +115,7 @@
 
 		<bigdataviewer-playground-display.version>0.1.2</bigdataviewer-playground-display.version>
 
+		<Operetta_Importer.version>0.1.6</Operetta_Importer.version>
 
 		<releaseProfiles>deploy-to-scijava</releaseProfiles>
 	</properties>
@@ -146,6 +147,12 @@
 			<groupId>ch.epfl.biop</groupId>
 			<artifactId>bigdataviewer-selector</artifactId>
 			<version>${bigdataviewer-selector.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>ch.epfl.biop</groupId>
+			<artifactId>Operetta_Importer</artifactId>
+			<version>${Operetta_Importer.version}</version>
 		</dependency>
 
 		<dependency>
