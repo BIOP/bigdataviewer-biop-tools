@@ -174,7 +174,7 @@ public class ImagePlusGetter {
                     range.getRangeT().stream().parallel().forEach( t -> {
                         int iC = range.getRangeC().indexOf( c );
                         int iT = range.getRangeT().indexOf( t );
-                        ImageStack stackCT = getImageStack(sources.get(iC).getSpimSource().getSource(iT,resolutionLevel), bytesCounter);
+                        ImageStack stackCT = getImageStack(sources.get(c-1).getSpimSource().getSource(t-1,resolutionLevel), bytesCounter);
                         for (int z=0;z< nSlices;z++) {
                             int idx = imp.getStackIndex(iC+1, z+1, iT+1);
                             stack.setProcessor(stackCT.getProcessor(z+1), idx);

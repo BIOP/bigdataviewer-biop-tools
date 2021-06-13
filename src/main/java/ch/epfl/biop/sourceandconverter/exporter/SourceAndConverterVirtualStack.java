@@ -192,9 +192,9 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
                 Object lockProcessing = currentlyProcessedProcessor.get(n);
                 synchronized (lockProcessing) {
                     int[] czt = imagePlusLocalizer.convertIndexToPosition(n);
-                    int iC = range.getRangeC().indexOf(czt[0]);
-                    int iZ = range.getRangeZ().indexOf(czt[1]);
-                    int iT = range.getRangeT().indexOf(czt[2]);
+                    int iC = range.getRangeC().get(czt[0]-1)-1;
+                    int iZ = range.getRangeZ().get(czt[1]-1)-1;
+                    int iT = range.getRangeT().get(czt[2]-1)-1;
                     switch (bitDepth) {
                         case 8:
                             cachedImageProcessor.put(n, getByteProcessor(iC, iZ, iT));
@@ -220,9 +220,9 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
             }
         } else {
             int[] czt = imagePlusLocalizer.convertIndexToPosition(n);
-            int iC = range.getRangeC().indexOf(czt[0]);
-            int iZ = range.getRangeZ().indexOf(czt[1]);
-            int iT = range.getRangeT().indexOf(czt[2]);
+            int iC = range.getRangeC().get(czt[0]-1)-1;
+            int iZ = range.getRangeZ().get(czt[1]-1)-1;
+            int iT = range.getRangeT().get(czt[2]-1)-1;
             switch (bitDepth) {
                 case 8:
                     return getByteProcessor(iC, iZ, iT);

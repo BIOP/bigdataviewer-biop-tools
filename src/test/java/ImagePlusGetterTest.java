@@ -58,6 +58,6 @@ public class ImagePlusGetterTest {
                 .build();
 
         //ImagePlusGetter.getImagePlus("TestMri_Sac", sources, 0, range, true).show();
-        ImagePlusGetter.getVirtualImagePlus("TestMri_Sac", sources, 0, range, false, true).show();
+        ImagePlusGetter.getVirtualImagePlus("TestMri_Sac", sources, 0, range, true, true).show();
     }
 }
