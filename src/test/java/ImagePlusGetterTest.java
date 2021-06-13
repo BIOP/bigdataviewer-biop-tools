@@ -27,8 +27,8 @@ public class ImagePlusGetterTest {
         ij.ui().showUI();
         //final String filePath = "src/test/resources/mri-stack.xml";
 
-        final String filePath = "D:/Operetta Dataset/Opertta Tiling Magda/MagdaData.xml";
-        //final String filePath = "N:/temp-romain/TL2_bdv.xml";
+        //final String filePath = "D:/Operetta Dataset/Opertta Tiling Magda/MagdaData.xml";
+        final String filePath = "N:/temp-romain/TL2_bdv.xml";
         // Import SpimData
         SpimDataFromXmlImporter importer = new SpimDataFromXmlImporter(filePath);
         //importer.run();
@@ -53,9 +53,10 @@ public class ImagePlusGetterTest {
         //ImagePlusGetter.getImagePlus("TestMri", rai).show();
         HyperRange range = ImagePlusGetter
                 .fromSources(sources,0,0)
+                //.setRangeC("1")
                 //.setRangeT("0")
                 .build();
 
-        ImagePlusGetter.getImagePlus("TestMri_Sac", sources, 0, range, true).show();
+        ImagePlusGetter.getVirtualImagePlus("TestMri_Sac", sources, 0, range, true).show();
     }
 }
