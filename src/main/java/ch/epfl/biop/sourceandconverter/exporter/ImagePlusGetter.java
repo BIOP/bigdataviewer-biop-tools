@@ -326,7 +326,7 @@ public class ImagePlusGetter {
         if (iFrame>1) {
             for (int tp = previous;tp<iFrame;tp++) {
                 if (!source.getSpimSource().isPresent(tp)) {
-                    nFrames = tp-1;
+                    nFrames = tp;
                     break;
                 }
             }

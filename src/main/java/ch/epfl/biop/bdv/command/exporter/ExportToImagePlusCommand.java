@@ -33,8 +33,8 @@ public class ExportToImagePlusCommand implements BdvPlaygroundActionCommand {
     @Parameter( label = "Select Range", callback = "updateMessage", visibility = ItemVisibility.MESSAGE, persist = false, required = false)
     String range = "You can use commas or colons to separate ranges. eg. '1:10' or '1,3,5,8' ";
 
-    //@Parameter( label = "Selected Slices. Leave blank for all", required = false )
-    //private String selected_slices_str = "";
+    @Parameter( label = "Selected Slices. Leave blank for all", required = false )
+    private String selected_slices_str = "";
 
     @Parameter( label = "Selected Timepoints. Leave blank for all", required = false )
     private String selected_timepoints_str = "";
@@ -51,10 +51,6 @@ public class ExportToImagePlusCommand implements BdvPlaygroundActionCommand {
     @Override
     public void run() {
 
-        //Map<SourceAndConverter, Integer> mapSacToMml = new HashMap<>();
-
-        //List<SourceAndConverter> sources = Arrays.asList(sacs);
-
         List<SourceAndConverter> sources = sorter.apply(Arrays.asList(sacs));
 
         HyperRange.Builder rangeBuilder = ImagePlusGetter.fromSources(sources, 0, level);
@@ -63,17 +59,15 @@ public class ExportToImagePlusCommand implements BdvPlaygroundActionCommand {
             rangeBuilder = rangeBuilder.setRangeT(selected_timepoints_str);
         }
 
-        /*if ((selected_slices_str!=null)&&(selected_slices_str.trim()!="")) {
+        if ((selected_slices_str!=null)&&(selected_slices_str.trim()!="")) {
             if (export_mode.equals("Normal")) {
                 System.err.println("SubSlices Selection unsupported in non virtual mode!");
             } else {
                 rangeBuilder = rangeBuilder.setRangeZ(selected_slices_str);
             }
-        }*/
+        }
 
         HyperRange range = rangeBuilder.build();
-
-        //imp_out = ImagePlusHelper.wrap(sourceList.stream().map(sac -> (SourceAndConverter) sac).collect(Collectors.toList()), mapSacToMml, timepointbegin, numtimepoints, timestep);
 
         switch (export_mode) {
             case "Normal":
@@ -90,7 +84,7 @@ public class ExportToImagePlusCommand implements BdvPlaygroundActionCommand {
 
         AffineTransform3D at3D = new AffineTransform3D();
         int timepointbegin = range.getRangeT().get(0);
-        sacs[0].getSpimSource().getSourceTransform(range.getRangeT().get(0), level, at3D);
+        sacs[0].getSpimSource().getSourceTransform(range.getRangeT().get(0)-1, level, at3D);
         String unit = "px";
         if (sacs[0].getSpimSource().getVoxelDimensions() != null) {
             unit = sacs[0].getSpimSource().getVoxelDimensions().unit();
@@ -98,8 +92,7 @@ public class ExportToImagePlusCommand implements BdvPlaygroundActionCommand {
                 unit = "px";
             }
         }
-        //imp_out.setTitle(sourceList.get(0).getSpimSource().getName());
-        ImagePlusHelper.storeExtendedCalibrationToImagePlus(imp_out,at3D,unit, timepointbegin);
+        ImagePlusHelper.storeExtendedCalibrationToImagePlus(imp_out, at3D, unit, timepointbegin);
         imp_out.show();
     }
 

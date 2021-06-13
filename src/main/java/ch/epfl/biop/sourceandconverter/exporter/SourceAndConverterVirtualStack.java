@@ -32,7 +32,7 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
     final int bitDepth, size, height, width;
 
     Map<Integer, ImageProcessor> cachedImageProcessor = new ConcurrentHashMap<>();
-    Map<Integer, Object> currentlyProcessedProcessor = new HashMap<>();
+    Map<Integer, Object> currentlyProcessedProcessor = new ConcurrentHashMap<>();
 
     final List<SourceAndConverter> sources;
     final int resolutionLevel;
@@ -150,6 +150,7 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
 
     @Override
     public ImageProcessor getProcessor(int n) {
+        //System.out.println("Ask for "+n);
         Object lockWaitedFor = null;
         if (imagePlusLocalizer==null) {
             switch (bitDepth) {
@@ -167,6 +168,7 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
         if (cache) {
             synchronized (lockAnalyzePreviousData) {
                 if (cachedImageProcessor.containsKey(n)) {
+                    //System.out.println("Stored  give back "+n);
                     return cachedImageProcessor.get(n);
                 } else if (currentlyProcessedProcessor.keySet().contains(n)) {
                     lockWaitedFor = currentlyProcessedProcessor.get(n);
@@ -195,6 +197,12 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
                     int iC = range.getRangeC().get(czt[0]-1)-1;
                     int iZ = range.getRangeZ().get(czt[1]-1)-1;
                     int iT = range.getRangeT().get(czt[2]-1)-1;
+                    /*System.out.println("czt[0] = "+czt[0]);
+                    System.out.println("czt[1] = "+czt[1]);
+                    System.out.println("czt[2] = "+czt[2]);
+                    System.out.println("iC = "+iC);
+                    System.out.println("iZ = "+iZ);
+                    System.out.println("iT = "+iT);*/
                     switch (bitDepth) {
                         case 8:
                             cachedImageProcessor.put(n, getByteProcessor(iC, iZ, iT));
