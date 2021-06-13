@@ -70,9 +70,11 @@ public class ImagePlusGetter {
                                          List<SourceAndConverter> sources,
                                          int resolutionLevel,
                                          HyperRange range,
+                                         boolean cache,
                                          boolean verbose) {
         final AtomicLong bytesCounter = new AtomicLong();
-        SourceAndConverterVirtualStack vStack = new SourceAndConverterVirtualStack(sources, resolutionLevel, range, verbose, bytesCounter);
+        if (!cache) verbose = false;
+        SourceAndConverterVirtualStack vStack = new SourceAndConverterVirtualStack(sources, resolutionLevel, range, verbose, bytesCounter, cache);
         ImagePlus out = new ImagePlus(name, vStack);
         int[] czt = range.getCZTDimensions( );
         if ( ( czt[ 0 ] + czt[ 1 ] + czt[ 2 ] ) > 3 ) {
@@ -85,6 +87,43 @@ public class ImagePlusGetter {
             String log = IJ.getLog();
             int nLines = countLines(log);
             new BytesMonitor(name, (m) -> IJ.log("\\Update"+nLines+":" + m), () -> bytesCounter.get(), () -> bytesCounter.get() == totalBytes, totalBytes, 1000, true);
+        }
+
+        if ( ( czt[ 0 ] + czt[ 1 ] + czt[ 2 ] ) > 3 ) {
+            // Needs conversion to hyperstack
+            LUT[] luts = new LUT[range.getRangeC().size()];
+            int iC = 0;
+            for (Integer sourceIndex : range.getRangeC()) { //SourceAndConverter sac:sources) {
+                SourceAndConverter sac = sources.get(sourceIndex-1);
+                if (!(sac.getSpimSource().getType() instanceof ARGBType)) {
+                    LUT lut;
+                    if (sac.getConverter() instanceof ColorConverter) {
+                        ColorConverter converter = (ColorConverter) sac.getConverter();
+                        ARGBType c = converter.getColor();
+                        lut = LUT.createLutFromColor(new Color(ARGBType.red(c.get()), ARGBType.green(c.get()), ARGBType.blue(c.get())));
+                    } else {
+                        lut = LUT.createLutFromColor(new Color(ARGBType.red(255), ARGBType.green(255), ARGBType.blue(255)));
+                    }
+
+                    luts[iC] = lut;
+                    out.setC(iC+1);
+                    out.getProcessor().setLut(lut);
+
+                    if (sac.getConverter() instanceof LinearRange) {
+                        LinearRange converter = (LinearRange) sac.getConverter();
+                        out.setDisplayRange(converter.getMin(), converter.getMax());
+                    }
+                }
+                iC++;
+            }
+            boolean oneIsNull = false;
+            for (int c = 0;c<luts.length;c++) {
+                if (luts[c] == null) {
+                    oneIsNull = true;
+                }
+            }
+            if (!oneIsNull&& out instanceof CompositeImage) ((CompositeImage)out).setLuts(luts);
+
         }
 
         return out;
@@ -369,7 +408,7 @@ public class ImagePlusGetter {
                     }
                 }
                 if ((currentBytesRead == 0)&&(totalTime>10)&&(!isVirtual)) {
-                    monitorLogger.accept(taskName+": No progress in 10 seconds");
+                    monitorLogger.accept(taskName+": No progress in 10 seconds.");
                 }
             }
             if (isVirtual) {

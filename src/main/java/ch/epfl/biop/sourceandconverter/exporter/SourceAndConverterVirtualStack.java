@@ -40,12 +40,14 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
     final int nBytesPerProcessor;
     final int nPixPerPlane;
     final AtomicLong bytesCounter;
+    final boolean cache;
 
     public SourceAndConverterVirtualStack(List<SourceAndConverter> sources,
                                           int resolutionLevel,
                                           HyperRange range,
                                           boolean verbose,
-                                          AtomicLong bytesCounter) {
+                                          AtomicLong bytesCounter, boolean cache) {
+        this.cache = cache;
         final int tModel = range.getRangeT().get(0)-1;
         RandomAccessibleInterval raiModel = sources.get(0).getSpimSource().getSource(tModel,resolutionLevel);
         width = (int) raiModel.dimension(0);
@@ -162,58 +164,76 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
         boolean computeInThread = false;
         boolean waitForResult = false;
 
-        synchronized (lockAnalyzePreviousData) {
-            if (cachedImageProcessor.containsKey(n)) {
-                return cachedImageProcessor.get(n);
-            } else if (currentlyProcessedProcessor.keySet().contains(n)) {
-                lockWaitedFor = currentlyProcessedProcessor.get(n);
-                waitForResult = true;
-            } else {
-                currentlyProcessedProcessor.put(n, new Object());
-                computeInThread = true;
+        if (cache) {
+            synchronized (lockAnalyzePreviousData) {
+                if (cachedImageProcessor.containsKey(n)) {
+                    return cachedImageProcessor.get(n);
+                } else if (currentlyProcessedProcessor.keySet().contains(n)) {
+                    lockWaitedFor = currentlyProcessedProcessor.get(n);
+                    waitForResult = true;
+                } else {
+                    currentlyProcessedProcessor.put(n, new Object());
+                    computeInThread = true;
+                }
             }
-        }
 
-        // We need to wait
-        if (waitForResult) {
-            synchronized (lockWaitedFor) {
-                while (!cachedImageProcessor.containsKey(n)) {
-                    try {
-                        lockWaitedFor.wait();
-                    } catch (InterruptedException e) {
+            // We need to wait
+            if (waitForResult) {
+                synchronized (lockWaitedFor) {
+                    while (!cachedImageProcessor.containsKey(n)) {
+                        try {
+                            lockWaitedFor.wait();
+                        } catch (InterruptedException e) {
+                        }
                     }
                 }
-            }
-            return cachedImageProcessor.get(n);
-        } else if (computeInThread) {
-            Object lockProcessing = currentlyProcessedProcessor.get(n);
-            synchronized (lockProcessing) {
-                int[] czt = imagePlusLocalizer.convertIndexToPosition(n);
-                int iC = range.getRangeC().indexOf(czt[0]);
-                int iZ = range.getRangeZ().indexOf(czt[1]);
-                int iT = range.getRangeT().indexOf(czt[2]);
-                switch (bitDepth) {
-                    case 8:
-                        cachedImageProcessor.put(n, getByteProcessor(iC, iZ, iT));
-                        break;
-                    case 16:
-                        cachedImageProcessor.put(n, getShortProcessor(iC, iZ, iT));
-                        break;
-                    case 24:
-                        cachedImageProcessor.put(n, getColorProcessor(iC, iZ, iT));
-                        break;
-                    case 32:
-                        cachedImageProcessor.put(n, getFloatProcessor(iC, iZ, iT));
-                        break;
+                return cachedImageProcessor.get(n);
+            } else if (computeInThread) {
+                Object lockProcessing = currentlyProcessedProcessor.get(n);
+                synchronized (lockProcessing) {
+                    int[] czt = imagePlusLocalizer.convertIndexToPosition(n);
+                    int iC = range.getRangeC().indexOf(czt[0]);
+                    int iZ = range.getRangeZ().indexOf(czt[1]);
+                    int iT = range.getRangeT().indexOf(czt[2]);
+                    switch (bitDepth) {
+                        case 8:
+                            cachedImageProcessor.put(n, getByteProcessor(iC, iZ, iT));
+                            break;
+                        case 16:
+                            cachedImageProcessor.put(n, getShortProcessor(iC, iZ, iT));
+                            break;
+                        case 24:
+                            cachedImageProcessor.put(n, getColorProcessor(iC, iZ, iT));
+                            break;
+                        case 32:
+                            cachedImageProcessor.put(n, getFloatProcessor(iC, iZ, iT));
+                            break;
+                    }
+                    synchronized (lockAnalyzePreviousData) {
+                        currentlyProcessedProcessor.remove(n);
+                    }
+                    lockProcessing.notifyAll();
                 }
-                synchronized (lockAnalyzePreviousData) {
-                    currentlyProcessedProcessor.remove(n);
-                }
-                lockProcessing.notifyAll();
+                return cachedImageProcessor.get(n);
+            } else {
+                throw new IllegalStateException("How did you reach this ?");
             }
-            return cachedImageProcessor.get(n);
         } else {
-            throw new IllegalStateException("How did you reach this ?");
+            int[] czt = imagePlusLocalizer.convertIndexToPosition(n);
+            int iC = range.getRangeC().indexOf(czt[0]);
+            int iZ = range.getRangeZ().indexOf(czt[1]);
+            int iT = range.getRangeT().indexOf(czt[2]);
+            switch (bitDepth) {
+                case 8:
+                    return getByteProcessor(iC, iZ, iT);
+                case 16:
+                    return getShortProcessor(iC, iZ, iT);
+                case 24:
+                    return getColorProcessor(iC, iZ, iT);
+                case 32:
+                    return getFloatProcessor(iC, iZ, iT);
+                default: throw new UnsupportedOperationException("Invalid bitdepth "+bitDepth);
+            }
         }
     }
 
