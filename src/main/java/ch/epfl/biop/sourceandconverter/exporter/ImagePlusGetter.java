@@ -66,6 +66,8 @@ public class ImagePlusGetter {
         return lines-1;
     }
 
+    static Object IJLogLock = new Object();
+
     public static ImagePlus getVirtualImagePlus(String name,
                                          List<SourceAndConverter> sources,
                                          int resolutionLevel,
@@ -84,9 +86,16 @@ public class ImagePlusGetter {
         long totalBytes = (long) range.getRangeC().size() * (long) range.getRangeZ().size() * (long) range.getRangeT().size()*(long) (vStack.getBitDepth()/8)*(long) vStack.getHeight()*(long) vStack.getWidth();
 
         if (verbose) {
-            String log = IJ.getLog();
-            int nLines = countLines(log);
-            new BytesMonitor(name, (m) -> IJ.log("\\Update"+nLines+":" + m), () -> bytesCounter.get(), () -> bytesCounter.get() == totalBytes, totalBytes, 1000, true);
+            synchronized (IJLogLock) {
+                IJ.log("Starting Getting " + name + "...");
+                String log = IJ.getLog();
+                int nLines = countLines(log) - 1;
+                new BytesMonitor(name, (m) -> {
+                    synchronized (IJLogLock) {
+                        IJ.log("\\Update" + nLines + ":" + m);
+                    }
+                }, () -> bytesCounter.get(), () -> bytesCounter.get() == totalBytes, totalBytes, 1000, true);
+            }
         }
 
         if ( ( czt[ 0 ] + czt[ 1 ] + czt[ 2 ] ) > 3 ) {
@@ -164,9 +173,16 @@ public class ImagePlusGetter {
         AtomicLong bytesCounter = new AtomicLong();
         bytesCounter.set(0);
         if (verbose) {
-            String log = IJ.getLog();
-            int nLines = countLines(log);
-            new BytesMonitor(name, (m) -> IJ.log("\\Update"+nLines+":" + m), () -> bytesCounter.get(), () -> bytesCounter.get() == totalBytes, totalBytes, 1000, false);
+            synchronized (IJLogLock) {
+                IJ.log("Starting Getting " + name + "...");
+                String log = IJ.getLog();
+                int nLines = countLines(log) - 1;
+                new BytesMonitor(name, (m) -> {
+                    synchronized (IJLogLock) {
+                        IJ.log("\\Update" + nLines + ":" + m);
+                    }
+                }, () -> bytesCounter.get(), () -> bytesCounter.get() == totalBytes, totalBytes, 1000, false);
+            }
         }
 
         range.getRangeC().stream().parallel().forEach(

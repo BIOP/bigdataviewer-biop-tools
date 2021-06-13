@@ -83,8 +83,8 @@ public class ExportToImagePlusCommand implements BdvPlaygroundActionCommand {
         }
 
         AffineTransform3D at3D = new AffineTransform3D();
-        int timepointbegin = range.getRangeT().get(0);
-        sacs[0].getSpimSource().getSourceTransform(range.getRangeT().get(0)-1, level, at3D);
+        int timepointbegin = range.getRangeT().get(0)-1;
+        sacs[0].getSpimSource().getSourceTransform(range.getRangeT().get(0), level, at3D);
         String unit = "px";
         if (sacs[0].getSpimSource().getVoxelDimensions() != null) {
             unit = sacs[0].getSpimSource().getVoxelDimensions().unit();
