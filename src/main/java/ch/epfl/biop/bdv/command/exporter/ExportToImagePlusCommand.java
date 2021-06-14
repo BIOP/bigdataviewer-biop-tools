@@ -31,6 +31,9 @@ public class ExportToImagePlusCommand implements BdvPlaygroundActionCommand {
     @Parameter( label = "Select Range", callback = "updateMessage", visibility = ItemVisibility.MESSAGE, persist = false, required = false)
     String range = "You can use commas or colons to separate ranges. eg. '1:10' or '1,3,5,8' ";
 
+    @Parameter( label = "Selected Channels. Leave blank for all", required = false )
+    private String selected_channels_str = "";
+
     @Parameter( label = "Selected Slices. Leave blank for all", required = false )
     private String selected_slices_str = "";
 
@@ -55,6 +58,10 @@ public class ExportToImagePlusCommand implements BdvPlaygroundActionCommand {
 
         if ((selected_timepoints_str!=null)&&(selected_timepoints_str.trim()!="")) {
             rangeBuilder = rangeBuilder.setRangeT(selected_timepoints_str);
+        }
+
+        if ((selected_channels_str!=null)&&(selected_channels_str.trim()!="")) {
+            rangeBuilder = rangeBuilder.setRangeC(selected_channels_str);
         }
 
         if ((selected_slices_str!=null)&&(selected_slices_str.trim()!="")) {

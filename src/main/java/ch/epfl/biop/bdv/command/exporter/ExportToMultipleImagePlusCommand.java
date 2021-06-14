@@ -33,6 +33,9 @@ public class ExportToMultipleImagePlusCommand implements BdvPlaygroundActionComm
     @Parameter( label = "Select Range", callback = "updateMessage", visibility = ItemVisibility.MESSAGE, persist = false, required = false)
     String range = "You can use commas or colons to separate ranges. eg. '1:10' or '1,3,5,8' ";
 
+    @Parameter( label = "Selected Channels. Leave blank for all", required = false )
+    private String selected_channels_str = "";
+
     @Parameter( label = "Selected Slices. Leave blank for all", required = false )
     private String selected_slices_str = "";
 
@@ -127,7 +130,12 @@ public class ExportToMultipleImagePlusCommand implements BdvPlaygroundActionComm
             List<SourceAndConverter> sources = sacSortedPerLocation.get(location).stream().map(sac -> (SourceAndConverter) sac).collect(Collectors.toList());
             ImagePlus imp_out;
             String name = sacSortedPerLocation.get(location).get(0).getSpimSource().getName();
-            HyperRange range = rangeBuilder.setRangeC(1,sources.size()).build();
+            if ((selected_channels_str!=null)&&(selected_channels_str.trim()!="")) {
+                rangeBuilder = rangeBuilder.setRangeC(selected_channels_str);
+            } else {
+                rangeBuilder.setRangeC(1,sources.size()).build();
+            }
+            HyperRange range = rangeBuilder.build();
             switch (export_mode) {
                 case "Normal":
                     imp_out = ImagePlusGetter.getImagePlus(name, sources, level, range, monitor);

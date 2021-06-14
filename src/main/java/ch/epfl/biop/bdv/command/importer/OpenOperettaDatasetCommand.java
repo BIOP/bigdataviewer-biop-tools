@@ -173,7 +173,8 @@ public class OpenOperettaDatasetCommand implements Command {
                     "cachesizey", stack_height,
                     "refframesizeinunitlocation",1,
                     "refframesizeinunitvoxsize",1,
-                    "cachesizez", 1).get().getOutput("spimdata");
+                    "cachesizez", 1,
+                    "datasetname", "Untitled").get().getOutput("spimdata");
 
             IJ.log("Done! Dataset opened.");
 
@@ -356,7 +357,7 @@ public class OpenOperettaDatasetCommand implements Command {
                 new ViewerTransformAdjuster(bdvh, sources[0]).run();
 
                 // Source Group : channels
-                bdvh.getViewerPanel().state().setDisplayMode(DisplayMode.FUSEDGROUP);
+                // bdvh.getViewerPanel().state().setDisplayMode(DisplayMode.FUSEDGROUP);
 
                 bdvh.getViewerPanel().state().getGroups();
 

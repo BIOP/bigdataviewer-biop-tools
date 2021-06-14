@@ -96,8 +96,8 @@
 		<scijava.deleteOtherVersions>true</scijava.deleteOtherVersions>
 		<license.excludes>**/resources/**</license.excludes>
 
-		<bigdataviewer-playground.version>0.3.2</bigdataviewer-playground.version>
-		<bigdataviewer-bioformats.version>0.2.17</bigdataviewer-bioformats.version>
+		<bigdataviewer-playground.version>0.3.3</bigdataviewer-playground.version>
+		<bigdataviewer-bioformats.version>0.2.18</bigdataviewer-bioformats.version>
 		<bigdataviewer-selector.version>0.1.8</bigdataviewer-selector.version>
 		<scijava.app.directory>C:/Users/nicol/Desktop/fiji-win64-bdv-playground/Fiji.app/</scijava.app.directory>
 
@@ -113,7 +113,7 @@
 		<bigdataviewer-spimdata-extras.version>0.1.2</bigdataviewer-spimdata-extras.version>
 		<elastix_registration_server.version>0.1.3</elastix_registration_server.version>
 
-		<bigdataviewer-playground-display.version>0.1.2</bigdataviewer-playground-display.version>
+		<bigdataviewer-playground-display.version>0.1.5</bigdataviewer-playground-display.version>
 
 		<Operetta_Importer.version>0.1.9</Operetta_Importer.version>
 
