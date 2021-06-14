@@ -2,11 +2,14 @@ package ch.epfl.biop.bdv.command.exporter;
 
 import bdv.util.BdvHandle;
 import bdv.viewer.SourceAndConverter;
+import ch.epfl.biop.operetta.utils.HyperRange;
+import ch.epfl.biop.sourceandconverter.exporter.ImagePlusGetter;
 import ch.epfl.biop.sourceandconverter.exporter.ImagePlusSampler;
 import ij.ImagePlus;
 import net.imglib2.RealPoint;
 import net.imglib2.realtransform.AffineTransform3D;
 import org.scijava.ItemIO;
+import org.scijava.ItemVisibility;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
@@ -14,6 +17,8 @@ import org.slf4j.LoggerFactory;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 import sc.fiji.bdvpg.sourceandconverter.importer.EmptySourceAndConverterCreator;
+
+import java.util.Arrays;
 
 /**
  * Export sources as an ImagePlus object according to the orientation
@@ -55,14 +60,11 @@ public class BdvViewToImagePlusExportCommand implements BdvPlaygroundActionComma
     @Parameter(label = "Half Thickness Z (above and below, physical unit, 0 for a single slice)")
     public double zsize = 100;
 
-    @Parameter(label = "Start Timepoint (starts at 0)")
-    public int timepointbegin = 0;
+    @Parameter( label = "Select Range", callback = "updateMessage", visibility = ItemVisibility.MESSAGE, persist = false, required = false)
+    String range = "You can use commas or colons to separate ranges. eg. '1:10' or '1,3,5,8' ";
 
-    @Parameter(label = "Number of timepoints", min = "1")
-    public int numtimepoints = 1;
-
-    @Parameter(label = "Time step", min = "1")
-    public int timestep = 1;
+    @Parameter( label = "Selected Timepoints. Leave blank for all", required = false )
+    private String selected_timepoints_str = "";
 
     @Parameter(label = "XY Pixel size sampling (physical unit)", callback = "changePhysicalSampling")
     public double samplingxyinphysicalunit = 1;
@@ -73,8 +75,11 @@ public class BdvViewToImagePlusExportCommand implements BdvPlaygroundActionComma
     @Parameter(label = "Interpolate")
     public boolean interpolate = true;
 
-    @Parameter(label = "Cache the resampled image")
-    public boolean cacheimage = true;
+    @Parameter( label = "Export mode", choices = {"Normal", "Virtual", "Virtual no-cache"}, required = false )
+    private String export_mode = "Non virtual";
+
+    //@Parameter( label = "Monitor loaded data")
+    private Boolean monitor = true;
 
     @Parameter
     String unit="px";
@@ -94,15 +99,33 @@ public class BdvViewToImagePlusExportCommand implements BdvPlaygroundActionComma
 
         SourceAndConverter<?> model = createModelSource();
 
+        boolean cacheImage = false;
+        boolean virtual = false;
+        switch (export_mode) {
+            case "Normal":
+                virtual = false;
+                break;
+            case "Virtual":
+                virtual = true;
+                cacheImage = true;
+                break;
+            case "Virtual no-cache":
+                virtual = true;
+                cacheImage = false;
+                break;
+            default: throw new UnsupportedOperationException("Unrecognized export mode "+export_mode);
+        }
+
         imageplus = ImagePlusSampler.Builder()
-                .cache(cacheimage)
+                .cache(cacheImage)
                 .unit(unit)
                 .title(capturename)
                 .setModel(model)
+                .virtual(virtual)
                 .spaceSampling(samplingxyinphysicalunit, samplingxyinphysicalunit, samplingzinphysicalunit)
                 .interpolate(interpolate)
-                .timeRange(timepointbegin, numtimepoints)
-                .timeSampling(timestep)
+                .rangeT(selected_timepoints_str)
+                .monitor(monitor)
                 .sources(sacs)
                 .build().get();
 

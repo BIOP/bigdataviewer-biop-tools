@@ -40,7 +40,7 @@ public class ExportToImagePlusCommand implements BdvPlaygroundActionCommand {
     @Parameter( label = "Export mode", choices = {"Normal", "Virtual", "Virtual no-cache"}, required = false )
     private String export_mode = "Non virtual";
 
-    @Parameter( label = "Monitor export speed")
+    @Parameter( label = "Monitor loaded data")
     private Boolean monitor = false;
 
     @Parameter(type = ItemIO.OUTPUT)

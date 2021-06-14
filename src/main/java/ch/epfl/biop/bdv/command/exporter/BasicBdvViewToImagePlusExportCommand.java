@@ -8,6 +8,7 @@ import net.imglib2.RealPoint;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.RealType;
 import org.scijava.ItemIO;
+import org.scijava.ItemVisibility;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
@@ -47,15 +48,6 @@ public class BasicBdvViewToImagePlusExportCommand<T extends RealType<T>> impleme
     @Parameter(label = "Half Thickness Z (above and below, physical unit, 0 for a single slice)")
     public double zsize = 100;
 
-    @Parameter(label = "Start Timepoint (starts at 0)")
-    public int timepointbegin = 0;
-
-    @Parameter(label = "Number of timepoints", min = "1")
-    public int numtimepoints = 1;
-
-    @Parameter(label = "Time step", min = "1")
-    public int timestep = 1;
-
     @Parameter(label = "Output pixel size (physical unit)")
     public double samplingxyinphysicalunit = 1;
 
@@ -64,6 +56,18 @@ public class BasicBdvViewToImagePlusExportCommand<T extends RealType<T>> impleme
 
     @Parameter(label = "Interpolate")
     public boolean interpolate = true;
+
+    @Parameter( label = "Select Range", callback = "updateMessage", visibility = ItemVisibility.MESSAGE, persist = false, required = false)
+    String range = "You can use commas or colons to separate ranges. eg. '1:10' or '1,3,5,8' ";
+
+    @Parameter( label = "Selected Timepoints. Leave blank for all", required = false )
+    private String selected_timepoints_str = "";
+
+    @Parameter( label = "Export mode", choices = {"Normal", "Virtual", "Virtual no-cache"}, required = false )
+    private String export_mode = "Non virtual";
+
+    //@Parameter( label = "Monitor loaded data")
+    private Boolean monitor = true;
 
     @Parameter
     String unit="px";
@@ -88,15 +92,33 @@ public class BasicBdvViewToImagePlusExportCommand<T extends RealType<T>> impleme
 
         SourceAndConverter<?> model = createModelSource();
 
+        boolean cacheImage = false;
+        boolean virtual = false;
+        switch (export_mode) {
+            case "Normal":
+                virtual = false;
+                break;
+            case "Virtual":
+                virtual = true;
+                cacheImage = true;
+                break;
+            case "Virtual no-cache":
+                virtual = true;
+                cacheImage = false;
+                break;
+            default: throw new UnsupportedOperationException("Unrecognized export mode "+export_mode);
+        }
+
         imageplus = ImagePlusSampler.Builder()
-                .cache(true)
+                .cache(cacheImage)
+                .virtual(virtual)
                 .unit(unit)
+                .monitor(monitor)
                 .title(capturename)
                 .setModel(model)
                 .spaceSampling(samplingxyinphysicalunit, samplingxyinphysicalunit, samplingzinphysicalunit)
                 .interpolate(interpolate)
-                .timeRange(timepointbegin, numtimepoints)
-                .timeSampling(timestep)
+                .rangeT(selected_timepoints_str)
                 .sources(sourceList.toArray(new SourceAndConverter[0]))
                 .build().get();
 

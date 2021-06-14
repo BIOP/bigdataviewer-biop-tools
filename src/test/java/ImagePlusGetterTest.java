@@ -3,6 +3,7 @@ import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.operetta.utils.HyperRange;
 import ch.epfl.biop.sourceandconverter.exporter.ImagePlusGetter;
 import ij.IJ;
+import loci.common.DebugTools;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;
@@ -26,6 +27,8 @@ public class ImagePlusGetterTest {
         ImageJ ij = new ImageJ();
         ij.ui().showUI();
         final String filePath = "src/test/resources/mri-stack.xml";
+        DebugTools.enableIJLogging(true);
+        DebugTools.enableLogging("DEBUG");
 
         //final String filePath = "D:/Operetta Dataset/Opertta Tiling Magda/MagdaData.xml";
         //final String filePath = "N:/temp-romain/TL2_bdv.xml";
