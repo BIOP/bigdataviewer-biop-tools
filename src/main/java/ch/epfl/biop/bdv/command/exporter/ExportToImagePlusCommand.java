@@ -16,7 +16,7 @@ import java.util.*;
 import java.util.List;
 import java.util.function.Function;
 
-@Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Export>Show Sources (IJ1)")
+@Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Export>Export Sources To ImageJ1 (ignore location)")
 public class ExportToImagePlusCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(label = "Sources to export")

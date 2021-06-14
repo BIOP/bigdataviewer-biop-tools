@@ -21,7 +21,7 @@ import java.util.stream.Stream;
 
 import static sc.fiji.bdvpg.bdv.navigate.ViewerTransformSyncStopper.MatrixApproxEquals;
 
-@Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Export>Show Sources (split) (IJ1)")
+@Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Export>Export Sources To ImageJ1")
 public class ExportToMultipleImagePlusCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(label = "Sources to export")

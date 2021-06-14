@@ -1,9 +1,9 @@
 [
   "BDV - Show Sources",
+  "Export Sources To ImageJ1",
   "BDV - Show Sources (new Bdv window)",
   "BDV - Zoom to source",
   "BDV - Show Sources In Multiple BDV Windows",
-  "Show Sources (split) (IJ1)",
   "BDV - Set Number Of Timepoints",
   "BDV - Create empty BDV window",
   "BDV - Create Orthogonal Views",
