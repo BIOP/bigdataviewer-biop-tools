@@ -141,18 +141,6 @@ public class ExportToMultipleImagePlusCommand implements BdvPlaygroundActionComm
                 default: throw new UnsupportedOperationException("Unrecognized export mode "+export_mode);
             }
 
-            //ImagePlus imp_out = ImagePlusHelper.wrap(sacSortedPerLocation.get(location).stream().map(sac -> (SourceAndConverter) sac).collect(Collectors.toList()), mapSacToMml, timepointbegin, numtimepoints, timestep);
-            AffineTransform3D at3D = new AffineTransform3D();
-            sacSortedPerLocation.get(location).get(0).getSpimSource().getSourceTransform(timepointbegin, level, at3D);
-            String unit = "px";
-            if (sacSortedPerLocation.get(location).get(0).getSpimSource().getVoxelDimensions() != null) {
-                unit = sacSortedPerLocation.get(location).get(0).getSpimSource().getVoxelDimensions().unit();
-                if (unit==null) {
-                    unit = "px";
-                }
-            }
-            //imp_out.setTitle();
-            ImagePlusHelper.storeExtendedCalibrationToImagePlus(imp_out,at3D,unit, timepointbegin);
             imps_out.add(imp_out);
             imp_out.show();
         });

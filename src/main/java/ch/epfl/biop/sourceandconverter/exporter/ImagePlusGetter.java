@@ -10,6 +10,7 @@ import net.imglib2.IterableInterval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.display.ColorConverter;
 import net.imglib2.display.LinearRange;
+import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
@@ -18,6 +19,7 @@ import net.imglib2.util.Util;
 import net.imglib2.view.Views;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import spimdata.imageplus.ImagePlusHelper;
 
 import javax.swing.*;
 import java.awt.*;
@@ -134,7 +136,20 @@ public class ImagePlusGetter {
             if (!oneIsNull&& out instanceof CompositeImage) ((CompositeImage)out).setLuts(luts);
 
         }
+        //ImagePlus imp_out = ImagePlusHelper.wrap(sacSortedPerLocation.get(location).stream().map(sac -> (SourceAndConverter) sac).collect(Collectors.toList()), mapSacToMml, timepointbegin, numtimepoints, timestep);
+        AffineTransform3D at3D = new AffineTransform3D();
 
+        int timepointbegin = range.getRangeT().get(0)-1;
+        sources.get(0).getSpimSource().getSourceTransform(timepointbegin, resolutionLevel, at3D);
+        String unit = "px";
+        if (sources.get(0).getSpimSource().getVoxelDimensions() != null) {
+            unit = sources.get(0).getSpimSource().getVoxelDimensions().unit();
+            if (unit==null) {
+                unit = "px";
+            }
+        }
+        //imp_out.setTitle();
+        ImagePlusHelper.storeExtendedCalibrationToImagePlus(out,at3D,unit, timepointbegin);
         return out;
     }
 
@@ -236,9 +251,38 @@ public class ImagePlusGetter {
             }
             if (!oneIsNull&& out instanceof CompositeImage) ((CompositeImage)out).setLuts(luts);
 
+            //ImagePlus imp_out = ImagePlusHelper.wrap(sacSortedPerLocation.get(location).stream().map(sac -> (SourceAndConverter) sac).collect(Collectors.toList()), mapSacToMml, timepointbegin, numtimepoints, timestep);
+            AffineTransform3D at3D = new AffineTransform3D();
+
+            int timepointbegin = range.getRangeT().get(0)-1;
+            sources.get(0).getSpimSource().getSourceTransform(timepointbegin, resolutionLevel, at3D);
+            String unit = "px";
+            if (sources.get(0).getSpimSource().getVoxelDimensions() != null) {
+                unit = sources.get(0).getSpimSource().getVoxelDimensions().unit();
+                if (unit==null) {
+                    unit = "px";
+                }
+            }
+            //imp_out.setTitle();
+            ImagePlusHelper.storeExtendedCalibrationToImagePlus(out,at3D,unit, timepointbegin);
+
             return out;
         } else {
             // Single czt :
+            //ImagePlus imp_out = ImagePlusHelper.wrap(sacSortedPerLocation.get(location).stream().map(sac -> (SourceAndConverter) sac).collect(Collectors.toList()), mapSacToMml, timepointbegin, numtimepoints, timestep);
+            AffineTransform3D at3D = new AffineTransform3D();
+
+            int timepointbegin = range.getRangeT().get(0)-1;
+            sources.get(0).getSpimSource().getSourceTransform(timepointbegin, resolutionLevel, at3D);
+            String unit = "px";
+            if (sources.get(0).getSpimSource().getVoxelDimensions() != null) {
+                unit = sources.get(0).getSpimSource().getVoxelDimensions().unit();
+                if (unit==null) {
+                    unit = "px";
+                }
+            }
+            //imp_out.setTitle();
+            ImagePlusHelper.storeExtendedCalibrationToImagePlus(imp,at3D,unit, timepointbegin);
             return imp;
         }
     }

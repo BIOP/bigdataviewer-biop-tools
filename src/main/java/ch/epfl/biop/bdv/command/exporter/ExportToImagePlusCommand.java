@@ -4,7 +4,6 @@ import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.operetta.utils.HyperRange;
 import ch.epfl.biop.sourceandconverter.exporter.ImagePlusGetter;
 import ij.ImagePlus;
-import net.imglib2.realtransform.AffineTransform3D;
 import org.scijava.ItemIO;
 import org.scijava.ItemVisibility;
 import org.scijava.plugin.Parameter;
@@ -12,7 +11,6 @@ import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
-import spimdata.imageplus.ImagePlusHelper;
 
 import java.util.*;
 import java.util.List;
@@ -81,18 +79,6 @@ public class ExportToImagePlusCommand implements BdvPlaygroundActionCommand {
                 break;
             default: throw new UnsupportedOperationException("Unrecognized export mode "+export_mode);
         }
-
-        AffineTransform3D at3D = new AffineTransform3D();
-        int timepointbegin = range.getRangeT().get(0)-1;
-        sacs[0].getSpimSource().getSourceTransform(range.getRangeT().get(0), level, at3D);
-        String unit = "px";
-        if (sacs[0].getSpimSource().getVoxelDimensions() != null) {
-            unit = sacs[0].getSpimSource().getVoxelDimensions().unit();
-            if (unit==null) {
-                unit = "px";
-            }
-        }
-        ImagePlusHelper.storeExtendedCalibrationToImagePlus(imp_out, at3D, unit, timepointbegin);
         imp_out.show();
     }
 
