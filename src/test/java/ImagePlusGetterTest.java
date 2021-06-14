@@ -25,10 +25,10 @@ public class ImagePlusGetterTest {
 
         ImageJ ij = new ImageJ();
         ij.ui().showUI();
-        //final String filePath = "src/test/resources/mri-stack.xml";
+        final String filePath = "src/test/resources/mri-stack.xml";
 
         //final String filePath = "D:/Operetta Dataset/Opertta Tiling Magda/MagdaData.xml";
-        final String filePath = "N:/temp-romain/TL2_bdv.xml";
+        //final String filePath = "N:/temp-romain/TL2_bdv.xml";
         // Import SpimData
         SpimDataFromXmlImporter importer = new SpimDataFromXmlImporter(filePath);
         //importer.run();
@@ -47,7 +47,10 @@ public class ImagePlusGetterTest {
                 .show(sac);*/
         ArrayList<SourceAndConverter> sources = new ArrayList<>();
         sources.add(allSources.get(0));
-        sources.add(allSources.get(1));
+
+        if (allSources.size()>1) {
+            sources.add(allSources.get(1));
+        }
 
 
         //ImagePlusGetter.getImagePlus("TestMri", rai).show();

@@ -17,6 +17,7 @@ import spimdata.imageplus.ImagePlusHelper;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static sc.fiji.bdvpg.bdv.navigate.ViewerTransformSyncStopper.MatrixApproxEquals;
 
@@ -43,6 +44,9 @@ public class ExportToMultipleImagePlusCommand implements BdvPlaygroundActionComm
 
     @Parameter( label = "Monitor export speed")
     private Boolean monitor = false;
+
+    @Parameter( label = "Open images in parallel")
+    private Boolean parallel = false;
 
     //@Parameter(type = ItemIO.OUTPUT)
     //public ImagePlus imp_out;
@@ -114,7 +118,11 @@ public class ExportToMultipleImagePlusCommand implements BdvPlaygroundActionComm
             indexToLocation.put(sacs0Sorted.indexOf(sac0), location);
         });
 
-        indexToLocation.keySet().stream().parallel().sorted().forEach(idx -> {
+        Stream<Integer> locationsIndexes = indexToLocation.keySet().stream().sorted();
+
+        if (parallel) locationsIndexes = locationsIndexes.parallel();
+
+        locationsIndexes.forEach(idx -> { // .parallel()
             AffineTransform3D location = indexToLocation.get(idx);
             List<SourceAndConverter> sources = sacSortedPerLocation.get(location).stream().map(sac -> (SourceAndConverter) sac).collect(Collectors.toList());
             ImagePlus imp_out;
@@ -146,8 +154,9 @@ public class ExportToMultipleImagePlusCommand implements BdvPlaygroundActionComm
             //imp_out.setTitle();
             ImagePlusHelper.storeExtendedCalibrationToImagePlus(imp_out,at3D,unit, timepointbegin);
             imps_out.add(imp_out);
+            imp_out.show();
         });
-        imps_out.forEach(ImagePlus::show);
+        //imps_out.forEach(ImagePlus::show);
     }
 
     public Function<Collection<SourceAndConverter>,List<SourceAndConverter>> sorter = sacslist -> SourceAndConverterHelper.sortDefaultNoGeneric(sacslist);
