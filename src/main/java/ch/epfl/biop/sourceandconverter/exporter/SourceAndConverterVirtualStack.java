@@ -81,7 +81,7 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
         this.imagePlusLocalizer = imp;
     }
 
-    /** Returns the pixel array for the specified slice, were 1<=n<=nslices. */
+    /* Returns the pixel array for the specified slice, were 1<=n<=nslices. */
     public Object getPixels(int n) {
         ImageProcessor ip = getProcessor(n);
         if (ip!=null)
