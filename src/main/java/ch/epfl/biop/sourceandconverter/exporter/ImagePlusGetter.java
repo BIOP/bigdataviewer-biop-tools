@@ -139,7 +139,7 @@ public class ImagePlusGetter {
         //ImagePlus imp_out = ImagePlusHelper.wrap(sacSortedPerLocation.get(location).stream().map(sac -> (SourceAndConverter) sac).collect(Collectors.toList()), mapSacToMml, timepointbegin, numtimepoints, timestep);
         AffineTransform3D at3D = new AffineTransform3D();
 
-        int timepointbegin = range.getRangeT().get(0)-1;
+        int timepointbegin = 0;//range.getRangeT().get(0)-1;
         sources.get(0).getSpimSource().getSourceTransform(timepointbegin, resolutionLevel, at3D);
         String unit = "px";
         if (sources.get(0).getSpimSource().getVoxelDimensions() != null) {
@@ -161,7 +161,7 @@ public class ImagePlusGetter {
         // Todo : confirm that all is all the same type (8 bits and compatible)
         // And less than 2e9 pix per plane
         // And the same size (x / y / z)
-        final int tModel = range.getRangeT().get(0)-1;
+        final int tModel = 0;//range.getRangeT().get(0)-1;
         RandomAccessibleInterval raiModel = sources.get(0).getSpimSource().getSource(tModel,resolutionLevel);
         final int stack_width = (int) raiModel.dimension(0);
         final int stack_height = (int) raiModel.dimension(1);

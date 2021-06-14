@@ -67,13 +67,13 @@ public class ImagePlusSampler {
             rangeBuilder = rangeBuilder.setRangeT(builder.rangeT);
         }
         if (!builder.rangeZ.trim().equals("")) {
-            rangeBuilder = rangeBuilder.setRangeT(builder.rangeZ);
+            rangeBuilder = rangeBuilder.setRangeZ(builder.rangeZ);
         }
 
         HyperRange range = rangeBuilder.build();
 
 
-        int timepointbegin = range.getRangeT().get(0)-1;
+        int timepointbegin = 0;//range.getRangeT().get(0)-1;
 
         ImagePlus compositeImage;
         if (!builder.virtual) {

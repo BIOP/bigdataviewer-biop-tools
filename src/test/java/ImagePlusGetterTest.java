@@ -26,12 +26,12 @@ public class ImagePlusGetterTest {
 
         ImageJ ij = new ImageJ();
         ij.ui().showUI();
-        final String filePath = "src/test/resources/mri-stack.xml";
+        //final String filePath = "src/test/resources/mri-stack.xml";
         DebugTools.enableIJLogging(true);
         DebugTools.enableLogging("DEBUG");
 
         //final String filePath = "D:/Operetta Dataset/Opertta Tiling Magda/MagdaData.xml";
-        //final String filePath = "N:/temp-romain/TL2_bdv.xml";
+        final String filePath = "N:/temp-romain/TL2_bdv.xml";
         // Import SpimData
         SpimDataFromXmlImporter importer = new SpimDataFromXmlImporter(filePath);
         //importer.run();
