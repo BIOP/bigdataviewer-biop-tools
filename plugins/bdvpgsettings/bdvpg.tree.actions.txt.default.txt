@@ -1,7 +1,8 @@
 [
   "BDV - Show Sources",
-  "Export Sources To ImageJ1",
   "BDV - Show Sources (new Bdv window)",
+  "Export Sources To ImageJ1",
+  "Display Sources On Grid",
   "BDV - Zoom to source",
   "BDV - Show Sources In Multiple BDV Windows",
   "BDV - Set Number Of Timepoints",

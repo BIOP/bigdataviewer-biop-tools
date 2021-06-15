@@ -7,7 +7,6 @@ import ch.epfl.biop.bdv.select.SourceSelectorBehaviour;
 import ch.epfl.biop.bdv.select.ToggleListener;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.ARGBType;
-import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.scijava.ui.behaviour.ClickBehaviour;
@@ -16,8 +15,6 @@ import org.scijava.ui.behaviour.util.Behaviours;
 import sc.fiji.bdvpg.behaviour.EditorBehaviourUnInstaller;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
-import sc.fiji.bdvpg.scijava.command.bdv.BdvSourcesRemoverCommand;
-import sc.fiji.bdvpg.scijava.command.source.*;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceAffineTransformer;
@@ -27,14 +24,10 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static sc.fiji.bdvpg.bdv.navigate.ViewerTransformSyncStopper.MatrixApproxEquals;
-import static sc.fiji.bdvpg.scijava.services.SourceAndConverterService.getCommandName;
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
-        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Bdv Overview")
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Display Sources On Grid")
 public class OverviewerCommand implements BdvPlaygroundActionCommand {
-
-    @Parameter
-    public BdvHandle bdvh;
 
     @Parameter
     public SourceAndConverter[] sacs;
@@ -65,7 +58,7 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
 
         List<SourceAndConverter<?>> sortedSacs = sorter.apply(keySetSac.keySet());
 
-        List<SourceAndConverter> sacsToDisplay = new ArrayList<>();
+        List<SourceAndConverter<?>> sacsToDisplay = new ArrayList<>();
 
         sortedSacs.forEach(sacKey -> {
             SacProperties sacPropsKey = keySetSac.get(sacKey).get(0);
@@ -99,21 +92,20 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
 
             SourceAffineTransformer sat = new SourceAffineTransformer(null, currentAffineTransform);
 
-            List<SourceAndConverter> transformedSacs =
+            List<SourceAndConverter<?>> transformedSacs =
                     sacs.stream().map(sac -> {
-                        SourceAndConverter trSac = sat.apply(sac);
+                        SourceAndConverter<?> trSac = sat.apply(sac);
 
-                        /*SourceAndConverterServices
+                        SourceAndConverterServices
                                 .getSourceAndConverterService()
                                 .register(trSac);
 
-
                         ConverterSetup csOrigin = SourceAndConverterServices
-                                .getSourceAndConverterDisplayService()
+                                .getBdvDisplayService()
                                 .getConverterSetup(sac);
 
                         ConverterSetup csDestination = SourceAndConverterServices
-                                .getSourceAndConverterDisplayService()
+                                .getBdvDisplayService()
                                 .getConverterSetup(trSac);
 
                         // TODO : fix potential mem leak with listeners
@@ -138,7 +130,7 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
                                             csOrigin.setColor(new ARGBType(setup.getColor().get()));
                                     }
                                 }
-                        );*/
+                        );
 
                         return trSac;
                     }).collect(Collectors.toList());
@@ -146,16 +138,16 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
             sacsToDisplay.addAll(transformedSacs);
         });
 
-        SourceAndConverterServices
-                .getBdvDisplayService()
-                .show(bdvh, sacsToDisplay.toArray(new SourceAndConverter[sacsToDisplay.size()]));
+        //BdvHandle bdvh =
+
+        BdvHandle bdvh = SourceAndConverterServices.getBdvDisplayService().getNewBdv();
+        SourceAndConverterServices.getBdvDisplayService().show(bdvh, sacsToDisplay.toArray(new SourceAndConverter[0]));
 
         AffineTransform3D currentViewLocation = new AffineTransform3D();
 
         bdvh.getViewerPanel().state().getViewerTransform(currentViewLocation);
         currentViewLocation.set(0,2,3);
         bdvh.getViewerPanel().state().setViewerTransform(currentViewLocation);
-
 
         SourceSelectorBehaviour ssb = (SourceSelectorBehaviour) SourceAndConverterServices.getBdvDisplayService().getDisplayMetadata(
                 bdvh, SourceSelectorBehaviour.class.getSimpleName());
