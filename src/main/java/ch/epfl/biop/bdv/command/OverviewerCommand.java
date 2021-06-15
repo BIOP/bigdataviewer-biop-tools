@@ -3,6 +3,7 @@ package ch.epfl.biop.bdv.command;
 import bdv.tools.brightness.ConverterSetup;
 import bdv.util.BdvHandle;
 import bdv.viewer.SourceAndConverter;
+import ch.epfl.biop.bdv.command.exporter.ExportToMultipleImagePlusCommand;
 import ch.epfl.biop.bdv.select.SourceSelectorBehaviour;
 import ch.epfl.biop.bdv.select.ToggleListener;
 import net.imglib2.realtransform.AffineTransform3D;
@@ -13,8 +14,12 @@ import org.scijava.ui.behaviour.ClickBehaviour;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.util.Behaviours;
 import sc.fiji.bdvpg.behaviour.EditorBehaviourUnInstaller;
+import sc.fiji.bdvpg.behaviour.SourceAndConverterContextMenuClickBehaviour;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
+import sc.fiji.bdvpg.scijava.command.source.BasicTransformerCommand;
+import sc.fiji.bdvpg.scijava.command.source.BrightnessAdjusterCommand;
+import sc.fiji.bdvpg.scijava.command.source.SourceColorChangerCommand;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceAffineTransformer;
@@ -24,6 +29,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static sc.fiji.bdvpg.bdv.navigate.ViewerTransformSyncStopper.MatrixApproxEquals;
+import static sc.fiji.bdvpg.scijava.services.SourceAndConverterService.getCommandName;
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
         menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Display Sources On Grid")
@@ -42,6 +48,8 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
 
     int currentIndex = 0;
     AffineTransform3D currentAffineTransform = new AffineTransform3D();
+
+    final Map<SourceAndConverter<?>, SourceAndConverter<?>> transformedToOriginal = new HashMap<>();
 
     @Override
     public void run() {
@@ -95,7 +103,7 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
             List<SourceAndConverter<?>> transformedSacs =
                     sacs.stream().map(sac -> {
                         SourceAndConverter<?> trSac = sat.apply(sac);
-
+                        transformedToOriginal.put(trSac, sac);
                         SourceAndConverterServices
                                 .getSourceAndConverterService()
                                 .register(trSac);
@@ -156,15 +164,21 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
 
         addEditorBehaviours(bdvh, ssb);
 
+        bdvh.getViewerPanel().setNumTimepoints(getNumberOfTimepoints(sacs[0]));
+
     }
 
 
-    static void addEditorBehaviours(BdvHandle bdvh, SourceSelectorBehaviour ssb) {
+    void addEditorBehaviours(BdvHandle bdvh, SourceSelectorBehaviour ssb) {
         Behaviours editor = new Behaviours(new InputTriggerConfig());
 
-        ClickBehaviour delete = (x, y) -> bdvh.getViewerPanel().state().removeSources(ssb.getSelectedSources());
-
-        editor.behaviour(delete, "remove-sources-from-bdv", new String[]{"DELETE"});
+        // Act on the original sources
+        editor.behaviour(new SourceAndConverterContextMenuClickBehaviour( bdvh,
+                () -> ssb.getSelectedSources()
+                            .stream()
+                            .map((sac) -> transformedToOriginal.get(sac))
+                            .collect(Collectors.toSet()),
+                getPopupActionsOnWrappedSource() ), "Sources Context Menu", "button3");
 
         // One way to chain the behaviour : install and uninstall on source selector toggling:
         // The delete key will act only when the source selection mode is on
@@ -187,28 +201,32 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
         });
     }
 
-    /*public static String[] getPopupActionsOnWrappedSource() {
+    public static String[] getPopupActionsOnWrappedSource() {
         String[] editorPopupActions = {
                 "Inspect Sources",
-                getCommandName(SourceAndConverterProjectionModeChangerCommand.class)};
-        return editorPopupActions;
-    }
-
-    public static String[] getPopupActionsOnWrappedAndTransformedSource() {
-        String[] editorPopupActions = {
                 getCommandName(BrightnessAdjusterCommand.class),
-                getCommandName(SourceColorChangerCommand.class),
-                getCommandName(SourcesRemoverCommand.class)};
+                getCommandName(ExportToMultipleImagePlusCommand.class)};
         return editorPopupActions;
     }
 
-    public static String[] getPopupActionsOnTransformedSource() {
-        String[] editorPopupActions = {
-                getCommandName(BasicTransformerCommand.class),
-                getCommandName(BdvSourcesRemoverCommand.class),
-                getCommandName(SourcesInvisibleMakerCommand.class)};
-        return editorPopupActions;
-    }*/
+    public static int getNumberOfTimepoints(SourceAndConverter<?> source) {
+        int nFrames = 1;
+        int iFrame = 1;
+        int previous = iFrame;
+        while (source.getSpimSource().isPresent(iFrame)) {
+            previous = iFrame;
+            iFrame *= 2;
+        }
+        if (iFrame>1) {
+            for (int tp = previous;tp<iFrame;tp++) {
+                if (!source.getSpimSource().isPresent(tp)) {
+                    nFrames = tp;
+                    break;
+                }
+            }
+        }
+        return nFrames;
+    }
 
     public Function<Collection<SourceAndConverter<?>>,List<SourceAndConverter<?>>> sorter = sacs1ist -> SourceAndConverterHelper.sortDefaultGeneric(sacs1ist);
 
