@@ -19,38 +19,37 @@ public class ImagePlusSampler {
 
     private static Logger logger = LoggerFactory.getLogger(ImagePlusSampler.class);
 
-    final Builder builder;
-
     public static Builder Builder() {
         return new Builder();
     }
 
-    public ImagePlusSampler(Builder builder) {
-        this.builder = builder;
-    }
+    public static ImagePlus get(String imageName,
+                                List<SourceAndConverter> sourceList,
+                                SourceAndConverter model,
+                                CZTRange range,
+                                String unit,
+                                boolean interpolate,
+                                boolean virtual,
+                                boolean cache,
+                                boolean verbose) throws UnsupportedOperationException {
 
-    public ImagePlus get() throws UnsupportedOperationException {
-
-        if (builder.sacs.length == 0) {
+        if (sourceList.size() == 0) {
             throw  new UnsupportedOperationException("No input sources");
         }
 
-
-        List<SourceAndConverter<?>> sourceList = builder.sorter.apply(Arrays.asList(builder.sacs));
-
         if (sourceList.stream().map(sac -> sac.getSpimSource().getType().getClass()).distinct().count()>1) {
-           throw new UnsupportedOperationException("Cannot make composite because all sources are not of the same type");
+            throw new UnsupportedOperationException("Cannot make composite because all sources are not of the same type");
         }
 
         // The core of it : resampling each source with the model
         List<SourceAndConverter> resampledSourceList = sourceList
                 .stream()
-                .map(sac -> new SourceResampler(sac,builder.model,true, builder.cache, builder.interpolate).get())
+                .map(sac -> new SourceResampler(sac,model,true, cache, interpolate).get())
                 .collect(Collectors.toList());
 
-        SourceAndConverterServices.getSourceAndConverterService().register(builder.model);
+        SourceAndConverterServices.getSourceAndConverterService().register(model);
 
-        int resolutionLevel = 0;
+        /*int resolutionLevel = 0;
         Map<SourceAndConverter, Integer> mapMipmap = new HashMap<>();
         //sourceList.forEach(src -> {
         for (SourceAndConverter src:sourceList) {
@@ -58,40 +57,21 @@ public class ImagePlusSampler {
             logger.debug("Mipmap level chosen for source ["+src.getSpimSource().getName()+"] : "+mipmapLevel);
             mapMipmap.put(resampledSourceList.get(sourceList.indexOf(src)), mipmapLevel);
             resolutionLevel = mipmapLevel;
-        }
-
-        HyperRange.Builder rangeBuilder = ImagePlusGetter
-                .fromSource(resampledSourceList.get(0), 0, resolutionLevel).setRangeC(1,sourceList.size());
-
-        if (!builder.rangeT.trim().equals("")) {
-            rangeBuilder = rangeBuilder.setRangeT(builder.rangeT);
-        }
-        if (!builder.rangeZ.trim().equals("")) {
-            rangeBuilder = rangeBuilder.setRangeZ(builder.rangeZ);
-        }
-
-        HyperRange range = rangeBuilder.build();
-
+        }*/
 
         int timepointbegin = 0;//range.getRangeT().get(0)-1;
 
         ImagePlus compositeImage;
-        if (!builder.virtual) {
-            compositeImage = ImagePlusGetter.getImagePlus(builder.imageName,
-                    resampledSourceList,
-                    resolutionLevel, range, builder.verbose);
+        if (!virtual) {
+            compositeImage = ImagePlusGetter.getImagePlus(imageName, resampledSourceList, 0, range, verbose);
         } else {
-            if (builder.cache) {
-                compositeImage = ImagePlusGetter.getVirtualImagePlus(builder.imageName, resampledSourceList, resolutionLevel, range, true, builder.verbose);
-            } else {
-                compositeImage = ImagePlusGetter.getVirtualImagePlus(builder.imageName, resampledSourceList, resolutionLevel, range, false, false);
-            }
+            compositeImage = ImagePlusGetter.getVirtualImagePlus(imageName, resampledSourceList, 0, range, cache, verbose);
         }
 
-        compositeImage.setTitle(builder.imageName);
+        compositeImage.setTitle(imageName);
         AffineTransform3D at3D = new AffineTransform3D();
-        builder.model.getSpimSource().getSourceTransform(timepointbegin, 0, at3D);
-        ImagePlusHelper.storeExtendedCalibrationToImagePlus(compositeImage, at3D, builder.unit, timepointbegin);
+        model.getSpimSource().getSourceTransform(timepointbegin, 0, at3D);
+        ImagePlusHelper.storeExtendedCalibrationToImagePlus(compositeImage, at3D, unit, timepointbegin);
         compositeImage.show();
 
         return compositeImage;
@@ -99,23 +79,17 @@ public class ImagePlusSampler {
 
     public static class Builder {
 
-        String imageName = "Image";
-        SourceAndConverter[] sacs = new SourceAndConverter[0];
-        SourceAndConverter<?> model;
-        //int t0 = 0;
-        //int nTimepoints = 1;
-        boolean interpolate;
-        double sizePixelX = 1;
-        double sizePixelY = 1;
-        double sizePixelZ = 1;
-        int timeStep = 1;
-        boolean cache = true;
-        boolean verbose = false;
-        boolean virtual = false;
-        String unit;
-        Function<Collection<SourceAndConverter<?>>,List<SourceAndConverter<?>>> sorter = sacs1ist -> SourceAndConverterHelper.sortDefaultGeneric(sacs1ist);
-        String rangeZ = "";
-        String rangeT = "";
+        private String imageName = "Image";
+        private SourceAndConverter[] sacs = new SourceAndConverter[0];
+        private SourceAndConverter<?> model;
+        private boolean interpolate;
+        private boolean cache = true;
+        private boolean verbose = false;
+        private boolean virtual = false;
+        private int level = 0;
+        private String unit;
+        private CZTRange.Builder rangeBuilder = new CZTRange.Builder();
+        private Function<Collection<SourceAndConverter<?>>,List<SourceAndConverter<?>>> sorter = sacslist -> SourceAndConverterHelper.sortDefaultGeneric(sacslist);
 
         public Builder sources(SourceAndConverter[] sacs) {
             this.sacs = sacs;
@@ -132,23 +106,20 @@ public class ImagePlusSampler {
             return this;
         }
 
+        public Builder rangeC(String rangeC) {
+            this.rangeBuilder.setC(rangeC);
+            return this;
+        }
+
         public Builder rangeT( String rangeT) {
-            this.rangeT = rangeT;
+            this.rangeBuilder.setT(rangeT);
             return this;
         }
 
-        public Builder rangeZ( String rangeT) {
-            this.rangeZ = rangeZ;
+        public Builder rangeZ( String rangeZ) {
+            this.rangeBuilder.setZ(rangeZ);
             return this;
         }
-
-        /*public Builder timeRange(
-                int t0,
-                int nTimepoints) {
-            this.t0 =t0;
-            this.nTimepoints = nTimepoints;
-            return this;
-        }*/
 
         public Builder monitor(boolean flag) {
             this.verbose = flag;
@@ -160,24 +131,15 @@ public class ImagePlusSampler {
             return this;
         }
 
+        public Builder level(int level) {
+            this.level = level;
+            return this;
+        }
+
         public Builder interpolate(boolean flag) {
             this.interpolate = flag;
             return this;
         }
-
-        public Builder spaceSampling(double sizePixelX,
-                                double sizePixelY,
-                                double sizePixelZ) {
-            this.sizePixelX = sizePixelX;
-            this.sizePixelY = sizePixelY;
-            this.sizePixelZ = sizePixelZ;
-            return this;
-        }
-
-        /*public Builder timeSampling(int timeStep) {
-            this.timeStep = timeStep;
-            return this;
-        }*/
 
         public Builder cache(boolean flag) {
             this.cache = flag;
@@ -194,8 +156,20 @@ public class ImagePlusSampler {
             return this;
         }
 
-        public ImagePlusSampler build() {
-            return new ImagePlusSampler(this);
+        public ImagePlus get() throws Exception{
+
+            int maxTimeFrames = SourceAndConverterHelper.getMaxTimepoint(sacs);
+
+            int maxZSlices = (int) sacs[0].getSpimSource().getSource(0,level).dimension(2);
+
+            CZTRange range = rangeBuilder.get(sacs.length, maxZSlices, maxTimeFrames);
+
+            return ImagePlusSampler.get(imageName,
+                    Arrays.asList(sacs),
+                    model,
+                    range,
+                    unit,
+                    interpolate,virtual, cache, verbose);
         }
     }
 }

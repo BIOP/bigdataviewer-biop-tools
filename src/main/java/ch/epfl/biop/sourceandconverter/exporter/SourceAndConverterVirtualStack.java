@@ -36,7 +36,7 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
 
     final List<SourceAndConverter> sources;
     final int resolutionLevel;
-    final HyperRange range;
+    final CZTRange range;
     final int nBytesPerProcessor;
     final int nPixPerPlane;
     final AtomicLong bytesCounter;
@@ -44,16 +44,16 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
 
     public SourceAndConverterVirtualStack(List<SourceAndConverter> sources,
                                           int resolutionLevel,
-                                          HyperRange range,
+                                          CZTRange range,
                                           boolean verbose,
                                           AtomicLong bytesCounter, boolean cache) {
         this.cache = cache;
-        final int tModel = range.getRangeT().get(0)-1;
+        final int tModel = range.getRangeT().get(0);
         RandomAccessibleInterval raiModel = sources.get(0).getSpimSource().getSource(tModel,resolutionLevel);
         width = (int) raiModel.dimension(0);
         height = (int) raiModel.dimension(1);
         final int nSlices = (int) raiModel.dimension(2);
-        size = range.getTotalPlanes( );
+        size = (int) range.getTotalPlanes( );
         final Object type = Util.getTypeFromInterval(raiModel);
         if (type instanceof UnsignedShortType) {
             bitDepth = 16;
@@ -194,9 +194,9 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
                 Object lockProcessing = currentlyProcessedProcessor.get(n);
                 synchronized (lockProcessing) {
                     int[] czt = imagePlusLocalizer.convertIndexToPosition(n);
-                    int iC = range.getRangeC().get(czt[0]-1)-1;
-                    int iZ = range.getRangeZ().get(czt[1]-1)-1;
-                    int iT = range.getRangeT().get(czt[2]-1)-1;
+                    int iC = range.getRangeC().get(czt[0]-1);
+                    int iZ = range.getRangeZ().get(czt[1]-1);
+                    int iT = range.getRangeT().get(czt[2]-1);
                     /*System.out.println("czt[0] = "+czt[0]);
                     System.out.println("czt[1] = "+czt[1]);
                     System.out.println("czt[2] = "+czt[2]);
@@ -228,9 +228,9 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
             }
         } else {
             int[] czt = imagePlusLocalizer.convertIndexToPosition(n);
-            int iC = range.getRangeC().get(czt[0]-1)-1;
-            int iZ = range.getRangeZ().get(czt[1]-1)-1;
-            int iT = range.getRangeT().get(czt[2]-1)-1;
+            int iC = range.getRangeC().get(czt[0]-1);
+            int iZ = range.getRangeZ().get(czt[1]-1);
+            int iT = range.getRangeT().get(czt[2]-1);
             switch (bitDepth) {
                 case 8:
                     return getByteProcessor(iC, iZ, iT);

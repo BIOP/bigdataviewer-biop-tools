@@ -1,7 +1,7 @@
 package ch.epfl.biop.bdv.command.exporter;
 
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.operetta.utils.HyperRange;
+import ch.epfl.biop.sourceandconverter.exporter.CZTRange;
 import ch.epfl.biop.sourceandconverter.exporter.ImagePlusGetter;
 import ij.ImagePlus;
 import org.scijava.ItemIO;
@@ -28,51 +28,51 @@ public class ExportToImagePlusCommand implements BdvPlaygroundActionCommand {
     @Parameter(label = "Resolution level (0 = highest)")
     public int level;
 
-    @Parameter( label = "Select Range", callback = "updateMessage", visibility = ItemVisibility.MESSAGE, persist = false, required = false)
+    @Parameter( label = "Select Range", visibility = ItemVisibility.MESSAGE, persist = false, required = false)
     String range = "You can use commas or colons to separate ranges. eg. '1:10' or '1,3,5,8' ";
 
     @Parameter( label = "Selected Channels. Leave blank for all", required = false )
-    private String selected_channels_str = "";
+    String range_channels = "";
 
     @Parameter( label = "Selected Slices. Leave blank for all", required = false )
-    private String selected_slices_str = "";
+    String range_slices = "";
 
     @Parameter( label = "Selected Timepoints. Leave blank for all", required = false )
-    private String selected_timepoints_str = "";
+    String range_frames = "";
 
     @Parameter( label = "Export mode", choices = {"Normal", "Virtual", "Virtual no-cache"}, required = false )
-    private String export_mode = "Non virtual";
+    String export_mode = "Non virtual";
 
     @Parameter( label = "Monitor loaded data")
-    private Boolean monitor = false;
+    Boolean monitor = false;
 
     @Parameter(type = ItemIO.OUTPUT)
     public ImagePlus imp_out;
+
+    @Parameter( label = "Image Info", visibility = ItemVisibility.MESSAGE, persist = false, required = false)
+    String message = "[SX: , SY:, SZ:, #C:, #T:], ? Mb";
 
     @Override
     public void run() {
 
         List<SourceAndConverter> sources = sorter.apply(Arrays.asList(sacs));
 
-        HyperRange.Builder rangeBuilder = ImagePlusGetter.fromSources(sources, 0, level);
+        int maxTimeFrames = SourceAndConverterHelper.getMaxTimepoint(sacs);
 
-        if ((selected_timepoints_str!=null)&&(selected_timepoints_str.trim()!="")) {
-            rangeBuilder = rangeBuilder.setRangeT(selected_timepoints_str);
+        int maxZSlices = (int) sacs[0].getSpimSource().getSource(0,level).dimension(2);
+
+        CZTRange range;
+
+        try {
+            range = new CZTRange.Builder()
+                    .setC(range_channels)
+                    .setZ(range_slices)
+                    .setT(range_frames)
+                    .get(sacs.length, maxZSlices,maxTimeFrames);
+        } catch (Exception e) {
+            System.err.println("Invalid range "+e.getMessage());
+            return;
         }
-
-        if ((selected_channels_str!=null)&&(selected_channels_str.trim()!="")) {
-            rangeBuilder = rangeBuilder.setRangeC(selected_channels_str);
-        }
-
-        if ((selected_slices_str!=null)&&(selected_slices_str.trim()!="")) {
-            if (export_mode.equals("Normal")) {
-                System.err.println("SubSlices Selection unsupported in non virtual mode!");
-            } else {
-                rangeBuilder = rangeBuilder.setRangeZ(selected_slices_str);
-            }
-        }
-
-        HyperRange range = rangeBuilder.build();
 
         switch (export_mode) {
             case "Normal":

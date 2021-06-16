@@ -19,6 +19,7 @@ import net.imglib2.util.Util;
 import net.imglib2.view.Views;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
 import spimdata.imageplus.ImagePlusHelper;
 
 import javax.swing.*;
@@ -39,7 +40,7 @@ public class ImagePlusGetter {
     public static ImagePlus getImagePlus(String name,
                                          SourceAndConverter source,
                                          int resolutionLevel,
-                                         HyperRange range) {
+                                         CZTRange range) {
         List<SourceAndConverter> sources = new ArrayList<>();
         sources.add(source);
         return getImagePlus(name, sources, resolutionLevel, range, false);
@@ -48,7 +49,7 @@ public class ImagePlusGetter {
     public static ImagePlus getImagePlus(String name,
                                          List<SourceAndConverter> sources,
                                          int resolutionLevel,
-                                         HyperRange range) {
+                                         CZTRange range) {
         return getImagePlus(name,
                 sources,
                 resolutionLevel,
@@ -73,7 +74,7 @@ public class ImagePlusGetter {
     public static ImagePlus getVirtualImagePlus(String name,
                                          List<SourceAndConverter> sources,
                                          int resolutionLevel,
-                                         HyperRange range,
+                                         CZTRange range,
                                          boolean cache,
                                          boolean verbose) {
         final AtomicLong bytesCounter = new AtomicLong();
@@ -105,7 +106,7 @@ public class ImagePlusGetter {
             LUT[] luts = new LUT[range.getRangeC().size()];
             int iC = 0;
             for (Integer sourceIndex : range.getRangeC()) { //SourceAndConverter sac:sources) {
-                SourceAndConverter sac = sources.get(sourceIndex-1);
+                SourceAndConverter sac = sources.get(sourceIndex);
                 if (!(sac.getSpimSource().getType() instanceof ARGBType)) {
                     LUT lut;
                     if (sac.getConverter() instanceof ColorConverter) {
@@ -156,7 +157,7 @@ public class ImagePlusGetter {
     public static ImagePlus getImagePlus(String name,
                                          List<SourceAndConverter> sources,
                                          int resolutionLevel,
-                                         HyperRange range,
+                                         CZTRange range,
                                          boolean verbose) {
         // Todo : confirm that all is all the same type (8 bits and compatible)
         // And less than 2e9 pix per plane
@@ -166,7 +167,7 @@ public class ImagePlusGetter {
         final int stack_width = (int) raiModel.dimension(0);
         final int stack_height = (int) raiModel.dimension(1);
         final int nSlices = (int) raiModel.dimension(2);
-        final int nPlanes = range.getTotalPlanes( );
+        final int nPlanes = (int) range.getTotalPlanes( );
         final int bitDepth;
         final Object type = Util.getTypeFromInterval(raiModel);
         if (type instanceof UnsignedShortType) {
@@ -205,7 +206,7 @@ public class ImagePlusGetter {
                     range.getRangeT().stream().parallel().forEach( t -> {
                         int iC = range.getRangeC().indexOf( c );
                         int iT = range.getRangeT().indexOf( t );
-                        ImageStack stackCT = getImageStack(sources.get(c-1).getSpimSource().getSource(t-1,resolutionLevel), bytesCounter);
+                        ImageStack stackCT = getImageStack(sources.get(c).getSpimSource().getSource(t,resolutionLevel), bytesCounter);
                         for (int z=0;z< nSlices;z++) {
                             int idx = imp.getStackIndex(iC+1, z+1, iT+1);
                             stack.setProcessor(stackCT.getProcessor(z+1), idx);
@@ -221,7 +222,7 @@ public class ImagePlusGetter {
             LUT[] luts = new LUT[range.getRangeC().size()];
             int iC = 0;
             for (Integer sourceIndex : range.getRangeC()) { //SourceAndConverter sac:sources) {
-                SourceAndConverter sac = sources.get(sourceIndex-1);
+                SourceAndConverter sac = sources.get(sourceIndex);
                 if (!(sac.getSpimSource().getType() instanceof ARGBType)) {
                     LUT lut;
                     if (sac.getConverter() instanceof ColorConverter) {
@@ -374,32 +375,16 @@ public class ImagePlusGetter {
         return stack;
     }
 
-    public static HyperRange.Builder fromSource(SourceAndConverter source, int t, int resolutionLevel) {
-        int nSlices = (int) source.getSpimSource().getSource(t,resolutionLevel).dimension(2);
-        int nFrames = 1;
-        int iFrame = 1;
-        int previous = iFrame;
-        while (source.getSpimSource().isPresent(iFrame)) {
-            previous = iFrame;
-            iFrame *= 2;
-        }
-        if (iFrame>1) {
-            for (int tp = previous;tp<iFrame;tp++) {
-                if (!source.getSpimSource().isPresent(tp)) {
-                    nFrames = tp;
-                    break;
-                }
-            }
-        }
-        HyperRange.Builder b = new HyperRange
-                .Builder()
-                .setRangeT(1,nFrames)
-                .setRangeZ(1,nSlices);
-        return b;
+    public static CZTRange fromSource(SourceAndConverter source, int t, int resolutionLevel) throws Exception {
+        int maxTimeFrames = SourceAndConverterHelper.getMaxTimepoint(source);
+        int maxZSlices = (int) source.getSpimSource().getSource(t,resolutionLevel).dimension(2);
+        return new CZTRange.Builder().get(1,maxZSlices, maxTimeFrames);
     }
 
-    public static HyperRange.Builder fromSources(List<SourceAndConverter> sources, int t, int resolutionLevel) {
-        return fromSource(sources.get(0),t,resolutionLevel).setRangeC(1,sources.size());
+    public static CZTRange fromSources(List<SourceAndConverter> sources, int t, int resolutionLevel) throws Exception {
+        int maxTimeFrames = SourceAndConverterHelper.getMaxTimepoint(sources.get(0));
+        int maxZSlices = (int) sources.get(0).getSpimSource().getSource(t,resolutionLevel).dimension(2);
+        return new CZTRange.Builder().get(sources.size(),maxZSlices, maxTimeFrames);
     }
 
     public static class BytesMonitor {

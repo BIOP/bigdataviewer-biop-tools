@@ -126,6 +126,14 @@ public class IntRangeParser {
         // A few examples
         int maxDisplay = 200;
 
+        TestExpression("",0, maxDisplay); // Throw error : out of bounds
+        TestExpression("",1, maxDisplay); // Throw error : out of bounds
+        TestExpression("",10, maxDisplay); // Throw error : out of bounds
+
+        TestExpression(null,0, maxDisplay); // Throw error : out of bounds
+        TestExpression(null,1, maxDisplay); // Throw error : out of bounds
+        TestExpression(null,10, maxDisplay); // Throw error : out of bounds
+
         TestExpression("0",0, maxDisplay); // Throw error : out of bounds
         TestExpression("0",1, maxDisplay); // Throw error : out of bounds
         TestExpression("0:0",0, maxDisplay); // Throw error : out of bounds

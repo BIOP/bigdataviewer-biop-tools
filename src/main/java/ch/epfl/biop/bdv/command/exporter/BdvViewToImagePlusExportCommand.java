@@ -116,20 +116,24 @@ public class BdvViewToImagePlusExportCommand implements BdvPlaygroundActionComma
             default: throw new UnsupportedOperationException("Unrecognized export mode "+export_mode);
         }
 
-        imageplus = ImagePlusSampler.Builder()
-                .cache(cacheImage)
-                .unit(unit)
-                .title(capturename)
-                .setModel(model)
-                .virtual(virtual)
-                .spaceSampling(samplingxyinphysicalunit, samplingxyinphysicalunit, samplingzinphysicalunit)
-                .interpolate(interpolate)
-                .rangeT(selected_timepoints_str)
-                .monitor(monitor)
-                .sources(sacs)
-                .build().get();
+        try {
+            imageplus = ImagePlusSampler.Builder()
+                    .cache(cacheImage)
+                    .unit(unit)
+                    .title(capturename)
+                    .setModel(model)
+                    .virtual(virtual)
+                    .interpolate(interpolate)
+                    .rangeT(selected_timepoints_str)
+                    .monitor(monitor)
+                    .sources(sacs)
+                    .get();
+            imageplus.show();
 
-        imageplus.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
     private SourceAndConverter<?> createModelSource() {

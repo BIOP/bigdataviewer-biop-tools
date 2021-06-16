@@ -1,6 +1,7 @@
 import bdv.util.BdvFunctions;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.operetta.utils.HyperRange;
+import ch.epfl.biop.sourceandconverter.exporter.CZTRange;
 import ch.epfl.biop.sourceandconverter.exporter.ImagePlusGetter;
 import ij.IJ;
 import loci.common.DebugTools;
@@ -22,16 +23,16 @@ public class ImagePlusGetterTest {
         LegacyInjector.preinit();
     }
 
-    public static void main(String... args) {
+    public static void main(String... args) throws Exception {
 
         ImageJ ij = new ImageJ();
         ij.ui().showUI();
-        //final String filePath = "src/test/resources/mri-stack.xml";
+        final String filePath = "src/test/resources/mri-stack.xml";
         DebugTools.enableIJLogging(true);
         DebugTools.enableLogging("DEBUG");
 
         //final String filePath = "D:/Operetta Dataset/Opertta Tiling Magda/MagdaData.xml";
-        final String filePath = "N:/temp-romain/TL2_bdv.xml";
+        //final String filePath = "N:/temp-romain/TL2_bdv.xml";
         // Import SpimData
         SpimDataFromXmlImporter importer = new SpimDataFromXmlImporter(filePath);
         //importer.run();
@@ -57,13 +58,13 @@ public class ImagePlusGetterTest {
 
 
         //ImagePlusGetter.getImagePlus("TestMri", rai).show();
-        HyperRange range = ImagePlusGetter
-                .fromSources(sources,0,0)
-                //.setRangeC("1")
-                //.setRangeT("0")
-                .build();
+        CZTRange range = ImagePlusGetter
+                .fromSources(sources,0,0);
 
         //ImagePlusGetter.getImagePlus("TestMri_Sac", sources, 0, range, true).show();
-        ImagePlusGetter.getVirtualImagePlus("TestMri_Sac", sources, 0, range, true, true).show();
+        ImagePlusGetter.getImagePlus("Non Virtual", sources, 0, range, true).show();
+        ImagePlusGetter.getVirtualImagePlus("Virtual", sources, 0, range, true, true).show();
+        ImagePlusGetter.getVirtualImagePlus("Virtual no cache", sources, 0, range, false, true).show();
+
     }
 }

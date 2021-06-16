@@ -109,20 +109,25 @@ public class BasicBdvViewToImagePlusExportCommand<T extends RealType<T>> impleme
             default: throw new UnsupportedOperationException("Unrecognized export mode "+export_mode);
         }
 
-        imageplus = ImagePlusSampler.Builder()
-                .cache(cacheImage)
-                .virtual(virtual)
-                .unit(unit)
-                .monitor(monitor)
-                .title(capturename)
-                .setModel(model)
-                .spaceSampling(samplingxyinphysicalunit, samplingxyinphysicalunit, samplingzinphysicalunit)
-                .interpolate(interpolate)
-                .rangeT(selected_timepoints_str)
-                .sources(sourceList.toArray(new SourceAndConverter[0]))
-                .build().get();
+        try {
+            imageplus = ImagePlusSampler.Builder()
+                    .cache(cacheImage)
+                    .virtual(virtual)
+                    .unit(unit)
+                    .monitor(monitor)
+                    .title(capturename)
+                    .setModel(model)
+                    .interpolate(interpolate)
+                    .rangeT(selected_timepoints_str)
+                    .sources(sourceList.toArray(new SourceAndConverter[0]))
+                    .get();
 
-        imageplus.show();
+            imageplus.show();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
     private SourceAndConverter<?> createModelSource() {
