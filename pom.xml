@@ -100,6 +100,7 @@
 		<bigdataviewer-bioformats.version>0.2.18</bigdataviewer-bioformats.version>
 		<bigdataviewer-selector.version>0.1.8</bigdataviewer-selector.version>
 		<scijava.app.directory>C:/Users/nicol/Desktop/fiji-win64-bdv-playground/Fiji.app/</scijava.app.directory>
+		<!--<scijava.app.directory>C:/Users/chiarutt/Desktop/fiji-win64-PCB03/Fiji.app/</scijava.app.directory>-->
 
 		<bigdataviewer-core.version>10.2.0</bigdataviewer-core.version>
 		<bigdataviewer-vistools.version>1.0.0-beta-28</bigdataviewer-vistools.version>
