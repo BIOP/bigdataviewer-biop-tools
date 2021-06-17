@@ -1,7 +1,6 @@
 package ch.epfl.biop.sourceandconverter.exporter;
 
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.operetta.utils.HyperRange;
 import ij.ImagePlus;
 import ij.VirtualStack;
 import ij.process.*;
@@ -23,6 +22,8 @@ import java.util.concurrent.atomic.AtomicLong;
  * Class which copies an ImagePlus, except that it applies an operation to modify
  * each ImageProcessor when it is requested.
  *
+ * TODO : cache CZT key to make faster the duplication of identical frames
+ *
  */
 
 public class SourceAndConverterVirtualStack extends VirtualStack {
@@ -32,7 +33,8 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
     final int bitDepth, size, height, width;
 
     Map<Integer, ImageProcessor> cachedImageProcessor = new ConcurrentHashMap<>();
-    Map<Integer, Object> currentlyProcessedProcessor = new ConcurrentHashMap<>();
+    Map<Integer, Object> currentlyProcessedProcessor = new HashMap<>();
+    Map<CZTId, Integer> cztIdToComputedProcessor = new HashMap<>();
 
     final List<SourceAndConverter> sources;
     final int resolutionLevel;
@@ -166,6 +168,11 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
         boolean waitForResult = false;
 
         if (cache) {
+            int[] czt = imagePlusLocalizer.convertIndexToPosition(n);
+            int iC = range.getRangeC().get(czt[0]-1);
+            int iZ = range.getRangeZ().get(czt[1]-1);
+            int iT = range.getRangeT().get(czt[2]-1);
+            final CZTId cztId = new CZTId(iC,iZ,iT);
             synchronized (lockAnalyzePreviousData) {
                 if (cachedImageProcessor.containsKey(n)) {
                     //System.out.println("Stored  give back "+n);
@@ -173,6 +180,12 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
                 } else if (currentlyProcessedProcessor.keySet().contains(n)) {
                     lockWaitedFor = currentlyProcessedProcessor.get(n);
                     waitForResult = true;
+                } else if (cztIdToComputedProcessor.containsKey(cztId)) {
+                    // Shortcut -> skipping the loading!
+                    int nReferenced = cztIdToComputedProcessor.get(cztId);
+                    cachedImageProcessor.put(n,cachedImageProcessor.get(nReferenced));
+                    bytesCounter.addAndGet(nBytesPerProcessor); // Keep the counter right
+                    return cachedImageProcessor.get(n);
                 } else {
                     currentlyProcessedProcessor.put(n, new Object());
                     computeInThread = true;
@@ -193,10 +206,6 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
             } else if (computeInThread) {
                 Object lockProcessing = currentlyProcessedProcessor.get(n);
                 synchronized (lockProcessing) {
-                    int[] czt = imagePlusLocalizer.convertIndexToPosition(n);
-                    int iC = range.getRangeC().get(czt[0]-1);
-                    int iZ = range.getRangeZ().get(czt[1]-1);
-                    int iT = range.getRangeT().get(czt[2]-1);
                     /*System.out.println("czt[0] = "+czt[0]);
                     System.out.println("czt[1] = "+czt[1]);
                     System.out.println("czt[2] = "+czt[2]);
@@ -217,6 +226,8 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
                             cachedImageProcessor.put(n, getFloatProcessor(iC, iZ, iT));
                             break;
                     }
+
+                    cztIdToComputedProcessor.put(cztId, n);
                     synchronized (lockAnalyzePreviousData) {
                         currentlyProcessedProcessor.remove(n);
                     }
@@ -263,6 +274,28 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
     @Override
     public int getWidth() {
         return width;
+    }
+
+    public static class CZTId {
+        final int c,z,t;
+        public CZTId(int c, int z, int t) {
+            this.c = c;
+            this.z = z;
+            this.t = t;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            CZTId cztId = (CZTId) o;
+            return c == cztId.c && z == cztId.z && t == cztId.t;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(c, z, t);
+        }
     }
 
 }
