@@ -3,6 +3,7 @@ package ch.epfl.biop.sourceandconverter.exporter;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.operetta.utils.HyperRange;
 import ij.*;
+import ij.plugin.Duplicator;
 import ij.plugin.HyperStackConverter;
 import ij.process.LUT;
 import net.imglib2.Cursor;
@@ -32,12 +33,13 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 public class ImagePlusGetter {
 
     private static Logger logger = LoggerFactory.getLogger(ImagePlusGetter.class);
 
-    public static ImagePlus getImagePlus(String name,
+    /*public static ImagePlus getImagePlus(String name,
                                          SourceAndConverter source,
                                          int resolutionLevel,
                                          CZTRange range) {
@@ -54,7 +56,7 @@ public class ImagePlusGetter {
                 sources,
                 resolutionLevel,
                 range, false);
-    }
+    }*/
 
     public static int countLines(String str) {
         if(str == null || str.isEmpty())
@@ -79,13 +81,13 @@ public class ImagePlusGetter {
                                          boolean verbose) {
         final AtomicLong bytesCounter = new AtomicLong();
         if (!cache) verbose = false;
-        SourceAndConverterVirtualStack vStack = new SourceAndConverterVirtualStack(sources, resolutionLevel, range, verbose, bytesCounter, cache);
+        SourceAndConverterVirtualStack vStack = new SourceAndConverterVirtualStack(sources, resolutionLevel, range, bytesCounter, cache);
         ImagePlus out = new ImagePlus(name, vStack);
         int[] czt = range.getCZTDimensions( );
+        //out.setDimensions(czt[0], czt[1], czt[2]);
         if ( ( czt[ 0 ] + czt[ 1 ] + czt[ 2 ] ) > 3 ) {
             out = HyperStackConverter.toHyperStack(out, czt[0], czt[1], czt[2]);
         }
-        vStack.setImagePlusCZTSLocalizer(out);
         long totalBytes = (long) range.getRangeC().size() * (long) range.getRangeZ().size() * (long) range.getRangeT().size()*(long) (vStack.getBitDepth()/8)*(long) vStack.getHeight()*(long) vStack.getWidth();
 
         if (verbose) {
@@ -155,6 +157,60 @@ public class ImagePlusGetter {
     }
 
     public static ImagePlus getImagePlus(String name,
+                                         List<SourceAndConverter> sources,
+                                         int resolutionLevel,
+                                         CZTRange range,
+                                         boolean verbose) {
+        ImagePlus vImage = getVirtualImagePlus(name, sources, resolutionLevel, range, false, false );
+        // Parallel acquisition of processors
+
+        final AtomicLong bytesCounter = new AtomicLong();
+
+        int nBytesPerPlane = vImage.getHeight() * vImage.getWidth() * (int)(vImage.getBitDepth()/8);
+        System.out.println(nBytesPerPlane);
+        long totalBytes = (long) range.getRangeC().size() * (long) range.getRangeZ().size() * (long) range.getRangeT().size() * (long) nBytesPerPlane;
+
+        if (verbose) {
+            synchronized (IJLogLock) {
+                IJ.log("Starting Getting " + name + "...");
+                String log = IJ.getLog();
+                int nLines = countLines(log) - 1;
+                new BytesMonitor(name, (m) -> {
+                    synchronized (IJLogLock) {
+                        IJ.log("\\Update" + nLines + ":" + m);
+                    }
+                }, () -> bytesCounter.get(), () -> bytesCounter.get() == totalBytes, totalBytes, 1000, false);
+            }
+        }
+
+        int w = vImage.getWidth();
+        int h = vImage.getHeight();
+        ImageStack vStack = vImage.getStack();
+        final ImageStack stack = ImageStack.create( w, h, (int) range.getTotalPlanes(), vImage.getBitDepth() );
+        ImagePlus imp = new ImagePlus(name, stack);
+        boolean parallelZ = range.getRangeC().size()*range.rangeT.size()<10;
+        imp.setDimensions(range.getRangeC().size(), range.getRangeZ().size(), range.getRangeT().size());
+        range.rangeC.stream().parallel().forEach(c -> {
+            range.rangeT.stream().parallel().forEach(t -> {
+                Stream<Integer> zStream = range.rangeZ.stream();
+                if (parallelZ) zStream = zStream.parallel();
+                zStream.forEach(z -> {
+                    int iC = range.rangeC.indexOf(c);
+                    int iZ = range.rangeZ.indexOf(z);
+                    int iT = range.rangeT.indexOf(t);
+                    System.out.println(iC+":"+iZ+":"+iT);
+                    int n = imp.getStackIndex(iC+1, iZ+1, iT+1);
+                    stack.setProcessor(vStack.getProcessor(n),n);
+                    bytesCounter.addAndGet(nBytesPerPlane);
+                    System.out.println(bytesCounter.get());
+                });
+            });
+        });
+
+        return imp;
+    }
+
+    /*public static ImagePlus getImagePlus(String name,
                                          List<SourceAndConverter> sources,
                                          int resolutionLevel,
                                          CZTRange range,
@@ -373,7 +429,7 @@ public class ImagePlusGetter {
             throw new UnsupportedOperationException("Type "+type.getClass()+" unsupported.");
         }
         return stack;
-    }
+    }*/
 
     public static CZTRange fromSource(SourceAndConverter source, int t, int resolutionLevel) throws Exception {
         int maxTimeFrames = SourceAndConverterHelper.getMaxTimepoint(source);
@@ -414,7 +470,8 @@ public class ImagePlusGetter {
             } else {
                 this.timeMs = 10;
             }
-            SwingUtilities.invokeLater(() -> new Thread(this::run).start());
+            new Thread(this::run).start();
+            //SwingUtilities.invokeLater(() -> );
         }
 
         public void run() {

@@ -117,6 +117,7 @@
 		<bigdataviewer-playground-display.version>0.1.5</bigdataviewer-playground-display.version>
 
 		<Operetta_Importer.version>0.1.9</Operetta_Importer.version>
+		<bigvolumeviewer.version>0.2.0</bigvolumeviewer.version>
 
 		<releaseProfiles>deploy-to-scijava</releaseProfiles>
 	</properties>
@@ -220,6 +221,12 @@
             <artifactId>bigdataviewer-playground</artifactId>
             <version>${bigdataviewer-playground.version}</version>
         </dependency>
+
+		<dependency>
+			<groupId>sc.fiji</groupId>
+			<artifactId>bigvolumeviewer</artifactId>
+			<version>${bigvolumeviewer.version}</version>
+		</dependency>
 
 		<dependency>
 			<groupId>ch.epfl.biop</groupId>
