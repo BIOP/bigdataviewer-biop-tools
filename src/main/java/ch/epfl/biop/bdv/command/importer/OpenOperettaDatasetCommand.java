@@ -342,8 +342,8 @@ public class OpenOperettaDatasetCommand implements Command {
                 if (row*sizeY-originY<startY) {
                     startY = row*sizeY-originY;
                 }
-                System.out.println("col = "+col+" row = "+row);
-                System.out.println("startX = "+startX+" startY = "+startY);
+                //System.out.println("col = "+col+" row = "+row);
+                //System.out.println("startX = "+startX+" startY = "+startY);
                 transform.translate(col*sizeX-originX,row*sizeY-originY,0.5*sizeZ-originZ);
                 sourceAndTime.forEach(sat -> SourceTransformHelper.appendNewSpimdataTransformation(transform, sat));
             }

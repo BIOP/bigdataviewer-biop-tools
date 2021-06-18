@@ -181,7 +181,7 @@ public class SlicerOutOfBounds< T > extends AbstractLocalizable implements OutOf
             if (d==1) {
                 final int shiftZ = (int) (( position - maxD ) / dimension[ d ]);
 
-                System.out.println(shiftZ);
+                //System.out.println(shiftZ);
                 outOfBoundsRandomAccess.setPosition(outOfBoundsRandomAccess.getLongPosition(2)-shiftZ,2);
 
 

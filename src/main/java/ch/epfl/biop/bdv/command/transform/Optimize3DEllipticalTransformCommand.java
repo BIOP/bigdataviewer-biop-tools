@@ -219,7 +219,7 @@ public class Optimize3DEllipticalTransformCommand implements BdvPlaygroundAction
 
     public void setParams(double[] params) {
         Object[] args = new Object[params.length*2];
-        System.out.println("r1="+params[0]);
+        //System.out.println("r1="+params[0]);
         int cIndex=0;
         if (r1) {args[2*cIndex]="r1";args[2*cIndex+1]=params[cIndex];cIndex++;}
         if (r2) {args[2*cIndex]="r2";args[2*cIndex+1]=params[cIndex];cIndex++;}

@@ -142,7 +142,6 @@ public class ImagePlusGetter {
         final AtomicLong bytesCounter = new AtomicLong();
 
         int nBytesPerPlane = vImage.getHeight() * vImage.getWidth() * (vImage.getBitDepth()/8);
-        System.out.println(nBytesPerPlane);
         long totalBytes = (long) range.getRangeC().size() * (long) range.getRangeZ().size() * (long) range.getRangeT().size() * (long) nBytesPerPlane;
 
         if (verbose) {

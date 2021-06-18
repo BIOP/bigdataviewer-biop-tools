@@ -41,7 +41,6 @@ public class IntRangeParser {
 
 
     public List<Integer> get(int length) throws Exception {
-        System.out.println("length"+length);
         if (expression==null || expression.trim().equals("")) {
             return IntStream.range(0,length).boxed().collect(Collectors.toList());
         }

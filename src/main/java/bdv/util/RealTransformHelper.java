@@ -17,7 +17,7 @@ public class RealTransformHelper {
     public static String BigWarpFileFromRealTransform(RealTransform rt) {
         try {
             File file = File.createTempFile("temp", null);
-            System.out.println(file.getAbsolutePath());
+            //System.out.println(file.getAbsolutePath());
             file.deleteOnExit();
 
             if (rt instanceof Wrapped2DTransformAs3D) {
