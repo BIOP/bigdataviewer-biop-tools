@@ -1,6 +1,7 @@
 package ch.epfl.biop.sourceandconverter.exporter;
 
 import bdv.viewer.SourceAndConverter;
+import ij.ImagePlus;
 import ij.VirtualStack;
 import ij.process.*;
 import net.imglib2.Cursor;
@@ -12,8 +13,13 @@ import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Util;
 import net.imglib2.view.Views;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.awt.*;
+import java.awt.image.ColorModel;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -26,6 +32,8 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 
 public class SourceAndConverterVirtualStack extends VirtualStack {
+
+    private static final Logger logger = LoggerFactory.getLogger(SourceAndConverterVirtualStack.class);
 
     // Operation applied on an ImageProcessor
 
@@ -43,7 +51,7 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
     final AtomicLong bytesCounter;
     final boolean cache;
     final int totalPlanes;
-    final int nChannels, nSlices, nFrames;
+    private final int nChannels, nZSlices, nFrames;
 
     public SourceAndConverterVirtualStack(List<SourceAndConverter> sources,
                                           int resolutionLevel,
@@ -54,7 +62,7 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
         RandomAccessibleInterval raiModel = sources.get(0).getSpimSource().getSource(tModel,resolutionLevel);
         width = (int) raiModel.dimension(0);
         height = (int) raiModel.dimension(1);
-        nSlices = (int) raiModel.dimension(2);
+        //nSlices = (int) raiModel.dimension(2);
         size = (int) range.getTotalPlanes( );
         final Object type = Util.getTypeFromInterval(raiModel);
         if (type instanceof UnsignedShortType) {
@@ -77,15 +85,22 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
         this.bytesCounter = bytesCounter;
 
         totalPlanes = (int) range.getTotalPlanes();
+
         nChannels = range.getRangeC().size();
         nFrames = range.getRangeT().size();
+        nZSlices = range.getRangeZ().size();
+
+        if ((int) raiModel.dimension(2)!=nZSlices) {
+            logger.error("Mismatch! nSlices = "+nZSlices+" rai Z dimension = "+raiModel.dimension(2));
+        }
+
     }
 
-    //ImagePlus imagePlusLocalizer = null;
+    ImagePlus imagePlusLocalizer = null;
 
-    //public void setImagePlusCZTSLocalizer(ImagePlus imp) {
-    //    this.imagePlusLocalizer = imp;
-    //}
+    public void setImagePlusCZTSLocalizer(ImagePlus imp) {
+        this.imagePlusLocalizer = imp;
+    }
 
     /* Returns the pixel array for the specified slice, were 1<=n<=nslices. */
     public Object getPixels(int n) {
@@ -107,7 +122,7 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
             bytes[idx] = (byte) s.next().get();
         }
         bytesCounter.addAndGet(nBytesPerProcessor);
-        return new ByteProcessor(width, height, bytes, null);
+        return new ByteProcessor(width, height, bytes, getCM(iC));
     }
 
     public ShortProcessor getShortProcessor(int iC, int iZ, int iT) {
@@ -121,7 +136,22 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
             shorts[idx] = (short) s.next().get();
         }
         bytesCounter.addAndGet(nBytesPerProcessor);
-        return new ShortProcessor(width, height, shorts, null);
+        return new ShortProcessor(width, height, shorts, getCM(iC));
+    }
+
+    ColorModel getCM(int iC) {
+        if (imagePlusLocalizer == null) {
+            return null;
+        } else {
+            LUT[] luts = imagePlusLocalizer.getLuts();
+            if ((luts.length>iC)&&(luts[iC]!=null)&&(luts[iC].getColorModel()!=null)) {
+                return luts[iC].getColorModel();
+            } else {
+                LUT lut = LUT.createLutFromColor(new Color(ARGBType.red(255), ARGBType.green(255), ARGBType.blue(255)));
+                logger.debug("Null Color Model");
+                return lut.getColorModel();
+            }
+        }
     }
 
     public FloatProcessor getFloatProcessor(int iC, int iZ, int iT) {
@@ -135,7 +165,7 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
             floats[idx] = s.next().get();
         }
         bytesCounter.addAndGet(nBytesPerProcessor);
-        return new FloatProcessor(width, height, floats, null);
+        return new FloatProcessor(width, height, floats, getCM(iC));
     }
 
     public ColorProcessor getColorProcessor(int iC, int iZ, int iT) {
@@ -154,33 +184,27 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
 
     final Object lockAnalyzePreviousData = new Object();
 
-    public int[] getDimensions() {
-        int[] d = new int[5];
-        d[0] = width;
-        d[1] = height;
-        d[2] = nChannels;
-        d[3] = nSlices;
-        d[4] = nFrames;
-        return d;
+    @Override
+    public void setProcessor(ImageProcessor ip, int n) {
+        cachedImageProcessor.put(n, ip);
     }
 
-    public int[] convertIndexToPosition(int n) {
-        if (n<1 || n> totalPlanes)
-            throw new IllegalArgumentException("n out of range: "+n);
-        int[] position = new int[3];
-        int[] dim = getDimensions();
-        position[0] = ((n-1)%dim[2])+1;
-        position[1] = (((n-1)/dim[2])%dim[3])+1;
-        position[2] = (((n-1)/(dim[2]*dim[3]))%dim[4])+1;
-        return position;
-    }
 
     @Override
     public ImageProcessor getProcessor(int n) {
         Object lockWaitedFor = null;
-        int[] czt = convertIndexToPosition(n);
+        int[] czt;
+        if (n==1) {
+            if (cachedImageProcessor.containsKey(n)) {
+                return (ImageProcessor) cachedImageProcessor.get(n).clone(); // Really weird bug.... thread lock ?
+            }
+        }
+        if (imagePlusLocalizer == null) {
+            czt = new int[]{1,1,1};
+        } else {
+            czt = imagePlusLocalizer.convertIndexToPosition(n);
+        }
 
-        boolean computeInThread = false;
         boolean waitForResult = false;
 
         if (cache) {
@@ -219,25 +243,27 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
             } else {
                 Object lockProcessing = currentlyProcessedProcessor.get(n);
                 synchronized (lockProcessing) {
+                    ImageProcessor ip = null;
                     switch (bitDepth) {
                         case 8:
-                            cachedImageProcessor.put(n, getByteProcessor(iC, iZ, iT));
+                            ip = getByteProcessor(iC, iZ, iT);
                             break;
                         case 16:
-                            cachedImageProcessor.put(n, getShortProcessor(iC, iZ, iT));
+                            ip = getShortProcessor(iC, iZ, iT);
                             break;
                         case 24:
-                            cachedImageProcessor.put(n, getColorProcessor(iC, iZ, iT));
+                            ip = getColorProcessor(iC, iZ, iT);
                             break;
                         case 32:
-                            cachedImageProcessor.put(n, getFloatProcessor(iC, iZ, iT));
+                            ip = getFloatProcessor(iC, iZ, iT);
                             break;
                     }
 
-                    cztIdToComputedProcessor.put(cztId, n);
                     synchronized (lockAnalyzePreviousData) {
+                        cztIdToComputedProcessor.put(cztId, n);
                         currentlyProcessedProcessor.remove(n);
                     }
+                    cachedImageProcessor.put(n, ip);
                     lockProcessing.notifyAll();
                 }
                 return cachedImageProcessor.get(n);

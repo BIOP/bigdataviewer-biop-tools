@@ -1,6 +1,5 @@
 package ch.epfl.biop.sourceandconverter.exporter;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -32,6 +31,17 @@ public class CZTRange {
 
     public List<Integer> getRangeT() {
         return rangeT;
+    }
+
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("C:");
+        rangeC.forEach(c -> builder.append(c+","));
+        builder.append(" Z:");
+        rangeZ.forEach(z -> builder.append(z+","));
+        builder.append(" T:");
+        rangeT.forEach(t -> builder.append(t+","));
+        return builder.toString();
     }
 
     public long getTotalPlanes() {

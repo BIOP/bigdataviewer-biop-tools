@@ -122,11 +122,12 @@ public class ExportToMultipleImagePlusCommand implements BdvPlaygroundActionComm
             CZTRange range;
 
             try {
+
                 range = new CZTRange.Builder()
                         .setC(range_channels)
                         .setZ(range_slices)
                         .setT(range_frames)
-                        .get(sources.size(), maxZSlices,maxTimeFrames);
+                        .get(sources.size(), maxZSlices, maxTimeFrames);
 
                 switch (export_mode) {
                     case "Normal":
