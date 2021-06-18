@@ -3,6 +3,7 @@ package ch.epfl.biop.bdv.command.transform;
 import bdv.util.Elliptical3DTransform;
 import org.scijava.ItemIO;
 import org.scijava.command.CommandService;
+import org.scijava.object.ObjectService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
@@ -22,6 +23,9 @@ public class Elliptic3DTransformCreatorCommand implements BdvPlaygroundActionCom
     @Parameter
     CommandService cs;
 
+    @Parameter
+    ObjectService os;
+
     @Override
     public void run() {
         e3Dt = new Elliptical3DTransform();
@@ -37,5 +41,6 @@ public class Elliptic3DTransformCreatorCommand implements BdvPlaygroundActionCom
                 "tz", tz);
 
         cs.run(DisplayEllipseFromTransformCommand.class, true, "rMin", 0.9, "rMax", 1.1, "e3Dt", e3Dt);
+        os.addObject(e3Dt);
     }
 }
