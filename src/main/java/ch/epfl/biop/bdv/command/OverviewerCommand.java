@@ -3,9 +3,19 @@ package ch.epfl.biop.bdv.command;
 import bdv.tools.brightness.ConverterSetup;
 import bdv.util.BdvHandle;
 import bdv.viewer.SourceAndConverter;
+import ch.epfl.biop.bdv.bioformats.imageloader.FileIndex;
+import ch.epfl.biop.bdv.bioformats.imageloader.SeriesNumber;
 import ch.epfl.biop.bdv.command.exporter.ExportToMultipleImagePlusCommand;
 import ch.epfl.biop.bdv.select.SourceSelectorBehaviour;
 import ch.epfl.biop.bdv.select.ToggleListener;
+import mpicbg.spim.data.generic.AbstractSpimData;
+import mpicbg.spim.data.generic.base.Entity;
+import mpicbg.spim.data.generic.sequence.AbstractSequenceDescription;
+import mpicbg.spim.data.generic.sequence.BasicViewSetup;
+import mpicbg.spim.data.sequence.Angle;
+import mpicbg.spim.data.sequence.Channel;
+import mpicbg.spim.data.sequence.Illumination;
+import mpicbg.spim.data.sequence.Tile;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.ARGBType;
 import org.scijava.plugin.Parameter;
@@ -20,6 +30,7 @@ import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 import sc.fiji.bdvpg.scijava.command.source.BasicTransformerCommand;
 import sc.fiji.bdvpg.scijava.command.source.BrightnessAdjusterCommand;
 import sc.fiji.bdvpg.scijava.command.source.SourceColorChangerCommand;
+import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceAffineTransformer;
@@ -30,6 +41,7 @@ import java.util.stream.Collectors;
 
 import static sc.fiji.bdvpg.bdv.navigate.ViewerTransformSyncStopper.MatrixApproxEquals;
 import static sc.fiji.bdvpg.scijava.services.SourceAndConverterService.getCommandName;
+import static sc.fiji.bdvpg.services.ISourceAndConverterService.SPIM_DATA_INFO;
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
         menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Display Sources On Grid")
@@ -44,6 +56,11 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
     @Parameter
     int nColumns;
 
+    @Parameter(label = "Split by dataset entites, comma separated (channel, fileseries)")
+    String entitiesSplit = "";
+
+    Map<String, Class<? extends Entity>> entityClasses = new HashMap<>();
+
     // sourceList;
 
     int currentIndex = 0;
@@ -54,13 +71,38 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
     @Override
     public void run() {
 
+        entityClasses.put("CHANNEL", Channel.class);
+        entityClasses.put("TILE", Tile.class);
+        entityClasses.put("ILLUMINATION", Illumination.class);
+        entityClasses.put("ANGLE", Angle.class);
+        entityClasses.put("FILE", FileIndex.class);
+        entityClasses.put("SERIES", SeriesNumber.class);
+
+        List<Class<? extends Entity>> entSplit = new ArrayList<>();
+
+        for (String entity : entitiesSplit.split(",")) {
+            String ent = entity.trim().toUpperCase();
+            if (!entityClasses.containsKey(ent)){
+                System.err.println("Unrecognized entity class "+ent);
+            } else {
+                System.out.println("Splitting by "+ent);
+                entSplit.add(entityClasses.get(ent));
+            }
+        }
+
         // Sort according to location = affine transform 3d of sources
 
         List<SourceAndConverter<?>> sourceList = sorter.apply(Arrays.asList(sacs));
 
         Map<SacProperties, List<SourceAndConverter>> sacClasses = sourceList
                 .stream()
-                .collect(Collectors.groupingBy(sac -> new SacProperties(sac)));
+                .collect(Collectors.groupingBy(sac -> {
+                    SacProperties props = new SacProperties(sac);
+                    for (Class<? extends Entity> entityClass : entSplit) {
+                        props.splitByEntity(entityClass);
+                    }
+                    return props; //new SacProperties(sac)
+                }));
 
         Map<SourceAndConverter<?>, List<SacProperties>> keySetSac = sacClasses.keySet().stream().collect(Collectors.groupingBy(p -> p.sac));
 
@@ -70,6 +112,10 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
 
         sortedSacs.forEach(sacKey -> {
             SacProperties sacPropsKey = keySetSac.get(sacKey).get(0);
+            for (Class<? extends Entity> entityClass : entSplit) {
+                sacPropsKey.splitByEntity(entityClass);
+            }
+
             AffineTransform3D location = sacPropsKey.location;
 
             int xPos = currentIndex % nColumns;
@@ -243,6 +289,12 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
             this.sac = sac;
         }
 
+        List<Class<? extends Entity>> entitiesSplit = new ArrayList<>();
+
+        public void splitByEntity(Class<? extends Entity> entityClass) {
+            entitiesSplit.add(entityClass);
+        }
+
         @Override
         public int hashCode() {
             int hash = 5;
@@ -258,6 +310,11 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
                 if  (
                       (MatrixApproxEquals(location.getRowPackedCopy(), other.location.getRowPackedCopy()))
                     &&(dims[0]==other.dims[0])&&(dims[1]==other.dims[1])&&(dims[2]==other.dims[2])) {
+                    for (Class<? extends Entity> entityClass:entitiesSplit) {
+                        if (!haveSameEntity(other.sac, this.sac, entityClass)) {
+                            return false;
+                        }
+                    }
                     return true;
                 } else {
                     return false;
@@ -269,4 +326,29 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
         }
 
     }
+
+    public static Entity getEntityFromSource(SourceAndConverter<?> source, Class<? extends Entity> entityClass) {
+        if (SourceAndConverterServices.getSourceAndConverterService().getMetadata(source, SPIM_DATA_INFO) != null) {
+            SourceAndConverterService.SpimDataInfo sdi = (SourceAndConverterService.SpimDataInfo) SourceAndConverterServices.getSourceAndConverterService().getMetadata(source, SPIM_DATA_INFO);
+            AbstractSpimData<AbstractSequenceDescription<BasicViewSetup, ?, ?>> asd = (AbstractSpimData<AbstractSequenceDescription<BasicViewSetup, ?, ?>>) sdi.asd;
+            BasicViewSetup bvs = asd.getSequenceDescription().getViewSetups().get(sdi.setupId);
+            return bvs.getAttribute(entityClass);
+        } else {
+            return null;
+        }
+    }
+
+    public static boolean haveSameEntity(SourceAndConverter<?> s1, SourceAndConverter<?> s2, Class<? extends Entity> entityClass) {
+        Entity s1Entity = getEntityFromSource(s1, entityClass);
+        Entity s2Entity = getEntityFromSource(s2, entityClass);
+        if ((s1Entity==null)&&(s2Entity==null)) {
+            return true;
+        }
+        if ((s1Entity==null)||(s2Entity==null)) {
+            return false;
+        }
+
+        return s1Entity.equals(s2Entity);
+    }
+
 }
