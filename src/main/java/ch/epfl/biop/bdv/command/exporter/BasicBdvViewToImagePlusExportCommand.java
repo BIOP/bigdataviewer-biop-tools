@@ -122,8 +122,6 @@ public class BasicBdvViewToImagePlusExportCommand<T extends RealType<T>> impleme
                     .sources(sourceList.toArray(new SourceAndConverter[0]))
                     .get();
 
-            imageplus.show();
-
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -144,7 +144,7 @@ public class ExportToMultipleImagePlusCommand implements BdvPlaygroundActionComm
                 }
 
                 imps_out.add(imp_out);
-                imp_out.show();
+                //imp_out.show();
             } catch (Exception e) {
                 System.err.println("Invalid range "+e.getMessage());
             }

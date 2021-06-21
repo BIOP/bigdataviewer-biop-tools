@@ -128,7 +128,6 @@ public class BdvViewToImagePlusExportCommand implements BdvPlaygroundActionComma
                     .monitor(monitor)
                     .sources(sacs)
                     .get();
-            imageplus.show();
 
         } catch (Exception e) {
             e.printStackTrace();
