@@ -1,10 +1,17 @@
 package ch.epfl.biop.bdv.command.exporter;
 
 import bdv.viewer.SourceAndConverter;
+import ch.epfl.biop.bdv.bioformats.imageloader.FileIndex;
+import ch.epfl.biop.bdv.bioformats.imageloader.SeriesNumber;
+import ch.epfl.biop.bdv.command.OverviewerCommand;
 import ch.epfl.biop.operetta.utils.HyperRange;
 import ch.epfl.biop.sourceandconverter.exporter.CZTRange;
 import ch.epfl.biop.sourceandconverter.exporter.ImagePlusGetter;
 import ij.ImagePlus;
+import mpicbg.spim.data.generic.base.Entity;
+import mpicbg.spim.data.sequence.Angle;
+import mpicbg.spim.data.sequence.Illumination;
+import mpicbg.spim.data.sequence.Tile;
 import net.imglib2.realtransform.AffineTransform3D;
 import org.scijava.ItemIO;
 import org.scijava.ItemVisibility;
@@ -51,8 +58,10 @@ public class ExportToMultipleImagePlusCommand implements BdvPlaygroundActionComm
     @Parameter( label = "Open images in parallel")
     private Boolean parallel = false;
 
-    //@Parameter(type = ItemIO.OUTPUT)
-    //public ImagePlus imp_out;
+    @Parameter(label = "Split by dataset entites, comma separated (channel, fileseries)")
+    String entitiesSplit = "";
+
+    Map<String, Class<? extends Entity>> entityClasses = new HashMap<>();
 
     @Parameter(type = ItemIO.OUTPUT)
     public List<ImagePlus> imps_out = new ArrayList<>();
@@ -60,15 +69,43 @@ public class ExportToMultipleImagePlusCommand implements BdvPlaygroundActionComm
     @Override
     public void run() {
 
+        entityClasses.put("TILE", Tile.class);
+        entityClasses.put("ILLUMINATION", Illumination.class);
+        entityClasses.put("ANGLE", Angle.class);
+        entityClasses.put("FILE", FileIndex.class);
+        entityClasses.put("SERIES", SeriesNumber.class);
+
+        List<Class<? extends Entity>> entSplit = new ArrayList<>();
+
+        for (String entity : entitiesSplit.split(",")) {
+            String ent = entity.trim().toUpperCase();
+            if (!entityClasses.containsKey(ent)){
+                System.err.println("Unrecognized entity class "+ent);
+            } else {
+                System.out.println("Splitting by "+ent);
+                entSplit.add(entityClasses.get(ent));
+            }
+        }
+
         //Map<SourceAndConverter, Integer> mapSacToMml = new HashMap<>();
 
         /*for (SourceAndConverter sac : sacs) {
             mapSacToMml.put(sac, level);
         }*/
 
-        List<SourceAndConverter> sourceList = sorter.apply(Arrays.asList(sacs));
+        List<SourceAndConverter<?>> sourceList = sorter.apply(Arrays.asList(sacs));
 
-        int timepointbegin = 0;
+        Map<OverviewerCommand.SacProperties, List<SourceAndConverter>> sacClasses = sourceList
+                .stream()
+                .collect(Collectors.groupingBy(sac -> {
+                    OverviewerCommand.SacProperties props = new OverviewerCommand.SacProperties(sac);
+                    for (Class<? extends Entity> entityClass : entSplit) {
+                        props.splitByEntity(entityClass);
+                    }
+                    return props; //new SacProperties(sac)
+                }));
+
+        /*int timepointbegin = 0;
         // Sort according to location = affine transform 3d of sources
 
         List<AffineTransform3D> locations = sourceList.stream().map(sac -> {
@@ -107,13 +144,39 @@ public class ExportToMultipleImagePlusCommand implements BdvPlaygroundActionComm
 
         Stream<Integer> locationsIndexes = indexToLocation.keySet().stream().sorted();
 
-        if (parallel) locationsIndexes = locationsIndexes.parallel();
+        if (parallel) locationsIndexes = locationsIndexes.parallel();*/
 
-        locationsIndexes.forEach(idx -> { // .parallel()
-            AffineTransform3D location = indexToLocation.get(idx);
-            List<SourceAndConverter> sources = sacSortedPerLocation.get(location).stream().map(sac -> (SourceAndConverter) sac).collect(Collectors.toList());
+        /*List<SourceAndConverter<?>> sourceList = sorter.apply(Arrays.asList(sacs));
+
+        Map<OverviewerCommand.SacProperties, List<SourceAndConverter>> sacClasses = sourceList
+                .stream()
+                .collect(Collectors.groupingBy(sac -> {
+                    OverviewerCommand.SacProperties props = new OverviewerCommand.SacProperties(sac);
+                    for (Class<? extends Entity> entityClass : entSplit) {
+                        props.splitByEntity(entityClass);
+                    }
+                    return props; //new SacProperties(sac)
+                }));*/
+
+        Map<SourceAndConverter<?>, List<OverviewerCommand.SacProperties>> keySetSac = sacClasses.keySet().stream().collect(Collectors.groupingBy(p -> p.getSource()));
+
+        List<SourceAndConverter<?>> sortedSacs = sorter.apply(keySetSac.keySet());
+
+        List<SourceAndConverter<?>> sacsToDisplay = new ArrayList<>();
+
+        int timepointbegin = 0;
+
+        sortedSacs.forEach(sacKey -> { // .parallel()
+
+            AffineTransform3D at3d = new AffineTransform3D();
+            sacKey.getSpimSource().getSourceTransform(timepointbegin, level, at3d);
+            AffineTransform3D location = at3d; //indexToLocation.get(idx);
+
+            OverviewerCommand.SacProperties sacPropsKey = keySetSac.get(sacKey).get(0);
+            List<SourceAndConverter> sources = sacClasses.get(sacPropsKey);// sacSortedPerLocation.get(location);
+            //List<SourceAndConverter> sources = sacSortedPerLocation.get(location).stream().map(sac -> (SourceAndConverter) sac).collect(Collectors.toList());
             ImagePlus imp_out;
-            String name = sacSortedPerLocation.get(location).get(0).getSpimSource().getName();
+            String name = sacKey.getSpimSource().getName();
 
 
             int maxTimeFrames = SourceAndConverterHelper.getMaxTimepoint(sources.toArray(new SourceAndConverter[0]));
@@ -152,8 +215,11 @@ public class ExportToMultipleImagePlusCommand implements BdvPlaygroundActionComm
 
         });
         //imps_out.forEach(ImagePlus::show);
+        sacs = null; // free mem ?
     }
 
-    public Function<Collection<SourceAndConverter>,List<SourceAndConverter>> sorter = sacslist -> SourceAndConverterHelper.sortDefaultNoGeneric(sacslist);
+    //public Function<Collection<SourceAndConverter>,List<SourceAndConverter>> sorter = sacslist -> SourceAndConverterHelper.sortDefaultNoGeneric(sacslist);
+
+    public Function<Collection<SourceAndConverter<?>>,List<SourceAndConverter<?>>> sorter = sacslist -> SourceAndConverterHelper.sortDefaultGeneric(sacslist);
 
 }

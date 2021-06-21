@@ -18,11 +18,15 @@ import mpicbg.spim.data.sequence.Illumination;
 import mpicbg.spim.data.sequence.Tile;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.ARGBType;
+import org.scijava.Context;
+import org.scijava.cache.CacheService;
+import org.scijava.object.ObjectService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.scijava.ui.behaviour.ClickBehaviour;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.util.Behaviours;
+import sc.fiji.bdvpg.bdv.BdvHandleHelper;
 import sc.fiji.bdvpg.behaviour.EditorBehaviourUnInstaller;
 import sc.fiji.bdvpg.behaviour.SourceAndConverterContextMenuClickBehaviour;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
@@ -66,7 +70,10 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
     int currentIndex = 0;
     AffineTransform3D currentAffineTransform = new AffineTransform3D();
 
-    final Map<SourceAndConverter<?>, SourceAndConverter<?>> transformedToOriginal = new HashMap<>();
+    Map<SourceAndConverter<?>, SourceAndConverter<?>> transformedToOriginal = new HashMap<>();
+
+    @Parameter
+    Context ctx;
 
     @Override
     public void run() {
@@ -212,6 +219,16 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
 
         bdvh.getViewerPanel().setNumTimepoints(getNumberOfTimepoints(sacs[0]));
 
+        // Close hook to try to release as many resources as possible -> proven avoiding mem leaks
+        BdvHandleHelper.setBdvHandleCloseOperation(bdvh, ctx.getService(CacheService.class),
+                SourceAndConverterServices.getBdvDisplayService(), false,
+                () -> {
+                    sacs = null; // free mem ?
+                    transformedToOriginal = null;
+                    ctx.getService(ObjectService.class).removeObject(bdvh);
+                }
+        );
+
     }
 
 
@@ -274,19 +291,23 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
         return nFrames;
     }
 
-    public Function<Collection<SourceAndConverter<?>>,List<SourceAndConverter<?>>> sorter = sacs1ist -> SourceAndConverterHelper.sortDefaultGeneric(sacs1ist);
+    public Function<Collection<SourceAndConverter<?>>,List<SourceAndConverter<?>>> sorter = sacslist -> SourceAndConverterHelper.sortDefaultGeneric(sacslist);
 
-    class SacProperties {
+    public static class SacProperties {
 
         final AffineTransform3D location;
         long[] dims = new long[3];
-        SourceAndConverter sac;
+        final SourceAndConverter sac;
 
         public SacProperties(SourceAndConverter sac) {
             location = new AffineTransform3D();
-            sac.getSpimSource().getSourceTransform(timepointBegin, 0, location);
-            sac.getSpimSource().getSource(timepointBegin,0).dimensions(dims);
+            sac.getSpimSource().getSourceTransform(0, 0, location);
+            sac.getSpimSource().getSource(0,0).dimensions(dims);
             this.sac = sac;
+        }
+
+        public SourceAndConverter getSource() {
+            return sac;
         }
 
         List<Class<? extends Entity>> entitiesSplit = new ArrayList<>();
