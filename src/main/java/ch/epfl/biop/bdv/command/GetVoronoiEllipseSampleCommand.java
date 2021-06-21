@@ -8,6 +8,7 @@ import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
+import sc.fiji.bdvpg.sourceandconverter.display.BrightnessAdjuster;
 
 @Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Create Elliptic Voronoi Source")
 public class GetVoronoiEllipseSampleCommand implements BdvPlaygroundActionCommand {
@@ -18,5 +19,6 @@ public class GetVoronoiEllipseSampleCommand implements BdvPlaygroundActionComman
     @Override
     public void run() {
         sampleSource = (new WeightedVoronoiSourceGetter(new long[]{2048, 2048, 2048}, 65536, false).get());
+        new BrightnessAdjuster(sampleSource,0,255).run();
     }
 }

@@ -9,6 +9,8 @@ import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 
+import java.util.concurrent.ExecutionException;
+
 @Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>New Elliptic 3D Transform")
 public class Elliptic3DTransformCreatorCommand implements BdvPlaygroundActionCommand {
 
@@ -18,13 +20,10 @@ public class Elliptic3DTransformCreatorCommand implements BdvPlaygroundActionCom
             tx, ty, tz; // ellipse center
 
     @Parameter(type = ItemIO.OUTPUT)
-    Elliptical3DTransform e3Dt;
+    private Elliptical3DTransform e3Dt;
 
     @Parameter
     CommandService cs;
-
-    @Parameter
-    ObjectService os;
 
     @Override
     public void run() {
@@ -40,7 +39,6 @@ public class Elliptic3DTransformCreatorCommand implements BdvPlaygroundActionCom
                 "ty", ty,
                 "tz", tz);
 
-        cs.run(DisplayEllipseFromTransformCommand.class, true, "rMin", 0.9, "rMax", 1.1, "e3Dt", e3Dt);
-        os.addObject(e3Dt);
+        cs.run(DisplayEllipseFromTransformCommand.class, false, "rMin", 0.9, "rMax", 1.1, "e3Dt", e3Dt);
     }
 }

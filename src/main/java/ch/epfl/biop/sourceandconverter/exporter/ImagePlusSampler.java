@@ -160,7 +160,8 @@ public class ImagePlusSampler {
 
             int maxTimeFrames = SourceAndConverterHelper.getMaxTimepoint(sacs);
 
-            int maxZSlices = (int) sacs[0].getSpimSource().getSource(0,level).dimension(2);
+            //int maxZSlices = (int) sacs[0].getSpimSource().getSource(0,level).dimension(2);
+            int maxZSlices = (int) model.getSpimSource().getSource(0,level).dimension(2);
 
             CZTRange range = rangeBuilder.get(sacs.length, maxZSlices, maxTimeFrames);
 

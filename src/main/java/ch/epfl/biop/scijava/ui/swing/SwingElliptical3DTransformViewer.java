@@ -14,7 +14,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
-@Plugin(type = DisplayViewer.class, priority = Priority.FIRST)
+@Plugin(type = DisplayViewer.class)
 public class SwingElliptical3DTransformViewer extends
         EasySwingDisplayViewer<Elliptical3DTransform> {
 
@@ -92,7 +92,6 @@ public class SwingElliptical3DTransformViewer extends
         Double value, valueOld;
 
         Consumer<Double> vChanged;
-
 
         public DoubleValueSwingSetLog(String name, Double v, Consumer<Double> valueChanged) {
             vChanged = valueChanged;

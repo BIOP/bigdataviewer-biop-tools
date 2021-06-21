@@ -27,11 +27,11 @@ public class ImagePlusGetterTest {
 
         ImageJ ij = new ImageJ();
         ij.ui().showUI();
-        //final String filePath = "src/test/resources/mri-stack.xml";
+        final String filePath = "src/test/resources/mri-stack.xml";
 
         DebugTools.enableIJLogging(true);
 
-        final String filePath = "src/test/resources/mitosis.xml";
+        //final String filePath = "src/test/resources/mitosis.xml";
         DebugTools.enableIJLogging(true);
         DebugTools.enableLogging("DEBUG");
 

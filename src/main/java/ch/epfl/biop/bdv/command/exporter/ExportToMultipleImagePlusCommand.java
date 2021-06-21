@@ -29,6 +29,7 @@ public class ExportToMultipleImagePlusCommand implements BdvPlaygroundActionComm
 
     @Parameter(label = "Resolution level (0 = highest)")
     public int level;
+
     @Parameter( label = "Select Range", visibility = ItemVisibility.MESSAGE, persist = false, required = false)
     String range = "You can use commas or colons to separate ranges. eg. '1:10' or '1,3,5,8' ";
 
