@@ -58,6 +58,8 @@ public class Elastix2DAffineRegister {
 
     ElastixTask et = new DefaultElastixTask();
 
+    String errorMessage = "";
+
     public void setRegistrationServer(String serverURL) {
         tt = new RemoteTransformixTask(serverURL);
         et = new RemoteElastixTask(serverURL);
@@ -166,6 +168,7 @@ public class Elastix2DAffineRegister {
         try {
             rh.align(et);
         } catch (Exception e) {
+            errorMessage = e.getMessage();
             e.printStackTrace();
             return false;
         }
@@ -350,4 +353,7 @@ public class Elastix2DAffineRegister {
         return affineTransformOut;
     }
 
+    public String getErrorMessage() {
+        return errorMessage;
+    }
 }

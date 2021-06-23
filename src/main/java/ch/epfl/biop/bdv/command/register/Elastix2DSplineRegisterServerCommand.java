@@ -29,6 +29,9 @@ public class Elastix2DSplineRegisterServerCommand extends AbstractElastix2DRegis
     @Parameter(persist = false, required = false)
     String taskInfo = null;
 
+    @Parameter(type = ItemIO.OUTPUT)
+    String error = ""; // No issue during remote registration ?
+
     @Override
     public void run() {
 
@@ -54,6 +57,8 @@ public class Elastix2DSplineRegisterServerCommand extends AbstractElastix2DRegis
             //registeredSource = reg.getRegisteredSac();
             rt = reg.getRealTransform();
             rt_inverse = reg.getRealTransformInverse();
+        } else {
+            error = reg.getErrorMessage();
         }
     }
 }

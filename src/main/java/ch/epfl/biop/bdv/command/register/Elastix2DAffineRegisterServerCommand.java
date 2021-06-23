@@ -22,6 +22,9 @@ public class Elastix2DAffineRegisterServerCommand extends AbstractElastix2DRegis
     @Parameter(type = ItemIO.OUTPUT)
     boolean success; // No issue during remote registration ?
 
+    @Parameter(type = ItemIO.OUTPUT)
+    String error = ""; // No issue during remote registration ?
+
     @Parameter(persist = false, required = false)
     String serverURL = null;
 
@@ -92,6 +95,7 @@ public class Elastix2DAffineRegisterServerCommand extends AbstractElastix2DRegis
             at3D = reg.getAffineTransform();
         } else {
             logger.error("Error during registration");
+            error = reg.getErrorMessage();
         }
     }
 }

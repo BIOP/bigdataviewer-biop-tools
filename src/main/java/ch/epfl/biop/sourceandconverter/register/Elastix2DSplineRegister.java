@@ -64,6 +64,8 @@ public class Elastix2DSplineRegister {
 
     double background_offset_value_fixed = 0;
 
+    String errorMessage = "";
+
     public void setRegistrationServer(String serverURL) {
         tt = new RemoteTransformixTask(serverURL);
         et = new RemoteElastixTask(serverURL);
@@ -208,6 +210,7 @@ public class Elastix2DSplineRegister {
         try {
             rh.align(et);
         } catch (Exception e) {
+            errorMessage = e.getMessage();
             e.printStackTrace();
             return false;
         }
@@ -352,5 +355,9 @@ public class Elastix2DSplineRegister {
 
     public void setRegistrationInfo(String taskInfo) {
         rh.setExtraRegisterInfo(taskInfo);
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
     }
 }
