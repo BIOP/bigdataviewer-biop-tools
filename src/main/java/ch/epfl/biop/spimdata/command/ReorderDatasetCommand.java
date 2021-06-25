@@ -2,14 +2,21 @@ package ch.epfl.biop.spimdata.command;
 
 import bdv.spimdata.SpimDataMinimal;
 import bdv.spimdata.XmlIoSpimDataMinimal;
+import ch.epfl.biop.bdv.bioformats.BioFormatsMetaDataHelper;
 import ch.epfl.biop.bdv.bioformats.bioformatssource.BioFormatsBdvOpener;
 import ch.epfl.biop.bdv.bioformats.export.spimdata.BioFormatsConvertFilesToSpimData;
 import ch.epfl.biop.spimdata.reordered.LifReOrdered;
 import ij.IJ;
+import loci.formats.IFormatReader;
+import loci.formats.meta.IMetadata;
 import mpicbg.spim.data.SpimData;
 import mpicbg.spim.data.XmlIoSpimData;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import mpicbg.spim.data.generic.base.ViewSetupAttributes;
+import mpicbg.spim.data.registration.ViewTransform;
+import mpicbg.spim.data.registration.ViewTransformAffine;
+import net.imglib2.realtransform.AffineGet;
+import net.imglib2.realtransform.AffineTransform3D;
 import ome.units.UNITS;
 import ome.units.quantity.Length;
 import org.apache.commons.io.FilenameUtils;
@@ -45,6 +52,11 @@ public class ReorderDatasetCommand implements Command {
         try {
 
             BioFormatsBdvOpener opener = BioFormatsConvertFilesToSpimData.getDefaultOpener(file.getAbsolutePath()).micrometer();
+            IFormatReader reader = opener.getNewReader();
+            Length[] voxSizes = BioFormatsMetaDataHelper.getSeriesVoxelSizeAsLengths((IMetadata)reader.getMetadataStore(),0);//.getSeriesRootTransform()
+            double pixSizeXYMicrometer = voxSizes[0].value(UNITS.MICROMETER).doubleValue();
+            double scalingForBigStitcher = 1 / pixSizeXYMicrometer;
+            reader.close();
 
             AbstractSpimData<?> asd = BioFormatsConvertFilesToSpimData.getSpimData(
                     opener
@@ -69,7 +81,6 @@ public class ReorderDatasetCommand implements Command {
             } else if (asd instanceof SpimDataMinimal) {
                 (new XmlIoSpimDataMinimal()).save((SpimDataMinimal) asd, FilenameUtils.getName(intermediateXml));
             }
-            //new XmlIoSpimData().save((SpimData) asd, intermediateXml);
 
             // Creates reordered dataset
             LifReOrdered kd = new LifReOrdered(intermediateXml,nTiles,nChannels);
@@ -78,7 +89,24 @@ public class ReorderDatasetCommand implements Command {
             reshuffled.setBasePath(new File(xmlout.getAbsolutePath()).getParentFile()); //TODO TOFIX
             new XmlIoSpimData().save((SpimData) reshuffled, xmlout.getAbsolutePath());
 
-            IJ.log("Done! Dataset file "+xmlout.getAbsolutePath()+" created.");
+            reshuffled
+                    .getViewRegistrations()
+                    .getViewRegistrations()
+                    .values()
+                    .forEach(viewRegistraion -> {
+                        AffineTransform3D at3d = new AffineTransform3D();
+                        at3d.scale(scalingForBigStitcher);
+                        viewRegistraion.preconcatenateTransform(
+                                new ViewTransformAffine("BigStitcher Scaling", at3d));
+                    });
+
+            String bigstitcherXml = FilenameUtils.removeExtension(xmlout.getAbsolutePath())+"_bigstitcher.xml";
+            new XmlIoSpimData().save((SpimData) reshuffled, bigstitcherXml);
+
+            IJ.log("- Dataset created - "+intermediateXml);
+            IJ.log("- Reordered Dataset created - "+xmlout.getAbsolutePath());
+            IJ.log("- Reordered Dataset created, rescaled for BigStitched - "+bigstitcherXml);
+            IJ.log("Done!");
 
         } catch (Exception e) {
             e.printStackTrace();
