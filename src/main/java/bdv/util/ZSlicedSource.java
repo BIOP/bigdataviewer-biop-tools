@@ -16,12 +16,12 @@ public class ZSlicedSource< T extends NumericType<T> & NativeType<T>> extends Re
     Supplier<Long> subSampler = () -> (long) 1;
 
     public ZSlicedSource(Source source, Source resamplingModel, boolean reuseMipMaps, boolean cache, boolean originInterpolation, Supplier<Long> subSampler) {
-        super(source, resamplingModel, reuseMipMaps, cache, originInterpolation);
+        super(source, resamplingModel, reuseMipMaps, cache, originInterpolation,0);
         this.subSampler = subSampler;
     }
 
     public ZSlicedSource(Source source, Source resamplingModel, boolean reuseMipMaps, boolean cache, boolean originInterpolation) {
-        super(source, resamplingModel, reuseMipMaps, cache, originInterpolation);
+        super(source, resamplingModel, reuseMipMaps, cache, originInterpolation,0);
     }
 
     @Override

@@ -37,7 +37,7 @@ public class SourceHelper {
 
         Source model = new EmptySource(nPixX,nPixY,nPixZ,m,src.getName()+"_ZAlignedModel");
 
-        ResampledSource resampled_src = new ResampledSource(src, model, false, true, sourceInterpolate);
+        ResampledSource resampled_src = new ResampledSource(src, model, false, true, sourceInterpolate,0);
 
         return resampled_src;
     }

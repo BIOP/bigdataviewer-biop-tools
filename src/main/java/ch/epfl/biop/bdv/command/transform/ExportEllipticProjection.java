@@ -162,6 +162,7 @@ public class ExportEllipticProjection implements Command {
                     .rangeC(range_channels)
                     .rangeZ(range_slices)
                     .monitor(monitor)
+                    .level(level)
                     .sources(sources.toArray(new SourceAndConverter[0]))
                     .get();
 

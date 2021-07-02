@@ -26,6 +26,8 @@ public class ImagePlusSampler {
     public static ImagePlus get(String imageName,
                                 List<SourceAndConverter> sourceList,
                                 SourceAndConverter model,
+                                boolean automipmap,
+                                int level,
                                 CZTRange range,
                                 String unit,
                                 boolean interpolate,
@@ -44,7 +46,7 @@ public class ImagePlusSampler {
         // The core of it : resampling each source with the model
         List<SourceAndConverter> resampledSourceList = sourceList
                 .stream()
-                .map(sac -> new SourceResampler(sac,model,true, cache, interpolate).get())
+                .map(sac -> new SourceResampler(sac,model,automipmap, cache, interpolate, level).get())
                 .collect(Collectors.toList());
 
         SourceAndConverterServices.getSourceAndConverterService().register(model);
@@ -86,7 +88,7 @@ public class ImagePlusSampler {
         private boolean cache = true;
         private boolean verbose = false;
         private boolean virtual = false;
-        private int level = 0;
+        private int level = -1;
         private String unit;
         private CZTRange.Builder rangeBuilder = new CZTRange.Builder();
         private Function<Collection<SourceAndConverter<?>>,List<SourceAndConverter<?>>> sorter = sacslist -> SourceAndConverterHelper.sortDefaultGeneric(sacslist);
@@ -168,6 +170,8 @@ public class ImagePlusSampler {
             return ImagePlusSampler.get(imageName,
                     Arrays.asList(sacs),
                     model,
+                    level==-1,
+                    level,
                     range,
                     unit,
                     interpolate,virtual, cache, verbose);
