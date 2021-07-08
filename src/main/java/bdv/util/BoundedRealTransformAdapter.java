@@ -11,6 +11,12 @@ import sc.fiji.persist.IClassRuntimeAdapter;
 
 import java.lang.reflect.Type;
 
+/**
+ * Runtime adapter of {@link BoundedRealTransform} class
+ *
+ * TODO: fix how this serializer is done
+ */
+
 @Plugin(type = IClassRuntimeAdapter.class)
 public class BoundedRealTransformAdapter implements IClassRuntimeAdapter<RealTransform, BoundedRealTransform> {
 

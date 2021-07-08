@@ -9,7 +9,27 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-// extends RealTransformSequence
+/**
+ * A transform sequence which transform a 3D ellipse into a flat projection map.
+ * <p>
+ * This transform is a concatenation of
+ * - a {@link SphericalToCartesianTransform3D} transform
+ * - a {@link Scale3D} transform
+ * - a {@link AffineTransform3D}, but only for rotation in 3D (quaternions)
+ * - a {@link Translation3D},  for moving the ellipse in space
+ *
+ * There are 9 degrees of freedom:
+ * - r1 : radius of first axis of the ellipse
+ * - r2 : radius of first axis of the ellipse
+ * - rx : rotation (rad) of the ellipse around the X axis
+ * - ry : rotation (rad) of the ellipse around the Y axis
+ * - rz : rotation (rad) of the ellipse around the Z axis
+ * - tx : translation of the center of the ellipse along the X axis
+ * - ty : translation of the center of the ellipse along the Y axis
+ * - tz : translation of the center of the ellipse along the Z axis
+ *
+ * This transformation is invertible, but only in a certain fraction of the space
+ */
 public class Elliptical3DTransform implements InvertibleRealTransform {
 
     // Transform 1 : spherical to cartesian
@@ -18,7 +38,7 @@ public class Elliptical3DTransform implements InvertibleRealTransform {
 
     // Transform 2 : scale elliptical axes
 
-    public Scale3D s3d = new Scale3D(1f,1f,1f);
+    public Scale3D s3d = new Scale3D(1f, 1f, 1f);
 
     // Transform 3 : rotate axes
 
@@ -47,7 +67,7 @@ public class Elliptical3DTransform implements InvertibleRealTransform {
         updateNotifiers = new ArrayList<>();
         this.updateTransformsFromParameters();
 
-        inverse = new InverseRealTransform( this );
+        inverse = new InverseRealTransform(this);
     }
 
     static public ArrayList<String> getParamsName() {
@@ -95,31 +115,31 @@ public class Elliptical3DTransform implements InvertibleRealTransform {
         map.keySet().forEach(k -> {
             switch (k) {
                 case "r1":
-                    r1=map.get(k);
+                    r1 = map.get(k);
                     break;
                 case "r2":
-                    r2=map.get(k);
+                    r2 = map.get(k);
                     break;
                 case "r3":
-                    r3=map.get(k);
+                    r3 = map.get(k);
                     break;
                 case "rx":
-                    rx=map.get(k);
+                    rx = map.get(k);
                     break;
                 case "ry":
-                    ry=map.get(k);
+                    ry = map.get(k);
                     break;
                 case "rz":
-                    rz=map.get(k);
+                    rz = map.get(k);
                     break;
                 case "tx":
-                    tx=map.get(k);
+                    tx = map.get(k);
                     break;
                 case "ty":
-                    ty=map.get(k);
+                    ty = map.get(k);
                     break;
                 case "tz":
-                    tz=map.get(k);
+                    tz = map.get(k);
                     break;
             }
         });
@@ -130,15 +150,15 @@ public class Elliptical3DTransform implements InvertibleRealTransform {
 
     public ArrayList<Runnable> updateNotifiers;
 
-    double r1=1, r2=1, r3=1, //radius of axes 1 2 3 of ellipse
-           rx=0, ry=0, rz=0, // 3D rotation euler angles maybe not the best parametrization
-           tx=0, ty=0, tz=0; // ellipse center
+    double r1 = 1, r2 = 1, r3 = 1, //radius of axes 1 2 3 of ellipse
+            rx = 0, ry = 0, rz = 0, // 3D rotation euler angles maybe not the best parametrization
+            tx = 0, ty = 0, tz = 0; // ellipse center
 
 
     void updateTransformsFromParameters() {
         // Easy
         s3d.set(r1, r2, r3);
-        tr3D.set(tx,ty,tz);
+        tr3D.set(tx, ty, tz);
 
         // Pfou
 
@@ -208,19 +228,19 @@ public class Elliptical3DTransform implements InvertibleRealTransform {
 
         double[] qXY = new double[4];
 
-        LinAlgHelpers.quaternionMultiply(qy,qx,qXY);
+        LinAlgHelpers.quaternionMultiply(qy, qx, qXY);
 
         double[] qRes = new double[4];
 
-        LinAlgHelpers.quaternionMultiply(qz,qXY,qRes);
+        LinAlgHelpers.quaternionMultiply(qz, qXY, qRes);
 
-        double [][] m = new double[3][3];
+        double[][] m = new double[3][3];
 
         AffineTransform3D rotMatrix = new AffineTransform3D();
 
         LinAlgHelpers.quaternionToR(qRes, m);
 
-        rot3D.set( m[0][0], m[0][1], m[0][2], 0,
+        rot3D.set(m[0][0], m[0][1], m[0][2], 0,
                 m[1][0], m[1][1], m[1][2], 0,
                 m[2][0], m[2][1], m[2][2], 0);
 
@@ -233,12 +253,12 @@ public class Elliptical3DTransform implements InvertibleRealTransform {
 
     @Override
     public void applyInverse(double[] source, double[] target) {
-        rtsi.apply(source,target);
+        rtsi.apply(source, target);
     }
 
     @Override
     public void applyInverse(RealPositionable source, RealLocalizable target) {
-        rtsi.apply(target,source);
+        rtsi.apply(target, source);
     }
 
     private final InverseRealTransform inverse;
@@ -260,7 +280,7 @@ public class Elliptical3DTransform implements InvertibleRealTransform {
 
     @Override
     public void apply(double[] source, double[] target) {
-        rts.apply(source,target);
+        rts.apply(source, target);
     }
 
     @Override

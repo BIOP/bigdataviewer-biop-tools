@@ -31,9 +31,15 @@ public class ImagePlusGetter {
 
     private static final Logger logger = LoggerFactory.getLogger(ImagePlusGetter.class);
 
+    /**
+     * Value used in {@link ImagePlusGetter#getImagePlus(String, List, int, CZTRange, boolean)}
+     * in order to limit the amount of parallelization when acquiring an image
+     */
     public static int limitParallelJobs = 16;
 
-    public static int countLines(String str) {
+    /* Helper method that determines the number of lines present in IJ log
+     */
+    static int countLines(String str) {
         if(str == null || str.isEmpty())
         {
             return 0;
@@ -46,8 +52,29 @@ public class ImagePlusGetter {
         return lines-1;
     }
 
+    // To avoid updating multiple times in parallel the IJ log window, still unsufficient to avoid little errors in the display
     static final Object IJLogLock = new Object();
 
+    /**
+     * Method which returns a virtual {@link ImagePlus} out of a list
+     * of {@link SourceAndConverter}, taken at a certain resolution level, and which
+     * czt range is specified via a {@link CZTRange} object.
+     *
+     * Each {@link SourceAndConverter} represents a channel. The dimension of each source
+     * need to be compatible.
+     *
+     * TODO : handle dimension exception better ?
+     *
+     * @param name Name of the output ImagePlus
+     * @param sources sources to export as ImagePlus
+     * @param resolutionLevel resolution Level of the sources
+     * @param range czt range which can be used to define a subset of the output image
+     * @param cache if set to true, each time a plane is computed, it is stored in memory. Ultimately,
+     *              this leads to filling the RAM as in a non-virtual image, if all planes are visited
+     * @param verbose if set to true, a {@link BytesMonitor} is created to follow the progression of the creation of this ImagePlus
+     * @return a virtual {@link ImagePlus} out of a list of {@link SourceAndConverter},
+     * taken at a certain resolution level, and which czt range is specified via a {@link CZTRange} object
+     */
     public static ImagePlus getVirtualImagePlus(String name,
                                          List<SourceAndConverter> sources,
                                          int resolutionLevel,
@@ -134,6 +161,24 @@ public class ImagePlusGetter {
         return out;
     }
 
+    /**
+     * Method which returns a non virtual {@link ImagePlus} out of a list
+     * of {@link SourceAndConverter}, taken at a certain resolution level, and which
+     * czt range is specified via a {@link CZTRange} object.
+     *
+     * Each {@link SourceAndConverter} represents a channel. The dimension of each source
+     * need to be compatible.
+     *
+     * TODO : handle dimension exception better ?
+     *
+     * @param name Name of the output ImagePlus
+     * @param sources sources to export as ImagePlus
+     * @param resolutionLevel resolution Level of the sources
+     * @param range czt range which can be used to define a subset of the output image
+     * @param verbose if set to true, a {@link BytesMonitor} is created to follow the progression of the creation of this ImagePlus
+     * @return a non virtual {@link ImagePlus} out of a list of {@link SourceAndConverter},
+     * taken at a certain resolution level, and which czt range is specified via a {@link CZTRange} object
+     */
     public static ImagePlus getImagePlus(String name,
                                          List<SourceAndConverter> sources,
                                          int resolutionLevel,
@@ -197,7 +242,7 @@ public class ImagePlusGetter {
 
         if ((nParallelJobs<limitParallelJobs)&&(nT>1)&&(nParallelJobs * nT<limitParallelJobs)) {
             parallelT = true;
-            nParallelJobs *= nT;
+            //nParallelJobs *= nT;
             logger.debug(name+" get with parallel frames acquisition: #T = "+nT);
         } else {
             parallelT = false;
@@ -282,7 +327,15 @@ public class ImagePlusGetter {
         return imp;
     }
 
-    public static CZTRange fromSource(SourceAndConverter source, int t, int resolutionLevel) throws Exception {
+    /**
+     * Returns the full CZT range of the sources given in input
+     * @param source source
+     * @param t initial timepoint used for probing the source (the source needs to be present at this timepoint
+     * @param resolutionLevel resolution level of the source
+     * @return a CZT range including all slices and time points
+     * @throws Exception an exception is thrown if the source is null for instance
+     */
+    public static CZTRange fromSource(SourceAndConverter<?> source, int t, int resolutionLevel) throws Exception {
         int maxTimeFrames = SourceAndConverterHelper.getMaxTimepoint(source);
         int maxZSlices = (int) source.getSpimSource().getSource(t,resolutionLevel).dimension(2);
         return new CZTRange.Builder().get(1,maxZSlices, maxTimeFrames);
@@ -294,6 +347,16 @@ public class ImagePlusGetter {
         return new CZTRange.Builder().get(sources.size(),maxZSlices, maxTimeFrames);
     }
 
+    /**
+     * Simple class which monitors an amount of bytes processed (read / write / analyzed...)
+     * and outputs a message every time it is updated. This monitor updates itself every
+     * time step fixed in ms.
+     *
+     * A new thread is created for every monitor. The thread is stopped when the task is complete.
+     * as fixed by the boolean supplier.
+     *
+     * TODO : fix busy waiting
+     */
     public static class BytesMonitor {
         final Supplier<Long> bytesRead;
         final Supplier<Boolean> complete;

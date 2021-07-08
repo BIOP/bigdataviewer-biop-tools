@@ -6,6 +6,20 @@ import net.imglib2.RealPositionable;
 import net.imglib2.realtransform.InvertibleRealTransform;
 import net.imglib2.realtransform.RealTransform;
 
+/**
+ * This RealTransform class wraps an {@link InvertibleRealTransform} and is used
+ * to avoid computing the transform outside a bounding box defined by a final
+ * {@link RealInterval}.
+ *
+ * Only the forward transform is limited in space
+ * in the {@link BoundedRealTransform#apply(RealLocalizable, RealPositionable)}
+ * method.
+ *
+ * Using this leads to drastic display speed increase if many sources are Warped but occupies
+ * a limited amount of space in a bingdataviewer window. See usage of this class in
+ * the Allen Brain BIOP Aligner.
+ *
+ */
 public class BoundedRealTransform implements InvertibleRealTransform {
 
     final InvertibleRealTransform origin;
