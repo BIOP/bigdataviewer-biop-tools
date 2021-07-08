@@ -31,6 +31,8 @@ public class ImagePlusGetter {
 
     private static final Logger logger = LoggerFactory.getLogger(ImagePlusGetter.class);
 
+    public static int limitParallelJobs = 16;
+
     public static int countLines(String str) {
         if(str == null || str.isEmpty())
         {
@@ -162,15 +164,53 @@ public class ImagePlusGetter {
         ImageStack vStack = vImage.getStack();
         final ImageStack stack = ImageStack.create( w, h, (int) range.getTotalPlanes(), vImage.getBitDepth() );
         ImagePlus imp = new ImagePlus(name, stack);
-        boolean parallelZ = range.getRangeC().size()*range.rangeT.size()<10;
         int[] czt = range.getCZTDimensions( );
         if ( ( czt[ 0 ] + czt[ 1 ] + czt[ 2 ] ) > 3 ) {
             imp = HyperStackConverter.toHyperStack(imp, czt[0], czt[1], czt[2]);
         }
 
+        int nZ = range.rangeZ.size();
+        int nT = range.rangeT.size();
+        int nC = range.rangeC.size();
+
+        final boolean parallelZ;
+        final boolean parallelT;
+        final boolean parallelC;
+
+        int nParallelJobs = 1;
+
+        if ((nC>1)&&(nParallelJobs * nC<limitParallelJobs)) { // Priority C
+            parallelC = true;
+            nParallelJobs *= nC;
+            logger.debug(name+" get with parallel channel acquisition: #C = "+nC);
+        } else {
+            parallelC = false;
+        }
+
+        if ((nParallelJobs<limitParallelJobs)&&(nZ>1)&&(nParallelJobs * nZ<limitParallelJobs)) {
+            parallelZ = true;
+            nParallelJobs *= nZ;
+            logger.debug(name+" get with parallel slices acquisition: #Z = "+nZ);
+        } else {
+            parallelZ = false;
+        }
+
+        if ((nParallelJobs<limitParallelJobs)&&(nT>1)&&(nParallelJobs * nT<limitParallelJobs)) {
+            parallelT = true;
+            nParallelJobs *= nT;
+            logger.debug(name+" get with parallel frames acquisition: #T = "+nT);
+        } else {
+            parallelT = false;
+        }
+
         final ImagePlus image = imp;
-        range.rangeC.stream().parallel().forEach(c -> {
-            range.rangeT.stream().parallel().forEach(t -> {
+
+        Stream<Integer> cStream = range.rangeC.stream();
+        if (parallelC) cStream = cStream.parallel();
+        cStream.forEach(c -> {
+            Stream<Integer> tStream = range.rangeT.stream();
+            if (parallelT) tStream = tStream.parallel();
+            tStream.forEach(t -> {
                 Stream<Integer> zStream = range.rangeZ.stream();
                 if (parallelZ) zStream = zStream.parallel();
                 zStream.forEach(z -> {
@@ -278,7 +318,6 @@ public class ImagePlusGetter {
             this.totalBytes = totalBytes;
             this.timeMs = Math.max(timeMs, 10);
             new Thread(this::run).start();
-            //SwingUtilities.invokeLater(() -> );
         }
 
         public void run() {
