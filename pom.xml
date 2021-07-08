@@ -96,7 +96,7 @@
 		<scijava.deleteOtherVersions>true</scijava.deleteOtherVersions>
 		<license.excludes>**/resources/**</license.excludes>
 
-		<bigdataviewer-playground.version>0.3.6</bigdataviewer-playground.version>
+		<bigdataviewer-playground.version>0.3.7</bigdataviewer-playground.version>
 		<bigdataviewer-bioformats.version>0.2.18</bigdataviewer-bioformats.version>
 		<bigdataviewer-selector.version>0.1.8</bigdataviewer-selector.version>
 		<scijava.app.directory>C:/Users/nicol/Desktop/fiji-win64-bdv-playground/Fiji.app/</scijava.app.directory>
@@ -105,8 +105,8 @@
 		<bigdataviewer-core.version>10.2.0</bigdataviewer-core.version>
 		<bigdataviewer-vistools.version>1.0.0-beta-28</bigdataviewer-vistools.version>
 		<imglib2-cache.version>1.0.0-beta-16</imglib2-cache.version>
-		<bigwarp_fiji.version>7.0.1</bigwarp_fiji.version> -->
-		<!-- <bigwarp_fiji.version>7.0.2-SNAPSHOT-CATCHSINGULAR</bigwarp_fiji.version> -->
+		<bigwarp_fiji.version>7.0.1</bigwarp_fiji.version>
+		<!--<bigwarp_fiji.version>7.0.2-SNAPSHOT-CATCHSINGULAR</bigwarp_fiji.version>-->
 
 		<leastsquares.version>1.0.0</leastsquares.version>
 		<ijl-utilities-wrappers.version>0.3.20</ijl-utilities-wrappers.version>
@@ -115,7 +115,7 @@
 		<bigdataviewer-spimdata-extras.version>0.1.2</bigdataviewer-spimdata-extras.version>
 		<elastix_registration_server.version>0.1.4</elastix_registration_server.version>
 
-		<bigdataviewer-playground-display.version>0.1.6</bigdataviewer-playground-display.version>
+		<bigdataviewer-playground-display.version>0.1.7</bigdataviewer-playground-display.version>
 
 		<Operetta_Importer.version>0.1.9</Operetta_Importer.version>
 		<bigvolumeviewer.version>0.2.0</bigvolumeviewer.version>
