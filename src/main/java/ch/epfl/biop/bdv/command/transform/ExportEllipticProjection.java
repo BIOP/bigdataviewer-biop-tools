@@ -15,6 +15,7 @@ import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Util;
+import org.scijava.Context;
 import org.scijava.ItemIO;
 import org.scijava.ItemVisibility;
 import org.scijava.command.Command;
@@ -24,6 +25,8 @@ import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
 import sc.fiji.bdvpg.sourceandconverter.importer.EmptySourceAndConverterCreator;
+import sc.fiji.persist.ScijavaGsonHelper;
+import spimdata.imageplus.ImagePlusHelper;
 
 import java.text.DecimalFormat;
 import java.util.Arrays;
@@ -113,6 +116,9 @@ public class ExportEllipticProjection implements Command {
     @Parameter( label = "Image Info", visibility = ItemVisibility.MESSAGE, persist = false, required = false)
     String message = "[SX: , SY:, SZ:, #C:, #T:], ? Mb";
 
+    @Parameter
+    Context context;
+
     Elliptical3DTransform e3dt;
 
     int maxTimepoint = 1;
@@ -149,12 +155,13 @@ public class ExportEllipticProjection implements Command {
                 break;
             default: throw new UnsupportedOperationException("Unrecognized export mode "+export_mode);
         }
-
+        DecimalFormat df = new DecimalFormat("#.00");
+        String suffixName = "_R["+df.format(rMin)+"; "+df.format(rMax)+"]_Theta["+df.format(thetaMin)+"; "+df.format(thetaMax)+"]_Phi["+df.format(phiMin)+"; "+df.format(phiMax)+"]";
         try {
             imp_out = ImagePlusSampler.Builder()
                     .cache(cacheImage)
                     .unit(unit)
-                    .title(name)
+                    .title(name+suffixName)
                     .setModel(model)
                     .virtual(virtual)
                     .interpolate(interpolate)
@@ -168,6 +175,13 @@ public class ExportEllipticProjection implements Command {
 
             imp_out.show();
 
+            if (transform!=null) {
+                String transformSerialized = ScijavaGsonHelper.getGson(context).toJson(transform);
+                String info = imp_out.getInfoProperty();
+                info = info + "\n" + transformSerialized + "\n";
+                imp_out.setProperty("Info", info);
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -175,12 +189,14 @@ public class ExportEllipticProjection implements Command {
 
     }
 
+    Elliptical3DTransform transform = null;
+
     public void validateMessage() {
         if ((sacs==null)||(sacs.length==0)) {
             validateMessage = "Please select the sources to export";
             return;
         }
-        Elliptical3DTransform transform = null;
+        transform = null;
         boolean hasMultipleTransforms = false;
         for (SourceAndConverter source : sacs) {
             if (!(source.getSpimSource() instanceof WarpedSource)) {
