@@ -54,9 +54,15 @@ public class EasyExportEllipticProjection implements Command {
 
             AffineTransform3D view = new AffineTransform3D();
 
-            view.scale(1.0/bdvh.getViewerPanel().getWidth());
+            view.set(0,0,30,415,0,30,0,260,-30,0,0,30);
 
+            // [INFO] BigDataViewer: Viewer Transform: 3d-affine: (0.0, 0, 30.912680532870755, 414.9153888353502,
+            // 0, 30.912680532870755, 0, 263.410858153052,
+            // -30.912680532870777, 0, 0, 31.250781886278737)
+            //view.scale(1.0/bdvh.getViewerPanel().getWidth());
+            //view.rotate(1, Math.PI/2.0);
 
+            bdvh.getViewerPanel().state().setViewerTransform(view);
 
             // At least one source
             if ((sacs==null)||(sacs.length==0)) {
@@ -73,13 +79,13 @@ public class EasyExportEllipticProjection implements Command {
                                     "ymin", -2.0*Math.PI,
                                     "ymax", +2.0*Math.PI,
                                     "xmin", 0,
-                                    "xmax", 3
-                                    /*"zmin_ini", -4.0*Math.PI,
-                                    "zmax_ini", +4.0*Math.PI,
-                                    "ymin_ini", -2.0*Math.PI,
-                                    "ymax_ini", +2.0*Math.PI,
+                                    "xmax", 3,
+                                    "zmin_ini", -2.0*Math.PI,
+                                    "zmax_ini", +2.0*Math.PI,
+                                    "ymin_ini", -Math.PI,
+                                    "ymax_ini", +Math.PI,
                                     "xmin_ini", 0.7,
-                                    "xmax_ini", 1.3*/
+                                    "xmax_ini", 1.3
                             ).get();
 
 
@@ -101,6 +107,7 @@ public class EasyExportEllipticProjection implements Command {
             }
 
             displayService.closeBdv(bdvh);
+            bdvh.close();
 
         } catch (Exception e) {
             e.printStackTrace();

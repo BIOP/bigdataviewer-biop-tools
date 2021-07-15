@@ -21,6 +21,7 @@ import org.scijava.ItemVisibility;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import org.scijava.widget.Button;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
@@ -50,8 +51,11 @@ public class ExportEllipticProjection implements Command {
     @Parameter(label = "Resolution level (0 = highest)")
     public int level;
 
+    @Parameter(label = "Update", callback = "validateMessage")
+    Button updateButton1;
+
     @Parameter(label = "", visibility = ItemVisibility.MESSAGE, required = false, persist = false)
-    String validateMessage = "Please select the sources to export";
+    String validateMessage = "Please select the sources to export. Click update for more info.";
 
     @Parameter(label = "", visibility = ItemVisibility.MESSAGE, required = false, persist = false)
     String exportRangeMessage = "<html><h2>Exported Range</h2></html>";
@@ -112,6 +116,9 @@ public class ExportEllipticProjection implements Command {
 
     @Parameter(type = ItemIO.OUTPUT)
     public ImagePlus imp_out;
+
+    @Parameter(label = "Update", callback = "validateMessage")
+    Button updateButton2;
 
     @Parameter( label = "Image Info", visibility = ItemVisibility.MESSAGE, persist = false, required = false)
     String message = "[SX: , SY:, SZ:, #C:, #T:], ? Mb";
