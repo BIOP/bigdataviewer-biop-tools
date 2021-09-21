@@ -64,7 +64,7 @@ public class BasicBdvViewToImagePlusExportCommand<T extends RealType<T>> impleme
     private String selected_timepoints_str = "";
 
     @Parameter( label = "Export mode", choices = {"Normal", "Virtual", "Virtual no-cache"}, required = false )
-    private String export_mode = "Non virtual";
+    private String export_mode = "Normal";
 
     //@Parameter( label = "Monitor loaded data")
     private Boolean monitor = true;
@@ -77,6 +77,7 @@ public class BasicBdvViewToImagePlusExportCommand<T extends RealType<T>> impleme
     public ImagePlus imageplus;
 
     double xSize, ySize;
+    private RealPoint ptTopLeft;
 
     @Override
     public void run() {
@@ -121,11 +122,19 @@ public class BasicBdvViewToImagePlusExportCommand<T extends RealType<T>> impleme
                     .rangeT(selected_timepoints_str)
                     .sources(sourceList.toArray(new SourceAndConverter[0]))
                     .get();
+            setOrigin(imageplus);
 
         } catch (Exception e) {
             e.printStackTrace();
         }
 
+    }
+
+    private void setOrigin( ImagePlus imagePlus )
+    {
+        imagePlus.getCalibration().xOrigin = - ptTopLeft.getDoublePosition( 0 ) / samplingxyinphysicalunit;
+        imagePlus.getCalibration().yOrigin = - ptTopLeft.getDoublePosition( 1 ) / samplingxyinphysicalunit;
+        imagePlus.getCalibration().zOrigin = - ptTopLeft.getDoublePosition( 2 ) / samplingzinphysicalunit;
     }
 
     private SourceAndConverter<?> createModelSource() {
@@ -174,8 +183,9 @@ public class BasicBdvViewToImagePlusExportCommand<T extends RealType<T>> impleme
         double h = bdv_h.getViewerPanel().getDisplay().getHeight();
 
         // Get global coordinates of the top left position  of the viewer
-        RealPoint ptTopLeft = new RealPoint(3); // Number of dimension
-        bdv_h.getViewerPanel().displayToGlobalCoordinates(0, 0, ptTopLeft);
+        // Number of dimension
+        ptTopLeft = new RealPoint(3);
+        bdv_h.getViewerPanel().displayToGlobalCoordinates(0, 0, ptTopLeft );
 
         // Get global coordinates of the top right position  of the viewer
         RealPoint ptTopRight = new RealPoint(3); // Number of dimension
@@ -186,8 +196,8 @@ public class BasicBdvViewToImagePlusExportCommand<T extends RealType<T>> impleme
         bdv_h.getViewerPanel().displayToGlobalCoordinates(h,0, ptBottomLeft);
 
         // Gets physical size of pixels based on window size, image sampling size and user requested pixel size
-        this.xSize=BdvViewToImagePlusExportCommand.distance(ptTopLeft, ptTopRight);
-        this.ySize=BdvViewToImagePlusExportCommand.distance(ptTopLeft, ptBottomLeft);
+        this.xSize=BdvViewToImagePlusExportCommand.distance( ptTopLeft, ptTopRight);
+        this.ySize=BdvViewToImagePlusExportCommand.distance( ptTopLeft, ptBottomLeft);
     }
 
 }
