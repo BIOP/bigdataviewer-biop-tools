@@ -1,6 +1,7 @@
 import bdv.util.BdvHandle;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.bdv.command.exporter.Elliptic3DTransformExporterCommand;
+import ch.epfl.biop.bdv.command.importer.Elliptic3DTransformImporterCommand;
 import ch.epfl.biop.bdv.command.register.SourcesRealTransformCommand;
 import ch.epfl.biop.bdv.command.transform.Elliptic3DTransformCreatorCommand;
 import mpicbg.spim.data.generic.AbstractSpimData;
@@ -27,6 +28,7 @@ public class DemoEllipticalTransformIO
         try {
             ij.command().run(Elliptic3DTransformCreatorCommand.class, true).get();
             ij.command().run(Elliptic3DTransformExporterCommand.class, true).get();
+            ij.command().run(Elliptic3DTransformImporterCommand.class, true).get();
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
