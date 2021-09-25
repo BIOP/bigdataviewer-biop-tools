@@ -76,7 +76,6 @@
 		<connection>scm:git:git://github.com/BIOP/bigdataviewer-biop-tools</connection>
 		<developerConnection>scm:git:git@github.com:BIOP/bigdataviewer-biop-tools</developerConnection>
 		<url>https://github.com/BIOP/bigdataviewer-biop-tools/</url>
-    <tag>bigdataviewer-biop-tools-0.2.22</tag>
   </scm>
 	
 	<issueManagement>
