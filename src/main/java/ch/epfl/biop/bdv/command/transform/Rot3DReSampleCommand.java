@@ -203,7 +203,7 @@ public class Rot3DReSampleCommand implements BdvPlaygroundActionCommand {
             System.out.println("model is null");
         }
 
-        SourceResampler sampler = new SourceResampler(null, model, false, false, interpolate,0);
+        SourceResampler sampler = new SourceResampler(null, model, "Sampler", false, false, interpolate,0);
 
         List<SourceAndConverter> reoriented_sources = sacs.stream().map(sampler::apply).collect(Collectors.toList());
 

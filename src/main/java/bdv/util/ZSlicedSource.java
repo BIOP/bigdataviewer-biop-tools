@@ -14,14 +14,15 @@ import java.util.function.Supplier;
 public class ZSlicedSource< T extends NumericType<T> & NativeType<T>> extends ResampledSource<T> {
 
     Supplier<Long> subSampler = () -> (long) 1;
+    //
 
-    public ZSlicedSource(Source source, Source resamplingModel, boolean reuseMipMaps, boolean cache, boolean originInterpolation, Supplier<Long> subSampler) {
-        super(source, resamplingModel, reuseMipMaps, cache, originInterpolation,0);
+    public ZSlicedSource(Source source, Source resamplingModel, String name, boolean reuseMipMaps, boolean cache, boolean originInterpolation, Supplier<Long> subSampler) {
+        super(source, resamplingModel, name, reuseMipMaps, cache, originInterpolation,0);
         this.subSampler = subSampler;
     }
 
-    public ZSlicedSource(Source source, Source resamplingModel, boolean reuseMipMaps, boolean cache, boolean originInterpolation) {
-        super(source, resamplingModel, reuseMipMaps, cache, originInterpolation,0);
+    public ZSlicedSource(Source source, Source resamplingModel, String name, boolean reuseMipMaps, boolean cache, boolean originInterpolation) {
+        super(source, resamplingModel, name, reuseMipMaps, cache, originInterpolation,0);
     }
 
     @Override

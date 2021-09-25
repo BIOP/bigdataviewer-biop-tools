@@ -46,7 +46,7 @@ public class ImagePlusSampler {
         // The core of it : resampling each source with the model
         List<SourceAndConverter> resampledSourceList = sourceList
                 .stream()
-                .map(sac -> new SourceResampler(sac,model,automipmap, cache, interpolate, level).get())
+                .map(sac -> new SourceResampler(sac,model,sac.getSpimSource().getName()+"_SampledLike_"+model.getSpimSource().getName(), automipmap, cache, interpolate, level).get())
                 .collect(Collectors.toList());
 
         SourceAndConverterServices.getSourceAndConverterService().register(model);
