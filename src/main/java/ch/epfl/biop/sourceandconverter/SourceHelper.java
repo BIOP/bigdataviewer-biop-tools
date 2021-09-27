@@ -3,6 +3,7 @@ package ch.epfl.biop.sourceandconverter;
 import bdv.util.EmptySource;
 import bdv.util.ResampledSource;
 import bdv.viewer.Source;
+import mpicbg.spim.data.sequence.FinalVoxelDimensions;
 import net.imglib2.RealPoint;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.util.LinAlgHelpers;
@@ -35,9 +36,9 @@ public class SourceHelper {
         m.concatenate(scaler);
         m.concatenate(translateCenterBwd);
 
-        Source model = new EmptySource(nPixX,nPixY,nPixZ,m,src.getName()+"_ZAlignedModel");
+        Source model = new EmptySource(nPixX,nPixY,nPixZ,m,src.getName()+"_ZAlignedModel", new FinalVoxelDimensions(src.getVoxelDimensions().unit(), voxSize, voxSize, voxSize));
 
-        ResampledSource resampled_src = new ResampledSource(src, model, false, true, sourceInterpolate,0);
+        ResampledSource resampled_src = new ResampledSource(src, model, src.getName()+"_SampledLike_"+model.getName(),false, true, sourceInterpolate,0);
 
         return resampled_src;
     }

@@ -52,6 +52,7 @@ public class SourceMosaicZSlicer implements Runnable, Function<SourceAndConverte
                 new ZSlicedSource(
                         src.getSpimSource(),
                         model.getSpimSource(),
+                        "ZSliced_"+src.getSpimSource().getName(),
                         reuseMipMaps,
                         cache,
                         interpolate,
@@ -73,6 +74,7 @@ public class SourceMosaicZSlicer implements Runnable, Function<SourceAndConverte
                         new ZSlicedSource(
                             src.asVolatile().getSpimSource(),
                             model.getSpimSource(),
+                                "ZSliced_"+src.getSpimSource().getName(),
                             reuseMipMaps,
                             false,
                             interpolate,
