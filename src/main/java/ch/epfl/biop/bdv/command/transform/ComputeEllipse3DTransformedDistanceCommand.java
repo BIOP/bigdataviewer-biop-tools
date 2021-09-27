@@ -13,40 +13,36 @@ import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 public class ComputeEllipse3DTransformedDistanceCommand implements Command {
 
     @Parameter
-    Elliptical3DTransform e3Dt;
+    public Elliptical3DTransform e3Dt;
 
     @Parameter
-    double pA0;
+    public double pA0;
 
     @Parameter
-    double pA1;
+    public double pA1;
 
     @Parameter
-    double pA2;
+    public double pA2;
 
     @Parameter
-    double pB0;
+    public double pB0;
 
     @Parameter
-    double pB1;
+    public double pB1;
 
     @Parameter
-    double pB2;
+    public double pB2;
 
     @Parameter( type = ItemIO.OUTPUT )
-    double straightDistance;
+    public double straightDistance;
 
     @Parameter( type = ItemIO.OUTPUT )
-    double curvedDistance;
+    public double curvedDistance;
 
-    private double[] pAtransformed;
-    private double[] pBtransformed;
 
     @Override
     public void run() {
 
-        pAtransformed = new double[ 3 ];
-        pBtransformed = new double[ 3 ];
         final double[] pA = { pA0, pA1, pA2 };
         final double[] pB = { pB0, pB1, pB2 };
 
@@ -90,8 +86,10 @@ public class ComputeEllipse3DTransformedDistanceCommand implements Command {
 
     private double distance( double[] pA, double[] pB )
     {
-        e3Dt.applyInverse( pA, pAtransformed );
-        e3Dt.applyInverse( pB, pBtransformed );
+        double[] pAtransformed = new double[ 3 ];
+        double[] pBtransformed = new double[ 3 ];
+        e3Dt.apply( pA, pAtransformed );
+        e3Dt.apply( pB, pBtransformed );
         return LinAlgHelpers.distance( pAtransformed, pBtransformed );
     }
 }
