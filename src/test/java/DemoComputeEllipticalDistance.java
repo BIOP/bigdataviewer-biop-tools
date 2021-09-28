@@ -1,12 +1,7 @@
 import bdv.util.Elliptical3DTransform;
-import ch.epfl.biop.bdv.command.exporter.Elliptic3DTransformExporterCommand;
-import ch.epfl.biop.bdv.command.importer.Elliptic3DTransformImporterCommand;
 import ch.epfl.biop.bdv.command.transform.ComputeEllipse3DTransformedDistanceCommand;
-import ch.epfl.biop.bdv.command.transform.Elliptic3DTransformCreatorCommand;
 import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;
-
-import java.util.concurrent.ExecutionException;
 
 public class DemoComputeEllipticalDistance
 {
@@ -41,10 +36,13 @@ public class DemoComputeEllipticalDistance
        command.pB1 = 2.2;
        command.pB2 = 3.8;
 
+       command.numSteps = 1;
        command.run();
+       System.out.println("Distance, numSteps 1: " + command.distance );
 
-       System.out.println("Straight: " + command.straightDistance );
-       System.out.println("Curved: " + command.curvedDistance );
+       command.numSteps = 100;
+       command.run();
+       System.out.println("Distance, numSteps 100: " + command.distance );
     }
 
 }

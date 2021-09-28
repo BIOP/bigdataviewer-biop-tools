@@ -33,12 +33,11 @@ public class ComputeEllipse3DTransformedDistanceCommand implements Command {
     @Parameter
     public double pB2;
 
-    @Parameter( type = ItemIO.OUTPUT )
-    public double straightDistance;
+    @Parameter ( min = "1" )
+    public int numSteps;
 
     @Parameter( type = ItemIO.OUTPUT )
-    public double curvedDistance;
-
+    public double distance;
 
     @Override
     public void run() {
@@ -46,14 +45,10 @@ public class ComputeEllipse3DTransformedDistanceCommand implements Command {
         final double[] pA = { pA0, pA1, pA2 };
         final double[] pB = { pB0, pB1, pB2 };
 
-        straightDistance = distance( pA, pB );
-        IJ.log( "Straight distance: " + straightDistance );
-
-        curvedDistance = computeCurvedDistance( pA, pB );
-        IJ.log( "Curved distance: " + curvedDistance );
+        distance = computeCurvedDistance( pA, pB, numSteps );
     }
 
-    private double computeCurvedDistance( double[] pA, double[] pB )
+    private double computeCurvedDistance( double[] pA, double[] pB, int numSteps )
     {
         final double[] vAB = new double[ 3 ];
         LinAlgHelpers.subtract( pB, pA, vAB );
@@ -64,7 +59,6 @@ public class ComputeEllipse3DTransformedDistanceCommand implements Command {
 
         copy( pA, p0 );
 
-        final int numSteps = 100;
         LinAlgHelpers.scale( vAB, 1.0 / numSteps, vStep );
 
         double curvedDistance = 0.0;
