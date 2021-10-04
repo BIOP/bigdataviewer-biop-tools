@@ -3,8 +3,10 @@ package ch.epfl.biop.bdv.command.transform;
 import bdv.util.Elliptical3DTransform;
 import ij.IJ;
 import net.imglib2.util.LinAlgHelpers;
+import org.scijava.Context;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
+import org.scijava.command.CommandService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
@@ -16,39 +18,41 @@ public class ComputeEllipse3DTransformedDistanceCommand implements Command {
     public Elliptical3DTransform e3Dt;
 
     @Parameter
-    public double pA0;
+    public Double pA0 = 1.1;
 
     @Parameter
-    public double pA1;
+    public Double pA1 = 1.0;
 
     @Parameter
-    public double pA2;
+    public Double pA2 = 2.4;
 
     @Parameter
-    public double pB0;
+    public Double pB0 = 1.1;
 
     @Parameter
-    public double pB1;
+    public Double pB1 = 2.2;
 
     @Parameter
-    public double pB2;
+    public Double pB2 = 3.8;
 
     @Parameter ( min = "1" )
-    public int numSteps;
+    public int numSteps = 1;
 
     @Parameter( type = ItemIO.OUTPUT )
-    public double distance;
+    public Double distance;
 
     @Override
     public void run() {
 
-        final double[] pA = { pA0, pA1, pA2 };
-        final double[] pB = { pB0, pB1, pB2 };
+        final double[] pA = new double[ 3 ];
+        pA[ 0 ] = pA0; pA[ 1 ] = pA1; pA[ 2 ] = pA2;
+        final double[] pB = new double[ 3 ];
+        pB[ 0 ] = pB0; pB[ 1 ] = pB1; pB[ 2 ] = pB2;
 
-        distance = computeCurvedDistance( pA, pB, numSteps );
+        distance = computeDistance( pA, pB, numSteps );
     }
 
-    private double computeCurvedDistance( double[] pA, double[] pB, int numSteps )
+    private double computeDistance( double[] pA, double[] pB, int numSteps )
     {
         final double[] vAB = new double[ 3 ];
         LinAlgHelpers.subtract( pB, pA, vAB );
@@ -85,5 +89,12 @@ public class ComputeEllipse3DTransformedDistanceCommand implements Command {
         e3Dt.apply( pA, pAtransformed );
         e3Dt.apply( pB, pBtransformed );
         return LinAlgHelpers.distance( pAtransformed, pBtransformed );
+    }
+
+    public static void main( String[] args )
+    {
+        Context ctx = (Context ) IJ.runPlugIn("org.scijava.Context", "");
+        CommandService commandService = ctx.service( CommandService.class );
+        commandService.run( ComputeEllipse3DTransformedDistanceCommand.class, true );
     }
 }
