@@ -1,8 +1,10 @@
 package ch.epfl.biop.bdv.command.importer;
 
 import bdv.util.Elliptical3DTransform;
+import ch.epfl.biop.bdv.command.transform.DisplayEllipseFromTransformCommand;
 import org.scijava.Context;
 import org.scijava.ItemIO;
+import org.scijava.command.CommandService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
@@ -17,6 +19,9 @@ import java.io.FileReader;
 public class Elliptic3DTransformImporterCommand implements BdvPlaygroundActionCommand {
 
     @Parameter
+    CommandService commandService;
+
+    @Parameter
     Context context;
 
     @Parameter(label="Json file")
@@ -28,6 +33,7 @@ public class Elliptic3DTransformImporterCommand implements BdvPlaygroundActionCo
     @Override
     public void run() {
         e3Dt = readTransformFromFile(file);
+        commandService.run(DisplayEllipseFromTransformCommand.class, false, "rMin", 0.9, "rMax", 1.1, "e3Dt", e3Dt);
     }
 
     private Elliptical3DTransform readTransformFromFile(File file)
