@@ -17,22 +17,22 @@ public class ComputeEllipse3DTransformedDistanceCommand implements Command {
     @Parameter
     public Elliptical3DTransform e3Dt;
 
-    @Parameter ( stepSize = "0.01")
+    @Parameter ( stepSize = "0.001")
     public Double pA0 = 1.1;
 
-    @Parameter
+    @Parameter ( stepSize = "0.001")
     public Double pA1 = 1.0;
 
-    @Parameter
+    @Parameter ( stepSize = "0.001")
     public Double pA2 = 2.4;
 
-    @Parameter
+    @Parameter ( stepSize = "0.001")
     public Double pB0 = 1.1;
 
-    @Parameter
+    @Parameter ( stepSize = "0.001")
     public Double pB1 = 2.2;
 
-    @Parameter
+    @Parameter ( stepSize = "0.001")
     public Double pB2 = 3.8;
 
     @Parameter ( min = "1" )

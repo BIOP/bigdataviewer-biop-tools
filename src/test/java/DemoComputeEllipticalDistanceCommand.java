@@ -5,6 +5,7 @@ import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;
 import org.scijava.Context;
 import org.scijava.command.CommandService;
+import org.scijava.object.ObjectService;
 
 public class DemoComputeEllipticalDistanceCommand
 {
@@ -31,10 +32,9 @@ public class DemoComputeEllipticalDistanceCommand
                 "tz", -230.0);
 
 
-
         Context ctx = (Context ) IJ.runPlugIn("org.scijava.Context", "");
-        CommandService commandService = ctx.service( CommandService.class );
-        commandService.run( ComputeEllipse3DTransformedDistanceCommand.class, true );
+        ctx.getService( ObjectService.class).addObject( e3Dt );
+        ctx.service( CommandService.class ).run( ComputeEllipse3DTransformedDistanceCommand.class, true );
     }
 
 }
