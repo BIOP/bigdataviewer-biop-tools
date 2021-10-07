@@ -17,7 +17,7 @@ public class ComputeEllipse3DTransformedDistanceCommand implements Command {
     @Parameter
     public Elliptical3DTransform e3Dt;
 
-    @Parameter
+    @Parameter ( stepSize = "0.01")
     public Double pA0 = 1.1;
 
     @Parameter
