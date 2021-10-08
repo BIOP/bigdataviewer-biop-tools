@@ -35,6 +35,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
+import static bdv.util.Elliptical3DTransform.RADIUS_X;
+import static bdv.util.Elliptical3DTransform.RADIUS_Y;
+import static bdv.util.Elliptical3DTransform.RADIUS_Z;
+
 /**
  * Command used to export an elliptical transformed source
  */
