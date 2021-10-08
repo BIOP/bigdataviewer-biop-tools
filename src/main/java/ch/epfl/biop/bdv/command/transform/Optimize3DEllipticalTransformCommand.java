@@ -27,6 +27,16 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.*;
 
+import static bdv.util.Elliptical3DTransform.CENTER_X;
+import static bdv.util.Elliptical3DTransform.CENTER_Y;
+import static bdv.util.Elliptical3DTransform.CENTER_Z;
+import static bdv.util.Elliptical3DTransform.RADIUS_X;
+import static bdv.util.Elliptical3DTransform.RADIUS_Y;
+import static bdv.util.Elliptical3DTransform.RADIUS_Z;
+import static bdv.util.Elliptical3DTransform.ROTATION_X;
+import static bdv.util.Elliptical3DTransform.ROTATION_Y;
+import static bdv.util.Elliptical3DTransform.ROTATION_Z;
+
 
 @Plugin(type = BdvPlaygroundActionCommand.class, initializer = "init", menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>Elliptic 3D Transform Optimization")
 public class Optimize3DEllipticalTransformCommand implements BdvPlaygroundActionCommand{
@@ -133,7 +143,7 @@ public class Optimize3DEllipticalTransformCommand implements BdvPlaygroundAction
                 this.setParams(doubles);
                 double ans = computeIntegratedIntensity((RealRandomAccess) ws.getInterpolatedSource(sourceTimePoint,sourceMipMapLevel, Interpolation.NEARESTNEIGHBOR).realRandomAccess());
                 Map<String, Double> params = e3dT.getParameters();
-                return  ans*params.get("r1")*params.get("r2")*params.get("r3"); // Avoid strongly curved on a single bright pixel -> correct jacobian ?
+                return  ans*params.get(RADIUS_X)*params.get(RADIUS_Y)*params.get(RADIUS_Z); // Avoid strongly curved on a single bright pixel -> correct jacobian ?
             };
 
             SimplexOptimizer optimizer = new SimplexOptimizer(1e-10, 1e-30);
@@ -189,15 +199,15 @@ public class Optimize3DEllipticalTransformCommand implements BdvPlaygroundAction
         double[] ans = new double[nOptimizedParams];
         int cIndex=0;
         Map<String, Double> p = e3dT.getParameters();
-        if (r1) {ans[cIndex]=p.get("r1");cIndex++;}
-        if (r2) {ans[cIndex]=p.get("r2");cIndex++;}
-        if (r3) {ans[cIndex]=p.get("r3");cIndex++;}
-        if (rx) {ans[cIndex]=p.get("rx");cIndex++;}
-        if (ry) {ans[cIndex]=p.get("ry");cIndex++;}
-        if (rz) {ans[cIndex]=p.get("rz");cIndex++;}
-        if (tx) {ans[cIndex]=p.get("tx");cIndex++;}
-        if (ty) {ans[cIndex]=p.get("ty");cIndex++;}
-        if (tz) {ans[cIndex]=p.get("tz");cIndex++;}
+        if (r1) {ans[cIndex]=p.get(RADIUS_X);cIndex++;}
+        if (r2) {ans[cIndex]=p.get(RADIUS_Y);cIndex++;}
+        if (r3) {ans[cIndex]=p.get(RADIUS_Z);cIndex++;}
+        if (rx) {ans[cIndex]=p.get(ROTATION_X);cIndex++;}
+        if (ry) {ans[cIndex]=p.get(ROTATION_Y);cIndex++;}
+        if (rz) {ans[cIndex]=p.get(ROTATION_Z);cIndex++;}
+        if (tx) {ans[cIndex]=p.get(CENTER_X);cIndex++;}
+        if (ty) {ans[cIndex]=p.get(CENTER_Y);cIndex++;}
+        if (tz) {ans[cIndex]=p.get(CENTER_Z);cIndex++;}
         return ans;
     }
 
@@ -221,15 +231,15 @@ public class Optimize3DEllipticalTransformCommand implements BdvPlaygroundAction
         Object[] args = new Object[params.length*2];
         //System.out.println("r1="+params[0]);
         int cIndex=0;
-        if (r1) {args[2*cIndex]="r1";args[2*cIndex+1]=params[cIndex];cIndex++;}
-        if (r2) {args[2*cIndex]="r2";args[2*cIndex+1]=params[cIndex];cIndex++;}
-        if (r3) {args[2*cIndex]="r3";args[2*cIndex+1]=params[cIndex];cIndex++;}
-        if (rx) {args[2*cIndex]="rx";args[2*cIndex+1]=params[cIndex];cIndex++;}
-        if (ry) {args[2*cIndex]="ry";args[2*cIndex+1]=params[cIndex];cIndex++;}
-        if (rz) {args[2*cIndex]="rz";args[2*cIndex+1]=params[cIndex];cIndex++;}
-        if (tx) {args[2*cIndex]="tx";args[2*cIndex+1]=params[cIndex];cIndex++;}
-        if (ty) {args[2*cIndex]="ty";args[2*cIndex+1]=params[cIndex];cIndex++;}
-        if (tz) {args[2*cIndex]="tz";args[2*cIndex+1]=params[cIndex];cIndex++;}
+        if (r1) {args[2*cIndex]=RADIUS_X;args[2*cIndex+1]=params[cIndex];cIndex++;}
+        if (r2) {args[2*cIndex]=RADIUS_Y;args[2*cIndex+1]=params[cIndex];cIndex++;}
+        if (r3) {args[2*cIndex]=RADIUS_Z;args[2*cIndex+1]=params[cIndex];cIndex++;}
+        if (rx) {args[2*cIndex]=ROTATION_X;args[2*cIndex+1]=params[cIndex];cIndex++;}
+        if (ry) {args[2*cIndex]=ROTATION_Y;args[2*cIndex+1]=params[cIndex];cIndex++;}
+        if (rz) {args[2*cIndex]=ROTATION_Z;args[2*cIndex+1]=params[cIndex];cIndex++;}
+        if (tx) {args[2*cIndex]=CENTER_X;args[2*cIndex+1]=params[cIndex];cIndex++;}
+        if (ty) {args[2*cIndex]=CENTER_Y;args[2*cIndex+1]=params[cIndex];cIndex++;}
+        if (tz) {args[2*cIndex]=CENTER_Z;args[2*cIndex+1]=params[cIndex];cIndex++;}
         e3dT.setParameters(args);
     }
 

@@ -237,7 +237,7 @@ public class ExportEllipticProjection implements Command {
 
         Source wrappedSource = ((WarpedSource)modelSource.getSpimSource()).getWrappedSource();
 
-        double rMean = (e3dt.getParameters().get("r1")+e3dt.getParameters().get("r2")+e3dt.getParameters().get("r3"))/3.0;
+        double rMean = (e3dt.getParameters().get(RADIUS_X)+e3dt.getParameters().get(RADIUS_Y)+e3dt.getParameters().get(RADIUS_Z))/3.0;
 
         double dxy = rMean * angleStep * Math.PI / 180.0;
         double dz = rMean * radiusStep;

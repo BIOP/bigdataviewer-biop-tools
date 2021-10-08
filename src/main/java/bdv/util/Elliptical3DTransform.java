@@ -52,6 +52,16 @@ public class Elliptical3DTransform implements InvertibleRealTransform {
 
     public RealTransformSequence rtsi = new RealTransformSequence();
 
+    public static final String RADIUS_X = "radiusX";
+    public static final String RADIUS_Y = "radiusY";
+    public static final String RADIUS_Z = "radiusZ";
+    public static final String ROTATION_X = "rotationX";
+    public static final String ROTATION_Y = "rotationY";
+    public static final String ROTATION_Z = "rotationZ";
+    public static final String CENTER_X = "centerX";
+    public static final String CENTER_Y = "centerY";
+    public static final String CENTER_Z = "centerZ";
+
     public Elliptical3DTransform() {
 
         rts.add(s2c);
@@ -72,32 +82,32 @@ public class Elliptical3DTransform implements InvertibleRealTransform {
 
     static public ArrayList<String> getParamsName() {
         ArrayList<String> names = new ArrayList<>();
-        names.add("r1");
-        names.add("r2");
-        names.add("r3");
-        names.add("rx");
-        names.add("ry");
-        names.add("rz");
-        names.add("tx");
-        names.add("ty");
-        names.add("tz");
+        names.add(RADIUS_X);
+        names.add(RADIUS_Y);
+        names.add(RADIUS_Z);
+        names.add(ROTATION_X);
+        names.add(ROTATION_Y);
+        names.add(ROTATION_Z);
+        names.add(CENTER_X);
+        names.add(CENTER_Y);
+        names.add(CENTER_Y);
         return names;
     }
 
     public Map<String, Double> getParameters() {
 
         Map<String, Double> map = new LinkedHashMap<>();
-        map.put("r1", r1);
-        map.put("r2", r2);
-        map.put("r3", r3);
+        map.put(RADIUS_X, r1);
+        map.put(RADIUS_Y, r2);
+        map.put(RADIUS_Z, r3);
 
-        map.put("rx", rx);
-        map.put("ry", ry);
-        map.put("rz", rz);
+        map.put(ROTATION_X, rx);
+        map.put(ROTATION_Y, ry);
+        map.put(ROTATION_Z, rz);
 
-        map.put("tx", tx);
-        map.put("ty", ty);
-        map.put("tz", tz);
+        map.put(CENTER_X, tx);
+        map.put(CENTER_Y, ty);
+        map.put(CENTER_Z, tz);
         return map;
     }
 
@@ -114,31 +124,31 @@ public class Elliptical3DTransform implements InvertibleRealTransform {
                     (Double) kv[i + 1]);
         map.keySet().forEach(k -> {
             switch (k) {
-                case "r1":
+                case RADIUS_X:
                     r1 = map.get(k);
                     break;
-                case "r2":
+                case RADIUS_Y:
                     r2 = map.get(k);
                     break;
-                case "r3":
+                case RADIUS_Z:
                     r3 = map.get(k);
                     break;
-                case "rx":
+                case ROTATION_X:
                     rx = map.get(k);
                     break;
-                case "ry":
+                case ROTATION_Y:
                     ry = map.get(k);
                     break;
-                case "rz":
+                case ROTATION_Z:
                     rz = map.get(k);
                     break;
-                case "tx":
+                case CENTER_X:
                     tx = map.get(k);
                     break;
-                case "ty":
+                case CENTER_Y:
                     ty = map.get(k);
                     break;
-                case "tz":
+                case CENTER_Z:
                     tz = map.get(k);
                     break;
             }
