@@ -29,12 +29,12 @@ public class DemoComputeEllipticalDistance
                 "ty", 230.0,
                 "tz", -230.0);
        command.e3Dt = e3Dt;
-       command.pA0 = 1.1;
-       command.pA1 = 1.0;
-       command.pA2 = 2.4;
-       command.pB0 = 1.1;
-       command.pB1 = 2.2;
-       command.pB2 = 3.8;
+       command.radiusA = 1.1;
+       command.angle1A = 1.0;
+       command.angle2A = 2.4;
+       command.radiusB = 1.1;
+       command.angle1B = 2.2;
+       command.angle2B = 3.8;
 
        command.numSteps = 1;
        command.run();

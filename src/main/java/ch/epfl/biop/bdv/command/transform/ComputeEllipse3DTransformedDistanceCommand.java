@@ -18,22 +18,22 @@ public class ComputeEllipse3DTransformedDistanceCommand implements Command {
     public Elliptical3DTransform e3Dt;
 
     @Parameter ( stepSize = "0.001")
-    public Double pA0 = 1.1;
+    public Double radiusA = 1.1;
 
     @Parameter ( stepSize = "0.001")
-    public Double pA1 = 1.0;
+    public Double angle1A = 1.0;
 
     @Parameter ( stepSize = "0.001")
-    public Double pA2 = 2.4;
+    public Double angle2A = 2.4;
 
     @Parameter ( stepSize = "0.001")
-    public Double pB0 = 1.1;
+    public Double radiusB = 1.1;
 
     @Parameter ( stepSize = "0.001")
-    public Double pB1 = 2.2;
+    public Double angle1B = 2.2;
 
     @Parameter ( stepSize = "0.001")
-    public Double pB2 = 3.8;
+    public Double angle2B = 3.8;
 
     @Parameter ( min = "1" )
     public int numSteps = 1;
@@ -45,9 +45,9 @@ public class ComputeEllipse3DTransformedDistanceCommand implements Command {
     public void run() {
 
         final double[] pA = new double[ 3 ];
-        pA[ 0 ] = pA0; pA[ 1 ] = pA1; pA[ 2 ] = pA2;
+        pA[ 0 ] = radiusA; pA[ 1 ] = angle1A; pA[ 2 ] = angle2A;
         final double[] pB = new double[ 3 ];
-        pB[ 0 ] = pB0; pB[ 1 ] = pB1; pB[ 2 ] = pB2;
+        pB[ 0 ] = radiusB; pB[ 1 ] = angle1B; pB[ 2 ] = angle2B;
 
         distance = computeDistance( pA, pB, numSteps );
     }
