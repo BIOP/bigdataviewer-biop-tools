@@ -8,6 +8,7 @@ import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
+import spimdata.SpimDataHelper;
 import spimdata.util.Displaysettings;
 
 import java.io.File;
@@ -28,16 +29,9 @@ public class RemoveDisplaySettingsCommand implements Command {
     @Override
     public void run() {
         try {
-
             AbstractSpimData<?> asd = new XmlIoSpimData().load(xmlin.getAbsolutePath());
-            asd.getSequenceDescription().getViewSetups().forEach((id, vs) -> {
-                if (vs.getAttribute(Displaysettings.class)!=null) {
-                    vs.getAttributes().remove(ViewSetupAttributes.getNameForClass( Displaysettings.class ));
-                }
-            });
-
+            SpimDataHelper.removeEntities(asd, Displaysettings.class);
             new XmlIoSpimData().save((SpimData) asd, xmlout.getAbsolutePath());
-
         } catch (Exception e) {
             e.printStackTrace();
         }

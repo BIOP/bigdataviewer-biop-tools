@@ -8,6 +8,7 @@ import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
+import spimdata.SpimDataHelper;
 import spimdata.util.Displaysettings;
 
 import java.io.File;
@@ -33,11 +34,7 @@ public class RemoveEntitiesCommand implements Command {
         try {
             String[] entities = entitiestoremove.split(",");
             AbstractSpimData<?> asd = new XmlIoSpimData().load(xmlin.getAbsolutePath());
-                asd.getSequenceDescription().getViewSetups().forEach((id, vs) -> {
-                    for (String entityName:entities) {
-                        vs.getAttributes().remove(entityName.trim());
-                    }
-                });
+            SpimDataHelper.removeEntities(asd, entities);
             new XmlIoSpimData().save((SpimData) asd, xmlout.getAbsolutePath());
         } catch (Exception e) {
             e.printStackTrace();

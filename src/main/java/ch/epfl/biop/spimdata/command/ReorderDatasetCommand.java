@@ -5,6 +5,7 @@ import bdv.spimdata.XmlIoSpimDataMinimal;
 import ch.epfl.biop.bdv.bioformats.BioFormatsMetaDataHelper;
 import ch.epfl.biop.bdv.bioformats.bioformatssource.BioFormatsBdvOpener;
 import ch.epfl.biop.bdv.bioformats.export.spimdata.BioFormatsConvertFilesToSpimData;
+import ch.epfl.biop.bdv.bioformats.imageloader.FileIndex;
 import ch.epfl.biop.spimdata.reordered.LifReOrdered;
 import ij.IJ;
 import loci.formats.IFormatReader;
@@ -12,11 +13,6 @@ import loci.formats.meta.IMetadata;
 import mpicbg.spim.data.SpimData;
 import mpicbg.spim.data.XmlIoSpimData;
 import mpicbg.spim.data.generic.AbstractSpimData;
-import mpicbg.spim.data.generic.base.ViewSetupAttributes;
-import mpicbg.spim.data.registration.ViewTransform;
-import mpicbg.spim.data.registration.ViewTransformAffine;
-import net.imglib2.realtransform.AffineGet;
-import net.imglib2.realtransform.AffineTransform3D;
 import ome.units.UNITS;
 import ome.units.quantity.Length;
 import org.apache.commons.io.FilenameUtils;
@@ -24,6 +20,7 @@ import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
+import spimdata.SpimDataHelper;
 import spimdata.util.Displaysettings;
 
 import java.io.File;
@@ -67,11 +64,7 @@ public class ReorderDatasetCommand implements Command {
 
             System.out.println(intermediateXml);
             // Remove display settings attributes because this causes issues with BigStitcher
-            asd.getSequenceDescription().getViewSetups().forEach((id, vs) -> {
-                if (vs.getAttribute(Displaysettings.class)!=null) {
-                    vs.getAttributes().remove(ViewSetupAttributes.getNameForClass( Displaysettings.class ));
-                }
-            });
+            SpimDataHelper.removeEntities(asd, Displaysettings.class, FileIndex.class);
 
             // Save non reordered dataset
             asd.setBasePath((new File(intermediateXml)).getParentFile());
@@ -89,16 +82,7 @@ public class ReorderDatasetCommand implements Command {
             reshuffled.setBasePath(new File(xmlout.getAbsolutePath()).getParentFile()); //TODO TOFIX
             new XmlIoSpimData().save((SpimData) reshuffled, xmlout.getAbsolutePath());
 
-            reshuffled
-                    .getViewRegistrations()
-                    .getViewRegistrations()
-                    .values()
-                    .forEach(viewRegistraion -> {
-                        AffineTransform3D at3d = new AffineTransform3D();
-                        at3d.scale(scalingForBigStitcher);
-                        viewRegistraion.preconcatenateTransform(
-                                new ViewTransformAffine("BigStitcher Scaling", at3d));
-                    });
+            SpimDataHelper.scale(reshuffled, "BigStitcher Scaling", scalingForBigStitcher);
 
             String bigstitcherXml = FilenameUtils.removeExtension(xmlout.getAbsolutePath())+"_bigstitcher.xml";
             new XmlIoSpimData().save((SpimData) reshuffled, bigstitcherXml);
