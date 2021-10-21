@@ -36,6 +36,11 @@ public class FileToBigStitcherDatasetCommand implements Command {
 
     @Override
     public void run() {
+        if (xmlout.exists()) {
+            IJ.error("The output file already exist! Skipping execution");
+            return;
+        }
+
         try {
             BioFormatsBdvOpener opener = BioFormatsConvertFilesToSpimData.getDefaultOpener(file.getAbsolutePath()).micrometer();
             IFormatReader reader = opener.getNewReader();

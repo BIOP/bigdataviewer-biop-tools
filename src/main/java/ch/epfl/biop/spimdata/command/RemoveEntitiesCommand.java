@@ -1,5 +1,6 @@
 package ch.epfl.biop.spimdata.command;
 
+import ij.IJ;
 import mpicbg.spim.data.SpimData;
 import mpicbg.spim.data.XmlIoSpimData;
 import mpicbg.spim.data.generic.AbstractSpimData;
@@ -31,6 +32,12 @@ public class RemoveEntitiesCommand implements Command {
 
     @Override
     public void run() {
+
+        if (xmlout.exists()) {
+            IJ.error("The output file already exist! Skipping execution");
+            return;
+        }
+
         try {
             String[] entities = entitiestoremove.split(",");
             AbstractSpimData<?> asd = new XmlIoSpimData().load(xmlin.getAbsolutePath());

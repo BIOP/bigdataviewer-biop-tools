@@ -1,5 +1,6 @@
 package ch.epfl.biop.spimdata.command;
 
+import ij.IJ;
 import mpicbg.spim.data.SpimData;
 import mpicbg.spim.data.XmlIoSpimData;
 import mpicbg.spim.data.generic.AbstractSpimData;
@@ -28,6 +29,12 @@ public class RemoveDisplaySettingsCommand implements Command {
 
     @Override
     public void run() {
+
+        if (xmlout.exists()) {
+            IJ.error("The output file already exist! Skipping execution");
+            return;
+        }
+
         try {
             AbstractSpimData<?> asd = new XmlIoSpimData().load(xmlin.getAbsolutePath());
             SpimDataHelper.removeEntities(asd, Displaysettings.class);
