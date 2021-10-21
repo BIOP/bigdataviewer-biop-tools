@@ -45,13 +45,13 @@ public class BasicBdvViewToImagePlusExportCommand<T extends RealType<T>> impleme
     @Parameter(label = "Capture Name")
     String capturename = "Capture_00";
 
-    @Parameter(label = "Half Thickness Z (above and below, physical unit, 0 for a single slice)")
+    @Parameter(label = "Half Thickness Z (above and below, physical unit, 0 for a single slice)", style = "format:0.#####E0")
     public double zsize = 100;
 
-    @Parameter(label = "Output pixel size (physical unit)")
+    @Parameter(label = "Output pixel size (physical unit)", style = "format:0.#####E0")
     public double samplingxyinphysicalunit = 1;
 
-    @Parameter(label = "Z Pixel size sampling (physical unit)")
+    @Parameter(label = "Z Pixel size sampling (physical unit)", style = "format:0.#####E0")
     public double samplingzinphysicalunit = 1;
 
     @Parameter(label = "Interpolate")

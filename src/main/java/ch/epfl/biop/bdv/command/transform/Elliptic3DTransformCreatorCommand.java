@@ -11,7 +11,7 @@ import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 @Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>New Elliptic 3D Transform")
 public class Elliptic3DTransformCreatorCommand implements BdvPlaygroundActionCommand {
 
-    @Parameter
+    @Parameter(style = "format:0.#####E0")
     double radiusX, radiusY, radiusZ, // radii of axes 1 2 3 of ellipse
             rotationX, rotationY, rotationZ, // 3D rotation euler angles  - maybe not the best parametrization
             centerX, centerY, centerZ; // ellipse center

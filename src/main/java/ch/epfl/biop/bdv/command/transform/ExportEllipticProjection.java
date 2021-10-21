@@ -64,28 +64,28 @@ public class ExportEllipticProjection implements Command {
     @Parameter(label = "", visibility = ItemVisibility.MESSAGE, required = false, persist = false)
     String exportRangeMessage = "<html><h2>Exported Range</h2></html>";
 
-    @Parameter(callback = "validateMessage")
+    @Parameter(callback = "validateMessage", style = "format:0.#####E0")
     double rMin = 0.8;
 
-    @Parameter(callback = "validateMessage")
+    @Parameter(callback = "validateMessage", style = "format:0.#####E0")
     double rMax = 1.2;
 
-    @Parameter(callback = "validateMessage")
+    @Parameter(callback = "validateMessage", style = "format:0.#####E0")
     double radiusStep = 0.01;
 
-    @Parameter(style = "slider", stepSize = "1", min = "0", max = "180", callback = "validateMessage")
+    @Parameter(style = "slider, format:0.#####E0", stepSize = "1", min = "0", max = "180", callback = "validateMessage")
     double thetaMin = 0;
 
-    @Parameter(style = "slider", stepSize = "1", min = "0", max = "180", callback = "validateMessage")
+    @Parameter(style = "slider, format:0.#####E0", stepSize = "1", min = "0", max = "180", callback = "validateMessage")
     double thetaMax = 180;
 
-    @Parameter(style = "slider", stepSize = "1", min = "0", max = "360", callback = "validateMessage")
+    @Parameter(style = "slider, format:0.#####E0", stepSize = "1", min = "0", max = "360", callback = "validateMessage")
     double phiMin = 0;
 
-    @Parameter(style = "slider", stepSize = "1", min = "0", max = "360", callback = "validateMessage")
+    @Parameter(style = "slider, format:0.#####E0", stepSize = "1", min = "0", max = "360", callback = "validateMessage")
     double phiMax = 360;
 
-    @Parameter(callback = "validateMessage")
+    @Parameter(callback = "validateMessage", style="format:0.#####E0")
     double angleStep = 0.01;
 
     @Parameter(label = "", visibility = ItemVisibility.MESSAGE, required = false, persist = false)

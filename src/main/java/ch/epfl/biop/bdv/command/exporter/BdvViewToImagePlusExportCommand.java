@@ -51,13 +51,13 @@ public class BdvViewToImagePlusExportCommand implements BdvPlaygroundActionComma
     @Parameter(label="Match bdv frame window size", persist=false, callback = "matchXYBDVFrame")
     public boolean matchwindowsize =false;
 
-    @Parameter(label = "Total Size X (physical unit)", callback = "matchXYBDVFrame")
+    @Parameter(label = "Total Size X (physical unit)", callback = "matchXYBDVFrame", style = "format:0.#####E0")
     public double xsize = 100;
 
-    @Parameter(label = "Total Size Y (physical unit)", callback = "matchXYBDVFrame")
+    @Parameter(label = "Total Size Y (physical unit)", callback = "matchXYBDVFrame", style = "format:0.#####E0")
     public double ysize = 100;
 
-    @Parameter(label = "Half Thickness Z (above and below, physical unit, 0 for a single slice)")
+    @Parameter(label = "Half Thickness Z (above and below, physical unit, 0 for a single slice)", style = "format:0.#####E0")
     public double zsize = 100;
 
     @Parameter( label = "Select Range", callback = "updateMessage", visibility = ItemVisibility.MESSAGE, persist = false, required = false)
@@ -66,10 +66,10 @@ public class BdvViewToImagePlusExportCommand implements BdvPlaygroundActionComma
     @Parameter( label = "Selected Timepoints. Leave blank for all", required = false )
     private String selected_timepoints_str = "";
 
-    @Parameter(label = "XY Pixel size sampling (physical unit)", callback = "changePhysicalSampling")
+    @Parameter(label = "XY Pixel size sampling (physical unit)", callback = "changePhysicalSampling", style = "format:0.#####E0")
     public double samplingxyinphysicalunit = 1;
 
-    @Parameter(label = "Z Pixel size sampling (physical unit)", callback = "changePhysicalSampling")
+    @Parameter(label = "Z Pixel size sampling (physical unit)", callback = "changePhysicalSampling", style = "format:0.#####E0")
     public double samplingzinphysicalunit = 1;
 
     @Parameter(label = "Interpolate")

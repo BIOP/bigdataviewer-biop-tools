@@ -28,7 +28,7 @@ public class DisplayEllipseFromTransformCommand implements Command {
     @Parameter(type = ItemIO.BOTH)
     Elliptical3DTransform e3Dt;
 
-    @Parameter
+    @Parameter(style = "format:0.#####E0")
     double rMin=0.9, rMax= 1.1;
 
     @Parameter

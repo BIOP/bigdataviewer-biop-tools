@@ -16,11 +16,13 @@ import java.util.stream.Collectors;
 
 @Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>Real Transform Sources")
 public class SourcesRealTransformCommand implements BdvPlaygroundActionCommand {
+
     @Parameter
     SourceAndConverter[] sources_in;
 
     @Parameter(type = ItemIO.OUTPUT)
     SourceAndConverter[] sources_out;
+
     @Parameter
     RealTransform rt;
 

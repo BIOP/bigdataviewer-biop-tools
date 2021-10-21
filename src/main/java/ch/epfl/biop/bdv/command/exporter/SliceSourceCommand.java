@@ -42,28 +42,26 @@ public class SliceSourceCommand implements BdvPlaygroundActionCommand {
     @Parameter(label="Match bdv frame window size", persist=false, callback = "matchXYBDVFrame")
     public boolean matchWindowSize=false;
 
-    @Parameter(label = "Total Size X (physical unit)", callback = "matchXYBDVFrame")
+    @Parameter(label = "Total Size X (physical unit)", callback = "matchXYBDVFrame", style = "format:0.#####E0")
     public double xSize = 100;
 
-    @Parameter(label = "Total Size Y (physical unit)", callback = "matchXYBDVFrame")
+    @Parameter(label = "Total Size Y (physical unit)", callback = "matchXYBDVFrame", style = "format:0.#####E0")
     public double ySize = 100;
 
-    @Parameter(label = "Half Thickness Z (above and below, physical unit)")
+    @Parameter(label = "Half Thickness Z (above and below, physical unit)", style = "format:0.#####E0")
     public double zSize = 100;
 
-    @Parameter(label = "XY Pixel size sampling (physical unit)", callback = "changePhysicalSampling")
+    @Parameter(label = "XY Pixel size sampling (physical unit)", callback = "changePhysicalSampling", style = "format:0.#####E0")
     public double samplingXYInPhysicalUnit = 1;
 
-    @Parameter(label = "Z Pixel size sampling (physical unit)", callback = "changePhysicalSampling")
+    @Parameter(label = "Z Pixel size sampling (physical unit)", callback = "changePhysicalSampling", style = "format:0.#####E0")
     public double samplingZInPhysicalUnit = 1;
 
     @Parameter(label = "Interpolate")
     public boolean interpolate = true;
 
-
     @Parameter(label = "ReUseMipMaps")
     public boolean reusemipmaps = true;
-
 
     @Parameter(label = "cache")
     public boolean cache = false;

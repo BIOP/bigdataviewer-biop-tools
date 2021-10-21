@@ -49,39 +49,39 @@ public class Optimize3DEllipticalTransformCommand implements BdvPlaygroundAction
 
     @Parameter
     boolean r1=true;
-    @Parameter
+    @Parameter(style="format:0.#####E0")
     double sr1 = 1;
     @Parameter
     boolean r2=true;
-    @Parameter
+    @Parameter(style="format:0.#####E0")
     double sr2 = 1;
     @Parameter
     boolean r3=true;
-    @Parameter
+    @Parameter(style="format:0.#####E0")
     double sr3 = 1;
     @Parameter
     boolean rx=true;
-    @Parameter
+    @Parameter(style="format:0.#####E0")
     double srx = 0.1;
     @Parameter
     boolean ry=true;
-    @Parameter
+    @Parameter(style="format:0.#####E0")
     double sry = 0.1;
     @Parameter
     boolean rz =true;
-    @Parameter
+    @Parameter(style="format:0.#####E0")
     double srz = 0.1;
     @Parameter
     boolean tx=true;
-    @Parameter
+    @Parameter(style="format:0.#####E0")
     double stx = 1;
     @Parameter
     boolean ty=true;
-    @Parameter
+    @Parameter(style="format:0.#####E0")
     double sty = 1;
     @Parameter
     boolean tz=true;
-    @Parameter
+    @Parameter(style="format:0.#####E0")
     double stz = 1;
 
     @Parameter

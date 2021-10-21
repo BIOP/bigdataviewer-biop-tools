@@ -18,16 +18,16 @@ public class Rotation3DTransformCommand extends InteractiveCommand implements Bd
     @Parameter
     SourceAndConverter[] sacs;
 
-    @Parameter(style = "slider", min = "0", max = "360")
+    @Parameter(style = "slider,format:0.#####E0", min = "0", max = "360")
     int rx;
 
-    @Parameter(style = "slider", min = "0", max = "360")
+    @Parameter(style = "slider,format:0.#####E0", min = "0", max = "360")
     int ry;
 
-    @Parameter(style = "slider", min = "0", max = "360")
+    @Parameter(style = "slider,format:0.#####E0", min = "0", max = "360")
     double rz;
 
-    @Parameter
+    @Parameter(style = "format:0.#####E0")
     double cx, cy, cz;
 
     public void run() {

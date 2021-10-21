@@ -51,16 +51,16 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
     @Parameter(label = "Make a second spline registration with landmarks")
     boolean performSecondSplineRegistration;
 
-    @Parameter
+    @Parameter(style = "format:0.#####E0")
     double topLeftX;
 
-    @Parameter
+    @Parameter(style = "format:0.#####E0")
     double topLeftY;
 
-    @Parameter
+    @Parameter(style = "format:0.#####E0")
     double bottomRightX;
 
-    @Parameter
+    @Parameter(style = "format:0.#####E0")
     double bottomRightY;
 
     @Parameter(label = "Number of iterations for each scale (default 100)")

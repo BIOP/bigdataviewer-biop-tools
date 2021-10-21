@@ -19,7 +19,7 @@ public class SourcesRecenterCommand implements BdvPlaygroundActionCommand {
     @Parameter
     int timePoint = 0;
 
-    @Parameter
+    @Parameter(style = "format:0.#####E0")
     double cx, cy, cz;
 
     @Parameter(label = "Sources", type = ItemIO.BOTH)

@@ -39,10 +39,10 @@ public class Elastix2DSparsePointsRegisterCommand extends SelectSourcesForRegist
     @Parameter(label = "Background offset value for fixed image")
     double background_offset_value_fixed = 0;
 
-    @Parameter(label = "Size in physical units of each fov used for the registration of each point")
+    @Parameter(label = "Size in physical units of each fov used for the registration of each point", style = "format:0.#####E0")
     double sx,sy;
 
-    @Parameter(label = "Location in z (default 0)")
+    @Parameter(label = "Location in z (default 0)", style = "format:0.#####E0")
     double zLocation = 0;
 
     @Parameter(label = "Location of points of interest (px,py) used for registration", style = "text area")

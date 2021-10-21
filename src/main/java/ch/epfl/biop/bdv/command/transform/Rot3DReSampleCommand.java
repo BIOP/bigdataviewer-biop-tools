@@ -43,22 +43,22 @@ public class Rot3DReSampleCommand implements BdvPlaygroundActionCommand {
     @Parameter
     RoiManager rm;
 
-    @Parameter(label = "Final Image Size X (physical unit)")
+    @Parameter(label = "Final Image Size X (physical unit)", style="format:0.#####E0")
     double radiusx;
 
-    @Parameter(label = "Final Image Size Y (physical unit)")
+    @Parameter(label = "Final Image Size Y (physical unit)", style="format:0.#####E0")
     double radiusy;
 
-    @Parameter(label = "Final Image Size Z (physical unit)")
+    @Parameter(label = "Final Image Size Z (physical unit)", style="format:0.#####E0")
     double radiusz;
 
-    @Parameter(label = "Final Voxel Size X (physical unit)")
+    @Parameter(label = "Final Voxel Size X (physical unit)", style="format:0.#####E0")
     double voxFX;
 
-    @Parameter(label = "Final Voxel Size Y (physical unit)")
+    @Parameter(label = "Final Voxel Size Y (physical unit)", style="format:0.#####E0")
     double voxFY;
 
-    @Parameter(label = "Final Voxel Size Z (physical unit)")
+    @Parameter(label = "Final Voxel Size Z (physical unit)", style="format:0.#####E0")
     double voxFZ;
 
     @Parameter(label = "Align X axis (default true)")
