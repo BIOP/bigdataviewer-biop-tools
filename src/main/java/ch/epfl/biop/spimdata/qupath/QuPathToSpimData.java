@@ -13,6 +13,7 @@ import mpicbg.spim.data.registration.ViewRegistration;
 import mpicbg.spim.data.registration.ViewRegistrations;
 import mpicbg.spim.data.sequence.*;
 import net.imglib2.Dimensions;
+import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.ARGBType;
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
@@ -250,22 +251,24 @@ public class QuPathToSpimData {
                 final int nTimepoints = omeMeta.getPixelsSizeT(bfIndex).getNumberValue().intValue();
                 final int vs = iViewSetup;
 
+                AffineTransform3D affine = BioFormatsMetaDataHelper.getSeriesRootTransform(
+                        omeMeta,
+                        bfIndex,
+                        opener.u,
+                        opener.positionPreTransformMatrixArray, //AffineTransform3D positionPreTransform,
+                        opener.positionPostTransformMatrixArray, //AffineTransform3D positionPostTransform,
+                        opener.positionReferenceFrameLength,
+                        opener.positionIsImageCenter, //boolean positionIsImageCenter,
+                        opener.voxSizePreTransformMatrixArray, //voxSizePreTransform,
+                        opener.voxSizePostTransformMatrixArray, //AffineTransform3D voxSizePostTransform,
+                        opener.voxSizeReferenceFrameLength, //null, //Length voxSizeReferenceFrameLength,
+                        opener.axesOfImageFlip // axesOfImageFlip
+                );
+
                 logger.debug("ViewSetup : " + vs + " append view registrations ");
                 timePoints.forEach(iTp -> {
                     if (iTp.getId()<nTimepoints) {
-                        registrations.add(new ViewRegistration(iTp.getId(), vs, BioFormatsMetaDataHelper.getSeriesRootTransform(
-                                omeMeta,
-                                bfIndex,
-                                opener.u,
-                                opener.positionPreTransformMatrixArray, //AffineTransform3D positionPreTransform,
-                                opener.positionPostTransformMatrixArray, //AffineTransform3D positionPostTransform,
-                                opener.positionReferenceFrameLength,
-                                opener.positionIsImageCenter, //boolean positionIsImageCenter,
-                                opener.voxSizePreTransformMatrixArray, //voxSizePreTransform,
-                                opener.voxSizePostTransformMatrixArray, //AffineTransform3D voxSizePostTransform,
-                                opener.voxSizeReferenceFrameLength, //null, //Length voxSizeReferenceFrameLength,
-                                opener.axesOfImageFlip // axesOfImageFlip
-                        )));
+                        registrations.add(new ViewRegistration(iTp.getId(), vs, affine));
                     } else {
                         missingViews.add(new ViewId(iTp.getId(), vs));
                     }
