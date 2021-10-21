@@ -15,6 +15,8 @@ import mpicbg.spim.data.sequence.*;
 import net.imglib2.Dimensions;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.ARGBType;
+import ome.units.UNITS;
+import ome.units.quantity.Length;
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,6 +69,8 @@ public class QuPathToSpimData {
 
     Map<Integer, QuPathImageLoader.QuPathEntryAndChannel> viewSetupToQuPathEntryAndChannel = new HashMap<>();
 
+    Map<Integer, MinimalQuPathProject.ImageEntry> viewSetupToImageEntry = new HashMap<>();
+
     public AbstractSpimData getSpimDataInstance(URI quPathProject, final BioFormatsBdvOpener openerModel) {
 
         viewSetupCounter = 0;
@@ -94,6 +98,7 @@ public class QuPathToSpimData {
             Map<BioFormatsBdvOpener, IFormatReader> cachedReaders = new HashMap<>(); // Performance
 
             project.images.forEach(image -> {
+
                 logger.debug("Opening qupath image "+image);
                 QuPathImageLoader.QuPathBioFormatsSourceIdentifier identifier = new QuPathImageLoader.QuPathBioFormatsSourceIdentifier();
 
@@ -190,6 +195,9 @@ public class QuPathToSpimData {
                                                 channelIdToChannel.get(ch_id),
                                                 dummy_ang,
                                                 dummy_ill);
+
+                                        viewSetupToImageEntry.put(viewSetupCounter, image);
+
                                         FileIndex fi = new FileIndex(uriToFileIndexMap.get(identifier.uri),identifier.sourceFile);
                                         vs.setAttribute(fi);
                                         SeriesNumber sn = new SeriesNumber(identifier.bioformatsIndex);
@@ -243,7 +251,7 @@ public class QuPathToSpimData {
             for (int iViewSetup=0;iViewSetup<viewSetupCounter;iViewSetup++) {
                 QuPathImageLoader.QuPathEntryAndChannel usc = viewSetupToQuPathEntryAndChannel.get(iViewSetup);
                 BioFormatsBdvOpener opener = openerMap.get(usc.entry.uri);
-                IFormatReader memo = cachedReaders.get(openerMap.get(usc.entry.uri));//cachedReaders.get()openers.get(iF).getNewReader();
+                IFormatReader memo = cachedReaders.get(openerMap.get(usc.entry.uri));
 
                 final IMetadata omeMeta = (IMetadata) memo.getMetadataStore();
 
@@ -265,6 +273,66 @@ public class QuPathToSpimData {
                         opener.axesOfImageFlip // axesOfImageFlip
                 );
 
+                MinimalQuPathProject.PixelCalibrations pixelCalibrations = viewSetupToImageEntry.get(vs).serverBuilder.metadata.pixelCalibration;
+                boolean performQuPathRescaling = false;
+
+                AffineTransform3D quPathRescaling = new AffineTransform3D();
+                if (pixelCalibrations!=null) {
+                    double scaleX = 1.0;
+                    double scaleY = 1.0;
+                    double scaleZ = 1.0;
+                    Length[] voxSizes = BioFormatsMetaDataHelper.getSeriesVoxelSizeAsLengths(omeMeta, bfIndex);
+                    if (pixelCalibrations.pixelWidth!=null) {
+                        MinimalQuPathProject.PixelCalibration pc = pixelCalibrations.pixelWidth;
+                        if (pc.unit.equals("µm")) {
+                            if (voxSizes[0]!=null) {
+                                logger.debug("xVox size = "+pc.value+" micrometer");
+                                scaleX = pc.value/voxSizes[0].value(UNITS.MICROMETER).doubleValue();
+                            } else {
+                                logger.warn("Null X voxel size");
+                            }
+                        } else {
+                            logger.warn("Unrecognized unit in QuPath project: "+pc.unit);
+                        }
+                    }
+                    if (pixelCalibrations.pixelHeight!=null) {
+                        MinimalQuPathProject.PixelCalibration pc = pixelCalibrations.pixelHeight;
+                        if (pc.unit.equals("µm")) {
+                            if (voxSizes[1]!=null) {
+                                scaleY = pc.value/voxSizes[1].value(UNITS.MICROMETER).doubleValue();
+                            } else {
+                                logger.warn("Null Y voxel size");
+                            }
+                        } else {
+                            logger.warn("Unrecognized unit in QuPath project: "+pc.unit);
+                        }
+                    }
+                    if (pixelCalibrations.zSpacing!=null) {
+                        MinimalQuPathProject.PixelCalibration pc = pixelCalibrations.zSpacing;
+                        if (pc.unit.equals("µm")) {
+                            if (voxSizes[2]!=null) {
+                                scaleZ = pc.value/voxSizes[2].value(UNITS.MICROMETER).doubleValue();
+                            } else {
+                                logger.warn("Null Z voxel size");
+                            }
+                        } else {
+                            logger.warn("Unrecognized unit in QuPath project: "+pc.unit);
+                        }
+                    }
+                    logger.debug("ScaleX: "+scaleX+" scaleY:"+scaleY+" scaleZ:"+scaleZ);
+                    if ((Math.abs(scaleX-1.0)>0.0001)||(Math.abs(scaleY-1.0)>0.0001)||(Math.abs(scaleZ-1.0)>0.0001))  {
+                        logger.debug("Perform QuPath rescaling");
+                        quPathRescaling.scale(scaleX, scaleY, scaleZ);
+                        double oX = affine.get(0,3);
+                        double oY = affine.get(1,3);
+                        double oZ = affine.get(2,3);
+                        affine.preConcatenate(quPathRescaling);
+                        affine.set(oX, 0,3);
+                        affine.set(oY, 1,3);
+                        affine.set(oZ, 2,3);
+                    }
+                }
+
                 logger.debug("ViewSetup : " + vs + " append view registrations ");
                 timePoints.forEach(iTp -> {
                     if (iTp.getId()<nTimepoints) {
@@ -272,7 +340,6 @@ public class QuPathToSpimData {
                     } else {
                         missingViews.add(new ViewId(iTp.getId(), vs));
                     }
-
                 });
 
             }

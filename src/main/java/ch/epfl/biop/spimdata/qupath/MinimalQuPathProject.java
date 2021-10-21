@@ -2,6 +2,7 @@ package ch.epfl.biop.spimdata.qupath;
 
 import java.util.List;
 import java.net.URI;
+import java.util.Map;
 
 public class MinimalQuPathProject {
 
@@ -30,7 +31,8 @@ public class MinimalQuPathProject {
         public boolean isRGB;
         public String pixelType;
         // "levels": (ignored)
-        List<ChannelInfo> channels;
+        public List<ChannelInfo> channels;
+        public PixelCalibrations pixelCalibration;
 
     }
 
@@ -47,6 +49,17 @@ public class MinimalQuPathProject {
         public URI uri;
         public List<String> args;
         public ServerBuilderMetadata metadata;
+    }
+
+    public static class PixelCalibrations {
+        public PixelCalibration pixelWidth;
+        public PixelCalibration pixelHeight;
+        public PixelCalibration zSpacing;
+    }
+
+    public static class PixelCalibration {
+        public double value;
+        public String unit;
     }
 
 }
