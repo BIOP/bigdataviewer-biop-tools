@@ -185,7 +185,7 @@ public class BasicBdvViewToImagePlusExportCommand<T extends RealType<T>> impleme
         RealPoint ptBottomLeft = new RealPoint(3); // Number of dimension
         bdv_h.getViewerPanel().displayToGlobalCoordinates(h,0, ptBottomLeft);
 
-        // Gets physical size of pixels based on window size, image sampling size and user requested pixel size
+        // Gets physical size of bdv window 'view'
         this.xSize=BdvViewToImagePlusExportCommand.distance(ptTopLeft, ptTopRight);
         this.ySize=BdvViewToImagePlusExportCommand.distance(ptTopLeft, ptBottomLeft);
     }
