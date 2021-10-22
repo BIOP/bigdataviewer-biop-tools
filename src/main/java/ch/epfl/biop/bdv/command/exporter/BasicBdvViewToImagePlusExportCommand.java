@@ -58,7 +58,7 @@ public class BasicBdvViewToImagePlusExportCommand<T extends RealType<T>> impleme
     public boolean interpolate = true;
 
     @Parameter( label = "Select Range", callback = "updateMessage", visibility = ItemVisibility.MESSAGE, persist = false, required = false)
-    String range = "You can use commas or colons to separate ranges. eg. '1:10' or '1,3,5,8' ";
+    String range = "You can use commas or colons to separate ranges. eg. '0:10' or '0,2,4,6' ";
 
     @Parameter( label = "Selected Timepoints. Leave blank for all", required = false )
     private String selected_timepoints_str = "";
