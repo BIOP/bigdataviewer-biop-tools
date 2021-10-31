@@ -108,6 +108,8 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
     public void run() {
         // Make sure the relevant sources are displayed
 
+
+
         showImagesIfNecessary();
 
         waitForUser.accept("Prepare your bigdataviewer window","Fit the image onto the bdv window.");
