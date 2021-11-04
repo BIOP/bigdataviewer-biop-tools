@@ -5,6 +5,9 @@ import bdv.util.BdvHandle;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.bdv.command.userdefinedregion.GetUserPointsCommand;
 import ch.epfl.biop.bdv.command.userdefinedregion.GetUserRectangleCommand;
+import ch.epfl.biop.bdv.command.userdefinedregion.PointsSelectorBehaviour;
+import ch.epfl.biop.bdv.gui.GraphicalHandle;
+import ch.epfl.biop.bdv.gui.XYRectangleGraphicalHandle;
 import ij.gui.WaitForUserDialog;
 import net.imglib2.RealPoint;
 import net.imglib2.realtransform.AffineTransform3D;
@@ -26,6 +29,7 @@ import sc.fiji.bdvpg.sourceandconverter.transform.SourceRealTransformer;
 
 import java.util.*;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static bdv.util.RealTransformHelper.BigWarpFileFromRealTransform;
@@ -233,7 +237,16 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
         landmarks = (List<RealPoint>) cs
                 .run(GetUserPointsCommand.class, true,
                         "messageForUser", "Select the position of the landmarks that will be used for the registration (at least 4).",
-                        "timeOutInMs", -1)
+                        "timeOutInMs", -1,
+                        "graphicalHandleSupplier",
+                        (Function<RealPoint, GraphicalHandle>) realPoint ->
+                                new XYRectangleGraphicalHandle(
+                                        bdvh.getViewerPanel().state(),
+                                        () -> realPoint,
+                                        () -> 0.5d, // To improve, clearly!
+                                        () -> 0.5d, // To improve, clearly!
+                                        () -> PointsSelectorBehaviour.defaultLandmarkColor )
+                        )
                 .get().getOutput("pts");
     }
 

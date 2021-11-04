@@ -273,7 +273,14 @@ public class QuPathToSpimData {
                         opener.axesOfImageFlip // axesOfImageFlip
                 );
 
-                MinimalQuPathProject.PixelCalibrations pixelCalibrations = viewSetupToImageEntry.get(vs).serverBuilder.metadata.pixelCalibration;
+                MinimalQuPathProject.PixelCalibrations pixelCalibrations = null;
+
+                if (viewSetupToImageEntry.get(vs)!=null) {
+                    if (viewSetupToImageEntry.get(vs).serverBuilder!=null)
+                        if (viewSetupToImageEntry.get(vs).serverBuilder.metadata!=null)
+                    pixelCalibrations = viewSetupToImageEntry.get(vs).serverBuilder.metadata.pixelCalibration;
+                }
+
                 boolean performQuPathRescaling = false;
 
                 AffineTransform3D quPathRescaling = new AffineTransform3D();
