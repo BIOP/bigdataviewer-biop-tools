@@ -1,11 +1,11 @@
 package ch.epfl.biop.bdv.command.userdefinedregion;
 
-import bdv.ui.CardPanel;
 import bdv.util.BdvHandle;
 import bdv.util.BdvOptions;
 import bdv.util.BdvOverlaySource;
 import bdv.viewer.ViewerPanel;
 import net.imglib2.RealPoint;
+import net.imglib2.realtransform.AffineTransform3D;
 import org.scijava.ui.behaviour.Behaviour;
 import org.scijava.ui.behaviour.ClickBehaviour;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
@@ -13,7 +13,9 @@ import org.scijava.ui.behaviour.util.Behaviours;
 import org.scijava.ui.behaviour.util.TriggerBehaviourBindings;
 
 import javax.swing.*;
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 import static bdv.ui.BdvDefaultCards.*;
 import static bdv.util.BdvFunctions.showOverlay;
@@ -58,6 +60,10 @@ public class RectangleSelectorBehaviour {
 
     JPanel pane;
 
+    private boolean navigationEnabled = false;
+
+    AffineTransform3D initialView;
+
     /**
      * Construct a SourceSelectorBehaviour
      * @param bdvh BdvHandle associated to this behaviour$
@@ -69,8 +75,53 @@ public class RectangleSelectorBehaviour {
         this.viewer = bdvh.getViewerPanel();
         rectangleOverlay = new RectangleSelectorOverlay(viewer, this, message);
         behaviours = new Behaviours( new InputTriggerConfig(), "bdv" );
-        pane = new JPanel();
-        pane.add(new JLabel("Yo"));
+
+        initialView = bdvh.getViewerPanel().state().getViewerTransform();
+
+        JButton restoreView = new JButton("Restore initial view");
+
+        restoreView.addActionListener((e)-> {
+            bdvh.getViewerPanel().state().setViewerTransform(initialView);
+        });
+
+        JButton navigationButton = new JButton("Enable navigation");
+        navigationButton.addActionListener((e) -> {
+            if (navigationEnabled) {
+                triggerbindings.addBehaviourMap(RECTANGLE_SELECTOR_MAP, behaviours.getBehaviourMap());
+                triggerbindings.addInputTriggerMap(RECTANGLE_SELECTOR_MAP, behaviours.getInputTriggerMap(), "transform", "bdv");
+                bdvh.getKeybindings().addInputMap("blocking-source-selector_rectangle", new InputMap(), "bdv", "navigation");
+                navigationEnabled = false;
+                navigationButton.setText("Re-enable navigation");
+            } else {
+                triggerbindings.removeBehaviourMap( RECTANGLE_SELECTOR_MAP );
+                triggerbindings.removeInputTriggerMap( RECTANGLE_SELECTOR_MAP );
+                bdvh.getKeybindings().removeInputMap("blocking-source-selector");
+                navigationEnabled = true;
+                navigationButton.setText("Enable rectangle selection");
+            }
+        });
+
+        JButton confirmationButton = new JButton("Confirm rectangle");
+        confirmationButton.addActionListener((e) -> {
+            if (endPt!=null) {
+                userValidated = true;
+            }
+        });
+
+        pane = box(false,new JLabel(message), box(false,navigationButton, restoreView), confirmationButton);
+    }
+
+    public static JPanel box(boolean alongX,JComponent... components) {
+        JPanel box = new JPanel();
+        if (alongX) {
+            box.setLayout(new GridLayout(1, components.length));
+        } else {
+            box.setLayout(new GridLayout(components.length, 1));//new BoxLayout(box, BoxLayout.Y_AXIS));
+        }
+        for(JComponent component : components) {
+            box.add(component);
+        }
+        return box;
     }
 
     /**
@@ -135,8 +186,9 @@ public class RectangleSelectorBehaviour {
         triggerbindings.addBehaviourMap(RECTANGLE_SELECTOR_MAP, behaviours.getBehaviourMap());
         triggerbindings.addInputTriggerMap(RECTANGLE_SELECTOR_MAP, behaviours.getInputTriggerMap(), "transform", "bdv");
         //bos = BdvFunctions.showOverlay(rectangleOverlay, "Selector_Overlay", BdvOptions.options().addTo(bdvh));
-        bos = showOverlay(rectangleOverlay, "Rectangle_Selector_Overlay", BdvOptions.options().addTo(bdvh));
         bdvh.getKeybindings().addInputMap("blocking-source-selector_rectangle", new InputMap(), "bdv", "navigation");
+        bos = showOverlay(rectangleOverlay, "Rectangle_Selector_Overlay", BdvOptions.options().addTo(bdvh));
+
 
         iniSplitPanelState = bdvh.getSplitPanel().isCollapsed();
         iniCardState.put(DEFAULT_SOURCEGROUPS_CARD, bdvh.getCardPanel().isCardExpanded(DEFAULT_SOURCEGROUPS_CARD));
@@ -187,26 +239,40 @@ public class RectangleSelectorBehaviour {
         return waitForSelection(-1);
     }
 
+    boolean userValidated = false;
+
     public List<RealPoint> waitForSelection(int timeOutInMs) {
         int totalTime = 0;
-        if (timeOutInMs>0) {
-            while ((endPt==null)&&(totalTime<timeOutInMs)) {
-                try {
-                    Thread.sleep(33);
-                    totalTime+=33;
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+        while (!userValidated) {
+            if (timeOutInMs > 0) {
+                while ((endPt == null) && (totalTime < timeOutInMs)) {
+                    try {
+                        Thread.sleep(33);
+                        totalTime += 33;
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            } else {
+                while ((endPt == null)) {
+                    try {
+                        Thread.sleep(33);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
-        } else {
-            while ((endPt==null)) {
-                try {
-                    Thread.sleep(33);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+            try {
+                Thread.sleep(33);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            if (endPt!=null) {
+                rectangleOverlay.drawLastRectangle();
             }
         }
+
+        rectangleOverlay.removeLastRectangle();
 
         if (endPt==null) {
             return null;

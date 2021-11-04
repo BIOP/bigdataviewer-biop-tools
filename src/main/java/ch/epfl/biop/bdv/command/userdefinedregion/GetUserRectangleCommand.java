@@ -43,7 +43,7 @@ public class GetUserRectangleCommand implements Command {
 
 
 
-        ij.command().run(GetUserRectangleCommand.class, true, "bdvh", bdvh, "timeOutInMs", -1,"messageForUser", "Please select a rectangle");
+        ij.command().run(GetUserRectangleCommand.class, true, "bdvh", bdvh, "timeOutInMs", -1,"messageForUser", "Please select a rectangle and confirm your input");
 
     }
 }
