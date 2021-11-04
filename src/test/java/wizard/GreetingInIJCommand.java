@@ -11,8 +11,21 @@ public class GreetingInIJCommand implements Command {
     @Parameter
     String name;
 
+    @Parameter(choices = {"familiar", "formal"})
+    String type;
+
     @Override
     public void run() {
-        IJ.log("Hello "+name);
+        switch (type) {
+            case "familiar":
+                IJ.log("Hi "+name);
+                break;
+            case "formal":
+                IJ.log("Hello "+name);
+                break;
+            default:
+                IJ.log("You broke the matrix");
+                break;
+        }
     }
 }

@@ -1,5 +1,6 @@
 package ch.epfl.biop.bdv.command.userdefinedregion;
 
+import bdv.ui.CardPanel;
 import bdv.util.BdvHandle;
 import bdv.util.BdvOptions;
 import bdv.util.BdvOverlaySource;
@@ -14,6 +15,7 @@ import org.scijava.ui.behaviour.util.TriggerBehaviourBindings;
 import javax.swing.*;
 import java.util.*;
 
+import static bdv.ui.BdvDefaultCards.*;
 import static bdv.util.BdvFunctions.showOverlay;
 
 /**
@@ -48,6 +50,14 @@ public class RectangleSelectorBehaviour {
 
     boolean isInstalled; // flag for the toggle action
 
+    final String userCardKey = "Rectangle Selection";
+
+    boolean iniSplitPanelState;
+
+    Map<String, Boolean> iniCardState = new HashMap<>();
+
+    JPanel pane;
+
     /**
      * Construct a SourceSelectorBehaviour
      * @param bdvh BdvHandle associated to this behaviour$
@@ -57,10 +67,10 @@ public class RectangleSelectorBehaviour {
         this.bdvh = bdvh;
         this.triggerbindings = bdvh.getTriggerbindings();
         this.viewer = bdvh.getViewerPanel();
-
         rectangleOverlay = new RectangleSelectorOverlay(viewer, this, message);
-
         behaviours = new Behaviours( new InputTriggerConfig(), "bdv" );
+        pane = new JPanel();
+        pane.add(new JLabel("Yo"));
     }
 
     /**
@@ -127,6 +137,18 @@ public class RectangleSelectorBehaviour {
         //bos = BdvFunctions.showOverlay(rectangleOverlay, "Selector_Overlay", BdvOptions.options().addTo(bdvh));
         bos = showOverlay(rectangleOverlay, "Rectangle_Selector_Overlay", BdvOptions.options().addTo(bdvh));
         bdvh.getKeybindings().addInputMap("blocking-source-selector_rectangle", new InputMap(), "bdv", "navigation");
+
+        iniSplitPanelState = bdvh.getSplitPanel().isCollapsed();
+        iniCardState.put(DEFAULT_SOURCEGROUPS_CARD, bdvh.getCardPanel().isCardExpanded(DEFAULT_SOURCEGROUPS_CARD));
+        iniCardState.put(DEFAULT_VIEWERMODES_CARD, bdvh.getCardPanel().isCardExpanded(DEFAULT_VIEWERMODES_CARD));
+        iniCardState.put(DEFAULT_SOURCES_CARD, bdvh.getCardPanel().isCardExpanded(DEFAULT_SOURCES_CARD));
+
+        bdvh.getSplitPanel().setCollapsed(false);
+
+        bdvh.getCardPanel().setCardExpanded(DEFAULT_SOURCEGROUPS_CARD, false);
+        bdvh.getCardPanel().setCardExpanded(DEFAULT_VIEWERMODES_CARD, false);
+        bdvh.getCardPanel().setCardExpanded(DEFAULT_SOURCES_CARD, false);
+        bdvh.getCardPanel().addCard(userCardKey, pane, true);
     }
 
     public void addBehaviour(Behaviour behaviour, String behaviourName, String[] triggers) {
@@ -142,6 +164,13 @@ public class RectangleSelectorBehaviour {
         triggerbindings.removeBehaviourMap( RECTANGLE_SELECTOR_MAP );
         triggerbindings.removeInputTriggerMap( RECTANGLE_SELECTOR_MAP );
         bdvh.getKeybindings().removeInputMap("blocking-source-selector");
+
+        bdvh.getCardPanel().removeCard(userCardKey);
+        bdvh.getSplitPanel().setCollapsed(iniSplitPanelState);
+        bdvh.getCardPanel().setCardExpanded(DEFAULT_SOURCEGROUPS_CARD, iniCardState.get(DEFAULT_SOURCEGROUPS_CARD));
+        bdvh.getCardPanel().setCardExpanded(DEFAULT_VIEWERMODES_CARD, iniCardState.get(DEFAULT_VIEWERMODES_CARD));
+        bdvh.getCardPanel().setCardExpanded(DEFAULT_SOURCES_CARD, iniCardState.get(DEFAULT_SOURCES_CARD));
+
     }
 
     volatile boolean rectangleSelected = false;

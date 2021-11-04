@@ -10,6 +10,7 @@ import org.scijava.ui.behaviour.DragBehaviour;
 import org.scijava.ui.behaviour.util.Behaviours;
 
 import java.awt.*;
+import java.awt.geom.Point2D;
 import java.util.*;
 
 /**
@@ -71,7 +72,6 @@ public class RectangleSelectorOverlay extends BdvOverlay {
         this.rsb = rsb;
         this.viewer = viewer;
         styles.put("SELECTED", new RectangleSelectorOverlay.SelectedOverlayStyle());
-
         ptStartGlobal = new RealPoint(3);
         ptEndGlobal = new RealPoint(3);
     }
@@ -104,26 +104,45 @@ public class RectangleSelectorOverlay extends BdvOverlay {
         rsb.processSelectionEvent(ptStartGlobal, ptEndGlobal);
     }
 
-    Rectangle getCurrentSelectionRectangle() {
-        int x0, y0, w, h;
-        if (xCurrentSelectStart>xCurrentSelectEnd) {
-            x0 = xCurrentSelectEnd;
-            w = xCurrentSelectStart-xCurrentSelectEnd;
-        } else {
-            x0 = xCurrentSelectStart;
-            w = xCurrentSelectEnd-xCurrentSelectStart;
-        }
-        if (yCurrentSelectStart>yCurrentSelectEnd) {
-            y0 = yCurrentSelectEnd;
-            h = yCurrentSelectStart-yCurrentSelectEnd;
-        } else {
-            y0 = yCurrentSelectStart;
-            h = yCurrentSelectEnd-yCurrentSelectStart;
-        }
-        // Hack : allows selection on double or single click
-        if (w==0) w = 1;
-        if (h==0) h = 1;
-        return new Rectangle(x0, y0, w, h);
+    Point2D[] getCurrentCorners() {
+
+        RealPoint rpA = new RealPoint(3);
+        RealPoint rpB = new RealPoint(3);
+        RealPoint rpBprim = new RealPoint(3);
+        RealPoint rpC = new RealPoint(3);
+        RealPoint rpDprim = new RealPoint(3);
+        RealPoint rpD = new RealPoint(3);
+        viewer.displayToGlobalCoordinates(xCurrentSelectStart, yCurrentSelectStart, rpA);
+        viewer.displayToGlobalCoordinates(xCurrentSelectEnd, yCurrentSelectEnd, rpC);
+        rpB.setPosition(new double[]{rpA.getDoublePosition(0), rpC.getDoublePosition(1), rpA.getDoublePosition(2)});
+        rpBprim.setPosition(new double[]{rpA.getDoublePosition(0), rpC.getDoublePosition(1), rpC.getDoublePosition(2)});
+        rpDprim.setPosition(new double[]{rpC.getDoublePosition(0), rpA.getDoublePosition(1), rpC.getDoublePosition(2)});
+        rpD.setPosition(new double[]{rpC.getDoublePosition(0), rpA.getDoublePosition(1), rpA.getDoublePosition(2)});
+
+
+        Point2D[] corners = new Point2D.Double[6];
+        corners[0] = new Point2D.Double();
+        corners[1] = new Point2D.Double();
+        corners[2] = new Point2D.Double();
+        corners[3] = new Point2D.Double();
+        corners[4] = new Point2D.Double();
+        corners[5] = new Point2D.Double();
+
+        viewer.state().getViewerTransform().apply(rpA, rpA);
+        viewer.state().getViewerTransform().apply(rpB, rpB);
+        viewer.state().getViewerTransform().apply(rpBprim, rpBprim);
+        viewer.state().getViewerTransform().apply(rpC, rpC);
+        viewer.state().getViewerTransform().apply(rpDprim, rpDprim);
+        viewer.state().getViewerTransform().apply(rpD, rpD);
+
+        corners[0].setLocation(rpA.getDoublePosition(0), rpA.getDoublePosition(1));
+        corners[1].setLocation(rpB.getDoublePosition(0), rpB.getDoublePosition(1));
+        corners[2].setLocation(rpBprim.getDoublePosition(0), rpBprim.getDoublePosition(1));
+        corners[3].setLocation(rpC.getDoublePosition(0), rpC.getDoublePosition(1));
+        corners[4].setLocation(rpDprim.getDoublePosition(0), rpDprim.getDoublePosition(1));
+        corners[5].setLocation(rpD.getDoublePosition(0), rpD.getDoublePosition(1));
+
+        return corners;
     }
 
     Font font = new Font("Courier", Font.PLAIN, 20);
@@ -135,7 +154,17 @@ public class RectangleSelectorOverlay extends BdvOverlay {
         g.setFont(font);
         g.drawString(message, 50, viewer.getHeight()-50);
         if (isCurrentlySelecting) {
-            g.draw(getCurrentSelectionRectangle());
+            Point2D[] corners = getCurrentCorners();
+            g.drawLine((int) corners[0].getX(),(int)  corners[0].getY(), (int) corners[1].getX(),(int)  corners[1].getY());
+            g.setStroke( styles.get("SELECTED").getIntersectionStroke() );
+            g.drawLine((int) corners[1].getX(),(int)  corners[1].getY(), (int) corners[2].getX(),(int)  corners[2].getY());
+            g.setStroke( styles.get("SELECTED").getNormalStroke() );
+            g.drawLine((int) corners[2].getX(),(int)  corners[2].getY(), (int) corners[3].getX(),(int)  corners[3].getY());
+            g.drawLine((int) corners[3].getX(),(int)  corners[3].getY(), (int) corners[4].getX(),(int)  corners[4].getY());
+            g.setStroke( styles.get("SELECTED").getIntersectionStroke() );
+            g.drawLine((int) corners[4].getX(),(int)  corners[4].getY(), (int) corners[5].getX(),(int)  corners[5].getY());
+            g.setStroke( styles.get("SELECTED").getNormalStroke() );
+            g.drawLine((int) corners[5].getX(),(int)  corners[5].getY(), (int) corners[0].getX(),(int)  corners[0].getY());
         }
 
     }

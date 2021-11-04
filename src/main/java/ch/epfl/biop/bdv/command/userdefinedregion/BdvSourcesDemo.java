@@ -11,6 +11,7 @@ import mpicbg.spim.data.XmlIoSpimData;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.realtransform.AffineTransform3D;
+import sc.fiji.bdvpg.services.SourceAndConverterServices;
 
 /**
  * Source Selector Behaviour Demo
@@ -43,6 +44,7 @@ public class BdvSourcesDemo {
 
         // Gets reference of BigDataViewer
         BdvHandle bdvh = bss.getBdvHandle();
+        SourceAndConverterServices.getBdvDisplayService().registerBdvHandle(bdvh);
 
         // Defines location of blobs image
         AffineTransform3D m = new AffineTransform3D();

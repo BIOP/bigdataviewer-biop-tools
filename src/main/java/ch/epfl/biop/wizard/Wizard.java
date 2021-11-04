@@ -52,7 +52,7 @@ public class Wizard {
             return this;
         }
 
-        public WizardBuilder pipe(Integer stepOut, String parameterNameOut, Integer stepIn, String parameterNameIn) {
+        public WizardBuilder connect(Integer stepOut, String parameterNameOut, Integer stepIn, String parameterNameIn) {
             Vertex eout = new Vertex(stepOut, parameterNameOut);
             Vertex ein = new Vertex(stepIn, parameterNameIn);
             edges.put(ein, eout); // Better in this direction

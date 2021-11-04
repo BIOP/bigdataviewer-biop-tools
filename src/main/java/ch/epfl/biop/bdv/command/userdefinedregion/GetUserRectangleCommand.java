@@ -35,12 +35,13 @@ public class GetUserRectangleCommand implements Command {
         rsb.uninstall();
     }
 
-
     public static void main(String... args) throws Exception {
 
         final ImageJ ij = new ImageJ();
         ij.ui().showUI();
         BdvHandle bdvh = BdvSourcesDemo.initAndShowSources();
+
+
 
         ij.command().run(GetUserRectangleCommand.class, true, "bdvh", bdvh, "timeOutInMs", -1,"messageForUser", "Please select a rectangle");
 

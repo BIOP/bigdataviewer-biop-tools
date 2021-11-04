@@ -1,9 +1,7 @@
 package ch.epfl.biop.bdv.qupath;
 
 import bdv.util.QuPathBdvHelper;
-import bdv.util.RealTransformHelper;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.bdv.command.register.RegisterWholeSlideScans2DCommand;
 import ch.epfl.biop.bdv.command.register.Wizard2DWholeScanRegisterCommand;
 import ch.epfl.biop.spimdata.qupath.QuPathEntryEntity;
 import ij.gui.WaitForUserDialog;
@@ -72,7 +70,7 @@ public class RegisterQuPathImagesCommand implements Command {
             File fixed_entry_folder = QuPathBdvHelper.getDataEntryFolder(fixed_source);
 
             if (moving_entry_folder.getAbsolutePath().equals(fixed_entry_folder.getAbsolutePath())) {
-                logger.error("Error : the moving source and the fixed source should be in a different entry ( do not select two channels of the same image)");
+                logger.error("Error : the moving source and the fixed source should belong to different qupath entries (you can't move two channels of the same image)");
                 return;
             }
 

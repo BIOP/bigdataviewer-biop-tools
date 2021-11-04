@@ -90,6 +90,7 @@ public class PointsSelectorOverlay extends BdvOverlay {
 
         g.setColor( styles.get("SELECTED").getFrontColor());
 
+
         psb.getPoints().forEach(pt -> {
             RealPoint localC = new RealPoint(pt);
             viewer.state().getViewerTransform().apply(localC, localC);

@@ -13,7 +13,7 @@ public class WizardTest {
         Wizard.builder(ij.context())
                 .nextCommand(DefineNameCommand.class)
                 .nextCommand(GreetingInIJCommand.class)
-                .pipe(0,"name_output", 1, "name")
+                .connect(0,"name_output", 1, "name")
                 .build().run();
 
     }
