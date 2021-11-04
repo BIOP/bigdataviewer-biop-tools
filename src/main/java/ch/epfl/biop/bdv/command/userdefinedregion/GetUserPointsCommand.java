@@ -1,6 +1,8 @@
 package ch.epfl.biop.bdv.command.userdefinedregion;
 
 import bdv.util.BdvHandle;
+import ch.epfl.biop.bdv.gui.GraphicalHandle;
+import ch.epfl.biop.bdv.gui.XYRectangleGraphicalHandle;
 import net.imagej.ImageJ;
 import net.imglib2.RealPoint;
 import org.scijava.ItemIO;
@@ -11,9 +13,13 @@ import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 @Plugin(type = Command.class, menuPath = ScijavaBdvDefaults.RootMenu+"BDV>Get Bdv User Points")
 public class GetUserPointsCommand implements Command {
+
+    @Parameter(required = false)
+    Function<RealPoint, GraphicalHandle> graphicalHandleSupplier;
 
     @Parameter
     BdvHandle bdvh;
@@ -29,7 +35,7 @@ public class GetUserPointsCommand implements Command {
 
     @Override
     public void run() {
-        PointsSelectorBehaviour psb = new PointsSelectorBehaviour(bdvh, messageForUser);
+        PointsSelectorBehaviour psb = new PointsSelectorBehaviour(bdvh, messageForUser, graphicalHandleSupplier);
         psb.install();
         pts = psb.waitForSelection(timeOutInMs);
         psb.uninstall();
@@ -41,7 +47,18 @@ public class GetUserPointsCommand implements Command {
         ij.ui().showUI();
         BdvHandle bdvh = BdvSourcesDemo.initAndShowSources();
 
-        ij.command().run(GetUserPointsCommand.class, true, "bdvh", bdvh, "timeOutInMs", -1, "messageForUser", "Please click points" );
+        ij.command().run(GetUserPointsCommand.class, true,
+                "bdvh", bdvh,
+                "timeOutInMs", -1,
+                "messageForUser", "Select your point of interest",
+                "graphicalHandleSupplier",
+                (Function<RealPoint, GraphicalHandle>) realPoint ->
+                        new XYRectangleGraphicalHandle(
+                                bdvh.getViewerPanel().state(),
+                                () -> realPoint,
+                                () -> 20d,
+                                () -> 20d,
+                                () -> PointsSelectorBehaviour.defaultLandmarkColor ));
 
     }
 }

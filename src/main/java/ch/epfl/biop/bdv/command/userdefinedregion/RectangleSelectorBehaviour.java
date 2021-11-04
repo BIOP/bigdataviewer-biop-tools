@@ -75,11 +75,9 @@ public class RectangleSelectorBehaviour {
         this.viewer = bdvh.getViewerPanel();
         rectangleOverlay = new RectangleSelectorOverlay(viewer, this, message);
         behaviours = new Behaviours( new InputTriggerConfig(), "bdv" );
-
         initialView = bdvh.getViewerPanel().state().getViewerTransform();
 
         JButton restoreView = new JButton("Restore initial view");
-
         restoreView.addActionListener((e)-> {
             bdvh.getViewerPanel().state().setViewerTransform(initialView);
         });
@@ -182,13 +180,11 @@ public class RectangleSelectorBehaviour {
             }
         }, "cancel-set-rectangle", new String[]{"ESCAPE"});
 
-
         triggerbindings.addBehaviourMap(RECTANGLE_SELECTOR_MAP, behaviours.getBehaviourMap());
         triggerbindings.addInputTriggerMap(RECTANGLE_SELECTOR_MAP, behaviours.getInputTriggerMap(), "transform", "bdv");
         //bos = BdvFunctions.showOverlay(rectangleOverlay, "Selector_Overlay", BdvOptions.options().addTo(bdvh));
         bdvh.getKeybindings().addInputMap("blocking-source-selector_rectangle", new InputMap(), "bdv", "navigation");
         bos = showOverlay(rectangleOverlay, "Rectangle_Selector_Overlay", BdvOptions.options().addTo(bdvh));
-
 
         iniSplitPanelState = bdvh.getSplitPanel().isCollapsed();
         iniCardState.put(DEFAULT_SOURCEGROUPS_CARD, bdvh.getCardPanel().isCardExpanded(DEFAULT_SOURCEGROUPS_CARD));
@@ -196,7 +192,6 @@ public class RectangleSelectorBehaviour {
         iniCardState.put(DEFAULT_SOURCES_CARD, bdvh.getCardPanel().isCardExpanded(DEFAULT_SOURCES_CARD));
 
         bdvh.getSplitPanel().setCollapsed(false);
-
         bdvh.getCardPanel().setCardExpanded(DEFAULT_SOURCEGROUPS_CARD, false);
         bdvh.getCardPanel().setCardExpanded(DEFAULT_VIEWERMODES_CARD, false);
         bdvh.getCardPanel().setCardExpanded(DEFAULT_SOURCES_CARD, false);
