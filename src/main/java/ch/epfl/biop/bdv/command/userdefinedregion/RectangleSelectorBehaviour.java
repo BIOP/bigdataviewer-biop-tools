@@ -65,16 +65,24 @@ public class RectangleSelectorBehaviour {
 
     AffineTransform3D initialView;
 
+
+    public RectangleSelectorBehaviour(BdvHandle bdvh, String message) {
+        this(bdvh, message, null, null);
+    }
+
     /**
      * Construct a SourceSelectorBehaviour
      * @param bdvh BdvHandle associated to this behaviour$
      * @param message to display to the user as overlay on bdv
      */
-    public RectangleSelectorBehaviour(BdvHandle bdvh, String message) {
+    public RectangleSelectorBehaviour(BdvHandle bdvh, String message, RealPoint p1, RealPoint p2) {
         this.bdvh = bdvh;
         this.triggerbindings = bdvh.getTriggerbindings();
         this.viewer = bdvh.getViewerPanel();
         rectangleOverlay = new RectangleSelectorOverlay(viewer, this, message);
+        if (p1!=null && p2!=null) {
+            rectangleOverlay.setRectangle(p1,p2);
+        }
         behaviours = new Behaviours( new InputTriggerConfig(), "bdv" );
         initialView = bdvh.getViewerPanel().state().getViewerTransform();
 

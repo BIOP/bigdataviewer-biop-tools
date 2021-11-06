@@ -52,10 +52,12 @@ public class RegisterQuPathImagesCommand implements Command {
             //  - Is there an associated qupath project ?
             if (!QuPathBdvHelper.isSourceDirectlyLinkedToQuPath(fixed_source)) {
                 logger.error("Error : the fixed source is not associated to a QuPath project");
+                IJ.error("Error : the fixed source is not associated to a QuPath project");
                 return;
             }
             if (!QuPathBdvHelper.isSourceDirectlyLinkedToQuPath(moving_source)) {
                 logger.error("Error : the moving source is not associated to a QuPath project");
+                IJ.error("Error : the moving source is not associated to a QuPath project");
                 return;
             }
 
@@ -65,6 +67,7 @@ public class RegisterQuPathImagesCommand implements Command {
 
             if (!qupathProjectMoving.equals(qupathProjectFixed)) {
                 logger.error("Error : the moving source and the fixed source are not from the same qupath project");
+                IJ.error("Error : the moving source and the fixed source are not from the same qupath project");
                 return;
             }
 
@@ -73,7 +76,8 @@ public class RegisterQuPathImagesCommand implements Command {
             File fixed_entry_folder = QuPathBdvHelper.getDataEntryFolder(fixed_source);
 
             if (moving_entry_folder.getAbsolutePath().equals(fixed_entry_folder.getAbsolutePath())) {
-                logger.error("Error : the moving source and the fixed source should belong to different qupath entries (you can't move two channels of the same image)");
+                logger.error("Error : the moving source and the fixed source should belong to different qupath entries (you can't move two channels of the same image, unless you duplicate the images in QuPath)");
+                IJ.error("Error : the moving source and the fixed source should belong to different qupath entries (you can't move two channels of the same image, unless you duplicate the images in QuPath)");
                 return;
             }
 

@@ -24,26 +24,35 @@ public class GetUserRectangleCommand implements Command {
     @Parameter(required = false)
     int timeOutInMs=-1;
 
-    @Parameter(type = ItemIO.OUTPUT)
-    List<RealPoint> pts = new ArrayList<>();
+    @Parameter(type = ItemIO.BOTH, required = false) // BOTH allow to pass an initial rectangle
+    RealPoint p1;
+
+    @Parameter(type = ItemIO.BOTH, required = false) // BOTH allow to pass an initial rectangle
+    RealPoint p2;
 
     @Override
     public void run() {
-        RectangleSelectorBehaviour rsb = new RectangleSelectorBehaviour(bdvh, messageForUser);
+        RectangleSelectorBehaviour rsb =
+                new RectangleSelectorBehaviour(bdvh, messageForUser, p1, p2);
         rsb.install();
-        pts = rsb.waitForSelection(timeOutInMs);
+        List<RealPoint> pts = rsb.waitForSelection(timeOutInMs);
         rsb.uninstall();
+        p1 = pts.get(0);
+        p2 = pts.get(1);
     }
 
     public static void main(String... args) throws Exception {
-
         final ImageJ ij = new ImageJ();
         ij.ui().showUI();
         BdvHandle bdvh = BdvSourcesDemo.initAndShowSources();
-
-
-
-        ij.command().run(GetUserRectangleCommand.class, true, "bdvh", bdvh, "timeOutInMs", -1,"messageForUser", "Please select a rectangle and confirm your input");
-
+        RealPoint pB = new RealPoint(3);
+        pB.setPosition(new double[]{800, 500, 80});
+        ij.command().run(GetUserRectangleCommand.class, true,
+                "bdvh", bdvh,
+                "timeOutInMs", -1,
+                "messageForUser", "Please select a rectangle and confirm your input",
+                "p1", new RealPoint(3),
+                "p2", pB
+        );
     }
 }

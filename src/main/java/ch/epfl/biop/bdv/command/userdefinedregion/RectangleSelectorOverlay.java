@@ -20,7 +20,7 @@ import java.util.*;
  *
  * The coloring differs depending on the state (selected or not selected)
  *
- * An inner interface {@link OverlayStyle} is used to define how the overlay box are colored.
+ * An inner interface used to define how the overlay box are colored.
  * The coloring can be modified with the {@link SourceSelectorOverlay#getStyles()} function
  * and by modify using the values contained in "DEFAULT" and "SELECTED"
  *
@@ -133,12 +133,14 @@ public class RectangleSelectorOverlay extends BdvOverlay {
         return corners;
     }
 
-    Point2D[] getCurrentCorners() {
+    Point2D[] getCurrentCorners(boolean ac_set) {
 
-        rpA = new RealPoint(3);
+        if (!ac_set) {
+            rpA = new RealPoint(3);
+            rpC = new RealPoint(3);
+        }
         rpB = new RealPoint(3);
         rpBprim = new RealPoint(3);
-        rpC = new RealPoint(3);
         rpDprim = new RealPoint(3);
         rpD = new RealPoint(3);
 
@@ -149,8 +151,10 @@ public class RectangleSelectorOverlay extends BdvOverlay {
         rpDprim_screen = new RealPoint(3);
         rpD_screen = new RealPoint(3);
 
-        viewer.displayToGlobalCoordinates(xCurrentSelectStart, yCurrentSelectStart, rpA);
-        viewer.displayToGlobalCoordinates(xCurrentSelectEnd, yCurrentSelectEnd, rpC);
+        if (!ac_set) {
+            viewer.displayToGlobalCoordinates(xCurrentSelectStart, yCurrentSelectStart, rpA);
+            viewer.displayToGlobalCoordinates(xCurrentSelectEnd, yCurrentSelectEnd, rpC);
+        }
         rpB.setPosition(new double[]{rpA.getDoublePosition(0), rpC.getDoublePosition(1), rpA.getDoublePosition(2)});
         rpBprim.setPosition(new double[]{rpA.getDoublePosition(0), rpC.getDoublePosition(1), rpC.getDoublePosition(2)});
         rpDprim.setPosition(new double[]{rpC.getDoublePosition(0), rpA.getDoublePosition(1), rpC.getDoublePosition(2)});
@@ -190,7 +194,7 @@ public class RectangleSelectorOverlay extends BdvOverlay {
         g.setFont(font);
         //g.drawString(message, 50, viewer.getHeight()-50);
         if (isCurrentlySelecting) {
-            Point2D[] corners = getCurrentCorners();
+            Point2D[] corners = getCurrentCorners(false);
             g.drawLine((int) corners[0].getX(),(int)  corners[0].getY(), (int) corners[1].getX(),(int)  corners[1].getY());
             g.setStroke( styles.get("SELECTED").getIntersectionStroke() );
             g.drawLine((int) corners[1].getX(),(int)  corners[1].getY(), (int) corners[2].getX(),(int)  corners[2].getY());
@@ -233,24 +237,11 @@ public class RectangleSelectorOverlay extends BdvOverlay {
         lastRectangleDrawn = false;
     }
 
-    /**
-     * STYLES
-     */
-
-    public interface OverlayStyle {
-
-        Color getBackColor();
-
-        Color getFrontColor();
-
-        Color getIntersectionColor();
-
-        Color getIntersectionFillColor();
-
-        Stroke getNormalStroke();
-
-        Stroke getIntersectionStroke();
-
+    public void setRectangle(RealPoint p1, RealPoint p2) {
+        rpA = p1;
+        rpC = p2;
+        getCurrentCorners(true);
+        rsb.processSelectionEvent(p1, p2);
     }
 
     public class SelectedOverlayStyle implements SourceSelectorOverlay.OverlayStyle {
