@@ -3,6 +3,7 @@ package ch.epfl.biop.bdv.command.register;
 import bdv.tools.brightness.ConverterSetup;
 import bdv.util.BdvHandle;
 import bdv.viewer.SourceAndConverter;
+import bigwarp.BigWarp;
 import ch.epfl.biop.bdv.command.userdefinedregion.GetUserPointsCommand;
 import ch.epfl.biop.bdv.command.userdefinedregion.GetUserRectangleCommand;
 import ch.epfl.biop.bdv.command.userdefinedregion.PointsSelectorBehaviour;
@@ -31,8 +32,6 @@ import sc.fiji.bdvpg.bdv.ManualRegistrationStopper;
 import sc.fiji.bdvpg.bdv.navigate.ViewerTransformAdjuster;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
-import sc.fiji.bdvpg.scijava.command.source.BrightnessAdjusterCommand;
-import sc.fiji.bdvpg.scijava.command.source.ManualTransformCommand;
 import sc.fiji.bdvpg.scijava.services.SourceAndConverterBdvDisplayService;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterAndTimeRange;
@@ -132,12 +131,6 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
     @Parameter(type = ItemIO.OUTPUT)
     RealTransform transformation;
 
-    BiConsumer<String,String> waitForUser = (windowtitle, message) -> {
-        IJ.log("Registration Wizard - wait: "+message);
-        WaitForUserDialog dialog = new WaitForUserDialog(windowtitle,message);
-        dialog.show();
-    };
-
     // Rectangle properties
     List<RealPoint> corners;
     double topLeftX, topLeftY, bottomRightX, bottomRightY, cx, cy;
@@ -188,7 +181,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
         SourceAndConverterServices.getBdvDisplayService().show(bdvh, new SourceAndConverter[]{fixed, moving});
 
         // Make sure the relevant sources are displayed
-        showImagesIfNecessary();
+        showImages();
 
         if (manualRigidRegistration) {
             addCardPanelRigidRegistration();
@@ -254,10 +247,9 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
                                "coarsePixelSize_mm", coarsePixelSize_mm
                     ).get().getOutput("tst");
 
-
-            IJ.log("Registration DONE.");
-
             if (manualSplineRegistration) {
+
+                IJ.log("BigWarp registration...");
                 // The user wants big warp to correct landmark points
                 List<SourceAndConverter> movingSacs = Arrays.stream(new SourceAndConverter[]{moving}).collect(Collectors.toList());
 
@@ -302,13 +294,14 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
                 // Centers bdv on ROI center
                 fitBdvOnUserROI(bdvhQ);
                 fitBdvOnUserROI(bdvhP);
-                
-                waitForUser.accept("Manual spline registration", "Please perform carefully your registration then press ok.");
-
+                waitForBigWarp(bwl.getBigWarp());
                 transformation = bwl.getBigWarp().getBwTransform().getTransformation().copy();
 
                 bwl.getBigWarp().closeAll();
             }
+
+
+            IJ.log("Registration DONE.");
 
             // Now transforms all the sources required to be transformed
 
@@ -329,6 +322,61 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
 
         } catch (Exception e) {
             e.printStackTrace();
+        }
+
+    }
+
+    boolean isBigWarpFinished = false;
+
+    private void waitForBigWarp(BigWarp bw) throws InterruptedException {
+
+        //waitForUser.accept("Manual spline registration", "Please perform carefully your registration then press ok.");
+
+        bw.getViewerFrameP().addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                isBigWarpFinished = true;
+            }
+        });
+        bw.getViewerFrameQ().addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                isBigWarpFinished = true;
+            }
+        });
+
+        JButton confirmP = new JButton("Click to finish");
+        confirmP.addActionListener((e) -> isBigWarpFinished = true);
+
+        JPanel cardpanelP = box(false,
+                new JLabel("BigWarp registration"),
+                confirmP
+                );
+
+        bw.getViewerFrameP().getSplitPanel().setCollapsed(false);
+        bw.getViewerFrameP().getCardPanel().setCardExpanded(DEFAULT_SOURCEGROUPS_CARD, false);
+        bw.getViewerFrameP().getCardPanel().setCardExpanded(DEFAULT_VIEWERMODES_CARD, false);
+        bw.getViewerFrameP().getCardPanel().setCardExpanded(DEFAULT_SOURCES_CARD, true);
+        bw.getViewerFrameP().getCardPanel().addCard("BigWarp Registration", cardpanelP, true);
+
+        JButton confirmQ = new JButton("Click to finish");
+        confirmQ.addActionListener((e) -> {
+            isBigWarpFinished = true;
+        });
+
+        JPanel cardpanelQ = box(false,
+                new JLabel("BigWarp registration"),
+                confirmQ
+        );
+
+        bw.getViewerFrameQ().getSplitPanel().setCollapsed(false);
+        bw.getViewerFrameQ().getCardPanel().setCardExpanded(DEFAULT_SOURCEGROUPS_CARD, false);
+        bw.getViewerFrameQ().getCardPanel().setCardExpanded(DEFAULT_VIEWERMODES_CARD, false);
+        bw.getViewerFrameQ().getCardPanel().setCardExpanded(DEFAULT_SOURCES_CARD, true);
+        bw.getViewerFrameQ().getCardPanel().addCard("BigWarp Registration", cardpanelQ, true);
+
+        while (!isBigWarpFinished) {
+            Thread.sleep(100); // Wait for user.. dirty but ok.
         }
 
     }
@@ -443,11 +491,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
 
     RealInterval getBoundingBox() {
         SourceAndConverter[] sources = new SourceAndConverter[]{moving, fixed};
-        List<RealInterval> intervalList = (List)Arrays.asList(sources).stream().filter((sourceAndConverter) -> {
-            return sourceAndConverter.getSpimSource() != null;
-        }).filter((sourceAndConverter) -> {
-            return sourceAndConverter.getSpimSource().isPresent(0);
-        }).map((sourceAndConverter) -> {
+        List<RealInterval> intervalList = Arrays.asList(sources).stream().map((sourceAndConverter) -> {
             Interval interval = sourceAndConverter.getSpimSource().getSource(0, 0);
             AffineTransform3D sourceTransform = new AffineTransform3D();
             sourceAndConverter.getSpimSource().getSourceTransform(0, 0, sourceTransform);
@@ -456,25 +500,15 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
             sourceTransform.apply(corner0, corner0);
             sourceTransform.apply(corner1, corner1);
             return new FinalRealInterval(new double[]{Math.min(corner0.getDoublePosition(0), corner1.getDoublePosition(0)), Math.min(corner0.getDoublePosition(1), corner1.getDoublePosition(1)), Math.min(corner0.getDoublePosition(2), corner1.getDoublePosition(2))}, new double[]{Math.max(corner0.getDoublePosition(0), corner1.getDoublePosition(0)), Math.max(corner0.getDoublePosition(1), corner1.getDoublePosition(1)), Math.max(corner0.getDoublePosition(2), corner1.getDoublePosition(2))});
-        }).filter((object) -> {
-            return object != null;
         }).collect(Collectors.toList());
-        RealInterval maxInterval = (RealInterval)intervalList.stream().reduce((i1, i2) -> {
+        RealInterval maxInterval = intervalList.stream().reduce((i1, i2) -> {
             return new FinalRealInterval(new double[]{Math.min(i1.realMin(0), i2.realMin(0)), Math.min(i1.realMin(1), i2.realMin(1)), Math.min(i1.realMin(2), i2.realMin(2))}, new double[]{Math.max(i1.realMax(0), i2.realMax(0)), Math.max(i1.realMax(1), i2.realMax(1)), Math.max(i1.realMax(2), i2.realMax(2))});
         }).get();
         return maxInterval;
     }
 
-
-    private void showImagesIfNecessary() {
-        if (!bdvh.getViewerPanel().state().containsSource(fixed)) {
-            sacbds.show(bdvh,fixed);
-        }
-
-        if (!bdvh.getViewerPanel().state().containsSource(moving)) {
-            sacbds.show(bdvh,moving);
-        }
-
+    private void showImages() {
+        sacbds.show(bdvh,fixed, moving);
         new ViewerTransformAdjuster(bdvh, new SourceAndConverter[]{fixed, moving}).run();
     }
 

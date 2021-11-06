@@ -242,6 +242,7 @@ public class RectangleSelectorOverlay extends BdvOverlay {
         rpC = p2;
         getCurrentCorners(true);
         rsb.processSelectionEvent(p1, p2);
+        viewer.requestRepaint(); // Overlay repaint
     }
 
     public class SelectedOverlayStyle implements SourceSelectorOverlay.OverlayStyle {
