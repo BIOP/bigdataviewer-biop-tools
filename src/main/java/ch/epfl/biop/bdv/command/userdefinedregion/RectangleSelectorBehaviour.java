@@ -4,6 +4,7 @@ import bdv.util.BdvHandle;
 import bdv.util.BdvOptions;
 import bdv.util.BdvOverlaySource;
 import bdv.viewer.ViewerPanel;
+import ch.epfl.biop.bdv.gui.card.CardHelper;
 import net.imglib2.RealPoint;
 import net.imglib2.realtransform.AffineTransform3D;
 import org.scijava.ui.behaviour.Behaviour;
@@ -56,7 +57,7 @@ public class RectangleSelectorBehaviour {
 
     boolean iniSplitPanelState;
 
-    Map<String, Boolean> iniCardState = new HashMap<>();
+    CardHelper.CardState iniCardState;
 
     JPanel pane;
 
@@ -186,10 +187,7 @@ public class RectangleSelectorBehaviour {
         bdvh.getKeybindings().addInputMap("blocking-source-selector_rectangle", new InputMap(), "bdv", "navigation");
         bos = showOverlay(rectangleOverlay, "Rectangle_Selector_Overlay", BdvOptions.options().addTo(bdvh));
 
-        iniSplitPanelState = bdvh.getSplitPanel().isCollapsed();
-        iniCardState.put(DEFAULT_SOURCEGROUPS_CARD, bdvh.getCardPanel().isCardExpanded(DEFAULT_SOURCEGROUPS_CARD));
-        iniCardState.put(DEFAULT_VIEWERMODES_CARD, bdvh.getCardPanel().isCardExpanded(DEFAULT_VIEWERMODES_CARD));
-        iniCardState.put(DEFAULT_SOURCES_CARD, bdvh.getCardPanel().isCardExpanded(DEFAULT_SOURCES_CARD));
+        iniCardState = CardHelper.getCardState(bdvh);
 
         bdvh.getSplitPanel().setCollapsed(false);
         bdvh.getCardPanel().setCardExpanded(DEFAULT_SOURCEGROUPS_CARD, false);
@@ -211,13 +209,8 @@ public class RectangleSelectorBehaviour {
         triggerbindings.removeBehaviourMap( RECTANGLE_SELECTOR_MAP );
         triggerbindings.removeInputTriggerMap( RECTANGLE_SELECTOR_MAP );
         bdvh.getKeybindings().removeInputMap("blocking-source-selector");
-
         bdvh.getCardPanel().removeCard(userCardKey);
-        bdvh.getSplitPanel().setCollapsed(iniSplitPanelState);
-        bdvh.getCardPanel().setCardExpanded(DEFAULT_SOURCEGROUPS_CARD, iniCardState.get(DEFAULT_SOURCEGROUPS_CARD));
-        bdvh.getCardPanel().setCardExpanded(DEFAULT_VIEWERMODES_CARD, iniCardState.get(DEFAULT_VIEWERMODES_CARD));
-        bdvh.getCardPanel().setCardExpanded(DEFAULT_SOURCES_CARD, iniCardState.get(DEFAULT_SOURCES_CARD));
-
+        CardHelper.restoreCardState(bdvh, iniCardState);
     }
 
     volatile boolean rectangleSelected = false;

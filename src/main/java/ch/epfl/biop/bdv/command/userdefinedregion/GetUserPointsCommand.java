@@ -1,8 +1,8 @@
 package ch.epfl.biop.bdv.command.userdefinedregion;
 
 import bdv.util.BdvHandle;
-import ch.epfl.biop.bdv.gui.GraphicalHandle;
-import ch.epfl.biop.bdv.gui.XYRectangleGraphicalHandle;
+import ch.epfl.biop.bdv.gui.graphicalhandle.GraphicalHandle;
+import ch.epfl.biop.bdv.gui.graphicalhandle.XYRectangleGraphicalHandle;
 import net.imagej.ImageJ;
 import net.imglib2.RealPoint;
 import org.scijava.ItemIO;
@@ -56,8 +56,8 @@ public class GetUserPointsCommand implements Command {
                         new XYRectangleGraphicalHandle(
                                 bdvh.getViewerPanel().state(),
                                 () -> realPoint,
-                                () -> 20d,
-                                () -> 20d,
+                                () -> 60d,
+                                () -> 35d,
                                 () -> PointsSelectorBehaviour.defaultLandmarkColor ));
 
     }

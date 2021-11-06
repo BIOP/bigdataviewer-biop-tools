@@ -66,6 +66,15 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
     @Parameter(label = "Number of iterations for each scale (default 100)")
     int maxIterationNumberPerScale = 100;
 
+    @Parameter(label = "Pixel size for coarse registration in mm (default 0.01)", style = "format:0.000", persist = false)
+    double coarsePixelSize_mm = 0.01;
+
+    @Parameter(label = "Patch size for registration in mm (default 0.5)", style = "format:0.000", persist = false)
+    double patchSize_mm = 0.5;
+
+    @Parameter(label = "Pixel size for precise patch registration in mm (default 0.001)", style = "format:0.000", persist = false)
+    double precisePixelSize_mm = 0.001;
+
     @Parameter
     CommandService cs;
 
@@ -101,7 +110,7 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
                         "pz", 0,
                         "sx", bottomRightX - topLeftX,
                         "sy", bottomRightY - topLeftY,
-                        "pxSizeInCurrentUnit", 0.01, // in mm
+                        "pxSizeInCurrentUnit", coarsePixelSize_mm, // in mm
                         "interpolate", true,
                         "showImagePlusRegistrationResult", showDetails,
                         "automaticTransformInitialization", false,
@@ -129,9 +138,9 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
                                 "levelMovingSource", SourceAndConverterHelper.bestLevel(firstRegSrc, 0, 0.001),
                                 "ptListCoordinates", ptListCoordinates,
                                 "zLocation", 0,
-                                "sx", 0.5, // 500 microns
-                                "sy", 0.5, // 500 microns
-                                "pxSizeInCurrentUnit", 0.001, //1 micron per pixel
+                                "sx", patchSize_mm, // 500 microns
+                                "sy", patchSize_mm, // 500 microns
+                                "pxSizeInCurrentUnit", precisePixelSize_mm, //1 micron per pixel
                                 "interpolate", true,
                                 "showPoints", showDetails,//true,
                                 "parallel", !showDetails,//false,

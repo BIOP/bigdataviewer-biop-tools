@@ -5,9 +5,9 @@ import bdv.util.BdvOptions;
 import bdv.util.BdvOverlaySource;
 import bdv.viewer.ViewerPanel;
 import bdv.viewer.ViewerState;
-import ch.epfl.biop.bdv.gui.CircleGraphicalHandle;
-import ch.epfl.biop.bdv.gui.GraphicalHandle;
-import ch.epfl.biop.bdv.gui.GraphicalHandleListener;
+import ch.epfl.biop.bdv.gui.card.CardHelper;
+import ch.epfl.biop.bdv.gui.graphicalhandle.CircleGraphicalHandle;
+import ch.epfl.biop.bdv.gui.graphicalhandle.GraphicalHandle;
 import net.imglib2.RealPoint;
 import net.imglib2.realtransform.AffineTransform3D;
 import org.scijava.ui.behaviour.Behaviour;
@@ -17,7 +17,6 @@ import org.scijava.ui.behaviour.util.Behaviours;
 import org.scijava.ui.behaviour.util.TriggerBehaviourBindings;
 
 import javax.swing.*;
-import java.awt.*;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -57,10 +56,6 @@ public class PointsSelectorBehaviour {
     final Behaviours behaviours;
 
     boolean isInstalled; // flag for the toggle action
-
-    boolean iniSplitPanelState;
-
-    Map<String, Boolean> iniCardState = new HashMap<>();
 
     JPanel pane;
 
@@ -177,18 +172,17 @@ public class PointsSelectorBehaviour {
         disable();
     }
 
+    CardHelper.CardState iniCardState;
+
     /**
      * Private : call enable instead
      */
     synchronized void install() {
         isInstalled = true;
         pointsOverlay.addSelectionBehaviours(behaviours);
-        behaviours.behaviour(new ClickBehaviour() {
-            @Override
-            public void click(int x, int y) {
-                bos.removeFromBdv();
-                uninstall(); userDone = true;
-            }
+        behaviours.behaviour((ClickBehaviour) (x, y) -> {
+            bos.removeFromBdv();
+            uninstall(); userDone = true;
         }, "cancel-set-points", new String[]{"ESCAPE"});
 
         triggerbindings.addBehaviourMap(POINTS_SELECTOR_MAP, behaviours.getBehaviourMap());
@@ -196,10 +190,7 @@ public class PointsSelectorBehaviour {
         bos = showOverlay(pointsOverlay, "Point_Selector_Overlay", BdvOptions.options().addTo(bdvh));
         bdvh.getKeybindings().addInputMap("blocking-source-selector_points", new InputMap(), "bdv", "navigation");
 
-        iniSplitPanelState = bdvh.getSplitPanel().isCollapsed();
-        iniCardState.put(DEFAULT_SOURCEGROUPS_CARD, bdvh.getCardPanel().isCardExpanded(DEFAULT_SOURCEGROUPS_CARD));
-        iniCardState.put(DEFAULT_VIEWERMODES_CARD, bdvh.getCardPanel().isCardExpanded(DEFAULT_VIEWERMODES_CARD));
-        iniCardState.put(DEFAULT_SOURCES_CARD, bdvh.getCardPanel().isCardExpanded(DEFAULT_SOURCES_CARD));
+        iniCardState = CardHelper.getCardState(bdvh);
 
         bdvh.getSplitPanel().setCollapsed(false);
         bdvh.getCardPanel().setCardExpanded(DEFAULT_SOURCEGROUPS_CARD, false);
@@ -223,10 +214,7 @@ public class PointsSelectorBehaviour {
         bdvh.getKeybindings().removeInputMap("blocking-source-selector");
 
         bdvh.getCardPanel().removeCard(userCardKey);
-        bdvh.getSplitPanel().setCollapsed(iniSplitPanelState);
-        bdvh.getCardPanel().setCardExpanded(DEFAULT_SOURCEGROUPS_CARD, iniCardState.get(DEFAULT_SOURCEGROUPS_CARD));
-        bdvh.getCardPanel().setCardExpanded(DEFAULT_VIEWERMODES_CARD, iniCardState.get(DEFAULT_VIEWERMODES_CARD));
-        bdvh.getCardPanel().setCardExpanded(DEFAULT_SOURCES_CARD, iniCardState.get(DEFAULT_SOURCES_CARD));
+        CardHelper.restoreCardState(bdvh, iniCardState);
     }
 
     private volatile List<RealPoint> points = new ArrayList<>();

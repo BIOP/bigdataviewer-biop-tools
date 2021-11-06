@@ -4,11 +4,13 @@ import bdv.util.QuPathBdvHelper;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.bdv.command.register.Wizard2DWholeScanRegisterCommand;
 import ch.epfl.biop.spimdata.qupath.QuPathEntryEntity;
+import ij.IJ;
 import ij.gui.WaitForUserDialog;
 import net.imglib2.realtransform.*;
 import org.apache.commons.io.FileUtils;
 import org.scijava.Context;
 import org.scijava.command.Command;
+import org.scijava.command.CommandModule;
 import org.scijava.command.CommandService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
@@ -16,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
+import sc.fiji.bdvpg.services.SourceAndConverterServices;
 import sc.fiji.persist.ScijavaGsonHelper;
 
 import java.io.File;
@@ -74,15 +77,22 @@ public class RegisterQuPathImagesCommand implements Command {
                 return;
             }
 
-            // Ok.
-            RealTransform rt = (RealTransform) cs.run(Wizard2DWholeScanRegisterCommand.class, true,
+            CommandModule module = cs.run(Wizard2DWholeScanRegisterCommand.class, true,
                     "fixed", fixed_source,
                     "moving", moving_source,
                     "verbose", verbose,
                     "background_offset_value_moving", 0,
                     "background_offset_value_fixed", 0,
                     "sourcesToTransform", new SourceAndConverter[]{moving_source}
-                    ).get().getOutput("transformation");
+            ).get();
+
+            // Get transform
+            RealTransform rt = (RealTransform) module.getOutput("transformation");
+
+            // We don't want to keep the transformed sources in memory
+            SourceAndConverterServices
+                    .getSourceAndConverterService()
+                    .remove((SourceAndConverter[]) module.getOutput("transformedSources"));
 
             RealTransform transformSequence;
 
@@ -126,9 +136,11 @@ public class RegisterQuPathImagesCommand implements Command {
 
             String movingToFixedLandmarkName = "transform_"+moving_series_index+"_"+fixed_series_index+".json";
 
-            FileUtils.writeStringToFile(new File(moving_entry_folder.getAbsolutePath(), movingToFixedLandmarkName), jsonMovingToFixed, Charset.defaultCharset());
+            File result = new File(moving_entry_folder.getAbsolutePath(), movingToFixedLandmarkName);
+            FileUtils.writeStringToFile(result, jsonMovingToFixed, Charset.defaultCharset());
 
-            new WaitForUserDialog("Registration finished", "Transformation file successfully written to QuPath project.").show();
+            //new WaitForUserDialog("Registration finished", "Transformation file successfully written to QuPath project.").show();
+            IJ.log("Transformation file successfully written to QuPath project: "+result);
 
         } catch (Exception e) {
             e.printStackTrace();
