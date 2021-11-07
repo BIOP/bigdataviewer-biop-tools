@@ -2,6 +2,7 @@ package ch.epfl.biop.bdv.command.register;
 
 import bdv.tools.brightness.ConverterSetup;
 import bdv.util.BdvHandle;
+import bdv.util.BigWarpHelper;
 import bdv.viewer.SourceAndConverter;
 import bigwarp.BigWarp;
 import ch.epfl.biop.bdv.command.userdefinedregion.GetUserPointsCommand;
@@ -11,12 +12,14 @@ import ch.epfl.biop.bdv.gui.card.CardHelper;
 import ch.epfl.biop.bdv.gui.graphicalhandle.GraphicalHandle;
 import ch.epfl.biop.bdv.gui.graphicalhandle.XYRectangleGraphicalHandle;
 import ij.IJ;
+import jitk.spline.ThinPlateR2LogRSplineKernelTransform;
 import net.imglib2.FinalRealInterval;
 import net.imglib2.Interval;
 import net.imglib2.RealInterval;
 import net.imglib2.RealPoint;
-import net.imglib2.realtransform.AffineTransform3D;
-import net.imglib2.realtransform.RealTransform;
+import net.imglib2.realtransform.*;
+import net.imglib2.realtransform.inverse.WrappedIterativeInvertibleRealTransform;
+import org.scijava.Context;
 import org.scijava.ItemIO;
 import org.scijava.ItemVisibility;
 import org.scijava.command.CommandModule;
@@ -41,6 +44,7 @@ import sc.fiji.bdvpg.sourceandconverter.display.BrightnessAutoAdjuster;
 import sc.fiji.bdvpg.sourceandconverter.register.BigWarpLauncher;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceRealTransformer;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceTransformHelper;
+import sc.fiji.persist.ScijavaGsonHelper;
 
 import javax.swing.*;
 import java.util.*;
@@ -140,6 +144,11 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
 
     private boolean manualRegistrationStopped = false;
 
+    @Parameter
+    Context ctx;
+
+    AffineTransform3D preTransfromedMoving;
+
     @Override
     public void run() {
 
@@ -152,7 +161,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
 
         // These transforms are removed at the end in the wizard
         AffineTransform3D preTransformFixed = new AffineTransform3D();
-        AffineTransform3D preTransfromedMoving = new AffineTransform3D();
+        preTransfromedMoving = new AffineTransform3D();
 
         if (removeZOffset) {
             AffineTransform3D at3D = new AffineTransform3D();
@@ -200,7 +209,23 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
         try {
 
             // Ask the user to select the region that should be aligned ( a rectangle ) - in any case
-            getUserRectangle();
+            if (automatedAffineRegistration) {
+                getUserRectangle();
+            } else {
+                // Let's take the bounding box
+                RealInterval box = getBoundingBox();
+                corners = new ArrayList<>();
+                corners.add(box.minAsRealPoint());
+                corners.add(box.maxAsRealPoint());
+            }
+
+            topLeftX = Math.min(corners.get(0).getDoublePosition(0),corners.get(1).getDoublePosition(0) );
+            topLeftY = Math.min(corners.get(0).getDoublePosition(1),corners.get(1).getDoublePosition(1) );
+            bottomRightX = Math.max(corners.get(0).getDoublePosition(0),corners.get(1).getDoublePosition(0) );
+            bottomRightY = Math.max(corners.get(0).getDoublePosition(1),corners.get(1).getDoublePosition(1) );
+
+            cx = (topLeftX+bottomRightX)/2.0;
+            cy = (topLeftY+bottomRightY)/2.0;
 
             if (automatedSplineRegistration) {
                 // Ask the user to select the points where the fine tuning should be performed
@@ -298,15 +323,14 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
                 fitBdvOnUserROI(bdvhP);
                 waitForBigWarp(bwl.getBigWarp());
                 transformation = bwl.getBigWarp().getBwTransform().getTransformation().copy();
-
                 bwl.getBigWarp().closeAll();
             }
 
-
+            // Adds the pretransformation!
+            preTransformLandmarks();
             IJ.log("Registration DONE.");
 
             // Now transforms all the sources required to be transformed
-
             SourceRealTransformer srt = new SourceRealTransformer(null,transformation);
 
             transformedSources = Arrays.stream(sourcesToTransform)
@@ -325,6 +349,34 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+    }
+
+    private void preTransformLandmarks() {
+        // I know, it's complicated
+        ThinplateSplineTransform tst = (ThinplateSplineTransform)
+                ((WrappedIterativeInvertibleRealTransform)
+                        ((Wrapped2DTransformAs3D)transformation).getTransform())
+                        .getTransform();
+        ThinPlateR2LogRSplineKernelTransform kernel = ThinPlateSplineTransformAdapter.getKernel(tst);
+        double[][] pts_src = ThinPlateSplineTransformAdapter.getSrcPts(kernel);
+        double[][] pts_tgt = ThinPlateSplineTransformAdapter.getTgtPts(kernel);
+
+        List<RealPoint> movingPts = new ArrayList<>();
+        List<RealPoint> fixedPts = new ArrayList<>();
+        for (int i = 0; i<kernel.getNumLandmarks(); i++) {
+            RealPoint moving = new RealPoint(3);
+            RealPoint fixed = new RealPoint(3);
+            for (int d = 0; d<kernel.getNumDims();d++) { // num dims should be 2!
+                moving.setPosition(pts_tgt[d][i], d);
+                fixed.setPosition(pts_src[d][i], d);
+            }
+            preTransfromedMoving.inverse().apply(moving, moving);
+            movingPts.add(moving);
+            fixedPts.add(fixed);
+        }
+
+        transformation = new Wrapped2DTransformAs3D(new WrappedIterativeInvertibleRealTransform<>(BigWarpHelper.getTransform(movingPts, fixedPts, true)));
 
     }
 
@@ -436,6 +488,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
         JButton confirmationButton = new JButton("Confirm transformation");
         confirmationButton.addActionListener((e) -> {
             if (rigidRegistrationStarted) {
+                preTransfromedMoving.concatenate(manualRegistrationStarter.getCurrentTransform().copy());
                 manualRegistrationStopper.run();
             }
             manualRegistrationStopped = true;
@@ -490,14 +543,6 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
         corners = new ArrayList<>();
         corners.add((RealPoint) module.getOutput("p1"));
         corners.add((RealPoint) module.getOutput("p2"));
-
-        topLeftX = Math.min(corners.get(0).getDoublePosition(0),corners.get(1).getDoublePosition(0) );
-        topLeftY = Math.min(corners.get(0).getDoublePosition(1),corners.get(1).getDoublePosition(1) );
-        bottomRightX = Math.max(corners.get(0).getDoublePosition(0),corners.get(1).getDoublePosition(0) );
-        bottomRightY = Math.max(corners.get(0).getDoublePosition(1),corners.get(1).getDoublePosition(1) );
-
-        cx = (topLeftX+bottomRightX)/2.0;
-        cy = (topLeftY+bottomRightY)/2.0;
     }
 
     RealInterval getBoundingBox() {
