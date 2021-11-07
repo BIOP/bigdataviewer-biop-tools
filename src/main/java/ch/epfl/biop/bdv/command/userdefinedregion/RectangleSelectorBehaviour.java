@@ -80,9 +80,6 @@ public class RectangleSelectorBehaviour {
         this.triggerbindings = bdvh.getTriggerbindings();
         this.viewer = bdvh.getViewerPanel();
         rectangleOverlay = new RectangleSelectorOverlay(viewer, this, message);
-        if (p1!=null && p2!=null) {
-            rectangleOverlay.setRectangle(p1,p2);
-        }
         behaviours = new Behaviours( new InputTriggerConfig(), "bdv" );
         initialView = bdvh.getViewerPanel().state().getViewerTransform();
 
@@ -108,6 +105,13 @@ public class RectangleSelectorBehaviour {
             }
         });
 
+        JButton restoreInitialRectangle = null;
+        if (p1!=null && p2!=null) {
+            rectangleOverlay.setRectangle(p1,p2);
+            restoreInitialRectangle = new JButton("Restore initial rectangle");
+            restoreInitialRectangle.addActionListener((e) -> rectangleOverlay.setRectangle(p1,p2));
+        }
+
         JButton confirmationButton = new JButton("Confirm rectangle");
         confirmationButton.addActionListener((e) -> {
             if (endPt!=null) {
@@ -115,7 +119,11 @@ public class RectangleSelectorBehaviour {
             }
         });
 
-        pane = box(false,new JLabel(message), box(false,navigationButton, restoreView), confirmationButton);
+        if (restoreInitialRectangle== null) {
+            pane = box(false, new JLabel(message), box(false, navigationButton, restoreView), confirmationButton);
+        } else {
+            pane = box(false, new JLabel(message), box(false, navigationButton, restoreView), restoreInitialRectangle, confirmationButton);
+        }
     }
 
     public static JPanel box(boolean alongX,JComponent... components) {

@@ -3,6 +3,7 @@ package ch.epfl.biop.bdv.command.register;
 import bdv.util.BigWarpHelper;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.bdv.bioformats.command.BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand;
+import ij.IJ;
 import net.imagej.ImageJ;
 import net.imglib2.RealPoint;
 import net.imglib2.realtransform.*;
@@ -97,6 +98,7 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
 
             if (performFirstCoarseAffineRegistration) {
                 logger.info("----------- First registration - Coarse Affine");
+                IJ.log("- Coarse Affine Registration");
 
                 CommandModule cm = cs.run(Elastix2DAffineRegisterCommand.class, true,
                         "sac_fixed", globalRefSource,
@@ -128,6 +130,8 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
             logger.info("----------- Precise Warping based on particular locations");
             RealTransform tst_temp = new AffineTransform3D(); // Identity transform applied if no warping
             if (performSecondSplineRegistration) {
+
+                IJ.log("- Landmarks registration");
                 tst_temp =
                         (RealTransform) cs.run(Elastix2DSparsePointsRegisterCommand.class, true,
                                 "sac_fixed", globalRefSource,

@@ -233,25 +233,27 @@ public class PointsSelectorBehaviour implements GraphicalHandleListener {
     void addPoint(RealPoint newPt) {
         GraphicalHandle gh = graphicalHandleSupplier.apply(newPt);
 
-        gh.getBehaviours().behaviour(new DragBehaviour() {
-            @Override
-            public void init(int x, int y) {
-                bdvh.getViewerPanel().displayToGlobalCoordinates(x,y,newPt);
-                bdvh.getViewerPanel().requestRepaint();
-            }
+        if (gh.getBehaviours()!=null) {
+            gh.getBehaviours().behaviour(new DragBehaviour() {
+                @Override
+                public void init(int x, int y) {
+                    bdvh.getViewerPanel().displayToGlobalCoordinates(x, y, newPt);
+                    bdvh.getViewerPanel().requestRepaint();
+                }
 
-            @Override
-            public void drag(int x, int y) {
-                bdvh.getViewerPanel().displayToGlobalCoordinates(x,y,newPt);
-                bdvh.getViewerPanel().requestRepaint();
-            }
+                @Override
+                public void drag(int x, int y) {
+                    bdvh.getViewerPanel().displayToGlobalCoordinates(x, y, newPt);
+                    bdvh.getViewerPanel().requestRepaint();
+                }
 
-            @Override
-            public void end(int x, int y) {
-                bdvh.getViewerPanel().displayToGlobalCoordinates(x,y,newPt);
-                bdvh.getViewerPanel().requestRepaint();
-            }
-        }, "drag_point", "button1");
+                @Override
+                public void end(int x, int y) {
+                    bdvh.getViewerPanel().displayToGlobalCoordinates(x, y, newPt);
+                    bdvh.getViewerPanel().requestRepaint();
+                }
+            }, "drag_point", "button1");
+        }
 
         gh.addGraphicalHandleListener(this);
         ptToGraphicalHandle.put(newPt, gh);

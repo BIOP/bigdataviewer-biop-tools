@@ -1,5 +1,6 @@
 package ch.epfl.biop.bdv.command.register;
 
+import ij.IJ;
 import net.imglib2.RealPoint;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.realtransform.RealTransform;
@@ -18,6 +19,7 @@ import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -71,6 +73,8 @@ public class Elastix2DSparsePointsRegisterCommand extends SelectSourcesForRegist
 
     public Consumer<String> log = s -> {};
 
+    AtomicInteger counter = new AtomicInteger();
+
     @Override
     public void run() {
 
@@ -98,7 +102,7 @@ public class Elastix2DSparsePointsRegisterCommand extends SelectSourcesForRegist
         }
 
         ConcurrentHashMap<RealPoint, RealPoint> correspondingPts = new ConcurrentHashMap<>();
-
+        counter.set(0);
         streamOfPts.forEach(pt -> {
             try {
                 AffineTransform3D at = (AffineTransform3D) cs.run(Elastix2DAffineRegisterCommand.class,true,
@@ -131,6 +135,7 @@ public class Elastix2DSparsePointsRegisterCommand extends SelectSourcesForRegist
                 String str = "xi ="+pt.getDoublePosition(0)+"\t xf ="+ptCorr.getDoublePosition(0)+"\n";
                 str+="yi ="+pt.getDoublePosition(1)+"\t yf ="+ptCorr.getDoublePosition(1);
                 log.accept("Registration point : "+str);
+                IJ.log("#Landmark:"+counter.addAndGet(1)+"/"+pts_Fixed.size());
             } catch (InterruptedException e) {
                 e.printStackTrace();
             } catch (ExecutionException e) {

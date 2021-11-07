@@ -23,6 +23,8 @@ import org.scijava.command.CommandModule;
 import org.scijava.command.CommandService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import org.scijava.ui.behaviour.io.InputTriggerConfig;
+import org.scijava.ui.behaviour.util.Behaviours;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sc.fiji.bdvpg.bdv.BdvHandleHelper;
@@ -180,6 +182,8 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
 
         // Make sure the relevant sources are displayed
         showImages();
+
+        addCardPanelCommons();
 
         if (manualRigidRegistration) {
             addCardPanelRigidRegistration();
@@ -384,6 +388,25 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
     ManualRegistrationStarter manualRegistrationStarter;
     ManualRegistrationStopper manualRegistrationStopper;
 
+    private void addCardPanelCommons() {
+
+        JButton autoScaleMoving = new JButton("Autoscale B&C (moving)");
+        autoScaleMoving.addActionListener((e) -> {
+            bdvh.getViewerPanel().showMessage("Autoscaling moving image");
+            new BrightnessAutoAdjuster(moving,0).run();
+        });
+
+        JButton autoScaleFixed = new JButton("Autoscale B&C (fixed)");
+        autoScaleFixed.addActionListener((e) -> {
+            bdvh.getViewerPanel().showMessage("Autoscaling fixed image");
+            new BrightnessAutoAdjuster(fixed,0).run();
+        });
+
+        JPanel panel = box(false, autoScaleFixed, autoScaleMoving);
+
+        bdvh.getCardPanel().addCard("WSI Registration Wizard", panel, true);
+    }
+
     private void addCardPanelRigidRegistration() {
 
         manualRegistrationStarter = new ManualRegistrationStarter(bdvh, moving);
@@ -418,21 +441,8 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
             manualRegistrationStopped = true;
         });
 
-        JButton autoScaleMoving = new JButton("Autoscale B&C (moving)");
-        autoScaleMoving.addActionListener((e) -> {
-            bdvh.getViewerPanel().showMessage("Autoscaling moving image");
-            new BrightnessAutoAdjuster(moving,0).run();
-        });
-
-        JButton autoScaleFixed = new JButton("Autoscale B&C (fixed)");
-        autoScaleFixed.addActionListener((e) -> {
-            bdvh.getViewerPanel().showMessage("Autoscaling fixed image");
-            new BrightnessAutoAdjuster(fixed,0).run();
-        });
-
         JPanel cardpanel = box(false,
                 new JLabel("Perform manual rigid registration"),
-                box(true, autoScaleMoving, autoScaleFixed),
                 restoreView,
                 confirmationButton);
 
@@ -456,6 +466,9 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
                         "graphicalHandleSupplier",
                         (Function<RealPoint, GraphicalHandle>) realPoint ->
                                 new XYRectangleGraphicalHandle(
+                                        new Behaviours(new InputTriggerConfig()),
+                                        bdvh.getTriggerbindings(),
+                                        UUID.randomUUID().toString(),
                                         bdvh.getViewerPanel().state(),
                                         () -> realPoint,
                                         () -> patchSize_mm, // To improve, clearly!
