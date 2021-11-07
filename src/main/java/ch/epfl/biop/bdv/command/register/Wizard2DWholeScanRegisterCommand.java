@@ -1,5 +1,6 @@
 package ch.epfl.biop.bdv.command.register;
 
+import bdv.TransformEventHandler3D;
 import bdv.tools.brightness.ConverterSetup;
 import bdv.util.BdvHandle;
 import bdv.util.BigWarpHelper;
@@ -26,6 +27,8 @@ import org.scijava.command.CommandModule;
 import org.scijava.command.CommandService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import org.scijava.ui.behaviour.BehaviourMap;
+import org.scijava.ui.behaviour.ClickBehaviour;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.util.Behaviours;
 import org.slf4j.Logger;
@@ -44,11 +47,12 @@ import sc.fiji.bdvpg.sourceandconverter.display.BrightnessAutoAdjuster;
 import sc.fiji.bdvpg.sourceandconverter.register.BigWarpLauncher;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceRealTransformer;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceTransformHelper;
-import sc.fiji.persist.ScijavaGsonHelper;
 
 import javax.swing.*;
+import javax.swing.plaf.basic.BasicArrowButton;
+import java.awt.*;
 import java.util.*;
-import java.util.function.BiConsumer;
+import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -94,19 +98,19 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
     @Parameter(label = "Remove images z-offsets")
     boolean removeZOffset = true;
 
-    @Parameter(label = "Center moving image with fixed image")
+    @Parameter(label = "0 - Center moving image with fixed image")
     boolean centerMovingImage = true;
 
-    @Parameter(label = "0 - Manual rigid registration")
+    @Parameter(label = "1 - Manual rigid registration")
     boolean manualRigidRegistration = true;
 
-    @Parameter(label = "1 - Auto affine registration")
+    @Parameter(label = "2 - Auto affine registration")
     boolean automatedAffineRegistration = true;
 
-    @Parameter(label = "2 - Semi auto spline registration")
+    @Parameter(label = "3 - Semi auto spline registration")
     boolean automatedSplineRegistration = true;
 
-    @Parameter(label = "3 - Manual spline registration (BigWarp)")
+    @Parameter(label = "4 - Manual spline registration (BigWarp)")
     boolean manualSplineRegistration = true;
 
     @Parameter(label = "Pixel size for coarse registration in mm (default 0.01)", style = "format:0.000", persist = false)
@@ -195,7 +199,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
         addCardPanelCommons();
 
         if (manualRigidRegistration) {
-            addCardPanelRigidRegistration();
+            addManualRigidRegistration();
             while (manualRegistrationStopped == false) {
                 try {
                     Thread.sleep(300);
@@ -484,7 +488,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
         bdvh.getCardPanel().addCard("WSI Registration Wizard", panel, true);
     }
 
-    private void addCardPanelRigidRegistration() {
+    private void addManualRigidRegistration() {
 
         manualRegistrationStarter = new ManualRegistrationStarter(bdvh, moving);
         manualRegistrationStopper = new ManualRegistrationStopper(manualRegistrationStarter, SourceTransformHelper::mutate);
@@ -521,15 +525,47 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
 
         JPanel cardpanel = box(false,
                 new JLabel("Perform manual rigid registration"),
+                box(false,
+                    new JLabel("- Right click drag = pan"),
+                    new JLabel("- UP key = zoom"),
+                    new JLabel("- DOWN key = unzoom"),
+                    new JLabel("- 'Z' then LEFT or RIGHT key = rotate")),
+                //getNavigationPad(bdvh, initialView),
                 restoreView,
                 confirmationButton);
 
         bdvh.getSplitPanel().setCollapsed(false);
         bdvh.getCardPanel().setCardExpanded(DEFAULT_SOURCEGROUPS_CARD, false);
         bdvh.getCardPanel().setCardExpanded(DEFAULT_VIEWERMODES_CARD, false);
-        //bdvh.getCardPanel().setCardExpanded(DEFAULT_SOURCES_CARD, false);
+        bdvh.getCardPanel().setCardExpanded(DEFAULT_SOURCES_CARD, false);
         bdvh.getCardPanel().addCard("Manual rigid registration", cardpanel, true);
     }
+/*
+    public static JPanel getNavigationPad(BdvHandle bdvh, AffineTransform3D iniView) {
+        JPanel padPanel = new JPanel(new GridLayout(0,3));
+
+        Function<String, ClickBehaviour> f = (key) ->
+                ((ClickBehaviour) bdvh.getTriggerbindings().getConcatenatedBehaviourMap().get(key));
+        BehaviourMap map = bdvh.getTriggerbindings()
+                .getConcatenatedBehaviourMap();
+
+        JButton centerButton = new JButton("O");
+        centerButton.addActionListener((e) -> bdvh.getViewerPanel().state().setViewerTransform(iniView));
+
+        JButton right = new BasicArrowButton(BasicArrowButton.EAST);
+        right.addActionListener((e) -> f.apply());
+
+        padPanel.add(new JLabel(""));
+        padPanel.add(new BasicArrowButton(BasicArrowButton.NORTH));
+        padPanel.add(new JLabel(""));
+        padPanel.add(new BasicArrowButton(BasicArrowButton.WEST));
+        padPanel.add(centerButton);
+        padPanel.add(right);
+        padPanel.add(new JLabel(""));
+        padPanel.add(new BasicArrowButton(BasicArrowButton.SOUTH));
+        padPanel.add(new JLabel(""));
+        return padPanel;
+    }*/
 
     private void removeCardPanelRigidRegistration() {
         CardHelper.restoreCardState(bdvh, iniCardState);
