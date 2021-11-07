@@ -2,6 +2,8 @@ package ch.epfl.biop.bdv.gui.graphicalhandle;
 
 import bdv.viewer.SynchronizedViewerState;
 import net.imglib2.RealPoint;
+import org.scijava.ui.behaviour.util.Behaviours;
+import org.scijava.ui.behaviour.util.TriggerBehaviourBindings;
 
 import java.awt.*;
 import java.util.function.Supplier;
@@ -18,12 +20,15 @@ public class XYRectangleGraphicalHandle extends GraphicalHandle{
 
     Stroke normalStroke = new BasicStroke();
 
-    public XYRectangleGraphicalHandle(final SynchronizedViewerState state,
+    public XYRectangleGraphicalHandle(Behaviours behaviours,
+                                      TriggerBehaviourBindings bindings,
+                                      String nameMap,
+                                      final SynchronizedViewerState state,
                                       Supplier<RealPoint> globalCoord,
                                       Supplier<Double> sizeX,
                                       Supplier<Double> sizeY,
                                       Supplier<Integer[]> color) {
-        super(null, null, null, null);
+        super(null, behaviours, bindings, nameMap);
         this.state = state;
         this.globalCoord = globalCoord;
         this.sizeX = sizeX;
@@ -35,16 +40,29 @@ public class XYRectangleGraphicalHandle extends GraphicalHandle{
         ptd = new RealPoint(3);
     }
 
+    public XYRectangleGraphicalHandle(final SynchronizedViewerState state,
+                                      Supplier<RealPoint> globalCoord,
+                                      Supplier<Double> sizeX,
+                                      Supplier<Double> sizeY,
+                                      Supplier<Integer[]> color) {
+        this(null, null, null, state, globalCoord, sizeX, sizeY, color);
+    }
+
+    Integer r = 4;
+
     @Override
     protected void enabledDraw(Graphics2D g) {
-        Integer r = 4;
         RealPoint pt = new RealPoint(3);
         RealPoint ori = globalCoord.get();
         state.getViewerTransform().apply(ori, pt);
         int[] centerPos = new int[]{(int) pt.getDoublePosition(0), (int) pt.getDoublePosition(1), 0};
         Integer[] c = color.get();
         g.setColor(new Color(c[0], c[1], c[2], c[3]));
-        g.fillOval(centerPos[0] - r, centerPos[1] - r, 2*r, 2*r);
+        double displayR = r;
+        if (this.mouseAbove) {
+            displayR= displayR*1.6;
+        }
+        g.fillOval((int) (centerPos[0] - displayR), (int) (centerPos[1] - displayR), (int) (2*displayR), (int) (2*displayR));
 
         double sx = sizeX.get();
         double sy = sizeY.get();
@@ -85,12 +103,16 @@ public class XYRectangleGraphicalHandle extends GraphicalHandle{
 
     @Override
     protected void disabledDraw(Graphics2D g) {
-        // Don't draw
+        // No change
+        enabledDraw(g);
     }
 
     @Override
     boolean isPresentAt(int x, int y) {
-        return false;
+        int[] pos = getScreenCoordinates();
+        double r = (double)(this.r);
+        double d = (pos[0]-x)*(pos[0]-x)+(pos[1]-y)*(pos[1]-y);
+        return d<(r*r);
     }
 
     @Override

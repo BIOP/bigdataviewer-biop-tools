@@ -10,6 +10,8 @@ import org.scijava.ui.behaviour.DragBehaviour;
 import org.scijava.ui.behaviour.util.Behaviours;
 
 import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
 
 /**
  *
@@ -45,7 +47,7 @@ import java.awt.*;
  *
  */
 
-public class PointsSelectorOverlay extends BdvOverlay {
+public class PointsSelectorOverlay extends BdvOverlay implements MouseMotionListener {
 
     final ViewerPanel viewer;
 
@@ -70,6 +72,16 @@ public class PointsSelectorOverlay extends BdvOverlay {
 
     @Override
     public void setCanvasSize( final int width, final int height ) {
+    }
+
+    @Override
+    public void mouseDragged(MouseEvent e) {
+        psb.mouseDragged(e);
+    }
+
+    @Override
+    public void mouseMoved(MouseEvent e) {
+        psb.mouseMoved(e);
     }
 
     /**

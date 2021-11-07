@@ -8,15 +8,18 @@ import bdv.viewer.ViewerState;
 import ch.epfl.biop.bdv.gui.card.CardHelper;
 import ch.epfl.biop.bdv.gui.graphicalhandle.CircleGraphicalHandle;
 import ch.epfl.biop.bdv.gui.graphicalhandle.GraphicalHandle;
+import ch.epfl.biop.bdv.gui.graphicalhandle.GraphicalHandleListener;
 import net.imglib2.RealPoint;
 import net.imglib2.realtransform.AffineTransform3D;
 import org.scijava.ui.behaviour.Behaviour;
 import org.scijava.ui.behaviour.ClickBehaviour;
+import org.scijava.ui.behaviour.DragBehaviour;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.util.Behaviours;
 import org.scijava.ui.behaviour.util.TriggerBehaviourBindings;
 
 import javax.swing.*;
+import java.awt.event.MouseEvent;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -39,7 +42,7 @@ import static ch.epfl.biop.bdv.command.userdefinedregion.RectangleSelectorBehavi
  * @author Nicolas Chiaruttini, BIOP, EPFL, 2020
  */
 
-public class PointsSelectorBehaviour {
+public class PointsSelectorBehaviour implements GraphicalHandleListener {
 
     final public static String POINTS_SELECTOR_MAP = "points-selector";
 
@@ -68,6 +71,8 @@ public class PointsSelectorBehaviour {
     final Function<RealPoint, GraphicalHandle> graphicalHandleSupplier;
 
     Map<RealPoint, GraphicalHandle> ptToGraphicalHandle = new ConcurrentHashMap<>();
+
+    volatile boolean userDone = false;
 
     /**
      * Construct a SourceSelectorBehaviour
@@ -100,12 +105,14 @@ public class PointsSelectorBehaviour {
         JButton navigationButton = new JButton("Enable navigation");
         navigationButton.addActionListener((e) -> {
             if (navigationEnabled) {
+                ptToGraphicalHandle.values().forEach(graphicalHandle -> graphicalHandle.enable());
                 triggerbindings.addBehaviourMap(POINTS_SELECTOR_MAP, behaviours.getBehaviourMap());
                 triggerbindings.addInputTriggerMap(POINTS_SELECTOR_MAP, behaviours.getInputTriggerMap(), "transform", "bdv");
                 bdvh.getKeybindings().addInputMap("blocking-source-selector_rectangle", new InputMap(), "bdv", "navigation");
                 navigationEnabled = false;
                 navigationButton.setText("Re-enable navigation");
             } else {
+                ptToGraphicalHandle.values().forEach(graphicalHandle -> graphicalHandle.disable());
                 triggerbindings.removeBehaviourMap( POINTS_SELECTOR_MAP );
                 triggerbindings.removeInputTriggerMap( POINTS_SELECTOR_MAP );
                 bdvh.getKeybindings().removeInputMap("blocking-source-selector");
@@ -197,6 +204,8 @@ public class PointsSelectorBehaviour {
         bdvh.getCardPanel().setCardExpanded(DEFAULT_VIEWERMODES_CARD, false);
         bdvh.getCardPanel().setCardExpanded(DEFAULT_SOURCES_CARD, false);
         bdvh.getCardPanel().addCard(userCardKey, pane, true);
+
+        bdvh.getViewerPanel().getDisplay().addHandler(pointsOverlay);
     }
 
     public void addBehaviour(Behaviour behaviour, String behaviourName, String[] triggers) {
@@ -215,16 +224,37 @@ public class PointsSelectorBehaviour {
 
         bdvh.getCardPanel().removeCard(userCardKey);
         CardHelper.restoreCardState(bdvh, iniCardState);
+
+        bdvh.getViewerPanel().getDisplay().removeHandler(pointsOverlay);
     }
 
     private volatile List<RealPoint> points = new ArrayList<>();
 
-    List<RealPoint> getPoints() {
-        return new ArrayList<>(points);
-    }
-
     void addPoint(RealPoint newPt) {
-        ptToGraphicalHandle.put(newPt, graphicalHandleSupplier.apply(newPt));
+        GraphicalHandle gh = graphicalHandleSupplier.apply(newPt);
+
+        gh.getBehaviours().behaviour(new DragBehaviour() {
+            @Override
+            public void init(int x, int y) {
+                bdvh.getViewerPanel().displayToGlobalCoordinates(x,y,newPt);
+                bdvh.getViewerPanel().requestRepaint();
+            }
+
+            @Override
+            public void drag(int x, int y) {
+                bdvh.getViewerPanel().displayToGlobalCoordinates(x,y,newPt);
+                bdvh.getViewerPanel().requestRepaint();
+            }
+
+            @Override
+            public void end(int x, int y) {
+                bdvh.getViewerPanel().displayToGlobalCoordinates(x,y,newPt);
+                bdvh.getViewerPanel().requestRepaint();
+            }
+        }, "drag_point", "button1");
+
+        gh.addGraphicalHandleListener(this);
+        ptToGraphicalHandle.put(newPt, gh);
         points.add(newPt);
     }
 
@@ -233,13 +263,10 @@ public class PointsSelectorBehaviour {
     }
 
     void clearPoints() {
+        ptToGraphicalHandle.values().forEach(gh -> gh.removeGraphicalHandleListener(this));
         ptToGraphicalHandle.clear();
         points.clear();
         bdvh.getBdvHandle().getViewerPanel().requestRepaint();
-    }
-
-    public List<RealPoint> waitForSelection() {
-        return waitForSelection(-1);
     }
 
     public List<RealPoint> waitForSelection(int timeOutInMs) {
@@ -267,13 +294,49 @@ public class PointsSelectorBehaviour {
         return points;
     }
 
-    volatile boolean userDone = false;
-
     private boolean isUserDone() {
         return userDone;
     }
 
     public static Integer[] defaultLandmarkColor = new Integer[]{200, 240, 24, 128};
+
+    @Override
+    public void disabled(GraphicalHandle gh) {
+
+    }
+
+    @Override
+    public void enabled(GraphicalHandle gh) {
+
+    }
+
+    @Override
+    public void hover_in(GraphicalHandle gh) {
+
+    }
+
+    @Override
+    public void hover_out(GraphicalHandle gh) {
+
+    }
+
+    @Override
+    public void created(GraphicalHandle gh) {
+
+    }
+
+    @Override
+    public void removed(GraphicalHandle gh) {
+
+    }
+
+    public void mouseDragged(MouseEvent e) {
+        ptToGraphicalHandle.values().forEach(gh -> gh.mouseDragged(e));
+    }
+
+    public void mouseMoved(MouseEvent e) {
+        ptToGraphicalHandle.values().forEach(gh -> gh.mouseMoved(e));
+    }
 
     public class DefaultCircularHandle extends CircleGraphicalHandle {
 

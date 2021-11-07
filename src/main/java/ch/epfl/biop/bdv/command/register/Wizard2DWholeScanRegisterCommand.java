@@ -11,7 +11,6 @@ import ch.epfl.biop.bdv.gui.card.CardHelper;
 import ch.epfl.biop.bdv.gui.graphicalhandle.GraphicalHandle;
 import ch.epfl.biop.bdv.gui.graphicalhandle.XYRectangleGraphicalHandle;
 import ij.IJ;
-import ij.gui.WaitForUserDialog;
 import net.imglib2.FinalRealInterval;
 import net.imglib2.Interval;
 import net.imglib2.RealInterval;
@@ -144,9 +143,8 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
 
         bdvh = SourceAndConverterServices.getBdvDisplayService().getNewBdv();
 
-        //waitForUser.accept("Prepare your bigdataviewer window","Fit the image onto the bdv window.");
-        if ((!automatedAffineRegistration)&&(!automatedSplineRegistration)&&(!manualSplineRegistration)) {
-            System.err.println("You need to select at least one sort of registration!");
+        if ((!manualRigidRegistration)&&(!automatedAffineRegistration)&&(!automatedSplineRegistration)&&(!manualSplineRegistration)) {
+            IJ.error("You need to select at least one sort of registration!");
             return;
         }
 

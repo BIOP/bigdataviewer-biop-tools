@@ -9,10 +9,13 @@ import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import org.scijava.ui.behaviour.io.InputTriggerConfig;
+import org.scijava.ui.behaviour.util.Behaviours;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Function;
 
 @Plugin(type = Command.class, menuPath = ScijavaBdvDefaults.RootMenu+"BDV>Get Bdv User Points")
@@ -54,6 +57,9 @@ public class GetUserPointsCommand implements Command {
                 "graphicalHandleSupplier",
                 (Function<RealPoint, GraphicalHandle>) realPoint ->
                         new XYRectangleGraphicalHandle(
+                                new Behaviours(new InputTriggerConfig()),
+                                bdvh.getTriggerbindings(),
+                                UUID.randomUUID().toString(),
                                 bdvh.getViewerPanel().state(),
                                 () -> realPoint,
                                 () -> 60d,
