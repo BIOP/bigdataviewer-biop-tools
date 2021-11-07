@@ -29,10 +29,10 @@ public class RegisterQuPathImagesCommand implements Command {
 
     private static Logger logger = LoggerFactory.getLogger(RegisterQuPathImagesCommand.class);
 
-    @Parameter(label = "Fixed source from a QuPath generated dataset (see Open QuPath Project)")
+    @Parameter(label = "Fixed source (from a QuPath dataset)")
     SourceAndConverter fixed_source;
 
-    @Parameter(label = "Moving source from a QuPath generated dataset (see Open QuPath Project)")
+    @Parameter(label = "Moving source (from a QuPath dataset)")
     SourceAndConverter moving_source;
 
     @Parameter

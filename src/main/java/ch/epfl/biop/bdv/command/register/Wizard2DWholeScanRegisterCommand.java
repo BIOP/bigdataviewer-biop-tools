@@ -384,8 +384,6 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
 
     private void waitForBigWarp(BigWarp bw) throws InterruptedException {
 
-        //waitForUser.accept("Manual spline registration", "Please perform carefully your registration then press ok.");
-
         bw.getViewerFrameP().addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
             public void windowClosing(java.awt.event.WindowEvent windowEvent) {
@@ -410,7 +408,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
         bw.getViewerFrameP().getSplitPanel().setCollapsed(false);
         bw.getViewerFrameP().getCardPanel().setCardExpanded(DEFAULT_SOURCEGROUPS_CARD, false);
         bw.getViewerFrameP().getCardPanel().setCardExpanded(DEFAULT_VIEWERMODES_CARD, false);
-        bw.getViewerFrameP().getCardPanel().setCardExpanded(DEFAULT_SOURCES_CARD, true);
+        //bw.getViewerFrameP().getCardPanel().setCardExpanded(DEFAULT_SOURCES_CARD, true);
         bw.getViewerFrameP().getCardPanel().addCard("BigWarp Registration", cardpanelP, true);
 
         JButton confirmQ = new JButton("Click to finish");
@@ -426,7 +424,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
         bw.getViewerFrameQ().getSplitPanel().setCollapsed(false);
         bw.getViewerFrameQ().getCardPanel().setCardExpanded(DEFAULT_SOURCEGROUPS_CARD, false);
         bw.getViewerFrameQ().getCardPanel().setCardExpanded(DEFAULT_VIEWERMODES_CARD, false);
-        bw.getViewerFrameQ().getCardPanel().setCardExpanded(DEFAULT_SOURCES_CARD, true);
+        //bw.getViewerFrameQ().getCardPanel().setCardExpanded(DEFAULT_SOURCES_CARD, true);
         bw.getViewerFrameQ().getCardPanel().addCard("BigWarp Registration", cardpanelQ, true);
 
         while (!isBigWarpFinished) {
@@ -442,19 +440,46 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
 
     private void addCardPanelCommons() {
 
-        JButton autoScaleMoving = new JButton("Autoscale B&C (moving)");
+        JButton toggleMoving = new JButton("Hide moving");
+        toggleMoving.addActionListener((e) -> {
+            if (bdvh.getViewerPanel().state().isSourceActive(moving)) {
+                bdvh.getViewerPanel().state().setSourceActive(moving, false);
+                toggleMoving.setText("Show moving");
+            } else {
+                bdvh.getViewerPanel().state().setSourceActive(moving, true);
+                toggleMoving.setText("Hide moving");
+            }
+        });
+
+        JButton toggleFixed = new JButton("Hide fixed");
+        toggleFixed.addActionListener((e) -> {
+            if (bdvh.getViewerPanel().state().isSourceActive(fixed)) {
+                bdvh.getViewerPanel().state().setSourceActive(fixed, false);
+                toggleFixed.setText("Show fixed");
+            } else {
+                bdvh.getViewerPanel().state().setSourceActive(fixed, true);
+                toggleFixed.setText("Hide fixed");
+            }
+        });
+
+        JButton autoScaleMoving = new JButton("Autoscale moving");
         autoScaleMoving.addActionListener((e) -> {
             bdvh.getViewerPanel().showMessage("Autoscaling moving image");
             new BrightnessAutoAdjuster(moving,0).run();
         });
 
-        JButton autoScaleFixed = new JButton("Autoscale B&C (fixed)");
+        JButton autoScaleFixed = new JButton("Autoscale fixed");
         autoScaleFixed.addActionListener((e) -> {
             bdvh.getViewerPanel().showMessage("Autoscaling fixed image");
             new BrightnessAutoAdjuster(fixed,0).run();
         });
 
-        JPanel panel = box(false, autoScaleFixed, autoScaleMoving);
+        JPanel panel = box(false,
+                new JLabel("Show/hide"),
+                box(true, toggleMoving, toggleFixed),
+                new JSeparator(),
+                new JLabel("Autoscale (B&C)"),
+                box(true, autoScaleFixed, autoScaleMoving));
 
         bdvh.getCardPanel().addCard("WSI Registration Wizard", panel, true);
     }
@@ -502,7 +527,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
         bdvh.getSplitPanel().setCollapsed(false);
         bdvh.getCardPanel().setCardExpanded(DEFAULT_SOURCEGROUPS_CARD, false);
         bdvh.getCardPanel().setCardExpanded(DEFAULT_VIEWERMODES_CARD, false);
-        bdvh.getCardPanel().setCardExpanded(DEFAULT_SOURCES_CARD, false);
+        //bdvh.getCardPanel().setCardExpanded(DEFAULT_SOURCES_CARD, false);
         bdvh.getCardPanel().addCard("Manual rigid registration", cardpanel, true);
     }
 
