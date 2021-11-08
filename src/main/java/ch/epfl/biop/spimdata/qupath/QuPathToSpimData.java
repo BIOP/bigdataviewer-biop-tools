@@ -5,6 +5,7 @@ import ch.epfl.biop.bdv.bioformats.bioformatssource.BioFormatsBdvOpener;
 import ch.epfl.biop.bdv.bioformats.imageloader.*;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import ij.IJ;
 import loci.formats.IFormatReader;
 import loci.formats.meta.IMetadata;
 import mpicbg.spim.data.SpimData;
@@ -234,9 +235,11 @@ public class QuPathToSpimData {
 
                     } else {
                         logger.error("Unsupported "+image.serverBuilder.providerClassName+" class name provider");
+                        IJ.log("Unsupported "+image.serverBuilder.providerClassName+" class name provider");
                     }
                 } else {
                     logger.error("Unsupported "+image.serverBuilder.builderType+" server builder");
+                    IJ.log("Unsupported "+image.serverBuilder.builderType+" server builder");
                 }
             });
 
