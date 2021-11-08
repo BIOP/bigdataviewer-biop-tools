@@ -1,14 +1,8 @@
-import bdv.util.BdvHandle;
-import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.bdv.command.exporter.Elliptic3DTransformExporterCommand;
-import ch.epfl.biop.bdv.command.importer.Elliptic3DTransformImporterCommand;
-import ch.epfl.biop.bdv.command.register.SourcesRealTransformCommand;
-import ch.epfl.biop.bdv.command.transform.Elliptic3DTransformCreatorCommand;
-import mpicbg.spim.data.generic.AbstractSpimData;
+import ch.epfl.biop.scijava.command.transform.Elliptic3DTransformExporterCommand;
+import ch.epfl.biop.scijava.command.transform.Elliptic3DTransformImporterCommand;
+import ch.epfl.biop.scijava.command.transform.Elliptic3DTransformCreatorCommand;
 import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
-import sc.fiji.bdvpg.spimdata.importer.SpimDataFromXmlImporter;
 
 import java.util.concurrent.ExecutionException;
 

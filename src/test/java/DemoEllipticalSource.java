@@ -1,7 +1,7 @@
 import bdv.util.BdvHandle;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.bdv.command.transform.Elliptic3DTransformCreatorCommand;
-import ch.epfl.biop.bdv.command.register.SourcesRealTransformCommand;
+import ch.epfl.biop.scijava.command.transform.Elliptic3DTransformCreatorCommand;
+import ch.epfl.biop.scijava.command.source.register.SourcesRealTransformCommand;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;

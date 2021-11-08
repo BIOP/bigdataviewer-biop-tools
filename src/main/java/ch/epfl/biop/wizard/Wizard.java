@@ -11,6 +11,7 @@ import java.util.*;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
+// WIP TODO or to DISCARD
 public class Wizard {
 
     final Map<Integer, CommandInfo> steps;

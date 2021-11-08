@@ -1,7 +1,6 @@
 import bdv.util.BdvHandle;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.bdv.command.exporter.BasicBdvViewToImagePlusExportCommand;
-import ch.epfl.biop.bdv.command.register.Elastix2DAffineRegisterCommand;
+import ch.epfl.biop.scijava.command.bdv.BasicBdvViewToImagePlusExportCommand;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;

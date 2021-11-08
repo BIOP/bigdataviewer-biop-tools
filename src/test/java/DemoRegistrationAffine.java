@@ -6,8 +6,8 @@ import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.bdv.select.SelectedSourcesListener;
 import ch.epfl.biop.bdv.select.SourceSelectorBehaviour;
 import ch.epfl.biop.bdv.select.ToggleListener;
-import ch.epfl.biop.bdv.command.register.Elastix2DAffineRegisterCommand;
-import ch.epfl.biop.bdv.command.register.Elastix2DAffineRegisterServerCommand;
+import ch.epfl.biop.scijava.command.source.register.Elastix2DAffineRegisterCommand;
+import ch.epfl.biop.scijava.command.source.register.Elastix2DAffineRegisterServerCommand;
 import ij.IJ;
 import ij.ImagePlus;
 import mpicbg.spim.data.SpimData;
@@ -25,7 +25,6 @@ import org.scijava.ui.behaviour.ClickBehaviour;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.util.Behaviours;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterAndTimeRange;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceTransformHelper;
 import spimdata.imageplus.SpimDataFromImagePlusGetter;
 
