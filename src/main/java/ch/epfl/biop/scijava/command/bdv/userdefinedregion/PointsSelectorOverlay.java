@@ -62,7 +62,9 @@ public class PointsSelectorOverlay extends BdvOverlay implements MouseMotionList
     }
 
     protected void addSelectionBehaviours(Behaviours behaviours) {
-        behaviours.behaviour( new AddPointBehaviour( RectangleSelectorBehaviour.SET ), "select-set-rectangle", new String[] { "button1" });
+        System.out.println("YO");
+        behaviours.behaviour( new AddGlobalPointBehaviour( ), "add_point_global_hack", new String[] { "shift alt ctrl P" }); // let's hope nobody presses that TODO : fix
+        behaviours.behaviour( new AddPointBehaviour( RectangleSelectorBehaviour.SET ), "add_point_display", new String[] { "button1" });
     }
 
     @Override
@@ -101,6 +103,26 @@ public class PointsSelectorOverlay extends BdvOverlay implements MouseMotionList
             viewer.displayToGlobalCoordinates(x,y, ptGlobalCoordinates);
             viewer.getDisplay().repaint();
             psb.addPoint(ptGlobalCoordinates);
+        }
+
+    }
+
+    /**
+     * Drag Selection Behaviour
+     */
+    class AddGlobalPointBehaviour implements ClickBehaviour {
+
+        public AddGlobalPointBehaviour() {
+        }
+
+        @Override
+        public void click(int x, int y) {
+            RealPoint ptGlobalCoordinates = new RealPoint(3);
+            ptGlobalCoordinates.setPosition(x/1000.0,0);
+            ptGlobalCoordinates.setPosition(y/1000.0,1);
+            ptGlobalCoordinates.setPosition(0,2);
+            psb.addPoint(ptGlobalCoordinates);
+            viewer.getDisplay().repaint();
         }
 
     }

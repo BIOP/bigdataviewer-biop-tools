@@ -26,6 +26,7 @@ import org.scijava.command.CommandModule;
 import org.scijava.command.CommandService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import org.scijava.ui.behaviour.ClickBehaviour;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.util.Behaviours;
 import org.slf4j.Logger;
@@ -571,6 +572,46 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
     }
 
     private void getUserLandmarks() throws Exception {
+
+        JLabel addGridLabel = new JLabel("Add landmark grid");
+        JLabel gridSpacingLabel = new JLabel("Spacing (um)");
+        JTextField gridSpacing = new JTextField();
+        gridSpacing.setEditable(true);
+        gridSpacing.setText(Double.toString(patchSize_um));
+        JButton addPoints = new JButton("Add landmark grid");
+        addPoints.addActionListener((e) -> {
+            try {
+                System.out.println("IN action listener");
+                double spacing_mm = Double.valueOf(gridSpacing.getText())/1000.0;
+                if (spacing_mm>(patchSize_mm / 10.0)) {
+
+                    double xStart = cx;
+                    while (xStart>topLeftX) xStart-=spacing_mm;
+
+                    double yStart = cy;
+                    while (yStart>topLeftY) yStart-=spacing_mm;
+
+                    for (double xPos = xStart+spacing_mm;xPos<bottomRightX;xPos+=spacing_mm) {
+                        for (double yPos = yStart+spacing_mm;yPos<bottomRightY;yPos+=spacing_mm) {
+                            System.out.println("Add point "+xPos+":"+yPos);
+                            ((ClickBehaviour)(bdvh.getTriggerbindings()
+                                    .getConcatenatedBehaviourMap()
+                                    .get("add_point_global_hack")))
+                                    .click((int) (xPos*1000), (int)(yPos*1000));
+                        }
+                    }
+                } else {
+                    IJ.log("spacing too low");
+                }
+
+            } catch (Exception parseException) {
+                IJ.log(parseException.getMessage());
+            }
+        });
+
+        JPanel addGridCard = box(false, addGridLabel, box(true, gridSpacingLabel, gridSpacing), addPoints);
+        bdvh.getCardPanel().addCard("Place landmark grid", addGridCard, true);
+
         landmarks = (List<RealPoint>) cs
                 .run(GetUserPointsCommand.class, true,
                         "messageForUser", "Select the position of the landmarks that will be used for the registration (at least 4).",
@@ -588,6 +629,9 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
                                         () -> PointsSelectorBehaviour.defaultLandmarkColor )
                         )
                 .get().getOutput("pts");
+
+
+        bdvh.getCardPanel().removeCard("Place landmark grid");
     }
 
     private void getUserRectangle() throws Exception {
