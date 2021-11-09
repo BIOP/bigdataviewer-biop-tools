@@ -75,6 +75,11 @@ public class RegisterQuPathImagesEditCommand implements Command {
 
                 RealTransform rt = performBigWarpEdition(result);
 
+                if (rt == null) {
+                    IJ.log("Edition cancelled! Click the confirm button in BigWarp if you want to save your result. ");
+                    return;
+                }
+
                 RealTransform transformSequence;
 
                 // Because QuPath works in pixel coordinates and bdv playground in real space coordinates
@@ -119,6 +124,8 @@ public class RegisterQuPathImagesEditCommand implements Command {
         }
 
     }
+
+    boolean canceled = false;
 
     private RealTransform performBigWarpEdition(File result) throws Exception {
         JsonReader reader = new JsonReader(new FileReader(result));
@@ -165,6 +172,8 @@ public class RegisterQuPathImagesEditCommand implements Command {
         waitForBigWarp(bwl.getBigWarp());
         bwl.getBigWarp().closeAll();
 
+        if (canceled) return null;
+
         return bwl.getBigWarp().getBwTransform().getTransformation().copy();
     }
 
@@ -175,21 +184,30 @@ public class RegisterQuPathImagesEditCommand implements Command {
         bw.getViewerFrameP().addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
             public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                canceled = true;
                 isBigWarpFinished = true;
             }
         });
         bw.getViewerFrameQ().addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
             public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                canceled = true;
                 isBigWarpFinished = true;
             }
         });
 
-        JButton confirmP = new JButton("Click to finish");
+        JButton confirmP = new JButton("Save and close");
         confirmP.addActionListener((e) -> isBigWarpFinished = true);
+
+        JButton cancelButtonP = new JButton("Cancel and close");
+        cancelButtonP.addActionListener((e) -> {
+            canceled = true;
+            isBigWarpFinished = true;
+        });
 
         JPanel cardpanelP = box(false,
                 new JLabel("BigWarp registration"),
+                cancelButtonP,
                 confirmP
         );
 
@@ -197,15 +215,22 @@ public class RegisterQuPathImagesEditCommand implements Command {
         bw.getViewerFrameP().getCardPanel().setCardExpanded(DEFAULT_SOURCEGROUPS_CARD, false);
         bw.getViewerFrameP().getCardPanel().setCardExpanded(DEFAULT_VIEWERMODES_CARD, false);
         //bw.getViewerFrameP().getCardPanel().setCardExpanded(DEFAULT_SOURCES_CARD, true);
-        bw.getViewerFrameP().getCardPanel().addCard("BigWarp Registration", cardpanelP, true);
+        bw.getViewerFrameP().getCardPanel().addCard("Warpy transformation edition", cardpanelP, true);
 
-        JButton confirmQ = new JButton("Click to finish");
+        JButton confirmQ = new JButton("Save and close");
         confirmQ.addActionListener((e) -> {
+            isBigWarpFinished = true;
+        });
+
+        JButton cancelButtonQ = new JButton("Cancel and close");
+        cancelButtonQ.addActionListener((e) -> {
+            canceled = true;
             isBigWarpFinished = true;
         });
 
         JPanel cardpanelQ = box(false,
                 new JLabel("BigWarp registration"),
+                cancelButtonQ,
                 confirmQ
         );
 
@@ -213,7 +238,7 @@ public class RegisterQuPathImagesEditCommand implements Command {
         bw.getViewerFrameQ().getCardPanel().setCardExpanded(DEFAULT_SOURCEGROUPS_CARD, false);
         bw.getViewerFrameQ().getCardPanel().setCardExpanded(DEFAULT_VIEWERMODES_CARD, false);
         //bw.getViewerFrameQ().getCardPanel().setCardExpanded(DEFAULT_SOURCES_CARD, true);
-        bw.getViewerFrameQ().getCardPanel().addCard("BigWarp Registration", cardpanelQ, true);
+        bw.getViewerFrameQ().getCardPanel().addCard("Warpy transformation edition", cardpanelQ, true);
 
         while (!isBigWarpFinished) {
             Thread.sleep(100); // Wait for user.. dirty but ok.

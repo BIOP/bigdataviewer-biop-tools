@@ -108,14 +108,17 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
     @Parameter(label = "4 - Manual spline registration (BigWarp)")
     boolean manualSplineRegistration = true;
 
-    @Parameter(label = "Pixel size for coarse registration in mm (default 0.01)", style = "format:0.000", persist = false)
-    double coarsePixelSize_mm = 0.01;
+    @Parameter(label = "Pixel size for coarse registration in microns (default 10)", style = "format:0.00", persist = false)
+    double coarsePixelSize_um = 10;
+    double coarsePixelSize_mm;
 
-    @Parameter(label = "Patch size for registration in mm (default 0.5)", style = "format:0.000", persist = false)
-    double patchSize_mm = 0.5;
+    @Parameter(label = "Patch size for registration in microns (default 500)", style = "format:0.0", persist = false)
+    double patchSize_um = 500;
+    double patchSize_mm;
 
-    @Parameter(label = "Pixel size for precise patch registration in mm (default 0.001)", style = "format:0.000", persist = false)
-    double precisePixelSize_mm = 0.001;
+    @Parameter(label = "Pixel size for precise patch registration in microns (default 1)", style = "format:0.00", persist = false)
+    double precisePixelSize_um = 1;
+    double precisePixelSize_mm;
 
     @Parameter(label = "Number of iterations for each scale (default 100)")
     int maxIterationNumberPerScale = 100;
@@ -143,13 +146,13 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
 
     private boolean manualRegistrationStopped = false;
 
-    @Parameter
-    Context ctx;
-
     AffineTransform3D preTransfromedMoving;
 
     @Override
     public void run() {
+        coarsePixelSize_mm = coarsePixelSize_um / 1000.00;
+        patchSize_mm = patchSize_um / 1000.00;
+        precisePixelSize_mm = precisePixelSize_um / 1000.00;
 
         bdvh = SourceAndConverterServices.getBdvDisplayService().getNewBdv();
 
