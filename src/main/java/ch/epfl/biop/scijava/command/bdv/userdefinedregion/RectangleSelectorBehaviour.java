@@ -83,11 +83,6 @@ public class RectangleSelectorBehaviour {
         behaviours = new Behaviours( new InputTriggerConfig(), "bdv" );
         initialView = bdvh.getViewerPanel().state().getViewerTransform();
 
-        JButton restoreView = new JButton("Restore initial view");
-        restoreView.addActionListener((e)-> {
-            bdvh.getViewerPanel().state().setViewerTransform(initialView);
-        });
-
         JButton navigationButton = new JButton("Enable navigation");
         navigationButton.addActionListener((e) -> {
             if (navigationEnabled) {
@@ -120,9 +115,9 @@ public class RectangleSelectorBehaviour {
         });
 
         if (restoreInitialRectangle== null) {
-            pane = box(false, new JLabel(message), box(false, navigationButton, restoreView), confirmationButton);
+            pane = box(false, new JLabel(message), box(false, navigationButton), confirmationButton);
         } else {
-            pane = box(false, new JLabel(message), box(false, navigationButton, restoreView), restoreInitialRectangle, confirmationButton);
+            pane = box(false, new JLabel(message), box(false, navigationButton), restoreInitialRectangle, confirmationButton);
         }
     }
 

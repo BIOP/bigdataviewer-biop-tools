@@ -5,6 +5,7 @@ import bdv.viewer.SourceAndConverter;
 import bdv.viewer.ViewerPanel;
 import ch.epfl.biop.bdv.select.SourceSelectorOverlay;
 import net.imglib2.RealPoint;
+import org.scijava.ui.behaviour.Behaviour;
 import org.scijava.ui.behaviour.ClickBehaviour;
 import org.scijava.ui.behaviour.DragBehaviour;
 import org.scijava.ui.behaviour.util.Behaviours;
@@ -62,8 +63,7 @@ public class PointsSelectorOverlay extends BdvOverlay implements MouseMotionList
     }
 
     protected void addSelectionBehaviours(Behaviours behaviours) {
-        System.out.println("YO");
-        behaviours.behaviour( new AddGlobalPointBehaviour( ), "add_point_global_hack", new String[] { "shift alt ctrl P" }); // let's hope nobody presses that TODO : fix
+        behaviours.behaviour( new AddGlobalPointBehaviour(viewer, psb ), "add_point_global_hack", new String[] { "shift alt ctrl P" }); // let's hope nobody presses that TODO : fix
         behaviours.behaviour( new AddPointBehaviour( RectangleSelectorBehaviour.SET ), "add_point_display", new String[] { "button1" });
     }
 
@@ -110,17 +110,21 @@ public class PointsSelectorOverlay extends BdvOverlay implements MouseMotionList
     /**
      * Drag Selection Behaviour
      */
-    class AddGlobalPointBehaviour implements ClickBehaviour {
+    public static class AddGlobalPointBehaviour implements Behaviour {
 
-        public AddGlobalPointBehaviour() {
+        public AddGlobalPointBehaviour(ViewerPanel viewer, PointsSelectorBehaviour psb) {
+            this.viewer = viewer;
+            this.psb = psb;
         }
 
-        @Override
-        public void click(int x, int y) {
+        final ViewerPanel viewer;
+        final PointsSelectorBehaviour psb;
+
+        public void addGlobalPoint(double x, double y, double z) {
             RealPoint ptGlobalCoordinates = new RealPoint(3);
-            ptGlobalCoordinates.setPosition(x/1000.0,0);
-            ptGlobalCoordinates.setPosition(y/1000.0,1);
-            ptGlobalCoordinates.setPosition(0,2);
+            ptGlobalCoordinates.setPosition(x,0);
+            ptGlobalCoordinates.setPosition(y,1);
+            ptGlobalCoordinates.setPosition(z,2);
             psb.addPoint(ptGlobalCoordinates);
             viewer.getDisplay().repaint();
         }

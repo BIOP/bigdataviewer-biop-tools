@@ -18,7 +18,7 @@ public class XYRectangleGraphicalHandle extends GraphicalHandle{
 
     RealPoint pta, ptb, ptc, ptd;
 
-    Stroke normalStroke = new BasicStroke();
+    Stroke normalStroke = new BasicStroke(2.5f);
 
     public XYRectangleGraphicalHandle(Behaviours behaviours,
                                       TriggerBehaviourBindings bindings,

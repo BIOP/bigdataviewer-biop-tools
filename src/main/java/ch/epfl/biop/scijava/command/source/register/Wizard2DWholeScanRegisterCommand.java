@@ -1,24 +1,30 @@
 package ch.epfl.biop.scijava.command.source.register;
 
 import bdv.tools.brightness.ConverterSetup;
-import bdv.util.BdvHandle;
-import bdv.util.BigWarpHelper;
+import bdv.util.*;
+import bdv.viewer.Interpolation;
 import bdv.viewer.SourceAndConverter;
 import bigwarp.BigWarp;
+import ch.epfl.biop.bdv.select.SourceSelectorBehaviour;
 import ch.epfl.biop.scijava.command.bdv.userdefinedregion.GetUserPointsCommand;
 import ch.epfl.biop.scijava.command.bdv.userdefinedregion.GetUserRectangleCommand;
 import ch.epfl.biop.scijava.command.bdv.userdefinedregion.PointsSelectorBehaviour;
 import ch.epfl.biop.bdv.gui.card.CardHelper;
 import ch.epfl.biop.bdv.gui.graphicalhandle.GraphicalHandle;
 import ch.epfl.biop.bdv.gui.graphicalhandle.XYRectangleGraphicalHandle;
+import ch.epfl.biop.scijava.command.bdv.userdefinedregion.PointsSelectorOverlay;
 import ij.IJ;
 import jitk.spline.ThinPlateR2LogRSplineKernelTransform;
 import net.imglib2.FinalRealInterval;
 import net.imglib2.Interval;
 import net.imglib2.RealInterval;
 import net.imglib2.RealPoint;
+import net.imglib2.img.array.ArrayImg;
+import net.imglib2.img.array.ArrayImgs;
+import net.imglib2.img.basictypeaccess.array.ByteArray;
 import net.imglib2.realtransform.*;
 import net.imglib2.realtransform.inverse.WrappedIterativeInvertibleRealTransform;
+import net.imglib2.type.numeric.integer.ByteType;
 import org.scijava.Context;
 import org.scijava.ItemIO;
 import org.scijava.ItemVisibility;
@@ -35,6 +41,10 @@ import sc.fiji.bdvpg.bdv.BdvHandleHelper;
 import sc.fiji.bdvpg.bdv.ManualRegistrationStarter;
 import sc.fiji.bdvpg.bdv.ManualRegistrationStopper;
 import sc.fiji.bdvpg.bdv.navigate.ViewerTransformAdjuster;
+import sc.fiji.bdvpg.bdv.supplier.BdvSupplierHelper;
+import sc.fiji.bdvpg.bdv.supplier.IBdvSupplier;
+import sc.fiji.bdvpg.bdv.supplier.biop.BiopBdvSupplier;
+import sc.fiji.bdvpg.bdv.supplier.biop.BiopSerializableBdvOptions;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 import sc.fiji.bdvpg.scijava.services.SourceAndConverterBdvDisplayService;
@@ -155,7 +165,8 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
         patchSize_mm = patchSize_um / 1000.00;
         precisePixelSize_mm = precisePixelSize_um / 1000.00;
 
-        bdvh = SourceAndConverterServices.getBdvDisplayService().getNewBdv();
+        bdvh = new WizardBdvSupplier().get(); //
+        SourceAndConverterServices.getBdvDisplayService().registerBdvHandle(bdvh);
 
         if ((!manualRigidRegistration)&&(!automatedAffineRegistration)&&(!automatedSplineRegistration)&&(!manualSplineRegistration)) {
             IJ.error("You need to select at least one sort of registration!");
@@ -431,7 +442,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
         bw.getViewerFrameQ().getCardPanel().addCard("BigWarp Registration", cardpanelQ, true);
 
         while (!isBigWarpFinished) {
-            Thread.sleep(100); // Wait for user.. dirty but ok.
+            Thread.sleep(100); // Wait for user.. dirty but working.
         }
 
     }
@@ -441,8 +452,17 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
     ManualRegistrationStarter manualRegistrationStarter;
     ManualRegistrationStopper manualRegistrationStopper;
 
-    private void addCardPanelCommons() {
+    AffineTransform3D iniView;
 
+    private void addCardPanelCommons() {
+        iniView = new AffineTransform3D();
+
+        bdvh.getViewerPanel().state().getViewerTransform(iniView);
+
+        JButton restoreView = new JButton("Restore initial view");
+        restoreView.addActionListener((e) -> bdvh.getViewerPanel().state().setViewerTransform(iniView));
+
+                //getNavigationPad(bdvh, initialView)
         JButton toggleMoving = new JButton("Hide moving");
         toggleMoving.addActionListener((e) -> {
             if (bdvh.getViewerPanel().state().isSourceActive(moving)) {
@@ -478,10 +498,14 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
         });
 
         JPanel panel = box(false,
-                new JLabel("Show/hide"),
+                new JLabel("BDV Navigation"),
+                new JLabel("- Left click drag > Rotate"),
+                new JLabel("- Right click drag > Pan"),
+                new JLabel("- UP/mouse wheel > Zoom"),
+                new JLabel("- DOWN/mouse wheel > Unzoom"),
+                new JLabel("- Shift+Z > Ortho"),
+                restoreView,
                 box(true, toggleMoving, toggleFixed),
-                new JSeparator(),
-                new JLabel("Autoscale (B&C)"),
                 box(true, autoScaleFixed, autoScaleMoving));
 
         bdvh.getCardPanel().addCard("WSI Registration Wizard", panel, true);
@@ -509,7 +533,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
             } else {
                 manualRegistrationStarter.run();
                 rigidRegistrationStarted = true;
-                restoreView.setText("Restore original state");
+                restoreView.setText("Cancel manual registration");
             }
         });
 
@@ -523,48 +547,15 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
         });
 
         JPanel cardpanel = box(false,
-                new JLabel("Perform manual rigid registration"),
-                box(false,
-                    new JLabel("- Right click drag = pan"),
-                    new JLabel("- UP key = zoom"),
-                    new JLabel("- DOWN key = unzoom"),
-                    new JLabel("- 'Z' then LEFT or RIGHT key = rotate")),
-                //getNavigationPad(bdvh, initialView),
                 restoreView,
                 confirmationButton);
 
         bdvh.getSplitPanel().setCollapsed(false);
         bdvh.getCardPanel().setCardExpanded(DEFAULT_SOURCEGROUPS_CARD, false);
         bdvh.getCardPanel().setCardExpanded(DEFAULT_VIEWERMODES_CARD, false);
-        bdvh.getCardPanel().setCardExpanded(DEFAULT_SOURCES_CARD, false);
+        bdvh.getCardPanel().setCardExpanded(DEFAULT_SOURCES_CARD, true);
         bdvh.getCardPanel().addCard("Manual rigid registration", cardpanel, true);
     }
-/*
-    public static JPanel getNavigationPad(BdvHandle bdvh, AffineTransform3D iniView) {
-        JPanel padPanel = new JPanel(new GridLayout(0,3));
-
-        Function<String, ClickBehaviour> f = (key) ->
-                ((ClickBehaviour) bdvh.getTriggerbindings().getConcatenatedBehaviourMap().get(key));
-        BehaviourMap map = bdvh.getTriggerbindings()
-                .getConcatenatedBehaviourMap();
-
-        JButton centerButton = new JButton("O");
-        centerButton.addActionListener((e) -> bdvh.getViewerPanel().state().setViewerTransform(iniView));
-
-        JButton right = new BasicArrowButton(BasicArrowButton.EAST);
-        right.addActionListener((e) -> f.apply());
-
-        padPanel.add(new JLabel(""));
-        padPanel.add(new BasicArrowButton(BasicArrowButton.NORTH));
-        padPanel.add(new JLabel(""));
-        padPanel.add(new BasicArrowButton(BasicArrowButton.WEST));
-        padPanel.add(centerButton);
-        padPanel.add(right);
-        padPanel.add(new JLabel(""));
-        padPanel.add(new BasicArrowButton(BasicArrowButton.SOUTH));
-        padPanel.add(new JLabel(""));
-        return padPanel;
-    }*/
 
     private void removeCardPanelRigidRegistration() {
         CardHelper.restoreCardState(bdvh, iniCardState);
@@ -594,10 +585,10 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
                     for (double xPos = xStart+spacing_mm;xPos<bottomRightX;xPos+=spacing_mm) {
                         for (double yPos = yStart+spacing_mm;yPos<bottomRightY;yPos+=spacing_mm) {
                             System.out.println("Add point "+xPos+":"+yPos);
-                            ((ClickBehaviour)(bdvh.getTriggerbindings()
+                            ((PointsSelectorOverlay.AddGlobalPointBehaviour)(bdvh.getTriggerbindings()
                                     .getConcatenatedBehaviourMap()
                                     .get("add_point_global_hack")))
-                                    .click((int) (xPos*1000), (int)(yPos*1000));
+                                    .addGlobalPoint(xPos, yPos, 0.0);
                         }
                     }
                 } else {
@@ -675,4 +666,35 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
         AffineTransform3D newCenter = BdvHandleHelper.getViewerTransformWithNewCenter(bdvh, new double[]{cx,cy,0});
         bdvh.getViewerPanel().state().setViewerTransform(newCenter);
     }
+
+    public static class WizardBdvSupplier implements IBdvSupplier {
+
+        @Override
+        public BdvHandle get() {
+            BiopSerializableBdvOptions sOptions = new BiopSerializableBdvOptions();
+            sOptions.is2D = true;
+            sOptions.width = 1200;
+            sOptions.height = 800;
+            sOptions.interpolate = false;
+            sOptions.frameTitle = "Warpy Registration Wizard";
+            sOptions.numTimePoints = 1;
+
+            BdvOptions options = sOptions.getBdvOptions();
+            ArrayImg<ByteType, ByteArray> dummyImg = ArrayImgs.bytes(new long[]{2L, 2L, 2L});
+            options = options.sourceTransform(new AffineTransform3D());
+            BdvStackSource<ByteType> bss = BdvFunctions.show(dummyImg, "dummy", options);
+            BdvHandle bdvh = bss.getBdvHandle();
+            if (sOptions.interpolate) {
+                bdvh.getViewerPanel().setInterpolation(Interpolation.NLINEAR);
+            }
+
+            bdvh.getViewerPanel().state().removeSource(bdvh.getViewerPanel().state().getCurrentSource());
+            bdvh.getViewerPanel().setNumTimepoints(sOptions.numTimePoints);
+            BdvSupplierHelper.addSourcesDragAndDrop(bdvh);
+            bdvh.getSplitPanel().setCollapsed(false);
+            bdvh.getCardPanel().setCardExpanded(DEFAULT_SOURCES_CARD, true);
+            return bdvh;
+        }
+    }
+
 }

@@ -96,11 +96,11 @@ public class PointsSelectorBehaviour implements GraphicalHandleListener {
 
         initialView = bdvh.getViewerPanel().state().getViewerTransform();
 
-        JButton restoreView = new JButton("Restore initial view");
+        //JButton restoreView = new JButton("Restore initial view");
 
-        restoreView.addActionListener((e)-> {
+        /*restoreView.addActionListener((e)-> {
             bdvh.getViewerPanel().state().setViewerTransform(initialView);
-        });
+        });*/
 
         JButton navigationButton = new JButton("Enable navigation");
         navigationButton.addActionListener((e) -> {
@@ -131,7 +131,7 @@ public class PointsSelectorBehaviour implements GraphicalHandleListener {
             clearPoints();
         });
 
-        pane = box(false,new JLabel(message), box(false,navigationButton, restoreView), clearAllPointsButton, confirmationButton);
+        pane = box(false,new JLabel(message), box(false,navigationButton), clearAllPointsButton, confirmationButton);
     }
 
     /**
@@ -300,7 +300,7 @@ public class PointsSelectorBehaviour implements GraphicalHandleListener {
         return userDone;
     }
 
-    public static Integer[] defaultLandmarkColor = new Integer[]{200, 240, 24, 128};
+    public static Integer[] defaultLandmarkColor = new Integer[]{210, 220, 24, 128+64+32};
 
     @Override
     public void disabled(GraphicalHandle gh) {
