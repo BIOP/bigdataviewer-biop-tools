@@ -59,6 +59,7 @@ import sc.fiji.bdvpg.sourceandconverter.transform.SourceTransformHelper;
 import javax.swing.*;
 import java.util.*;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -158,6 +159,12 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
 
     AffineTransform3D preTransfromedMoving;
 
+    public void setUserMessage(String message) {
+        labelLogger.setText(message);
+        BdvHandleHelper.setWindowTitle(bdvh, "Warpy Registration Wizard - "+message);
+    }
+
+
     @Override
     public void run() {
         coarsePixelSize_mm = coarsePixelSize_um / 1000.00;
@@ -204,10 +211,12 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
 
         // Make sure the relevant sources are displayed
         showImages();
+        iniView = bdvh.getViewerPanel().state().getViewerTransform();
 
         addCardPanelCommons();
 
         if (manualRigidRegistration) {
+            setUserMessage(" 0 - Manual Rigid Registration ");
             addManualRigidRegistration();
             while (manualRegistrationStopped == false) {
                 try {
@@ -223,6 +232,8 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
 
             // Ask the user to select the region that should be aligned ( a rectangle ) - in any case
             if (automatedAffineRegistration) {
+                setUserMessage(" 1 - Automated Affine Registration ");
+                bdvh.getViewerPanel().state().setViewerTransform(iniView);
                 getUserRectangle();
             } else {
                 // Let's take the bounding box
@@ -241,6 +252,8 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
             cy = (topLeftY+bottomRightY)/2.0;
 
             if (automatedSplineRegistration) {
+
+                setUserMessage(" 2 - Automated Spline Registration ");
                 // Ask the user to select the points where the fine tuning should be performed
                 getUserLandmarks();
                 if (landmarks.size()<4) {
@@ -290,6 +303,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
             if (manualSplineRegistration) {
 
                 IJ.log("BigWarp registration...");
+
                 // The user wants big warp to correct landmark points
                 List<SourceAndConverter> movingSacs = Arrays.stream(new SourceAndConverter[]{moving}).collect(Collectors.toList());
 
@@ -307,6 +321,9 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
                 // Output bdvh handles -> will be put in the object service
                 BdvHandle bdvhQ = bwl.getBdvHandleQ();
                 BdvHandle bdvhP = bwl.getBdvHandleP();
+
+                BdvHandleHelper.setWindowTitle(bdvhP, "Warpy Registration - 3 - BigWarp Registration");
+                BdvHandleHelper.setWindowTitle(bdvhQ, "Warpy Registration - 3 - BigWarp Registration");
 
                 SourceAndConverterServices.getBdvDisplayService().pairClosing(bdvhQ,bdvhP);
 
@@ -453,6 +470,8 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
 
     AffineTransform3D iniView;
 
+    final JLabel labelLogger = new JLabel();
+
     private void addCardPanelCommons() {
         iniView = new AffineTransform3D();
 
@@ -497,6 +516,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
         });
 
         JPanel panel = box(false,
+                labelLogger,
                 new JLabel("BDV Navigation"),
                 new JLabel("- Left click drag > Rotate"),
                 new JLabel("- Right click drag > Pan"),
@@ -692,6 +712,8 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
             BdvSupplierHelper.addSourcesDragAndDrop(bdvh);
             bdvh.getSplitPanel().setCollapsed(false);
             bdvh.getCardPanel().setCardExpanded(DEFAULT_SOURCES_CARD, true);
+            bdvh.getCardPanel().removeCard(DEFAULT_SOURCEGROUPS_CARD);
+            bdvh.getCardPanel().removeCard(DEFAULT_VIEWERMODES_CARD);
             return bdvh;
         }
     }
