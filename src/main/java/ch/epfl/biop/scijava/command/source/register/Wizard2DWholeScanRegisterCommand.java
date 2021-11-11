@@ -76,7 +76,6 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
 
     @Parameter(visibility = ItemVisibility.MESSAGE)
     String message = "<html><h2>Automated WSI registration wizard</h2><br/>"+
-            "Images should be opened with bigdataviewer-playground<br/>"+
             "Automated registrations requires elastix.<br/>"+
             "</html>";
 

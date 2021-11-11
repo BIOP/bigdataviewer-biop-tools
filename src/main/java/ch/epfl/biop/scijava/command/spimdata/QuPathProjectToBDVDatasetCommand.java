@@ -47,7 +47,7 @@ public class QuPathProjectToBDVDatasetCommand extends BioformatsBigdataviewerBri
                     getOpener("")
                     );
             if (datasetname.equals("")) {
-                datasetname = FilenameUtils.removeExtension(FilenameUtils.getName(quPathProject.getAbsolutePath())) + ".xml";
+                datasetname = quPathProject.getParentFile().getName();//FilenameUtils.removeExtension(FilenameUtils.getName(quPathProject.getAbsolutePath())) + ".xml";
             }
 
             // Directly registers it to prevent memory leak...
