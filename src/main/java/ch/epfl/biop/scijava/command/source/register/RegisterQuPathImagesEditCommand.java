@@ -116,6 +116,7 @@ public class RegisterQuPathImagesEditCommand implements Command {
 
                 FileUtils.writeStringToFile(result, jsonMovingToFixed, Charset.defaultCharset());
 
+                IJ.log("Fixed: "+fixed_source.getSpimSource().getName()+" | Moving: "+moving_source.getSpimSource().getName());
                 IJ.log("Transformation file successfully written to QuPath project: "+result);
             }
 

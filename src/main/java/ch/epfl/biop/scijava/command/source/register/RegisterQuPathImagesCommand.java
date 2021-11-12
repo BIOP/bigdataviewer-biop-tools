@@ -146,7 +146,7 @@ public class RegisterQuPathImagesCommand implements Command {
             File result = new File(moving_entry_folder.getAbsolutePath(), movingToFixedLandmarkName);
             FileUtils.writeStringToFile(result, jsonMovingToFixed, Charset.defaultCharset());
 
-            //new WaitForUserDialog("Registration finished", "Transformation file successfully written to QuPath project.").show();
+            IJ.log("Fixed: "+fixed_source.getSpimSource().getName()+" | Moving: "+moving_source.getSpimSource().getName());
             IJ.log("Transformation file successfully written to QuPath project: "+result);
 
         } catch (Exception e) {
