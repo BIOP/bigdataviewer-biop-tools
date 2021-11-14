@@ -38,11 +38,15 @@ public class QuPathProjectToBDVDatasetCommand extends BioformatsBigdataviewerBri
     @Parameter(label = "Dataset name (leave empty to name it like the QuPath project)", persist = false)
     public String datasetname = ""; // Cheat to allow dataset renaming
 
+    @Parameter(type = ItemIO.OUTPUT)
+    AbstractSpimData spimData;
+
+
     @Override
     public void run() {
 
         try {
-            AbstractSpimData spimData = (new QuPathToSpimData()).getSpimDataInstance(
+            spimData = (new QuPathToSpimData()).getSpimDataInstance(
                     quPathProject.toURI(),
                     getOpener("")
                     );
@@ -51,12 +55,12 @@ public class QuPathProjectToBDVDatasetCommand extends BioformatsBigdataviewerBri
             }
 
             // Directly registers it to prevent memory leak...
-            SourceAndConverterServices
+            /*SourceAndConverterServices
                     .getSourceAndConverterService()
                     .register(spimData);
             SourceAndConverterServices
                     .getSourceAndConverterService()
-                    .setSpimDataName(spimData, datasetname);
+                    .setSpimDataName(spimData, datasetname);*/
 
         } catch (Exception e) {
             e.printStackTrace();
