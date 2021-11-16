@@ -70,11 +70,6 @@ public class RectangleSelectorBehaviour {
         this(bdvh, message, null, null);
     }
 
-    /**
-     * Construct a SourceSelectorBehaviour
-     * @param bdvh BdvHandle associated to this behaviour$
-     * @param message to display to the user as overlay on bdv
-     */
     public RectangleSelectorBehaviour(BdvHandle bdvh, String message, RealPoint p1, RealPoint p2) {
         this.bdvh = bdvh;
         this.triggerbindings = bdvh.getTriggerbindings();

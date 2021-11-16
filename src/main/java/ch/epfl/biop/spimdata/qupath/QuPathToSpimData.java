@@ -296,7 +296,7 @@ public class QuPathToSpimData {
                     Length[] voxSizes = BioFormatsMetaDataHelper.getSeriesVoxelSizeAsLengths(omeMeta, bfIndex);
                     if (pixelCalibrations.pixelWidth!=null) {
                         MinimalQuPathProject.PixelCalibration pc = pixelCalibrations.pixelWidth;
-                        //if (pc.unit.equals("µm")) {
+                        //if (pc.unit.equals("um")) {
                             if ((voxSizes[0]!=null)&&(voxSizes[0].value(UNITS.MICROMETER)!=null)) {
                                 logger.debug("xVox size = "+pc.value+" micrometer");
                                 scaleX = pc.value/voxSizes[0].value(UNITS.MICROMETER).doubleValue();
@@ -309,7 +309,7 @@ public class QuPathToSpimData {
                     }
                     if (pixelCalibrations.pixelHeight!=null) {
                         MinimalQuPathProject.PixelCalibration pc = pixelCalibrations.pixelHeight;
-                        //if (pc.unit.equals("µm")) {
+                        //if (pc.unit.equals("um")) {
                             if ((voxSizes[1]!=null)&&(voxSizes[1].value(UNITS.MICROMETER)!=null)) {
                                 scaleY = pc.value/voxSizes[1].value(UNITS.MICROMETER).doubleValue();
                             } else {
@@ -321,7 +321,7 @@ public class QuPathToSpimData {
                     }
                     if (pixelCalibrations.zSpacing!=null) {
                         MinimalQuPathProject.PixelCalibration pc = pixelCalibrations.zSpacing;
-                        //if (pc.unit.equals("µm")) {
+                        //if (pc.unit.equals("um")) { problem with micrometer character
                             if ((voxSizes[2]!=null)&&(voxSizes[2].value(UNITS.MICROMETER)!=null)) {
                                 scaleZ = pc.value/voxSizes[2].value(UNITS.MICROMETER).doubleValue();
                             } else {
