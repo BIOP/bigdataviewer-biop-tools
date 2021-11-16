@@ -111,7 +111,9 @@ public class QuPathToSpimData {
                     } else {
                         identifier.angleRotationZAxis = (Double.valueOf(angleDegreesStr) / 180.0) * Math.PI;
                     }
-                    image.serverBuilder = image.serverBuilder.builder;
+                    MinimalQuPathProject.ServerBuilderMetadata metadata = image.serverBuilder.metadata; // To keep the metadata (pixel size for instance)
+                    image.serverBuilder = image.serverBuilder.builder; // Skips the rotation
+                    image.serverBuilder.metadata = metadata;
                 }
 
                 if (image.serverBuilder.builderType.equals("uri")) {
@@ -294,40 +296,40 @@ public class QuPathToSpimData {
                     Length[] voxSizes = BioFormatsMetaDataHelper.getSeriesVoxelSizeAsLengths(omeMeta, bfIndex);
                     if (pixelCalibrations.pixelWidth!=null) {
                         MinimalQuPathProject.PixelCalibration pc = pixelCalibrations.pixelWidth;
-                        if (pc.unit.equals("µm")) {
-                            if (voxSizes[0]!=null) {
+                        //if (pc.unit.equals("µm")) {
+                            if ((voxSizes[0]!=null)&&(voxSizes[0].value(UNITS.MICROMETER)!=null)) {
                                 logger.debug("xVox size = "+pc.value+" micrometer");
                                 scaleX = pc.value/voxSizes[0].value(UNITS.MICROMETER).doubleValue();
                             } else {
                                 logger.warn("Null X voxel size");
                             }
-                        } else {
+                        /*} else {
                             logger.warn("Unrecognized unit in QuPath project: "+pc.unit);
-                        }
+                        }*/
                     }
                     if (pixelCalibrations.pixelHeight!=null) {
                         MinimalQuPathProject.PixelCalibration pc = pixelCalibrations.pixelHeight;
-                        if (pc.unit.equals("µm")) {
-                            if (voxSizes[1]!=null) {
+                        //if (pc.unit.equals("µm")) {
+                            if ((voxSizes[1]!=null)&&(voxSizes[1].value(UNITS.MICROMETER)!=null)) {
                                 scaleY = pc.value/voxSizes[1].value(UNITS.MICROMETER).doubleValue();
                             } else {
                                 logger.warn("Null Y voxel size");
                             }
-                        } else {
+                        /*} else {
                             logger.warn("Unrecognized unit in QuPath project: "+pc.unit);
-                        }
+                        }*/
                     }
                     if (pixelCalibrations.zSpacing!=null) {
                         MinimalQuPathProject.PixelCalibration pc = pixelCalibrations.zSpacing;
-                        if (pc.unit.equals("µm")) {
-                            if (voxSizes[2]!=null) {
+                        //if (pc.unit.equals("µm")) {
+                            if ((voxSizes[2]!=null)&&(voxSizes[2].value(UNITS.MICROMETER)!=null)) {
                                 scaleZ = pc.value/voxSizes[2].value(UNITS.MICROMETER).doubleValue();
                             } else {
                                 logger.warn("Null Z voxel size");
                             }
-                        } else {
+                        /*} else {
                             logger.warn("Unrecognized unit in QuPath project: "+pc.unit);
-                        }
+                        }*/
                     }
                     logger.debug("ScaleX: "+scaleX+" scaleY:"+scaleY+" scaleZ:"+scaleZ);
                     if ((Math.abs(scaleX-1.0)>0.0001)||(Math.abs(scaleY-1.0)>0.0001)||(Math.abs(scaleZ-1.0)>0.0001))  {
