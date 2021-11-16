@@ -4,7 +4,9 @@ import ch.epfl.biop.sourceandconverter.processor.SourcesChannelsSelect;
 import com.google.gson.*;
 
 import java.lang.reflect.Type;
-
+/**
+ * Adapter of the {@link SourcesChannelsSelect} class
+ */
 public class SourcesChannelSelectAdapter implements JsonSerializer<SourcesChannelsSelect>,
         JsonDeserializer<SourcesChannelsSelect> {
 

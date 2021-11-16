@@ -1,10 +1,14 @@
 package ch.epfl.biop.sourceandconverter.processor.adapter;
 
 import ch.epfl.biop.sourceandconverter.processor.SourcesIdentity;
+import ch.epfl.biop.sourceandconverter.processor.SourcesProcessComposer;
 import com.google.gson.*;
 
 import java.lang.reflect.Type;
 
+/**
+ * Adapter of the {@link SourcesIdentity} class
+ */
 public class SourcesIdentityAdapter implements JsonSerializer<SourcesIdentity>,
         JsonDeserializer<SourcesIdentity> {
 

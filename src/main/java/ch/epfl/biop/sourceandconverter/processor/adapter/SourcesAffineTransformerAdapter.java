@@ -7,6 +7,9 @@ import net.imglib2.realtransform.RealTransform;
 
 import java.lang.reflect.Type;
 
+/**
+ * Adapter of the {@link SourcesAffineTransformer} class
+ */
 public class SourcesAffineTransformerAdapter implements JsonSerializer<SourcesAffineTransformer>,
         JsonDeserializer<SourcesAffineTransformer> {
 

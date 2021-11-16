@@ -35,6 +35,9 @@ public class BdvViewToImagePlusExportCommand implements BdvPlaygroundActionComma
 
     private static final Logger logger = LoggerFactory.getLogger(BdvViewToImagePlusExportCommand.class);
 
+    /**
+     * BigDataViewer Frame
+     */
     @Parameter(label = "BigDataViewer Frame")
     public BdvHandle bdv_h;
 
@@ -44,15 +47,27 @@ public class BdvViewToImagePlusExportCommand implements BdvPlaygroundActionComma
     @Parameter(required = false)
     SourceAndConverter[] sacs;
 
+    /**
+     * Match bdv frame window size
+     */
     @Parameter(label="Match bdv frame window size", persist=false, callback = "matchXYBDVFrame")
     public boolean matchwindowsize =false;
 
+    /**
+     * Total Size X (physical unit)
+     */
     @Parameter(label = "Total Size X (physical unit)", callback = "matchXYBDVFrame", style = "format:0.#####E0")
     public double xsize = 100;
 
+    /**
+     * Total Size Y (physical unit)
+     */
     @Parameter(label = "Total Size Y (physical unit)", callback = "matchXYBDVFrame", style = "format:0.#####E0")
     public double ysize = 100;
 
+    /**
+     * Half Thickness Z (above and below, physical unit, 0 for a single slice)
+     */
     @Parameter(label = "Half Thickness Z (above and below, physical unit, 0 for a single slice)", style = "format:0.#####E0")
     public double zsize = 100;
 
@@ -62,12 +77,21 @@ public class BdvViewToImagePlusExportCommand implements BdvPlaygroundActionComma
     @Parameter( label = "Selected Timepoints. Leave blank for all", required = false )
     private String selected_timepoints_str = "";
 
+    /**
+     * XY Pixel size sampling (physical unit)
+     */
     @Parameter(label = "XY Pixel size sampling (physical unit)", callback = "changePhysicalSampling", style = "format:0.#####E0")
     public double samplingxyinphysicalunit = 1;
 
+    /**
+     * Z Pixel size sampling (physical unit)
+     */
     @Parameter(label = "Z Pixel size sampling (physical unit)", callback = "changePhysicalSampling", style = "format:0.#####E0")
     public double samplingzinphysicalunit = 1;
 
+    /**
+     * Interpolate
+     */
     @Parameter(label = "Interpolate")
     public boolean interpolate = true;
 
@@ -80,7 +104,9 @@ public class BdvViewToImagePlusExportCommand implements BdvPlaygroundActionComma
     @Parameter
     String unit="px";
 
-    // Output imageplus window
+    /**
+     * Output imageplus window
+     */
     @Parameter(type = ItemIO.OUTPUT)
     public ImagePlus imageplus;
 

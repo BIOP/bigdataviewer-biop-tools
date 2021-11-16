@@ -39,21 +39,36 @@ public class BasicBdvViewToImagePlusExportCommand<T extends RealType<T>> impleme
 
     private static Logger logger = LoggerFactory.getLogger(BasicBdvViewToImagePlusExportCommand.class);
 
+    /**
+     * Bigdataviewer handle
+     */
     @Parameter(label = "BigDataViewer Frame")
     public BdvHandle bdv_h;
 
     @Parameter(label = "Capture Name")
     String capturename = "Capture_00";
 
+    /**
+     * Half Thickness Z (above and below, physical unit, 0 for a single slice)
+     */
     @Parameter(label = "Half Thickness Z (above and below, physical unit, 0 for a single slice)", style = "format:0.#####E0")
     public double zsize = 100;
 
+    /**
+     * Output pixel size (physical unit)
+     */
     @Parameter(label = "Output pixel size (physical unit)", style = "format:0.#####E0")
     public double samplingxyinphysicalunit = 1;
 
+    /**
+     * Z Pixel size sampling (physical unit)
+     */
     @Parameter(label = "Z Pixel size sampling (physical unit)", style = "format:0.#####E0")
     public double samplingzinphysicalunit = 1;
 
+    /**
+     * INterpolate
+     */
     @Parameter(label = "Interpolate")
     public boolean interpolate = true;
 

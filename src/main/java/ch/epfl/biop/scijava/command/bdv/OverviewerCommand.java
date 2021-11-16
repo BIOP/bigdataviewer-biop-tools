@@ -44,10 +44,16 @@ import static sc.fiji.bdvpg.bdv.navigate.ViewerTransformSyncStopper.MatrixApprox
 import static sc.fiji.bdvpg.scijava.services.SourceAndConverterService.getCommandName;
 import static sc.fiji.bdvpg.services.ISourceAndConverterService.SPIM_DATA_INFO;
 
+/**
+ * Command which display sources on a grid in BigDataViewer
+ */
 @Plugin(type = BdvPlaygroundActionCommand.class,
         menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Display Sources On Grid")
 public class OverviewerCommand implements BdvPlaygroundActionCommand {
 
+    /**
+     * Sources to display on a grid
+     */
     @Parameter
     public SourceAndConverter[] sacs;
 
@@ -214,7 +220,7 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
 
         addEditorBehaviours(bdvh, ssb);
 
-        bdvh.getViewerPanel().setNumTimepoints(getNumberOfTimepoints(sacs[0]));
+        bdvh.getViewerPanel().setNumTimepoints(SourceAndConverterHelper.getMaxTimepoint(sacs[0]));
 
         // Close hook to try to release as many resources as possible -> proven avoiding mem leaks
         BdvHandleHelper.setBdvHandleCloseOperation(bdvh, ctx.getService(CacheService.class),
@@ -267,25 +273,6 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
                 getCommandName(BrightnessAdjusterCommand.class),
                 getCommandName(ExportToMultipleImagePlusCommand.class)};
         return editorPopupActions;
-    }
-
-    public static int getNumberOfTimepoints(SourceAndConverter<?> source) {
-        int nFrames = 1;
-        int iFrame = 1;
-        int previous = iFrame;
-        while (source.getSpimSource().isPresent(iFrame)) {
-            previous = iFrame;
-            iFrame *= 2;
-        }
-        if (iFrame>1) {
-            for (int tp = previous;tp<iFrame;tp++) {
-                if (!source.getSpimSource().isPresent(tp)) {
-                    nFrames = tp;
-                    break;
-                }
-            }
-        }
-        return nFrames;
     }
 
     public Function<Collection<SourceAndConverter<?>>,List<SourceAndConverter<?>>> sorter = sacslist -> SourceAndConverterHelper.sortDefaultGeneric(sacslist);

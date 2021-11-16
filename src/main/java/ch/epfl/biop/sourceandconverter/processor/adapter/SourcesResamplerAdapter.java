@@ -1,11 +1,15 @@
 package ch.epfl.biop.sourceandconverter.processor.adapter;
 
 import bdv.viewer.SourceAndConverter;
+import ch.epfl.biop.sourceandconverter.processor.SourcesIdentity;
 import ch.epfl.biop.sourceandconverter.processor.SourcesResampler;
 import com.google.gson.*;
 
 import java.lang.reflect.Type;
 
+/**
+ * Adapter of the {@link SourcesResampler} class
+ */
 public class SourcesResamplerAdapter implements JsonSerializer<SourcesResampler>,
         JsonDeserializer<SourcesResampler> {
 

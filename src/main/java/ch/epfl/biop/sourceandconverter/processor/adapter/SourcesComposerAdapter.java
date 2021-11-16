@@ -6,6 +6,9 @@ import com.google.gson.*;
 
 import java.lang.reflect.Type;
 
+/**
+ * Adapter of the {@link SourcesProcessComposer} class
+ */
 public class SourcesComposerAdapter implements JsonSerializer<SourcesProcessComposer>,
         JsonDeserializer<SourcesProcessComposer> {
 

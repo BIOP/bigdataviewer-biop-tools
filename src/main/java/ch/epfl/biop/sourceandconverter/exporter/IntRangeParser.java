@@ -39,7 +39,12 @@ public class IntRangeParser {
         this.expression = expression;
     }
 
-
+    /**
+     *
+     * @param length the length in maximum of the total list
+     * @return gnagna
+     * @throws Exception parsing error usually
+     */
     public List<Integer> get(int length) throws Exception {
         if (expression==null || expression.trim().equals("")) {
             return IntStream.range(0,length).boxed().collect(Collectors.toList());
@@ -118,6 +123,11 @@ public class IntRangeParser {
         return Double.valueOf(arg);
     }
 
+    /**
+     *
+     * @return as usual, a nicer string representation of this object, in this case the expression given
+     */
+    @Override
     public String toString() {
         return expression;
     }
@@ -159,6 +169,12 @@ public class IntRangeParser {
 
     }
 
+    /**
+     * A convenience function to test some expressions
+     * @param expression expression
+     * @param length length of the array which is being 'sliced'
+     * @param maxDisplayed I don t know
+     */
     public static void TestExpression(String expression, int length, int maxDisplayed) {
         try {
             System.out.println("Testing "+expression+" with length = "+length);
