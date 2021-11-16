@@ -54,7 +54,7 @@ public class ExportToMultipleImagePlusCommand implements BdvPlaygroundActionComm
     @Parameter( label = "Open images in parallel")
     private Boolean parallel = false;
 
-    @Parameter(label = "Split by dataset entites, comma separated (channel, fileseries)")
+    @Parameter(label = "Split by dataset entities, comma separated (channel, fileseries)")
     String entitiesSplit = "";
 
     Map<String, Class<? extends Entity>> entityClasses = new HashMap<>();
