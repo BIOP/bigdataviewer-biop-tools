@@ -127,6 +127,7 @@ public class ImagePlusGetter {
 
                     luts[iC] = lut;
                     out.setC(iC+1);
+                    //out.setLut(lut);
                     out.getProcessor().setLut(lut);
 
                     if (sac.getConverter() instanceof LinearRange) {

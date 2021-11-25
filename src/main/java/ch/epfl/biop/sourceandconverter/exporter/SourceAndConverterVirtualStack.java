@@ -11,6 +11,9 @@ import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.type.volatiles.VolatileFloatType;
+import net.imglib2.type.volatiles.VolatileUnsignedByteType;
+import net.imglib2.type.volatiles.VolatileUnsignedShortType;
 import net.imglib2.util.Util;
 import net.imglib2.view.Views;
 import org.slf4j.Logger;
@@ -59,17 +62,22 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
                                           AtomicLong bytesCounter, boolean cache) {
         this.cache = cache;
         final int tModel = range.getRangeT().get(0);
-        RandomAccessibleInterval raiModel = sources.get(0).getSpimSource().getSource(tModel,resolutionLevel);
+        RandomAccessibleInterval raiModel;
+        if (sources.get(0).asVolatile()!=null) {
+            raiModel = sources.get(0).asVolatile().getSpimSource().getSource(tModel,resolutionLevel);
+        } else {
+            raiModel = sources.get(0).getSpimSource().getSource(tModel,resolutionLevel);
+        }
         width = (int) raiModel.dimension(0);
         height = (int) raiModel.dimension(1);
         //nSlices = (int) raiModel.dimension(2);
         size = (int) range.getTotalPlanes( );
         final Object type = Util.getTypeFromInterval(raiModel);
-        if (type instanceof UnsignedShortType) {
+        if ((type instanceof UnsignedShortType)||(type instanceof VolatileUnsignedShortType)) {
             bitDepth = 16;
-        } else if (type instanceof UnsignedByteType) {
+        } else if ((type instanceof UnsignedByteType)||(type instanceof VolatileUnsignedByteType)) {
             bitDepth = 8;
-        } else if (type instanceof FloatType) {
+        } else if ((type instanceof FloatType)||(type instanceof VolatileFloatType)) {
             bitDepth = 32;
         } else {
             bitDepth = -1;
