@@ -219,24 +219,24 @@ public class Elliptical3DTransform implements InvertibleRealTransform {
 
         double[] qx = new double[4];
 
-        qx[0] = Math.cos(rxRad);
-        qx[1] = Math.sin(rxRad);
+        qx[0] = Math.cos(rxRad/2.0);
+        qx[1] = Math.sin(rxRad/2.0);
         qx[2] = 0;
         qx[3] = 0;
 
         double[] qy = new double[4];
 
-        qy[0] = Math.cos(ryRad);
+        qy[0] = Math.cos(ryRad/2.0);
         qy[1] = 0;
-        qy[2] = Math.sin(ryRad);
+        qy[2] = Math.sin(ryRad/2.0);
         qy[3] = 0;
 
         double[] qz = new double[4];
 
-        qz[0] = Math.cos(rzRad);
+        qz[0] = Math.cos(rzRad/2.0);
         qz[1] = 0;
         qz[2] = 0;
-        qz[3] = Math.sin(rzRad);
+        qz[3] = Math.sin(rzRad/2.0);
 
         double[] qXY = new double[4];
 

@@ -28,12 +28,12 @@ public class Elliptic3DTransformer implements Runnable, Function<SourceAndConver
     }
 
     public SourceAndConverter apply(SourceAndConverter in) {
-        WarpedSource ws = new WarpedSource(in.getSpimSource(), "Ellipitic3DTransformed_"+in.getSpimSource().getName());
+        WarpedSource ws = new WarpedSource(in.getSpimSource(), "Transform_"+e3Dt.getName()+"_"+in.getSpimSource().getName());
         ws.updateTransform(e3Dt);
         ws.setIsTransformed(true);
 
         if (in.asVolatile()!=null) {
-            WarpedSource vws = new WarpedSource(in.asVolatile().getSpimSource(), "Ellipitic3DTransformed_"+in.asVolatile().getSpimSource().getName());//f.apply(in.asVolatile().getSpimSource());
+            WarpedSource vws = new WarpedSource(in.asVolatile().getSpimSource(), "Transform_"+e3Dt.getName()+"_"+in.asVolatile().getSpimSource().getName());//f.apply(in.asVolatile().getSpimSource());
             vws.updateTransform(e3Dt);
             vws.setIsTransformed(true);
 
