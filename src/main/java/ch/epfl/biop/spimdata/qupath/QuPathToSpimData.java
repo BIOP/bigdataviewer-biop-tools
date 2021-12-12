@@ -301,7 +301,9 @@ public class QuPathToSpimData {
                                 logger.debug("xVox size = "+pc.value+" micrometer");
                                 scaleX = pc.value/voxSizes[0].value(UNITS.MICROMETER).doubleValue();
                             } else {
-                                logger.warn("Null X voxel size");
+                                Length defaultxPix = new Length(1, opener.u);
+                                scaleX = pc.value / defaultxPix.value(UNITS.MICROMETER).doubleValue();
+                                logger.debug("rescaling x");
                             }
                         /*} else {
                             logger.warn("Unrecognized unit in QuPath project: "+pc.unit);
@@ -313,7 +315,9 @@ public class QuPathToSpimData {
                             if ((voxSizes[1]!=null)&&(voxSizes[1].value(UNITS.MICROMETER)!=null)) {
                                 scaleY = pc.value/voxSizes[1].value(UNITS.MICROMETER).doubleValue();
                             } else {
-                                logger.warn("Null Y voxel size");
+                                Length defaultxPix = new Length(1, opener.u);
+                                scaleY = pc.value / defaultxPix.value(UNITS.MICROMETER).doubleValue();
+                                logger.debug("rescaling y");
                             }
                         /*} else {
                             logger.warn("Unrecognized unit in QuPath project: "+pc.unit);
@@ -325,7 +329,12 @@ public class QuPathToSpimData {
                             if ((voxSizes[2]!=null)&&(voxSizes[2].value(UNITS.MICROMETER)!=null)) {
                                 scaleZ = pc.value/voxSizes[2].value(UNITS.MICROMETER).doubleValue();
                             } else {
-                                logger.warn("Null Z voxel size");
+                                if ((voxSizes[2]!=null)) {
+
+                                } else {
+                                    logger.warn("Null Z voxel size");
+                                }
+                                //logger.warn("Null Z voxel size");
                             }
                         /*} else {
                             logger.warn("Unrecognized unit in QuPath project: "+pc.unit);
