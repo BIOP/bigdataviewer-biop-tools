@@ -62,6 +62,8 @@ public class Elliptical3DTransform implements InvertibleRealTransform {
     public static final String CENTER_Y = "centerY";
     public static final String CENTER_Z = "centerZ";
 
+    String name = "Elliptical3DTransform_"+this.hashCode(); // To avoid null names
+
     public Elliptical3DTransform() {
 
         rts.add(s2c);
@@ -303,7 +305,22 @@ public class Elliptical3DTransform implements InvertibleRealTransform {
         final Elliptical3DTransform copy = new Elliptical3DTransform();
         copy.rts = rts.copy();
         copy.rtsi = rtsi.copy();
+        copy.setName(getName());
         return copy;
     }
+
+    @Override
+    public String toString() {
+        return getName();
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
 
 }

@@ -67,7 +67,15 @@ public class SwingElliptical3DTransformViewer extends
         panelInfo.setLayout(new GridLayout(9,1));
         panel.add(panelInfo, BorderLayout.CENTER);
         nameLabel = new JLabel("elliptical transform");
-        panel.add(nameLabel, BorderLayout.NORTH);
+        JTextField nameField = new JTextField();
+        JPanel paneName = new JPanel();
+        paneName.setLayout(new GridLayout(1,2));
+        paneName.add(nameLabel);
+        paneName.add(nameField);
+        nameField.setEditable(true);
+        nameField.setText(e3Dt.getName());
+        nameField.addActionListener((e) -> e3Dt.setName(nameField.getText()));
+        panel.add(paneName, BorderLayout.NORTH);
         textInfo = new JTextArea();
         textInfo.setEditable(false);
 
