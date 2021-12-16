@@ -96,7 +96,7 @@
 		<scijava.deleteOtherVersions>true</scijava.deleteOtherVersions>
 		<license.excludes>**/resources/**</license.excludes>
 
-		<bigdataviewer-playground.version>0.3.13</bigdataviewer-playground.version>
+		<bigdataviewer-playground.version>0.4.0</bigdataviewer-playground.version>
 		<bigdataviewer-bioformats.version>0.2.22</bigdataviewer-bioformats.version>
 		<bigdataviewer-selector.version>0.1.8</bigdataviewer-selector.version>
 		<scijava.app.directory>C:/fiji-win64/Fiji.app/</scijava.app.directory>

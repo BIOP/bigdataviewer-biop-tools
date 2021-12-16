@@ -210,7 +210,7 @@ public class Rot3DReSampleCommand implements BdvPlaygroundActionCommand {
         Map<SourceAndConverter, ConverterSetup> mapCS = new HashMap<>();
         reoriented_sources.forEach(sac -> mapCS.put(sac,
                     SourceAndConverterServices
-                        .getBdvDisplayService()
+                        .getSourceAndConverterService()
                         .getConverterSetup(sac)
                 ));
 

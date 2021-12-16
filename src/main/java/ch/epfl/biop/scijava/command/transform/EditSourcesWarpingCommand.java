@@ -57,12 +57,12 @@ public class EditSourcesWarpingCommand implements BdvPlaygroundActionCommand {
 
         List<SourceAndConverter> movingSacs = Arrays.stream(movingSources).collect(Collectors.toList());
 
-        List<ConverterSetup> converterSetups = Arrays.stream(movingSources).map(src -> SourceAndConverterServices.getBdvDisplayService().getConverterSetup(src)).collect(Collectors.toList());
+        List<ConverterSetup> converterSetups = Arrays.stream(movingSources).map(src -> SourceAndConverterServices.getSourceAndConverterService().getConverterSetup(src)).collect(Collectors.toList());
         List<SourceAndConverter> fixedSacs;
 
         if (fixedSources!=null) {
             fixedSacs = Arrays.stream(fixedSources).collect(Collectors.toList());
-            converterSetups.addAll(Arrays.stream(fixedSources).map(src -> SourceAndConverterServices.getBdvDisplayService().getConverterSetup(src)).collect(Collectors.toList()));
+            converterSetups.addAll(Arrays.stream(fixedSources).map(src -> SourceAndConverterServices.getSourceAndConverterService().getConverterSetup(src)).collect(Collectors.toList()));
         } else {
             fixedSacs = new ArrayList<>();
         }

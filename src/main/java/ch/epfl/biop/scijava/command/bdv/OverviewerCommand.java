@@ -165,11 +165,11 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
                                 .register(trSac);
 
                         ConverterSetup csOrigin = SourceAndConverterServices
-                                .getBdvDisplayService()
+                                .getSourceAndConverterService()
                                 .getConverterSetup(sac);
 
                         ConverterSetup csDestination = SourceAndConverterServices
-                                .getBdvDisplayService()
+                                .getSourceAndConverterService()
                                 .getConverterSetup(trSac);
 
                         // TODO : fix potential mem leak with listeners

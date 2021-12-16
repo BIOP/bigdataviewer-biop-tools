@@ -143,9 +143,9 @@ public class RegisterQuPathImagesEditCommand implements Command {
 
         List<SourceAndConverter> fixedSacs = Arrays.stream(new SourceAndConverter[]{fixed_source}).collect(Collectors.toList());
 
-        List<ConverterSetup> converterSetups = Arrays.stream(new SourceAndConverter[]{moving_source}).map(src -> SourceAndConverterServices.getBdvDisplayService().getConverterSetup(src)).collect(Collectors.toList());
+        List<ConverterSetup> converterSetups = Arrays.stream(new SourceAndConverter[]{moving_source}).map(src -> SourceAndConverterServices.getSourceAndConverterService().getConverterSetup(src)).collect(Collectors.toList());
 
-        converterSetups.addAll(Arrays.stream(new SourceAndConverter[]{fixed_source}).map(src -> SourceAndConverterServices.getBdvDisplayService().getConverterSetup(src)).collect(Collectors.toList()));
+        converterSetups.addAll(Arrays.stream(new SourceAndConverter[]{fixed_source}).map(src -> SourceAndConverterServices.getSourceAndConverterService().getConverterSetup(src)).collect(Collectors.toList()));
 
 
         BigWarpLauncher bwl = new BigWarpLauncher(movingSacs, fixedSacs, "Edit QuPath Registration", converterSetups);
