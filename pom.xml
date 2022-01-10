@@ -98,16 +98,16 @@
 
 		<bigdataviewer-playground.version>0.4.0</bigdataviewer-playground.version>
 		<bigdataviewer-bioformats.version>0.2.22</bigdataviewer-bioformats.version>
-		<bigdataviewer-selector.version>0.1.8</bigdataviewer-selector.version>
+		<bigdataviewer-selector.version>0.1.9</bigdataviewer-selector.version>
 		<scijava.app.directory>C:/fiji-win64/Fiji.app/</scijava.app.directory>
 
-		<bigdataviewer-core.version>10.2.1</bigdataviewer-core.version>
+		<bigdataviewer-core.version>10.2.2</bigdataviewer-core.version>
 		<bigdataviewer-vistools.version>1.0.0-beta-29</bigdataviewer-vistools.version>
 		<imglib2-cache.version>1.0.0-beta-16</imglib2-cache.version>
-		<bigwarp_fiji.version>7.0.4</bigwarp_fiji.version>
+		<bigwarp_fiji.version>7.0.5</bigwarp_fiji.version>
 
 		<leastsquares.version>1.0.0</leastsquares.version>
-		<ijl-utilities-wrappers.version>0.3.23</ijl-utilities-wrappers.version>
+		<ijl-utilities-wrappers.version>0.3.25</ijl-utilities-wrappers.version>
 		<image-transform-converters.version>0.1.5</image-transform-converters.version>
 
 		<bigdataviewer-spimdata-extras.version>0.1.6</bigdataviewer-spimdata-extras.version>
@@ -115,7 +115,7 @@
 
 		<bigdataviewer-playground-display.version>0.1.8</bigdataviewer-playground-display.version>
 
-		<Operetta_Importer.version>0.1.17</Operetta_Importer.version>
+		<Operetta_Importer.version>0.1.19</Operetta_Importer.version>
 		<bigvolumeviewer.version>0.2.0</bigvolumeviewer.version>
 
 		<releaseProfiles>sign,deploy-to-scijava</releaseProfiles>
