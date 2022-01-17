@@ -30,6 +30,8 @@ public class SimpleIJLaunch {
         //DebugTools.enableLogging("INFO");
 
         final ImageJ ij = new ImageJ();
+
+        DebugTools.enableLogging ("OFF");
         ij.ui().showUI();
         //DebugTools.enableIJLogging(true);
         //DebugTools.setRootLevel("DEBUG");

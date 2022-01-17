@@ -60,7 +60,13 @@ public class EmptyMultiresolutionSource implements Source<UnsignedShortType>, Se
         for (int i=0;i<numberOfResolutions;i++) {
             AffineTransform3D m = new AffineTransform3D();
             m.set(at3D);
+            double px = m.get(0,3);
+            double py = m.get(1,3);
+            double pz = m.get(2,3);
             m.scale( (double)nx/(long)currentNX, (double)ny/(long)currentNY, (double)nz/(long)currentNZ );
+            m.set(px,0,3);
+            m.set(py,1,3);
+            m.set(pz,2,3);
             transformList.add(m);
             raiList.add(Views.interval(ra, new FinalInterval((long) currentNX,(long) currentNY, (long) currentNZ)));
             currentNX=currentNX/scalex;
