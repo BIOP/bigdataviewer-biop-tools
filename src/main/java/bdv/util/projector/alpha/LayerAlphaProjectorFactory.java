@@ -258,7 +258,7 @@ public class LayerAlphaProjectorFactory implements AccumulateProjectorFactory<AR
                                 totalAlpha += alpha;
                             }
                         } else {
-                            // No alpha channel: standard sum
+                            // No alpha channel:  standard sum
                             final int value = accesses[current_source_index].get().get();
                             final int a = ARGBType.alpha( value );
                             final int r = ARGBType.red( value );

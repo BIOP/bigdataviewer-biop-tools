@@ -16,6 +16,7 @@ import net.imglib2.RealRandomAccessible;
 import net.imglib2.cache.img.DiskCachedCellImgOptions;
 import net.imglib2.cache.img.ReadOnlyCachedCellImgFactory;
 import net.imglib2.cache.img.ReadOnlyCachedCellImgOptions;
+import net.imglib2.cache.img.optional.CacheOptions;
 import net.imglib2.img.Img;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.realtransform.RealViews;
@@ -267,9 +268,10 @@ public class AlphaFusedResampledSource< T extends NumericType<T> & NativeType<T>
 
                     int[] blockSize = {cacheX, cacheY, cacheZ};
 
-                    ReadOnlyCachedCellImgOptions cacheOptions = ReadOnlyCachedCellImgOptions
+                    final ReadOnlyCachedCellImgOptions cacheOptions = ReadOnlyCachedCellImgOptions
                             .options()
                             .cacheType(DiskCachedCellImgOptions.CacheType.SOFTREF)
+                            .maxCacheSize(10)
                             .cellDimensions(blockSize);
 
                     final ReadOnlyCachedCellImgFactory factory = new ReadOnlyCachedCellImgFactory( cacheOptions );
@@ -291,6 +293,7 @@ public class AlphaFusedResampledSource< T extends NumericType<T> & NativeType<T>
                             cell -> {
                                 // TODO : improve by discarding some sources which are not in the cell
                                 boolean[] sourcesPresentInCell = new boolean[nSources];
+                                //int nSourcesPresent = 0;
                                 for (int i=0;i<nSources;i++) {
                                     IAlphaSource alpha = arrayAlphaSources[i];
                                     if (!alpha.doBoundingBoxCulling()) {
@@ -298,8 +301,10 @@ public class AlphaFusedResampledSource< T extends NumericType<T> & NativeType<T>
                                     } else {
                                         sourcesPresentInCell[i] = alpha.intersectBox(affineTransform.copy(), cell, t);
                                     }
+                                    //if (sourcesPresentInCell[i]) nSourcesPresent++;
                                 }
 
+                                //System.out.println(nSourcesPresent+"/"+nSources);
                                 RandomAccess<T> nonCachedAccess = nonCached.randomAccess(sourcesPresentInCell);
                                 Cursor<T> out = Views.flatIterable(cell).cursor();
                                 T t_in;
@@ -349,7 +354,12 @@ public class AlphaFusedResampledSource< T extends NumericType<T> & NativeType<T>
                 origin.getSourceTransform(t, mipmapModelToOrigin.get(origin).get(level), atOrigin);
                 at.concatenate(atOrigin);
 
-                RandomAccessible<T> ra = RealViews.affine(ipimg, at); // Gets the view
+                RandomAccessible<T> ra = RealViews.affine(ipimg, at.copy()); // Gets the view
+
+                at.set(at_ori);
+                AffineTransform3D atOriginAlpha = new AffineTransform3D();
+                originsAlpha.get(origin).getSourceTransform(t, mipmapModelToOrigin.get(origin).get(level), atOriginAlpha);
+                at.concatenate(atOriginAlpha);
                 RandomAccessible<FloatType> ra_alpha = RealViews.affine(ipimg_alpha, at); // Gets the view
 
                 presentSources.add(ra);

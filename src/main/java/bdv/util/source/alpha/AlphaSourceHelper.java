@@ -68,6 +68,14 @@ public class AlphaSourceHelper {
         return alpha_sac;
     }
 
+    public static synchronized void setAlphaSource(SourceAndConverter source, IAlphaSource alphaSource) {
+        SourceAndConverterServices.getSourceAndConverterService().setMetadata(source, ALPHA_SOURCE_KEY, new SourceAndConverter<>(alphaSource, new AlphaConverter()));
+    }
+
+    public static synchronized void setAlphaSource(SourceAndConverter source, SourceAndConverter alphaSource) {
+        SourceAndConverterServices.getSourceAndConverterService().setMetadata(source, ALPHA_SOURCE_KEY, alphaSource);
+    }
+
     // synchronized recursive calls are legit in Java
     public static synchronized SourceAndConverter<FloatType> getOrBuildAlphaSource(SourceAndConverter sac) {
         return getOrBuildAlphaSource(sac.getSpimSource());

@@ -4,7 +4,10 @@ import bdv.util.BdvHandle;
 import bdv.util.source.fused.AlphaFusedResampledSource;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.sourceandconverter.SourceFuserAndResampler;
+import com.google.gson.Gson;
 import net.imagej.ImageJ;
+import net.imglib2.cache.img.ReadOnlyCachedCellImgOptions;
+import net.imglib2.cache.img.optional.CacheOptions;
 import net.imglib2.type.numeric.ARGBType;
 import org.junit.After;
 import org.junit.Test;
@@ -44,6 +47,19 @@ public class FusedDemo {
     }
 
     public static void demo() {
+
+        /*String str = new Gson().toJson(ReadOnlyCachedCellImgOptions.options()
+                .cellDimensions(128,128,1)
+                .cacheType(CacheOptions.CacheType.SOFTREF)
+                .maxCacheSize(100)
+                .dirtyAccesses(true));
+        System.out.println(str);
+
+        //{"values":{},"theOptions":{"cellDimensions":[128,128,1]}}
+        ReadOnlyCachedCellImgOptions opt = new Gson().fromJson(str, ReadOnlyCachedCellImgOptions.class);
+        str = new Gson().toJson(opt);
+        System.out.println(str);*/
+
         IBdvSupplier bdvSupplier = new AlphaBdvSupplier(new AlphaSerializableBdvOptions());
 
         SourceAndConverterServices.getBdvDisplayService().setDefaultBdvSupplier(bdvSupplier);

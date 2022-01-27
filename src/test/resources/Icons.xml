@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SpimData version="0.2">
+  <BasePath type="relative">Icons.xml</BasePath>
+  <SequenceDescription>
+    <ImageLoader format="spimreconstruction.biop_bioformatsimageloader">
+      <opener_class>ch.epfl.biop.bdv.bioformats.bioformatssource.BioFormatsBdvOpener</opener_class>
+      <num_fetcher_threads>2</num_fetcher_threads>
+      <num_priorities>4</num_priorities>
+      <dataset_number>3</dataset_number>
+      <opener_0>{"dataLocation":"C:\\Users\\chiarutt\\Dropbox\\BIOP\\bigdataviewer-biop-tools\\src\\test\\resources\\Imagej.tif","useBioFormatsXYBlockSize":true,"isSoftRef":true,"cacheBlockSize":{"min":[0,0,0],"max":[512,512,1],"n":3},"swZC":false,"splitRGBChannels":false,"u":{"measurementSystem":"SI.METRE","symbol":"mm","scaleFactor":0.001,"offset":0.0},"positionReferenceFrameLength":{"value":1.0,"unit":{"measurementSystem":"SI.METRE","symbol":"mm","scaleFactor":0.001,"offset":0.0},"hashCodeValue":-469617440},"positionIgnoreBioFormatsMetaData":true,"positionIsImageCenter":false,"voxSizeReferenceFrameLength":{"value":1.0,"unit":{"measurementSystem":"SI.METRE","symbol":"mm","scaleFactor":0.001,"offset":0.0},"hashCodeValue":-469617440},"voxSizeIgnoreBioFormatsMetaData":true,"axesOfImageFlip":[false,false,false],"nFetcherThread":2,"numPriorities":4,"maxCacheSize":1}</opener_0>
+      <opener_1>{"dataLocation":"C:\\Users\\chiarutt\\Dropbox\\BIOP\\bigdataviewer-biop-tools\\src\\test\\resources\\fiji.tif","useBioFormatsXYBlockSize":true,"isSoftRef":true,"cacheBlockSize":{"min":[0,0,0],"max":[512,512,1],"n":3},"swZC":false,"splitRGBChannels":false,"u":{"measurementSystem":"SI.METRE","symbol":"mm","scaleFactor":0.001,"offset":0.0},"positionReferenceFrameLength":{"value":1.0,"unit":{"measurementSystem":"SI.METRE","symbol":"mm","scaleFactor":0.001,"offset":0.0},"hashCodeValue":-469617440},"positionIgnoreBioFormatsMetaData":true,"positionIsImageCenter":false,"voxSizeReferenceFrameLength":{"value":1.0,"unit":{"measurementSystem":"SI.METRE","symbol":"mm","scaleFactor":0.001,"offset":0.0},"hashCodeValue":-469617440},"voxSizeIgnoreBioFormatsMetaData":true,"axesOfImageFlip":[false,false,false],"nFetcherThread":2,"numPriorities":4,"maxCacheSize":1}</opener_1>
+      <opener_2>{"dataLocation":"C:\\Users\\chiarutt\\Dropbox\\BIOP\\bigdataviewer-biop-tools\\src\\test\\resources\\ij.tif","useBioFormatsXYBlockSize":true,"isSoftRef":true,"cacheBlockSize":{"min":[0,0,0],"max":[512,512,1],"n":3},"swZC":false,"splitRGBChannels":false,"u":{"measurementSystem":"SI.METRE","symbol":"mm","scaleFactor":0.001,"offset":0.0},"positionReferenceFrameLength":{"value":1.0,"unit":{"measurementSystem":"SI.METRE","symbol":"mm","scaleFactor":0.001,"offset":0.0},"hashCodeValue":-469617440},"positionIgnoreBioFormatsMetaData":true,"positionIsImageCenter":false,"voxSizeReferenceFrameLength":{"value":1.0,"unit":{"measurementSystem":"SI.METRE","symbol":"mm","scaleFactor":0.001,"offset":0.0},"hashCodeValue":-469617440},"voxSizeIgnoreBioFormatsMetaData":true,"axesOfImageFlip":[false,false,false],"nFetcherThread":2,"numPriorities":4,"maxCacheSize":1}</opener_2>
+    </ImageLoader>
+    <ViewSetups>
+      <ViewSetup>
+        <id>0</id>
+        <name>Imagej.tif-ch0</name>
+        <size>1024 1024 1</size>
+        <voxelSize>
+          <unit>mm</unit>
+          <size>1.0 1.0 1.0</size>
+        </voxelSize>
+        <attributes>
+          <fileindex>0</fileindex>
+          <illumination>0</illumination>
+          <channel>0</channel>
+          <tile>0</tile>
+          <angle>0</angle>
+          <seriesnumber>0</seriesnumber>
+          <displaysettings>0</displaysettings>
+        </attributes>
+      </ViewSetup>
+      <ViewSetup>
+        <id>1</id>
+        <name>fiji.tif-ch0</name>
+        <size>800 800 1</size>
+        <voxelSize>
+          <unit>mm</unit>
+          <size>1.0 1.0 1.0</size>
+        </voxelSize>
+        <attributes>
+          <fileindex>1</fileindex>
+          <illumination>0</illumination>
+          <channel>0</channel>
+          <tile>1</tile>
+          <angle>0</angle>
+          <seriesnumber>0</seriesnumber>
+          <displaysettings>1</displaysettings>
+        </attributes>
+      </ViewSetup>
+      <ViewSetup>
+        <id>2</id>
+        <name>ij.tif-ch0</name>
+        <size>1024 1024 1</size>
+        <voxelSize>
+          <unit>mm</unit>
+          <size>1.0 1.0 1.0</size>
+        </voxelSize>
+        <attributes>
+          <fileindex>2</fileindex>
+          <illumination>0</illumination>
+          <channel>0</channel>
+          <tile>2</tile>
+          <angle>0</angle>
+          <seriesnumber>0</seriesnumber>
+          <displaysettings>2</displaysettings>
+        </attributes>
+      </ViewSetup>
+      <Attributes name="fileindex">
+        <fileindex>
+          <id>0</id>
+          <name>C:/Users/chiarutt/Dropbox/BIOP/bigdataviewer-biop-tools/src/test/resources/Imagej.tif</name>
+        </fileindex>
+        <fileindex>
+          <id>1</id>
+          <name>C:/Users/chiarutt/Dropbox/BIOP/bigdataviewer-biop-tools/src/test/resources/fiji.tif</name>
+        </fileindex>
+        <fileindex>
+          <id>2</id>
+          <name>C:/Users/chiarutt/Dropbox/BIOP/bigdataviewer-biop-tools\src\test/resources/ij.tif</name>
+        </fileindex>
+      </Attributes>
+      <Attributes name="illumination">
+        <Illumination>
+          <id>0</id>
+          <name>0</name>
+        </Illumination>
+      </Attributes>
+      <Attributes name="channel">
+        <Channel>
+          <id>0</id>
+          <name>0</name>
+        </Channel>
+      </Attributes>
+      <Attributes name="tile">
+        <Tile>
+          <id>0</id>
+          <name>0</name>
+        </Tile>
+        <Tile>
+          <id>1</id>
+          <name>1</name>
+        </Tile>
+        <Tile>
+          <id>2</id>
+          <name>2</name>
+        </Tile>
+      </Attributes>
+      <Attributes name="angle">
+        <Angle>
+          <id>0</id>
+          <name>0</name>
+        </Angle>
+      </Attributes>
+      <Attributes name="seriesnumber">
+        <seriesnumber>
+          <id>0</id>
+          <name>Series_0</name>
+        </seriesnumber>
+      </Attributes>
+      <Attributes name="displaysettings">
+        <Displaysettings>
+          <id>0</id>
+          <isset>true</isset>
+          <color>255 0 0 255</color>
+          <min>0.0</min>
+          <max>255.0</max>
+          <Projection_Mode>Sum</Projection_Mode>
+        </Displaysettings>
+        <Displaysettings>
+          <id>1</id>
+          <isset>true</isset>
+          <color>255 0 0 255</color>
+          <min>0.0</min>
+          <max>255.0</max>
+          <Projection_Mode>Sum</Projection_Mode>
+        </Displaysettings>
+        <Displaysettings>
+          <id>2</id>
+          <isset>true</isset>
+          <color>255 0 0 255</color>
+          <min>0.0</min>
+          <max>255.0</max>
+          <Projection_Mode>Sum</Projection_Mode>
+        </Displaysettings>
+      </Attributes>
+    </ViewSetups>
+    <Timepoints type="range">
+      <first>0</first>
+      <last>0</last>
+    </Timepoints>
+    <MissingViews />
+  </SequenceDescription>
+  <ViewRegistrations>
+    <ViewRegistration timepoint="0" setup="0">
+      <ViewTransform type="affine">
+        <affine>1.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 1.0 0.0</affine>
+      </ViewTransform>
+    </ViewRegistration>
+    <ViewRegistration timepoint="0" setup="1">
+      <ViewTransform type="affine">
+        <affine>1.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 1.0 0.0</affine>
+      </ViewTransform>
+    </ViewRegistration>
+    <ViewRegistration timepoint="0" setup="2">
+      <ViewTransform type="affine">
+        <affine>1.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 1.0 0.0</affine>
+      </ViewTransform>
+    </ViewRegistration>
+  </ViewRegistrations>
+</SpimData>

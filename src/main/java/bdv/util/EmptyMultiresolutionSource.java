@@ -28,13 +28,14 @@ public class EmptyMultiresolutionSource implements Source<UnsignedShortType>, Se
     transient final List<RandomAccessibleInterval> raiList;
     transient final List<AffineTransform3D> transformList;
 
-    public EmptyMultiresolutionSource(long nx, long ny, long nz, AffineTransform3D at3D, String name,
+    public EmptyMultiresolutionSource(long nx, long ny, long nz, long numberOfTimePoints, AffineTransform3D at3D, String name,
                                       int scalex, int scaley, int scalez, int numberOfResolutions) {
 
         params = new EmptyMultiresolutionSource.EmptyMultiresolutionSourceParams();
         params.nx = nx;
         params.ny = ny;
         params.nz = nz;
+        params.numberOfTimepoints = numberOfTimePoints;
         params.scalex = scalex;
         params.scaley = scaley;
         params.scalez = scalez;
@@ -147,7 +148,7 @@ public class EmptyMultiresolutionSource implements Source<UnsignedShortType>, Se
     }
 
     static public class EmptyMultiresolutionSourceParams implements Cloneable, Serializable {
-        public long nx,ny,nz;
+        public long nx,ny,nz, numberOfTimepoints;
         public AffineTransform3D at3D;
         public String name;
         public int scalex, scaley, scalez, numberOfResolutions;
@@ -162,6 +163,7 @@ public class EmptyMultiresolutionSource implements Source<UnsignedShortType>, Se
             scaley = 1;
             scalez = 1;
             numberOfResolutions = 1;
+            numberOfTimepoints = 1;
         }
 
         public EmptyMultiresolutionSourceParams(EmptyMultiresolutionSource.EmptyMultiresolutionSourceParams p) {
@@ -175,6 +177,7 @@ public class EmptyMultiresolutionSource implements Source<UnsignedShortType>, Se
             scaley = p.scaley;
             scalez = p.scalez;
             numberOfResolutions = p.numberOfResolutions;
+            numberOfTimepoints = p.numberOfTimepoints;
         }
     }
 }

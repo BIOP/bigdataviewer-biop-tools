@@ -30,7 +30,8 @@ public class AlphaSourceTransformed extends TransformedSource<FloatType> impleme
 
     @Override
     public boolean intersectBox(AffineTransform3D affineTransform, Interval cell, int timepoint) {
-        if (origin.doBoundingBoxCulling()) {
+        //return true;
+        if (originAlpha.doBoundingBoxCulling()) {
             // Let's try a simplebox computation and see if there are intersections.
             AlphaSourceRAI.Box3D box_cell = new AlphaSourceRAI.Box3D(affineTransform, cell);
             AffineTransform3D affineTransform3D = new AffineTransform3D();
@@ -38,8 +39,13 @@ public class AlphaSourceTransformed extends TransformedSource<FloatType> impleme
             AlphaSourceRAI.Box3D box_this = new AlphaSourceRAI.Box3D(affineTransform3D, this.getSource(timepoint, 0));
             return box_this.intersects(box_cell);
         } else {
-            return false;
+            return true;
         }
+        /*AlphaSourceRAI.Box3D box_cell = new AlphaSourceRAI.Box3D(affineTransform, cell);
+        AffineTransform3D affineTransform3D = new AffineTransform3D();
+        getSourceTransform(timepoint, 0, affineTransform3D);
+        AlphaSourceRAI.Box3D box_this = new AlphaSourceRAI.Box3D(affineTransform3D, this.getSource(timepoint, 0));
+        return box_this.intersects(box_cell);*/
         //return originAlpha.intersectBox(affineTransform, cell, timepoint);
     }
 }

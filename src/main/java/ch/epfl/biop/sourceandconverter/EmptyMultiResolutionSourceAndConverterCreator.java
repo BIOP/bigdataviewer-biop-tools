@@ -15,7 +15,7 @@ public class EmptyMultiResolutionSourceAndConverterCreator implements Runnable, 
 
     AffineTransform3D at3D;
 
-    long nx, ny, nz;
+    long nx, ny, nz, nt;
 
     int scalex, scaley, scalez;
 
@@ -38,13 +38,14 @@ public class EmptyMultiResolutionSourceAndConverterCreator implements Runnable, 
     public EmptyMultiResolutionSourceAndConverterCreator(
             String name,
             AffineTransform3D at3D,
-            long nx, long ny, long nz,
+            long nx, long ny, long nz, long nt,
             int scalex, int scaley, int scalez,
             int numberOfResolutions
     ) {
         this.nx = nx;
         this.ny = ny;
         this.nz = nz;
+        this.nt = nt;
         this.at3D = at3D;
         this.name = name;
         this.scalex = scalex;
@@ -60,7 +61,7 @@ public class EmptyMultiResolutionSourceAndConverterCreator implements Runnable, 
 
     @Override
     public SourceAndConverter get() {
-        Source src = new EmptyMultiresolutionSource(nx,ny,nz,at3D,name, scalex, scaley, scalez, numberOfResolutions);
+        Source src = new EmptyMultiresolutionSource(nx,ny,nz,nt,at3D,name, scalex, scaley, scalez, numberOfResolutions);
 
         SourceAndConverter sac;
 
