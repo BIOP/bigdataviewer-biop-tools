@@ -4,9 +4,13 @@ import bdv.util.BdvHandle;
 import bdv.util.source.alpha.AlphaSourceHelper;
 import bdv.util.source.fused.AlphaFusedResampledSource;
 import bdv.viewer.SourceAndConverter;
+import ch.epfl.biop.sourceandconverter.EmptyMultiResolutionSourceAndConverterCreator;
 import ch.epfl.biop.sourceandconverter.SourceFuserAndResampler;
+import ij.IJ;
+import loci.common.DebugTools;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imagej.ImageJ;
+import net.imglib2.RealPoint;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.realtransform.RealTransform;
 import net.imglib2.realtransform.ThinplateSplineTransform;
@@ -15,14 +19,16 @@ import net.imglib2.realtransform.inverse.WrappedIterativeInvertibleRealTransform
 import org.junit.After;
 import org.junit.Test;
 import sc.fiji.bdvpg.bdv.navigate.ViewerTransformAdjuster;
+import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
 import sc.fiji.bdvpg.sourceandconverter.display.BrightnessAutoAdjuster;
-import sc.fiji.bdvpg.sourceandconverter.importer.EmptySourceAndConverterCreator;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceAffineTransformer;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceRealTransformer;
 import sc.fiji.bdvpg.spimdata.importer.SpimDataFromXmlImporter;
+import spimdata.SpimDataHelper;
 
+import javax.swing.tree.TreePath;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,30 +42,110 @@ public class CrazyMultireWarpedSourcesFusedDemo {
         ij = new ImageJ();
         ij.ui().showUI();
 
+        DebugTools.enableLogging ("OFF");
+
+        //DebugTools.enableLogging ("INFO");
+
         int nSourcesInX = 40;
 
-        List<SourceAndConverter> all_sources = demo(nSourcesInX);
+
+        //final String filePath = "src/test/resources/mri-stack.xml";
+        final String filePath = "C:/Users/nicol/Desktop/demoabba/_bdvdataset_0.xml";//"src/test/resources/Icons.xml";
+        // Import SpimData
+        SpimDataFromXmlImporter importer = new SpimDataFromXmlImporter(filePath);
+        importer.run();
+
+        TreePath tp =
+                ij.get(SourceAndConverterService.class)
+                        .getUI()
+                        .getTreePathFromString("C:/Users/nicol/Desktop/demoabba/_bdvdataset_0.xml>Channel>0");
+
+        List<SourceAndConverter> sources =
+                ij.get(SourceAndConverterService.class).getUI().getSourceAndConvertersFromTreePath(tp);
+
+        List<SourceAndConverter> sources_0 = new ArrayList<>();
+
+        sources_0.addAll(demo(sources, nSourcesInX));
+
+        tp =
+                ij.get(SourceAndConverterService.class)
+                        .getUI()
+                        .getTreePathFromString("C:/Users/nicol/Desktop/demoabba/_bdvdataset_0.xml>Channel>1");
+
+        sources =
+                ij.get(SourceAndConverterService.class).getUI().getSourceAndConvertersFromTreePath(tp);
+
+
+        List<SourceAndConverter> sources_1 = new ArrayList<>();
+
+        sources_1.addAll(demo(sources, nSourcesInX));
+
+        tp =
+                ij.get(SourceAndConverterService.class)
+                        .getUI()
+                        .getTreePathFromString("C:/Users/nicol/Desktop/demoabba/_bdvdataset_0.xml>Channel>2");
+
+        sources =
+                ij.get(SourceAndConverterService.class).getUI().getSourceAndConvertersFromTreePath(tp);
+
+
+        List<SourceAndConverter> sources_2 = new ArrayList<>();
+
+        sources_2.addAll(demo(sources, nSourcesInX));
+
+        double pxSize = 0.01;
 
         AffineTransform3D location = new AffineTransform3D();
-        location.scale(0.5);
+        location.scale(pxSize);
         location.translate(0,0,0);
 
-        SourceAndConverter model = new EmptySourceAndConverterCreator("Model", location, 400*nSourcesInX,300*nSourcesInX,1).get();
+        int nPixX = (int) (400*nSourcesInX*0.5/pxSize);
+        int nPixY = (int) (300*nSourcesInX*0.5/pxSize);
+
+        IJ.log("Making a virtual ["+nPixX+"x"+nPixY+"] Image");
+
+        SourceAndConverter model =
+                new EmptyMultiResolutionSourceAndConverterCreator(
+                        "Model",
+                        location,
+                        nPixX,
+                        nPixY,
+                        1,1,
+                        2,2,2,16).get();
 
         SourceAndConverterServices.getSourceAndConverterService().register(model);
 
-        SourceAndConverter fused = new SourceFuserAndResampler(all_sources,
+        SourceAndConverter fused_0 = new SourceFuserAndResampler(sources_0,
                 AlphaFusedResampledSource.AVERAGE,
                 model, "Fused source",
                 true, true, false, 0,
-                256, 256, 1, 8).get();
+                256, 256, 1, 3).get();
 
         BdvHandle bdvh = SourceAndConverterServices.getBdvDisplayService().getNewBdv();
 
         SourceAndConverterServices
-                .getBdvDisplayService().show(bdvh, fused);
+                .getBdvDisplayService().show(bdvh, fused_0);
 
-        new ViewerTransformAdjuster(bdvh, fused).run();
+        new ViewerTransformAdjuster(bdvh, fused_0).run();
+
+        SourceAndConverter fused_1 = new SourceFuserAndResampler(sources_1,
+                AlphaFusedResampledSource.AVERAGE,
+                model, "Fused source",
+                true, true, false, 0,
+                256, 256, 1, 3).get();
+
+
+        SourceAndConverterServices
+                .getBdvDisplayService().show(bdvh, fused_1);
+
+        SourceAndConverter fused_2 = new SourceFuserAndResampler(sources_2,
+                AlphaFusedResampledSource.AVERAGE,
+                model, "Fused source",
+                true, true, false, 0,
+                256, 256, 1, 3).get();
+
+        SourceAndConverterServices
+                .getBdvDisplayService().show(bdvh, fused_2);
 
     }
 
@@ -73,31 +159,7 @@ public class CrazyMultireWarpedSourcesFusedDemo {
         TestHelper.closeFijiAndBdvs(ij);
     }
 
-    public static List<SourceAndConverter> demo(int numberOfSourcesInOneAxis) {
-
-        // Creates a BdvHandle
-        BdvHandle bdvHandle = SourceAndConverterServices
-                .getBdvDisplayService().getActiveBdv();
-
-        //final String filePath = "src/test/resources/mri-stack.xml";
-        final String filePath = "src/test/resources/Icons.xml";
-        // Import SpimData
-        SpimDataFromXmlImporter importer = new SpimDataFromXmlImporter(filePath);
-        //importer.run();
-
-        final AbstractSpimData spimData = importer.get();
-
-        List<SourceAndConverter> sources = SourceAndConverterServices
-                .getSourceAndConverterService()
-                .getSourceAndConverterFromSpimdata(spimData);
-
-        for (SourceAndConverter source:sources) {
-            new ViewerTransformAdjuster(bdvHandle, source).run();
-            new BrightnessAutoAdjuster(source, 0).run();
-        }
-
-        double[][] origin = new double[2][4];
-        double[][] target = new double[2][4];
+    public static List<SourceAndConverter> demo(List<SourceAndConverter> sources, int numberOfSourcesInOneAxis) {
 
         ArrayList<SourceAndConverter> sacs = new ArrayList<>();
 
@@ -109,23 +171,48 @@ public class CrazyMultireWarpedSourcesFusedDemo {
                 sac = sources.get(sourceIndex);
                 SourceAndConverter alphaSac = AlphaSourceHelper.getOrBuildAlphaSource(sac);
 
-
-
                 AffineTransform3D at3d = new AffineTransform3D();
 
-                at3d.rotate(2, Math.random());
+                at3d.rotate(2, Math.random()*6.0);
                 //at3d.scale(0.5 + Math.random() / 3, 0.5 + Math.random() / 2, 1);
-                at3d.scale((0.5 + Math.random() / 3.0)/2.5, (0.5 + Math.random() / 2.0)/2.5, 1);
+                at3d.scale((0.5 + Math.random() / 3.0)*25, (0.5 + Math.random() / 2.0)*25, 1);
                 at3d.translate(200 * x, 200 * y, 0);
 
-                for (int iPt = 0; iPt < 4; iPt++) {
+                RealPoint ptC = SourceAndConverterHelper.getSourceAndConverterCenterPoint(sac);
+                double r = 2.0;
+                double xc = ptC.getDoublePosition(0);
+                double yc = ptC.getDoublePosition(1);
 
-                    origin[0] = new double[]{0,1024,1024,0};
-                    origin[1] = new double[]{0,0,1024,1024};
+                int nPtX = 3;
+                int nPtY = 3;
 
-                    target[0] = new double[]{0,512+Math.random()*512,512+Math.random()*512,0};
-                    target[1] = new double[]{0,0,512+Math.random()*512,512+Math.random()*512};
+                int nPt = (2*nPtX+1)*(2*nPtY+1);
+
+
+                double[][] origin = new double[2][5];
+                double[][] target = new double[2][5];
+
+                int iPt = 0;
+
+                origin[0] = new double[nPt];
+                origin[1] = new double[nPt];
+
+
+                target[0] = new double[nPt];
+                target[1] = new double[nPt];
+
+                for (int xg = -nPtX;xg<=nPtX;xg++) {
+                    for (int yg = -nPtY;yg<=nPtY;yg++) {
+                        origin[0][iPt] = xc+xg*r;
+                        origin[1][iPt] = yc+yg*r;
+
+                        target[0][iPt] = xc+(xg*r+(Math.random()-0.5)*r)*0.8;
+                        target[1][iPt] = yc+(yg*r+(Math.random()-0.5)*r)*0.8;
+
+                        iPt++;
+                    }
                 }
+
 
                 RealTransform rt = new ThinplateSplineTransform(target, origin);
                 WrappedIterativeInvertibleRealTransform invertibleRealTransform = new WrappedIterativeInvertibleRealTransform(rt);

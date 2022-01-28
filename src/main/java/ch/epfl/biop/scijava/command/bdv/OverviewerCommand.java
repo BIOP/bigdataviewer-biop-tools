@@ -279,9 +279,9 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
 
     public static class SacProperties {
 
-        final AffineTransform3D location;
-        long[] dims = new long[3];
-        final SourceAndConverter sac;
+        public final AffineTransform3D location;
+        public long[] dims = new long[3];
+        public final SourceAndConverter sac;
 
         public SacProperties(SourceAndConverter sac) {
             location = new AffineTransform3D();

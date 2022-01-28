@@ -169,7 +169,9 @@ public class AlphaFusedResampledSource< T extends NumericType<T> & NativeType<T>
         int level = 0;
         while((originVoxSize.get(origin).get(level)<voxSize)&&(level<originVoxSize.get(origin).size()-1)) {
             level=level+1;
+            //logger.info("voxSize="+voxSize+" vs "+originVoxSize.get(origin).get(level));
         }
+        //logger.info("level="+level);
         return level;
     }
 
@@ -188,7 +190,10 @@ public class AlphaFusedResampledSource< T extends NumericType<T> & NativeType<T>
         for (int l=0;l<rootOrigin.getNumMipmapLevels();l++) {
             AffineTransform3D at3d = new AffineTransform3D();
             rootOrigin.getSourceTransform(0,l,at3d);
-            double mid = SourceAndConverterHelper.getCharacteristicVoxelSize(at3d);
+            double mid = //SourceAndConverterHelper.getCharacteristicVoxelSize(at3d);
+
+            SourceAndConverterHelper.getCharacteristicVoxelSize(origin,0,l);
+
             originVoxSize.get(origin).add(mid);
         }
 
@@ -208,10 +213,10 @@ public class AlphaFusedResampledSource< T extends NumericType<T> & NativeType<T>
             }
 
             // For debugging resampling issues
-            logger.debug("Model mipmap level "+l+" correspond to origin mipmap level "+mipmapModelToOrigin.get(l));
-            logger.debug("Model mipmap level "+l+" has a characteristic voxel size of "+
+            logger.info("Model mipmap level "+l+" correspond to origin mipmap level "+mipmapModelToOrigin.get(origin).get(l));
+            logger.info("Model mipmap level "+l+" has a characteristic voxel size of "+
                     SourceAndConverterHelper.getCharacteristicVoxelSize(resamplingModel,0,l));
-            logger.debug("Origin level "+mipmapModelToOrigin.get(l)+" has a characteristic voxel size of "+
+            logger.info("Origin level "+mipmapModelToOrigin.get(origin).get(l)+" has a characteristic voxel size of "+
                     SourceAndConverterHelper.getCharacteristicVoxelSize(origin,0,mipmapModelToOrigin.get(origin).get(l)));
 
         }
@@ -291,9 +296,8 @@ public class AlphaFusedResampledSource< T extends NumericType<T> & NativeType<T>
 
                     final Img<T> rai = factory.create(new long[]{sx, sy, sz}, pixelCreator.get(),
                             cell -> {
-                                // TODO : improve by discarding some sources which are not in the cell
+
                                 boolean[] sourcesPresentInCell = new boolean[nSources];
-                                //int nSourcesPresent = 0;
                                 for (int i=0;i<nSources;i++) {
                                     IAlphaSource alpha = arrayAlphaSources[i];
                                     if (!alpha.doBoundingBoxCulling()) {
@@ -301,10 +305,8 @@ public class AlphaFusedResampledSource< T extends NumericType<T> & NativeType<T>
                                     } else {
                                         sourcesPresentInCell[i] = alpha.intersectBox(affineTransform.copy(), cell, t);
                                     }
-                                    //if (sourcesPresentInCell[i]) nSourcesPresent++;
                                 }
 
-                                //System.out.println(nSourcesPresent+"/"+nSources);
                                 RandomAccess<T> nonCachedAccess = nonCached.randomAccess(sourcesPresentInCell);
                                 Cursor<T> out = Views.flatIterable(cell).cursor();
                                 T t_in;
