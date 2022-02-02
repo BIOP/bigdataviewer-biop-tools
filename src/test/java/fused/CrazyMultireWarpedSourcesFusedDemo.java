@@ -50,7 +50,8 @@ public class CrazyMultireWarpedSourcesFusedDemo {
 
 
         //final String filePath = "src/test/resources/mri-stack.xml";
-        final String filePath = "C:/Users/nicol/Desktop/demoabba/_bdvdataset_0.xml";//"src/test/resources/Icons.xml";
+        //final String filePath = "C:/Users/nicol/Desktop/demoabba/_bdvdataset_0.xml";//"src/test/resources/Icons.xml";
+        final String filePath = "D:/QuPathDemoABBA/abba/_bdvdataset_0.xml";//"src/test/resources/Icons.xml";
         // Import SpimData
         SpimDataFromXmlImporter importer = new SpimDataFromXmlImporter(filePath);
         importer.run();
@@ -58,7 +59,7 @@ public class CrazyMultireWarpedSourcesFusedDemo {
         TreePath tp =
                 ij.get(SourceAndConverterService.class)
                         .getUI()
-                        .getTreePathFromString("C:/Users/nicol/Desktop/demoabba/_bdvdataset_0.xml>Channel>0");
+                        .getTreePathFromString(filePath+">Channel>1");
 
         List<SourceAndConverter> sources =
                 ij.get(SourceAndConverterService.class).getUI().getSourceAndConvertersFromTreePath(tp);
@@ -70,7 +71,7 @@ public class CrazyMultireWarpedSourcesFusedDemo {
         tp =
                 ij.get(SourceAndConverterService.class)
                         .getUI()
-                        .getTreePathFromString("C:/Users/nicol/Desktop/demoabba/_bdvdataset_0.xml>Channel>1");
+                        .getTreePathFromString(filePath+">Channel>2");
 
         sources =
                 ij.get(SourceAndConverterService.class).getUI().getSourceAndConvertersFromTreePath(tp);
@@ -83,7 +84,7 @@ public class CrazyMultireWarpedSourcesFusedDemo {
         tp =
                 ij.get(SourceAndConverterService.class)
                         .getUI()
-                        .getTreePathFromString("C:/Users/nicol/Desktop/demoabba/_bdvdataset_0.xml>Channel>2");
+                        .getTreePathFromString(filePath+">Channel>3");
 
         sources =
                 ij.get(SourceAndConverterService.class).getUI().getSourceAndConvertersFromTreePath(tp);
@@ -93,7 +94,7 @@ public class CrazyMultireWarpedSourcesFusedDemo {
 
         sources_2.addAll(demo(sources, nSourcesInX));
 
-        double pxSize = 0.01;
+        double pxSize = 0.005;
 
         AffineTransform3D location = new AffineTransform3D();
         location.scale(pxSize);
@@ -119,7 +120,7 @@ public class CrazyMultireWarpedSourcesFusedDemo {
                 AlphaFusedResampledSource.AVERAGE,
                 model, "Fused source",
                 true, true, false, 0,
-                256, 256, 1, 3).get();
+                256, 256, 1, 8).get();
 
         BdvHandle bdvh = SourceAndConverterServices.getBdvDisplayService().getNewBdv();
 
