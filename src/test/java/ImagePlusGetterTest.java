@@ -65,7 +65,7 @@ public class ImagePlusGetterTest {
         CZTRange range = ImagePlusGetter
                 .fromSources(sources,0,0);
 
-        ImagePlusGetter.getImagePlus("Non Virtual", sources, 0, range, true).show();
+        ImagePlusGetter.getImagePlus("Non Virtual", sources, 0, range, true, false, true, false).show();
         ImagePlusGetter.getVirtualImagePlus("Virtual", sources, 0, range, true, true).show();//ImagePlusGetter.getVirtualImagePlus("Virtual no cache", sources, 0, range, false, true).show();
         ImagePlusGetter.getVirtualImagePlus("Virtual no cache", sources, 0, range, false, true).show();//ImagePlusGetter.getVirtualImagePlus("Virtual no cache", sources, 0, range, false, true).show();
 

@@ -23,6 +23,7 @@ import net.imglib2.realtransform.RealViews;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.type.operators.SetZero;
 import net.imglib2.view.ExtendedRandomAccessibleInterval;
 import net.imglib2.view.Views;
 import org.slf4j.Logger;
@@ -276,7 +277,7 @@ public class AlphaFusedResampledSource< T extends NumericType<T> & NativeType<T>
                     final ReadOnlyCachedCellImgOptions cacheOptions = ReadOnlyCachedCellImgOptions
                             .options()
                             .cacheType(DiskCachedCellImgOptions.CacheType.SOFTREF)
-                            .maxCacheSize(10)
+                            //.maxCacheSize(10)
                             .cellDimensions(blockSize);
 
                     final ReadOnlyCachedCellImgFactory factory = new ReadOnlyCachedCellImgFactory( cacheOptions );
@@ -298,22 +299,28 @@ public class AlphaFusedResampledSource< T extends NumericType<T> & NativeType<T>
                             cell -> {
 
                                 boolean[] sourcesPresentInCell = new boolean[nSources];
+                                boolean oneSourcePresent = false;
                                 for (int i=0;i<nSources;i++) {
                                     IAlphaSource alpha = arrayAlphaSources[i];
                                     if (!alpha.doBoundingBoxCulling()) {
                                         sourcesPresentInCell[i] = true;
+                                        oneSourcePresent = true;
                                     } else {
                                         sourcesPresentInCell[i] = alpha.intersectBox(affineTransform.copy(), cell, t);
+                                        oneSourcePresent = oneSourcePresent || sourcesPresentInCell[i];
                                     }
                                 }
-
-                                RandomAccess<T> nonCachedAccess = nonCached.randomAccess(sourcesPresentInCell);
-                                Cursor<T> out = Views.flatIterable(cell).cursor();
-                                T t_in;
-                                while (out.hasNext()) {
-                                    t_in = out.next();
-                                    nonCachedAccess.setPosition(out);
-                                    t_in.set(nonCachedAccess.get());
+                                if (oneSourcePresent) {
+                                    RandomAccess<T> nonCachedAccess = nonCached.randomAccess(sourcesPresentInCell);
+                                    Cursor<T> out = Views.flatIterable(cell).cursor();
+                                    T t_in;
+                                    while (out.hasNext()) {
+                                        t_in = out.next();
+                                        nonCachedAccess.setPosition(out);
+                                        t_in.set(nonCachedAccess.get());
+                                    }
+                                } else {
+                                    cell.forEach(SetZero::setZero);
                                 }
                             });
 

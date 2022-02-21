@@ -107,7 +107,7 @@
 		<bigwarp_fiji.version>7.0.5</bigwarp_fiji.version>
 
 		<leastsquares.version>1.0.0</leastsquares.version>
-		<ijl-utilities-wrappers.version>0.3.25</ijl-utilities-wrappers.version>
+		<ijl-utilities-wrappers.version>0.4.0</ijl-utilities-wrappers.version>
 		<image-transform-converters.version>0.1.5</image-transform-converters.version>
 
 		<bigdataviewer-spimdata-extras.version>0.1.6</bigdataviewer-spimdata-extras.version>
@@ -115,7 +115,7 @@
 
 		<bigdataviewer-playground-display.version>0.2.0</bigdataviewer-playground-display.version>
 
-		<Operetta_Importer.version>0.1.19</Operetta_Importer.version>
+		<Operetta_Importer.version>0.1.21</Operetta_Importer.version>
 		<bigvolumeviewer.version>0.2.0</bigvolumeviewer.version>
 
 		<releaseProfiles>sign,deploy-to-scijava</releaseProfiles>

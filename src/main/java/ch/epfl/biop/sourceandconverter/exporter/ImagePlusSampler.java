@@ -33,7 +33,8 @@ public class ImagePlusSampler {
                                 boolean interpolate,
                                 boolean virtual,
                                 boolean cache,
-                                boolean verbose) throws UnsupportedOperationException {
+                                boolean verbose,
+                                boolean parallelC, boolean parallelZ, boolean parallelT) throws UnsupportedOperationException {
 
         if (sourceList.size() == 0) {
             throw  new UnsupportedOperationException("No input sources");
@@ -65,7 +66,7 @@ public class ImagePlusSampler {
 
         ImagePlus compositeImage;
         if (!virtual) {
-            compositeImage = ImagePlusGetter.getImagePlus(imageName, resampledSourceList, 0, range, verbose);
+            compositeImage = ImagePlusGetter.getImagePlus(imageName, resampledSourceList, 0, range, verbose, parallelC, parallelZ, parallelT);
         } else {
             compositeImage = ImagePlusGetter.getVirtualImagePlus(imageName, resampledSourceList, 0, range, cache, verbose);
         }
@@ -92,6 +93,10 @@ public class ImagePlusSampler {
         private String unit;
         private CZTRange.Builder rangeBuilder = new CZTRange.Builder();
         private Function<Collection<SourceAndConverter<?>>,List<SourceAndConverter<?>>> sorter = sacslist -> SourceAndConverterHelper.sortDefaultGeneric(sacslist);
+
+        private boolean parallelC = false;
+        private boolean parallelZ = false;
+        private boolean parallelT = false;
 
         public Builder sources(SourceAndConverter[] sacs) {
             this.sacs = sacs;
@@ -158,6 +163,21 @@ public class ImagePlusSampler {
             return this;
         }
 
+        public Builder parallelC() {
+            this.parallelC = true;
+            return this;
+        }
+
+        public Builder parallelZ() {
+            this.parallelZ = true;
+            return this;
+        }
+
+        public Builder parallelT() {
+            this.parallelT = true;
+            return this;
+        }
+
         public ImagePlus get() throws Exception{
 
             int maxTimeFrames = SourceAndConverterHelper.getMaxTimepoint(sacs);
@@ -174,7 +194,7 @@ public class ImagePlusSampler {
                     level,
                     range,
                     unit,
-                    interpolate,virtual, cache, verbose);
+                    interpolate,virtual, cache, verbose, parallelC, parallelZ, parallelT);
         }
     }
 }

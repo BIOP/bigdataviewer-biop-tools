@@ -31,11 +31,11 @@ public class ImagePlusGetter {
 
     private static final Logger logger = LoggerFactory.getLogger(ImagePlusGetter.class);
 
-    /**
+    /*
      * Value used in {@link ImagePlusGetter#getImagePlus(String, List, int, CZTRange, boolean)}
      * in order to limit the amount of parallelization when acquiring an image
      */
-    public static int limitParallelJobs = 16;
+    //public static int limitParallelJobs = 16;
 
     /* Helper method that determines the number of lines present in IJ log
      */
@@ -184,7 +184,10 @@ public class ImagePlusGetter {
                                          List<SourceAndConverter> sources,
                                          int resolutionLevel,
                                          CZTRange range,
-                                         boolean verbose) {
+                                         boolean verbose,
+                                         boolean parallelC,
+                                         boolean parallelZ,
+                                         boolean parallelT) {
         ImagePlus vImage = getVirtualImagePlus(name, sources, resolutionLevel, range, false, false );
 
         final AtomicLong bytesCounter = new AtomicLong();
@@ -215,11 +218,11 @@ public class ImagePlusGetter {
             imp = HyperStackConverter.toHyperStack(imp, czt[0], czt[1], czt[2]);
         }
 
-        int nZ = range.rangeZ.size();
+        /*int nZ = range.rangeZ.size();
         int nT = range.rangeT.size();
-        int nC = range.rangeC.size();
+        int nC = range.rangeC.size();*/
 
-        final boolean parallelZ;
+        /*final boolean parallelZ;
         final boolean parallelT;
         final boolean parallelC;
 
@@ -247,7 +250,7 @@ public class ImagePlusGetter {
             logger.debug(name+" get with parallel frames acquisition: #T = "+nT);
         } else {
             parallelT = false;
-        }
+        }*/
 
         final ImagePlus image = imp;
 

@@ -61,6 +61,15 @@ public class ExportToMultipleImagePlusCommand implements BdvPlaygroundActionComm
     @Parameter( label = "Open images in parallel")
     private Boolean parallel = false;
 
+    @Parameter( label = "Acquire channels in parallel (Normal only)", required = false)
+    Boolean parallelC = false;
+
+    @Parameter( label = "Acquire slices in parallel (Normal only)", required = false)
+    Boolean parallelZ = false;
+
+    @Parameter( label = "Acquire timepoints in parallel (Normal only)", required = false)
+    Boolean parallelT = false;
+
     @Parameter(label = "Split by dataset entities, comma separated (channel, fileseries)")
     String entitiesSplit = "";
 
@@ -153,7 +162,7 @@ public class ExportToMultipleImagePlusCommand implements BdvPlaygroundActionComm
 
                 switch (export_mode) {
                     case "Normal":
-                        imp_out = ImagePlusGetter.getImagePlus(name, sources, level, range, monitor);
+                        imp_out = ImagePlusGetter.getImagePlus(name, sources, level, range, monitor, parallelC, parallelZ, parallelT);
                         break;
                     case "Virtual":
                         imp_out = ImagePlusGetter.getVirtualImagePlus(name, sources, level, range, true, monitor);
