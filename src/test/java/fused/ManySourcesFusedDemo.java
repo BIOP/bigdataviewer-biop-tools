@@ -30,7 +30,7 @@ public class ManySourcesFusedDemo {
         ij = new ImageJ();
         ij.ui().showUI();
 
-        demo(20);
+        demo(5);
 
         AffineTransform3D location = new AffineTransform3D();
         location.scale(0.5);

@@ -3,10 +3,19 @@ package ch.epfl.biop.sourceandconverter;
 import bdv.util.EmptySource;
 import bdv.util.ResampledSource;
 import bdv.viewer.Source;
+import bdv.viewer.SourceAndConverter;
 import mpicbg.spim.data.sequence.FinalVoxelDimensions;
+import net.imglib2.FinalRealInterval;
+import net.imglib2.Interval;
+import net.imglib2.RealInterval;
 import net.imglib2.RealPoint;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.util.LinAlgHelpers;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class SourceHelper {
 
@@ -104,4 +113,84 @@ public class SourceHelper {
 
         return rotMatrix;
     }
+
+
+    /**
+     * Returns a source which spans all the sources in xy, at the center location in Z
+     */
+    public static SourceAndConverter getModelFusedMultiSources(
+            SourceAndConverter[] sources,
+            int timepoint, int nTimepoints,
+            double pixSizeXY, double pixSizeZ,
+            int nResolutionLevels,
+            int downscaleXY, int downscaleZ,
+            String model_name) {
+
+        List<RealInterval> intervalList = Arrays.asList(sources).stream()
+                .filter(sourceAndConverter -> sourceAndConverter.getSpimSource()!=null)
+                .filter(sourceAndConverter -> sourceAndConverter.getSpimSource().isPresent(timepoint))
+                .map(sourceAndConverter -> {
+                    Interval interval = sourceAndConverter.getSpimSource().getSource(timepoint,0);
+                    AffineTransform3D sourceTransform = new AffineTransform3D();
+
+                    List<RealPoint> corners = new ArrayList<>();
+
+                    sourceAndConverter.getSpimSource().getSourceTransform( timepoint, 0, sourceTransform );
+                    corners.add(new RealPoint(interval.min(0), interval.min(1), interval.min(2)));
+                    corners.add(new RealPoint(interval.min(0), interval.min(1), interval.max(2)+1));
+                    corners.add(new RealPoint(interval.min(0), interval.max(1)+1, interval.min(2)));
+                    corners.add(new RealPoint(interval.min(0), interval.max(1)+1, interval.max(2)+1));
+                    corners.add(new RealPoint(interval.max(0)+1, interval.min(1), interval.min(2)));
+                    corners.add(new RealPoint(interval.max(0)+1, interval.min(1), interval.max(2)+1));
+                    corners.add(new RealPoint(interval.max(0)+1, interval.max(1)+1, interval.min(2)));
+                    corners.add(new RealPoint(interval.max(0)+1, interval.max(1)+1, interval.max(2)+1));
+
+                    corners.forEach(pt -> sourceTransform.apply(pt, pt));
+
+                    double minX = corners.stream().mapToDouble(pt -> pt.getDoublePosition(0)).min().getAsDouble();
+                    double minY = corners.stream().mapToDouble(pt -> pt.getDoublePosition(1)).min().getAsDouble();
+                    double minZ = corners.stream().mapToDouble(pt -> pt.getDoublePosition(2)).min().getAsDouble();
+
+                    double maxX = corners.stream().mapToDouble(pt -> pt.getDoublePosition(0)).max().getAsDouble();
+                    double maxY = corners.stream().mapToDouble(pt -> pt.getDoublePosition(1)).max().getAsDouble();
+                    double maxZ = corners.stream().mapToDouble(pt -> pt.getDoublePosition(2)).max().getAsDouble();
+
+                    return new FinalRealInterval(new double[] {minX, minY, minZ}, new double[] {maxX, maxY, maxZ});
+                })
+                .filter(object -> object!=null)
+                .collect(Collectors.toList());
+
+        RealInterval maxInterval = intervalList.stream()
+                .reduce((i1,i2) -> new FinalRealInterval(
+                        new double[]{Math.min(i1.realMin(0), i2.realMin(0)), Math.min(i1.realMin(1), i2.realMin(1)), Math.min(i1.realMin(2), i2.realMin(2))},
+						new double[]{Math.max(i1.realMax(0), i2.realMax(0)), Math.max(i1.realMax(1), i2.realMax(1)), Math.max(i1.realMax(2), i2.realMax(2))}
+						)).get();
+
+        RealInterval imageInterval = new FinalRealInterval(
+						new double[]{maxInterval.realMin(0), maxInterval.realMin(1), maxInterval.realMin(2)},
+						new double[]{maxInterval.realMax(0), maxInterval.realMax(1), maxInterval.realMax(2)}
+						);
+
+        double sizeX = imageInterval.realMax(0)-imageInterval.realMin(0);
+
+        double sizeY = imageInterval.realMax(1)-imageInterval.realMin(1);
+
+        double sizeZ = imageInterval.realMax(2)-imageInterval.realMin(2);
+
+        AffineTransform3D at3D = new AffineTransform3D();
+        at3D.scale(pixSizeXY, pixSizeXY, pixSizeZ);
+        at3D.translate(imageInterval.realMin(0), imageInterval.realMin(1), imageInterval.realMin(2));
+
+        long nPx = (long)Math.ceil(sizeX/pixSizeXY);
+        long nPy = (long)Math.ceil(sizeY/pixSizeXY);
+        long nPz = (long)Math.ceil(sizeZ/pixSizeZ);
+
+        return new EmptyMultiResolutionSourceAndConverterCreator(
+                model_name,
+                at3D, nPx, nPy, nPz,
+                nTimepoints,
+                downscaleXY, downscaleXY, downscaleZ,
+                nResolutionLevels).get();
+    }
+
 }
