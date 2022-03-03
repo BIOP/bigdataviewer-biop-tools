@@ -100,15 +100,28 @@ public class LayerAlphaProjectorFactory implements AccumulateProjectorFactory<AR
 
     }
 
+    /**
+     * Makes a layered alpha projector
+     * @param sourcesMeta object which links its source to its layer
+     * @param layerMeta object which links each layer to its alpha value
+     */
     public LayerAlphaProjectorFactory(SourcesMetadata sourcesMeta, LayerMetadata layerMeta) {
         this.sourcesMeta = sourcesMeta;
         this.layerMeta = layerMeta;
     }
 
+    /**
+     * Changes sources metadata
+     * @param sourcesMeta object which links its source to its layer
+     */
     public void setSourcesMeta(SourcesMetadata sourcesMeta) {
         this.sourcesMeta = sourcesMeta;
     }
 
+    /**
+     * Changes layer metadata
+     * @param layerMeta object which links each layer to its alpha value
+     */
     public void setLayerMeta(LayerMetadata layerMeta) {
         this.layerMeta = layerMeta;
     }

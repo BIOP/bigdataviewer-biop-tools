@@ -168,6 +168,10 @@ public class ImagePlusSampler {
             return this;
         }
 
+        /**
+         * to call  to open z slices in parallel
+         * @return builder
+         */
         public Builder parallelZ() {
             this.parallelZ = true;
             return this;

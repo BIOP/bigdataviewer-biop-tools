@@ -173,22 +173,17 @@ public class ImagePlusGetter {
     }
 
     /**
-     * Method which returns a non virtual {@link ImagePlus} out of a list
-     * of {@link SourceAndConverter}, taken at a certain resolution level, and which
-     * czt range is specified via a {@link CZTRange} object.
-     *
-     * Each {@link SourceAndConverter} represents a channel. The dimension of each source
-     * need to be compatible.
-     *
-     * TODO : handle dimension exception better ?
      *
      * @param name Name of the output ImagePlus
      * @param sources sources to export as ImagePlus
      * @param resolutionLevel resolution Level of the sources
      * @param range czt range which can be used to define a subset of the output image
      * @param verbose if set to true, a {@link BytesMonitor} is created to follow the progression of the creation of this ImagePlus
+     * @param parallelC loads all channels in parallet
+     * @param parallelZ loads all slices in parallel
+     * @param parallelT loads all timepoints in parallel
      * @return a non virtual {@link ImagePlus} out of a list of {@link SourceAndConverter},
-     * taken at a certain resolution level, and which czt range is specified via a {@link CZTRange} object
+     *       taken at a certain resolution level, and which czt range is specified via a {@link CZTRange} object
      */
     public static ImagePlus getImagePlus(String name,
                                          List<SourceAndConverter> sources,

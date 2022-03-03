@@ -8,6 +8,9 @@ import java.util.Map;
 import static bdv.ui.BdvDefaultCards.*;
 import static bdv.ui.BdvDefaultCards.DEFAULT_SOURCES_CARD;
 
+/**
+ * Some common functions to deal with cards in BigDataViewer
+ */
 public class CardHelper {
 
     public static CardState getCardState(BdvHandle bdvh) {

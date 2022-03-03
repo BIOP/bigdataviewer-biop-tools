@@ -276,6 +276,9 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
         return editorPopupActions;
     }
 
+    /**
+     * Sorts sources according to their dataset and view id
+     */
     public Function<Collection<SourceAndConverter<?>>,List<SourceAndConverter<?>>> sorter = sacslist -> SourceAndConverterHelper.sortDefaultGeneric(sacslist);
 
     public static class SacProperties {
