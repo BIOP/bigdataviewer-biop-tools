@@ -6,7 +6,10 @@ import ch.epfl.biop.sourceandconverter.exporter.ImagePlusSampler;
 import ij.ImagePlus;
 import net.imglib2.RealPoint;
 import net.imglib2.realtransform.AffineTransform3D;
+import net.imglib2.type.numeric.ARGBType;
+import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.volatiles.VolatileARGBType;
 import org.scijava.ItemIO;
 import org.scijava.ItemVisibility;
 import org.scijava.plugin.Parameter;
@@ -18,6 +21,7 @@ import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 import sc.fiji.bdvpg.sourceandconverter.importer.EmptySourceAndConverterCreator;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * This command is a simplified version of {@link BdvViewToImagePlusExportCommand} where
@@ -89,7 +93,7 @@ public class BasicBdvViewToImagePlusExportCommand<T extends RealType<T>> impleme
 
     // Output imageplus window
     @Parameter(type = ItemIO.OUTPUT)
-    public ImagePlus imageplus;
+    public List<ImagePlus> images;
 
     double xSize, ySize;
 
@@ -124,22 +128,59 @@ public class BasicBdvViewToImagePlusExportCommand<T extends RealType<T>> impleme
             default: throw new UnsupportedOperationException("Unrecognized export mode "+export_mode);
         }
 
-        try {
-            imageplus = ImagePlusSampler.Builder()
-                    .cache(cacheImage)
-                    .virtual(virtual)
-                    .unit(unit)
-                    .monitor(monitor)
-                    .title(capturename)
-                    .setModel(model)
-                    .interpolate(interpolate)
-                    .rangeT(selected_timepoints_str)
-                    .sources(sourceList.toArray(new SourceAndConverter[0]))
-                    .get();
+        boolean cacheImageFinal = cacheImage;
+        boolean virtualFinal = virtual;
 
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+
+        images = new ArrayList<>();
+
+        // New to split by type.
+
+        Map<Class<net.imglib2.type.Type>, List<SourceAndConverter<?>>>
+                typeToSources = sourceList.stream().collect(Collectors.groupingBy(src -> (Class<net.imglib2.type.Type>)(src.getSpimSource().getType().getClass())));
+
+        typeToSources.keySet().forEach(pixelType -> {
+
+            try {
+                if (pixelType.equals(ARGBType.class) || pixelType.equals(VolatileARGBType.class)) {
+                    typeToSources.get(pixelType).forEach(source -> {
+                            try {
+                                    images.add(ImagePlusSampler.Builder()
+                                            .cache(cacheImageFinal)
+                                            .virtual(virtualFinal)
+                                            .unit(unit)
+                                            .monitor(monitor)
+                                            .title(capturename)
+                                            .setModel(model)
+                                            .interpolate(interpolate)
+                                            .rangeT(selected_timepoints_str)
+                                            .sources(new SourceAndConverter[] {source})
+                                            .get());
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    );
+                } else {
+                    images.add(ImagePlusSampler.Builder()
+                            .cache(cacheImageFinal)
+                            .virtual(virtualFinal)
+                            .unit(unit)
+                            .monitor(monitor)
+                            .title(capturename)
+                            .setModel(model)
+                            .interpolate(interpolate)
+                            .rangeT(selected_timepoints_str)
+                            .sources(typeToSources.get(pixelType).toArray(new SourceAndConverter[0]))
+                            .get());
+
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+
+
 
     }
 

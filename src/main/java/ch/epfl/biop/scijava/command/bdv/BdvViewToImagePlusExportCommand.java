@@ -6,6 +6,9 @@ import ch.epfl.biop.sourceandconverter.exporter.ImagePlusSampler;
 import ij.ImagePlus;
 import net.imglib2.RealPoint;
 import net.imglib2.realtransform.AffineTransform3D;
+import net.imglib2.type.Type;
+import net.imglib2.type.numeric.ARGBType;
+import net.imglib2.type.volatiles.VolatileARGBType;
 import org.scijava.ItemIO;
 import org.scijava.ItemVisibility;
 import org.scijava.plugin.Parameter;
@@ -15,6 +18,12 @@ import org.slf4j.LoggerFactory;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 import sc.fiji.bdvpg.sourceandconverter.importer.EmptySourceAndConverterCreator;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Export sources as an ImagePlus object according to the orientation
@@ -104,11 +113,8 @@ public class BdvViewToImagePlusExportCommand implements BdvPlaygroundActionComma
     @Parameter
     String unit="px";
 
-    /**
-     * Output imageplus window
-     */
     @Parameter(type = ItemIO.OUTPUT)
-    public ImagePlus imageplus;
+    public List<ImagePlus> images;
 
     @Override
     public void run() {
@@ -138,22 +144,57 @@ public class BdvViewToImagePlusExportCommand implements BdvPlaygroundActionComma
             default: throw new UnsupportedOperationException("Unrecognized export mode "+export_mode);
         }
 
-        try {
-            imageplus = ImagePlusSampler.Builder()
-                    .cache(cacheImage)
-                    .unit(unit)
-                    .title(capturename)
-                    .setModel(model)
-                    .virtual(virtual)
-                    .interpolate(interpolate)
-                    .rangeT(selected_timepoints_str)
-                    .monitor(monitor)
-                    .sources(sacs)
-                    .get();
+        // New to split by type.
 
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        boolean cacheImageFinal = cacheImage;
+        boolean virtualFinal = virtual;
+
+
+        images = new ArrayList<>();
+
+        Map<Class<Type>, List<SourceAndConverter<?>>>
+                typeToSources = Arrays.asList(sacs).stream().collect(Collectors.groupingBy(src -> (Class<net.imglib2.type.Type>)(src.getSpimSource().getType().getClass())));
+
+        typeToSources.keySet().forEach(pixelType -> {
+
+            try {
+                if (pixelType.equals(ARGBType.class) || pixelType.equals(VolatileARGBType.class)) {
+                    typeToSources.get(pixelType).forEach(source -> {
+                                try {
+                                    images.add(ImagePlusSampler.Builder()
+                                            .cache(cacheImageFinal)
+                                            .virtual(virtualFinal)
+                                            .unit(unit)
+                                            .monitor(monitor)
+                                            .title(capturename)
+                                            .setModel(model)
+                                            .interpolate(interpolate)
+                                            .rangeT(selected_timepoints_str)
+                                            .sources(new SourceAndConverter[] {source})
+                                            .get());
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                    );
+                } else {
+                    images.add(ImagePlusSampler.Builder()
+                            .cache(cacheImageFinal)
+                            .virtual(virtualFinal)
+                            .unit(unit)
+                            .monitor(monitor)
+                            .title(capturename)
+                            .setModel(model)
+                            .interpolate(interpolate)
+                            .rangeT(selected_timepoints_str)
+                            .sources(typeToSources.get(pixelType).toArray(new SourceAndConverter[0]))
+                            .get());
+
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
 
     }
 
