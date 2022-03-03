@@ -421,4 +421,17 @@ public class AlphaFusedResampledSource< T extends NumericType<T> & NativeType<T>
     public int getDefaultMipMapLevel() {
         return defaultMipMapLevel;
     }
+
+
+    public long getCacheX() {
+        return cacheX;
+    }
+
+    public long getCacheY() {
+        return cacheY;
+    }
+
+    public long getCacheZ() {
+        return cacheZ;
+    }
 }

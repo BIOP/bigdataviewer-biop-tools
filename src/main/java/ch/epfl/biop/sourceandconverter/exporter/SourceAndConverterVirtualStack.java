@@ -11,6 +11,7 @@ import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.type.volatiles.VolatileARGBType;
 import net.imglib2.type.volatiles.VolatileFloatType;
 import net.imglib2.type.volatiles.VolatileUnsignedByteType;
 import net.imglib2.type.volatiles.VolatileUnsignedShortType;
@@ -79,6 +80,8 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
             bitDepth = 8;
         } else if ((type instanceof FloatType)||(type instanceof VolatileFloatType)) {
             bitDepth = 32;
+        } else if ((type instanceof ARGBType)||(type instanceof VolatileARGBType)) {
+            bitDepth = 24;
         } else {
             bitDepth = -1;
             throw new UnsupportedOperationException("Type "+type.getClass()+" unsupported.");

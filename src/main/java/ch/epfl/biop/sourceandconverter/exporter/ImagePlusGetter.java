@@ -88,10 +88,20 @@ public class ImagePlusGetter {
         vStack.getProcessor(1); // Avoid annoying race condition annoying with hyperstack converter
         ImagePlus out = new ImagePlus(name, vStack);
         int[] czt = range.getCZTDimensions( );
-        if ( ( czt[ 0 ] + czt[ 1 ] + czt[ 2 ] ) > 3 ) {
-            out = HyperStackConverter.toHyperStack(out, czt[0], czt[1], czt[2]);
-            out.setStack(vStack);
+        if (out.getBitDepth()==24) {
+            if (czt[0]>1) {
+                IJ.log("Error: RGB Images cannot be multichannel");
+                throw new UnsupportedOperationException("RGB Images cannot be multichannel");
+            }
         }
+
+        if ( ( czt[ 0 ] + czt[ 1 ] + czt[ 2 ] ) > 3 ) {
+            if (out.getBitDepth()!=24) {
+                out = HyperStackConverter.toHyperStack(out, czt[0], czt[1], czt[2], null, "color");
+                out.setStack(vStack);
+            }
+        }
+
         vStack.setImagePlusCZTSLocalizer(out);
 
         long totalBytes = (long) range.getRangeC().size() * (long) range.getRangeZ().size() * (long) range.getRangeT().size()*(long) (vStack.getBitDepth()/8)*(long) vStack.getHeight()*(long) vStack.getWidth();
@@ -214,43 +224,10 @@ public class ImagePlusGetter {
         final ImageStack stack = ImageStack.create( w, h, (int) range.getTotalPlanes(), vImage.getBitDepth() );
         ImagePlus imp = new ImagePlus(name, stack);
         int[] czt = range.getCZTDimensions( );
-        if ( ( czt[ 0 ] + czt[ 1 ] + czt[ 2 ] ) > 3 ) {
+
+        if ((imp.getBitDepth()!=24) && ( czt[ 0 ] + czt[ 1 ] + czt[ 2 ] ) > 3 ) {
             imp = HyperStackConverter.toHyperStack(imp, czt[0], czt[1], czt[2]);
         }
-
-        /*int nZ = range.rangeZ.size();
-        int nT = range.rangeT.size();
-        int nC = range.rangeC.size();*/
-
-        /*final boolean parallelZ;
-        final boolean parallelT;
-        final boolean parallelC;
-
-        int nParallelJobs = 1;
-
-        if ((nC>1)&&(nParallelJobs * nC<limitParallelJobs)) { // Priority C
-            parallelC = true;
-            nParallelJobs *= nC;
-            logger.debug(name+" get with parallel channel acquisition: #C = "+nC);
-        } else {
-            parallelC = false;
-        }
-
-        if ((nParallelJobs<limitParallelJobs)&&(nZ>1)&&(nParallelJobs * nZ<limitParallelJobs)) {
-            parallelZ = true;
-            nParallelJobs *= nZ;
-            logger.debug(name+" get with parallel slices acquisition: #Z = "+nZ);
-        } else {
-            parallelZ = false;
-        }
-
-        if ((nParallelJobs<limitParallelJobs)&&(nT>1)&&(nParallelJobs * nT<limitParallelJobs)) {
-            parallelT = true;
-            //nParallelJobs *= nT;
-            logger.debug(name+" get with parallel frames acquisition: #T = "+nT);
-        } else {
-            parallelT = false;
-        }*/
 
         final ImagePlus image = imp;
 

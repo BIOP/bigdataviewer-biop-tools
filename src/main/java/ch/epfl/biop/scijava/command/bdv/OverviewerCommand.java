@@ -18,6 +18,7 @@ import mpicbg.spim.data.sequence.Illumination;
 import mpicbg.spim.data.sequence.Tile;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.ARGBType;
+import net.imglib2.type.volatiles.VolatileARGBType;
 import org.scijava.Context;
 import org.scijava.cache.CacheService;
 import org.scijava.object.ObjectService;
@@ -282,12 +283,14 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
         public final AffineTransform3D location;
         public long[] dims = new long[3];
         public final SourceAndConverter sac;
+        public final boolean isRGB; // Always split RGB images
 
         public SacProperties(SourceAndConverter sac) {
             location = new AffineTransform3D();
             sac.getSpimSource().getSourceTransform(0, 0, location);
             sac.getSpimSource().getSource(0,0).dimensions(dims);
             this.sac = sac;
+            this.isRGB = (sac.getSpimSource().getType() instanceof ARGBType) || (sac.getSpimSource().getType() instanceof VolatileARGBType);
         }
 
         public SourceAndConverter getSource() {
@@ -310,8 +313,10 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
 
         @Override
         public boolean equals(Object obj) {
+
             if (obj instanceof SacProperties) {
                 SacProperties other = (SacProperties) obj;
+                if (isRGB) return other.sac == this.sac; // Always split different RGB images
                 if  (
                       (MatrixApproxEquals(location.getRowPackedCopy(), other.location.getRowPackedCopy()))
                     &&(dims[0]==other.dims[0])&&(dims[1]==other.dims[1])&&(dims[2]==other.dims[2])) {
