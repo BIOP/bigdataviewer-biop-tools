@@ -152,8 +152,11 @@ public class BdvViewToImagePlusExportCommand implements BdvPlaygroundActionComma
 
         images = new ArrayList<>();
 
-        Map<Class<Type>, List<SourceAndConverter<?>>>
-                typeToSources = Arrays.asList(sacs).stream().collect(Collectors.groupingBy(src -> (Class<net.imglib2.type.Type>)(src.getSpimSource().getType().getClass())));
+        List<SourceAndConverter<?>> sourceList = new ArrayList<>();
+        Arrays.asList(sacs).forEach(sac -> sourceList.add(sac));
+
+        Map<Class<net.imglib2.type.Type>, List<SourceAndConverter<?>>>
+                typeToSources = sourceList.stream().collect(Collectors.groupingBy(src -> (Class<net.imglib2.type.Type>)(src.getSpimSource().getType().getClass())));
 
         typeToSources.keySet().forEach(pixelType -> {
 
