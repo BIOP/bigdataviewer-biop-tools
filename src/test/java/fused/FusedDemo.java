@@ -6,12 +6,14 @@ import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.sourceandconverter.SourceFuserAndResampler;
 import ch.epfl.biop.sourceandconverter.exporter.OMETiffExporter;
 import com.google.gson.Gson;
+import ij.IJ;
 import mpicbg.spim.data.sequence.FinalVoxelDimensions;
 import net.imagej.ImageJ;
 import net.imglib2.cache.img.ReadOnlyCachedCellImgOptions;
 import net.imglib2.cache.img.optional.CacheOptions;
 import net.imglib2.display.ColorConverter;
 import net.imglib2.type.numeric.ARGBType;
+import ome.units.UNITS;
 import org.junit.After;
 import org.junit.Test;
 import fused.TestHelper;
@@ -51,18 +53,6 @@ public class FusedDemo {
     }
 
     public static void demo() {
-
-        /*String str = new Gson().toJson(ReadOnlyCachedCellImgOptions.options()
-                .cellDimensions(128,128,1)
-                .cacheType(CacheOptions.CacheType.SOFTREF)
-                .maxCacheSize(100)
-                .dirtyAccesses(true));
-        System.out.println(str);
-
-        //{"values":{},"theOptions":{"cellDimensions":[128,128,1]}}
-        ReadOnlyCachedCellImgOptions opt = new Gson().fromJson(str, ReadOnlyCachedCellImgOptions.class);
-        str = new Gson().toJson(opt);
-        System.out.println(str);*/
 
         IBdvSupplier bdvSupplier = new AlphaBdvSupplier(new AlphaSerializableBdvOptions());
 
@@ -104,14 +94,14 @@ public class FusedDemo {
         System.out.println("Write file");
 
         try {
-            new OMETiffExporter(
-                    new AlphaFusedResampledSource[]{(AlphaFusedResampledSource) fused.getSpimSource()},
-                    new ColorConverter[]{(ColorConverter) fused.getConverter()},
-                    new FinalVoxelDimensions("mm", 0.1,0.1,0.1),
-                    new File("C:\\Users\\chiarutt\\test.ome.tiff"),
-                    "LZW",
-                    "TestWrite").process();
-            System.out.println("File saved");
+
+            OMETiffExporter.builder()
+                    .millimeter()
+                    .savePath("C:\\Users\\chiarutt\\test.ome.tiff")
+                    .tileSize(128,128)
+                    .create(fused).export();
+
+            IJ.log("File saved");
         } catch (Exception e) {
             System.err.println("Error during saving");
             e.printStackTrace();

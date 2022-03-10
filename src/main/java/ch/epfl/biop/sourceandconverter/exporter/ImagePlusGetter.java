@@ -137,7 +137,6 @@ public class ImagePlusGetter {
 
                     luts[iC] = lut;
                     out.setC(iC+1);
-                    //out.setLut(lut);
                     out.getProcessor().setLut(lut);
 
                     if (sac.getConverter() instanceof LinearRange) {
@@ -156,7 +155,7 @@ public class ImagePlusGetter {
             }
             if (!oneIsNull&& out instanceof CompositeImage) ((CompositeImage)out).setLuts(luts);
         }
-        //ImagePlus imp_out = ImagePlusHelper.wrap(sacSortedPerLocation.get(location).stream().map(sac -> (SourceAndConverter) sac).collect(Collectors.toList()), mapSacToMml, timepointbegin, numtimepoints, timestep);
+
         AffineTransform3D at3D = new AffineTransform3D();
 
         int timepointbegin = 0;
@@ -169,6 +168,7 @@ public class ImagePlusGetter {
             }
         }
         ImagePlusHelper.storeExtendedCalibrationToImagePlus(out,at3D,unit, timepointbegin);
+
         return out;
     }
 

@@ -1,13 +1,12 @@
 package ch.epfl.biop.sourceandconverter.exporter;
 
-import bdv.util.source.fused.AlphaFusedResampledSource;
 import bdv.viewer.Source;
+import bdv.viewer.SourceAndConverter;
 import loci.formats.MetadataTools;
 import loci.formats.meta.IMetadata;
 import loci.formats.meta.IPyramidStore;
 import loci.formats.out.PyramidOMETiffWriter;
 import loci.formats.tiff.IFD;
-import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.imglib2.FinalInterval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.RealPoint;
@@ -26,14 +25,12 @@ import ome.xml.model.enums.DimensionOrder;
 import ome.xml.model.enums.PixelType;
 import ome.xml.model.primitives.Color;
 import ome.xml.model.primitives.PositiveInteger;
+import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.concurrent.atomic.AtomicLong;
-
-// Check this: https://github.com/BIOP/bigdataviewer-bioformats/commit/2da58e7994f80a0deb66a2c8722fd26ecf357651
-// DRAFT...
 
 public class OMETiffExporter {
 
@@ -41,46 +38,38 @@ public class OMETiffExporter {
 
     final long tileX, tileY;
     final int nResolutionLevels;
-    final int downscalingFactor;
     final File file;
-    final AlphaFusedResampledSource[] sources;
+    final Source[] sources;
     final String name;
     final ColorConverter[] converters;
-    final VoxelDimensions voxelDimensions;
+    final Unit<Length> unit;
     final String compression;
-    AtomicLong writtenTiles = new AtomicLong();
+    final AtomicLong writtenTiles = new AtomicLong();
     long totalTiles;
 
-    public OMETiffExporter(AlphaFusedResampledSource[] sources,
+    public OMETiffExporter(Source[] sources,
                            ColorConverter[] converters,
-                           VoxelDimensions voxelDimensions,
+                           Unit<Length> unit,
                            File file,
+                           int tileX,
+                           int tileY,
                            String compression,
                            String name) {
-        AlphaFusedResampledSource model = sources[0];
-        tileX = model.getCacheX();
-        tileY = model.getCacheY();
-        if (model.getCacheZ()!=1) throw new UnsupportedOperationException("You can't create an OME TIFF with a cache size in Z different from 1");
+        Source model = sources[0];
+        this.tileX = tileX;
+        this.tileY = tileY;
         nResolutionLevels = model.getNumMipmapLevels();
-        if (nResolutionLevels>1) {
-            Source srcModel = model.getModelResamplerSource();
-            // STRONG ASSERTION
-            downscalingFactor = Math.round(srcModel.getSource(0,0).max(0)/srcModel.getSource(0,1).max(0));
-            System.out.println("Downscaling factor = "+downscalingFactor);
-        } else {
-            downscalingFactor = -1;
-        }
+        this.unit = unit;
         this.file = file;
         this.sources = sources;
         this.name = name;
         this.converters = converters;
-        this.voxelDimensions = voxelDimensions;
         this.compression = compression;
         writtenTiles.set(0);
         totalTiles = 1; // To avoid divisions by zero
     }
 
-    public void process() throws Exception {
+    public void export() throws Exception {
 
         // Copy metadata from ImagePlus:
         IMetadata omeMeta = MetadataTools.createOMEXMLMetadata();
@@ -96,21 +85,18 @@ public class OMETiffExporter {
         omeMeta.setImageName(name, series);
 
         omeMeta.setPixelsDimensionOrder(DimensionOrder.XYCZT, series);
-        AlphaFusedResampledSource model = sources[0];
+        Source model = sources[0];
 
-        NumericType pixelType = model.getType();
+        if (!(model.getType() instanceof NumericType)) throw new UnsupportedOperationException("Can'r export pixel type "+model.getType().getClass());
 
-        long nBytesPerPixel = -1;
+        NumericType pixelType = (NumericType) model.getType();
 
         if (pixelType instanceof UnsignedShortType) {
             omeMeta.setPixelsType(PixelType.UINT16, series);
-            nBytesPerPixel = 2;
         } else if (pixelType instanceof UnsignedByteType) {
             omeMeta.setPixelsType(PixelType.UINT8, series);
-            nBytesPerPixel = 1;
         } else if (pixelType instanceof FloatType) {
             omeMeta.setPixelsType(PixelType.FLOAT, series);
-            nBytesPerPixel = 4;
         } else if (pixelType instanceof ARGBType) {
             isRGB = true;
             throw new UnsupportedOperationException("Unhandled RGB bit depth pixel.");
@@ -154,14 +140,24 @@ public class OMETiffExporter {
             }
         }
 
-        Unit<Length> unit = getUnitFromCalibration(voxelDimensions.unit());
-        omeMeta.setPixelsPhysicalSizeX(new Length(voxelDimensions.dimension(0), unit), series);
-        omeMeta.setPixelsPhysicalSizeY(new Length(voxelDimensions.dimension(1), unit), series);
-        omeMeta.setPixelsPhysicalSizeZ(new Length(voxelDimensions.dimension(2), unit), series);
+        AffineTransform3D mat = new AffineTransform3D();
+
+        model.getSourceTransform(0,0, mat);
+
+        double[] m = mat.getRowPackedCopy();
+        double[] voxelSizes = new double[3];
+
+        for(int d = 0; d < 3; ++d) {
+            voxelSizes[d] = Math.sqrt(m[d] * m[d] + m[d + 4] * m[d + 4] + m[d + 8] * m[d + 8]);
+        }
+
+        omeMeta.setPixelsPhysicalSizeX(new Length(voxelSizes[0], unit), series);
+        omeMeta.setPixelsPhysicalSizeY(new Length(voxelSizes[1], unit), series);
+        omeMeta.setPixelsPhysicalSizeZ(new Length(voxelSizes[2], unit), series);
         // set Origin in XYZ
         RealPoint origin = new RealPoint(3);
         AffineTransform3D transform3D = new AffineTransform3D();
-        model.getModelResamplerSource().getSourceTransform(0,0, transform3D);
+        model.getSourceTransform(0,0, transform3D);
         transform3D.apply(origin, origin);
         // TODO : check if enough or other planes need to be set ?
         omeMeta.setPlanePositionX(new Length(origin.getDoublePosition(0), unit),0,0);
@@ -169,9 +165,8 @@ public class OMETiffExporter {
         omeMeta.setPlanePositionZ(new Length(origin.getDoublePosition(2), unit),0,0);
 
         for (int i= 0;i<nResolutionLevels-1;i++) {
-            double divScale = Math.pow(downscalingFactor, i + 1);
-            ((IPyramidStore)omeMeta).setResolutionSizeX(new PositiveInteger((int)(width / divScale)),series, i + 1);
-            ((IPyramidStore)omeMeta).setResolutionSizeY(new PositiveInteger((int)(height / divScale)),series, i + 1);
+            ((IPyramidStore)omeMeta).setResolutionSizeX(new PositiveInteger((int) model.getSource(0,i+1).max(0)+1),series, i + 1);
+            ((IPyramidStore)omeMeta).setResolutionSizeY(new PositiveInteger((int) model.getSource(0,i+1).max(1)+1),series, i + 1);
         }
 
         // setup writer
@@ -183,8 +178,7 @@ public class OMETiffExporter {
         writer.setBigTiff(true);
         writer.setId(file.getAbsolutePath());
         writer.setSeries(0);
-        System.out.println("UNSUPPORTED COMPRESSION ( BUG THUS SKIPPED )");
-        //writer.setCompression(compression);TODO : understand why LZW compression does not work!!!
+        writer.setCompression(compression);//TODO : understand why LZW compression does not work!!!
         writer.setTileSizeX((int)tileX);
         writer.setTileSizeY((int)tileY);
 
@@ -244,14 +238,18 @@ public class OMETiffExporter {
 
                                 byte[] tileByte = SourceToByteArray.raiToByteArray(
                                         Views.interval(slice, new FinalInterval(new long[]{startX,startY}, new long[]{endX-1, endY-1})),
-                                        model.getType());
+                                        pixelType);
 
                                 int plane = t * sizeZ * sizeC + z * sizeC + c;
 
-                                // You'd better keep these three lines to avoid an annoying Windows related issue
                                 IFD ifd = new IFD();
                                 ifd.putIFDValue(IFD.TILE_WIDTH, endX-startX);
                                 ifd.putIFDValue(IFD.TILE_LENGTH, endY-startY);
+
+                                System.out.println("xmin:"+startX);
+                                System.out.println("xmax:"+endX);
+                                System.out.println("ymin:"+startY);
+                                System.out.println("ymax:"+endY);
 
                                 writer.saveBytes(plane, tileByte, ifd, (int)startX, (int)startY, (int)(endX-startX), (int)(endY-startY));
                                 writtenTiles.incrementAndGet();
@@ -270,28 +268,6 @@ public class OMETiffExporter {
 
     public long getWrittenTiles() {
         return writtenTiles.get();
-    }
-
-    public static Unit<Length> getUnitFromCalibration(String unit) {
-        switch (unit) {
-            case "um":
-            case "\u03BCm":
-            case "\u03B5m":
-            case "µm":
-            case "micrometer":
-                return UNITS.MICROMETER;
-            case "mm":
-            case "millimeter":
-                return UNITS.MILLIMETER;
-            case "cm":
-            case "centimeter":
-                return UNITS.CENTIMETER;
-            case "m":
-            case "meter":
-                return UNITS.METRE;
-            default:
-                return UNITS.REFERENCEFRAME;
-        }
     }
 
     public static int getMaxTimepoint(Source source) {
@@ -314,8 +290,95 @@ public class OMETiffExporter {
                     }
                 }
             }
+            return nFrames;
+        }
+    }
+
+    public static int getMaxTimepoint(SourceAndConverter<?> sac) {
+        if (!sac.getSpimSource().isPresent(0)) {
+            return 0;
+        } else {
+            int nFrames = 1;
+            int iFrame = 1;
+
+            int previous;
+            for(previous = iFrame; iFrame < 1073741823 && sac.getSpimSource().isPresent(iFrame); iFrame *= 2) {
+                previous = iFrame;
+            }
+
+            if (iFrame > 1) {
+                for(int tp = previous; tp < iFrame + 1; ++tp) {
+                    if (!sac.getSpimSource().isPresent(tp)) {
+                        nFrames = tp;
+                        break;
+                    }
+                }
+            }
 
             return nFrames;
+        }
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+
+        Unit unit = UNITS.MILLIMETER;
+        String path;
+        int tileX = Integer.MAX_VALUE; // = no tiling
+        int tileY = Integer.MAX_VALUE; // = no tiling
+        String compression = "Uncompressed";
+
+        public Builder tileSize(int tileX, int tileY) {
+            this.tileX = tileX;
+            this.tileY = tileY;
+            return this;
+        }
+
+        public Builder lzw() {
+            this.compression = "LZW";
+            return this;
+        }
+
+        public Builder compression(String compression) {
+            this.compression = compression;
+            return this;
+        }
+
+        public Builder savePath(String path) {
+            this.path = path;
+            return this;
+        }
+
+        public Builder millimeter() {
+            this.unit = UNITS.MILLIMETER;
+            return this;
+        }
+
+        public Builder micrometer() {
+            this.unit = UNITS.MICROMETER;
+            return this;
+        }
+
+        public Builder unit(Unit unit) {
+            this.unit = unit;
+            return this;
+        }
+
+        public OMETiffExporter create(SourceAndConverter... sacs) {
+            if (path == null) throw new UnsupportedOperationException("Path not specified");
+            Source[] sources = new Source[sacs.length];
+            ColorConverter[] converters = new ColorConverter[sacs.length];
+
+            for (int i = 0;i<sacs.length;i++) {
+                sources[i] = sacs[i].getSpimSource();
+                converters[i] = (ColorConverter) sacs[i].getConverter();
+            }
+            File f = new File(path);
+            String imageName = FilenameUtils.removeExtension(f.getName());
+            return new OMETiffExporter(sources, converters, unit, f, tileX, tileY, compression, imageName);
         }
     }
 

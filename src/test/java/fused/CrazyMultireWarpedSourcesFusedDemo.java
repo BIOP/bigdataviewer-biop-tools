@@ -19,6 +19,7 @@ import net.imglib2.realtransform.RealTransform;
 import net.imglib2.realtransform.ThinplateSplineTransform;
 import net.imglib2.realtransform.Wrapped2DTransformAs3D;
 import net.imglib2.realtransform.inverse.WrappedIterativeInvertibleRealTransform;
+import ome.units.UNITS;
 import org.junit.After;
 import org.junit.Test;
 import sc.fiji.bdvpg.bdv.navigate.ViewerTransformAdjuster;
@@ -33,6 +34,8 @@ import spimdata.SpimDataHelper;
 
 import javax.swing.tree.TreePath;
 import java.io.File;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -153,24 +156,19 @@ public class CrazyMultireWarpedSourcesFusedDemo {
                 .getBdvDisplayService().show(bdvh, fused_2);
 
 
-        OMETiffExporter exporter = new OMETiffExporter(
-                new AlphaFusedResampledSource[]{
-                        (AlphaFusedResampledSource) fused_0.getSpimSource(),
-                        (AlphaFusedResampledSource) fused_1.getSpimSource(),
-                        (AlphaFusedResampledSource) fused_2.getSpimSource()},
-                new ColorConverter[]{
-                        (ColorConverter) fused_0.getConverter(),
-                        (ColorConverter) fused_1.getConverter(),
-                        (ColorConverter) fused_2.getConverter()
-                },
-                new FinalVoxelDimensions("um", 0.1,0.1,0.1),
-                new File("C:\\Users\\chiarutt\\test.ome.tiff"),
-                "LZW",
-                "TestWrite");
+        OMETiffExporter exporter = OMETiffExporter.builder()
+                .lzw()
+                .tileSize(512,512)
+                .savePath("C:\\Users\\chiarutt\\test.ome.tiff")
+                .millimeter()
+                .create(fused_0, fused_1, fused_2);
 
         new Thread(() -> {
             try {
-                exporter.process();
+                Instant start = Instant.now();
+                exporter.export();
+                Instant finish = Instant.now();
+                IJ.log("Duration: "+Duration.between(start, finish));
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -178,13 +176,13 @@ public class CrazyMultireWarpedSourcesFusedDemo {
 
         while (exporter.getWrittenTiles() < exporter.getTotalTiles()) {
             try {
-                Thread.sleep(5000);
+                Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
             IJ.log("Export to OME TIFF: "+exporter.getWrittenTiles()+"/"+exporter.getTotalTiles()+" tiles written");
         }
-        System.out.println("File saved");
+        IJ.log("File saved");
 
     }
 
@@ -213,7 +211,6 @@ public class CrazyMultireWarpedSourcesFusedDemo {
                 AffineTransform3D at3d = new AffineTransform3D();
 
                 at3d.rotate(2, Math.random()*6.0);
-                //at3d.scale(0.5 + Math.random() / 3, 0.5 + Math.random() / 2, 1);
                 at3d.scale((0.5 + Math.random() / 3.0)*25, (0.5 + Math.random() / 2.0)*25, 1);
                 at3d.translate(200 * x, 200 * y, 0);
 

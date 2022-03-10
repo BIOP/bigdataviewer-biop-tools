@@ -95,7 +95,6 @@ public class ExportToImagePlusCommand implements BdvPlaygroundActionCommand {
                 break;
             default: throw new UnsupportedOperationException("Unrecognized export mode "+export_mode);
         }
-        //imp_out.show();
     }
 
     public Function<Collection<SourceAndConverter>,List<SourceAndConverter>> sorter = sacslist -> SourceAndConverterHelper.sortDefaultNoGeneric(sacslist);
