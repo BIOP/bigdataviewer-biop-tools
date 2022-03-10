@@ -6,11 +6,14 @@ import bdv.util.source.fused.AlphaFusedResampledSource;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.sourceandconverter.EmptyMultiResolutionSourceAndConverterCreator;
 import ch.epfl.biop.sourceandconverter.SourceFuserAndResampler;
+import ch.epfl.biop.sourceandconverter.exporter.OMETiffExporter;
 import ij.IJ;
 import loci.common.DebugTools;
 import mpicbg.spim.data.generic.AbstractSpimData;
+import mpicbg.spim.data.sequence.FinalVoxelDimensions;
 import net.imagej.ImageJ;
 import net.imglib2.RealPoint;
+import net.imglib2.display.ColorConverter;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.realtransform.RealTransform;
 import net.imglib2.realtransform.ThinplateSplineTransform;
@@ -29,6 +32,7 @@ import sc.fiji.bdvpg.spimdata.importer.SpimDataFromXmlImporter;
 import spimdata.SpimDataHelper;
 
 import javax.swing.tree.TreePath;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,7 +50,7 @@ public class CrazyMultireWarpedSourcesFusedDemo {
 
         //DebugTools.enableLogging ("INFO");
 
-        int nSourcesInX = 40;
+        int nSourcesInX = 10;
 
 
         //final String filePath = "src/test/resources/mri-stack.xml";
@@ -94,7 +98,7 @@ public class CrazyMultireWarpedSourcesFusedDemo {
 
         sources_2.addAll(demo(sources, nSourcesInX));
 
-        double pxSize = 0.005;
+        double pxSize = 0.005*60;
 
         AffineTransform3D location = new AffineTransform3D();
         location.scale(pxSize);
@@ -112,7 +116,7 @@ public class CrazyMultireWarpedSourcesFusedDemo {
                         nPixX,
                         nPixY,
                         1,1,
-                        2,2,2,16).get();
+                        2,2,2,5).get();
 
         SourceAndConverterServices.getSourceAndConverterService().register(model);
 
@@ -120,7 +124,7 @@ public class CrazyMultireWarpedSourcesFusedDemo {
                 AlphaFusedResampledSource.AVERAGE,
                 model, "Fused source",
                 true, true, false, 0,
-                256, 256, 1, 8).get();
+                256, 256, 1, 3).get();
 
         BdvHandle bdvh = SourceAndConverterServices.getBdvDisplayService().getNewBdv();
 
@@ -147,6 +151,40 @@ public class CrazyMultireWarpedSourcesFusedDemo {
 
         SourceAndConverterServices
                 .getBdvDisplayService().show(bdvh, fused_2);
+
+
+        OMETiffExporter exporter = new OMETiffExporter(
+                new AlphaFusedResampledSource[]{
+                        (AlphaFusedResampledSource) fused_0.getSpimSource(),
+                        (AlphaFusedResampledSource) fused_1.getSpimSource(),
+                        (AlphaFusedResampledSource) fused_2.getSpimSource()},
+                new ColorConverter[]{
+                        (ColorConverter) fused_0.getConverter(),
+                        (ColorConverter) fused_1.getConverter(),
+                        (ColorConverter) fused_2.getConverter()
+                },
+                new FinalVoxelDimensions("um", 0.1,0.1,0.1),
+                new File("C:\\Users\\chiarutt\\test.ome.tiff"),
+                "LZW",
+                "TestWrite");
+
+        new Thread(() -> {
+            try {
+                exporter.process();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
+
+        while (exporter.getWrittenTiles() < exporter.getTotalTiles()) {
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            IJ.log("Export to OME TIFF: "+exporter.getWrittenTiles()+"/"+exporter.getTotalTiles()+" tiles written");
+        }
+        System.out.println("File saved");
 
     }
 

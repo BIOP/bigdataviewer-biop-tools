@@ -4,10 +4,13 @@ import bdv.util.BdvHandle;
 import bdv.util.source.fused.AlphaFusedResampledSource;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.sourceandconverter.SourceFuserAndResampler;
+import ch.epfl.biop.sourceandconverter.exporter.OMETiffExporter;
 import com.google.gson.Gson;
+import mpicbg.spim.data.sequence.FinalVoxelDimensions;
 import net.imagej.ImageJ;
 import net.imglib2.cache.img.ReadOnlyCachedCellImgOptions;
 import net.imglib2.cache.img.optional.CacheOptions;
+import net.imglib2.display.ColorConverter;
 import net.imglib2.type.numeric.ARGBType;
 import org.junit.After;
 import org.junit.Test;
@@ -21,6 +24,7 @@ import sc.fiji.bdvpg.sourceandconverter.display.BrightnessAutoAdjuster;
 import sc.fiji.bdvpg.sourceandconverter.display.ColorChanger;
 import sc.fiji.bdvpg.spimdata.importer.SpimDataFromXmlImporter;
 
+import java.io.File;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -96,6 +100,22 @@ public class FusedDemo {
                 .getBdvDisplayService().show(bdvh, fused);
 
         new ViewerTransformAdjuster(bdvh, fused).run();
+
+        System.out.println("Write file");
+
+        try {
+            new OMETiffExporter(
+                    new AlphaFusedResampledSource[]{(AlphaFusedResampledSource) fused.getSpimSource()},
+                    new ColorConverter[]{(ColorConverter) fused.getConverter()},
+                    new FinalVoxelDimensions("mm", 0.1,0.1,0.1),
+                    new File("C:\\Users\\chiarutt\\test.ome.tiff"),
+                    "LZW",
+                    "TestWrite").process();
+            System.out.println("File saved");
+        } catch (Exception e) {
+            System.err.println("Error during saving");
+            e.printStackTrace();
+        }
 
     }
 }
