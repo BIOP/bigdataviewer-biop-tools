@@ -39,7 +39,7 @@ public class ImagePlusGetter {
 
     /* Helper method that determines the number of lines present in IJ log
      */
-    static int countLines(String str) {
+    public static int countLines(String str) {
         if(str == null || str.isEmpty())
         {
             return 0;
@@ -53,7 +53,7 @@ public class ImagePlusGetter {
     }
 
     // To avoid updating multiple times in parallel the IJ log window, still unsufficient to avoid little errors in the display
-    static final Object IJLogLock = new Object();
+    public static final Object IJLogLock = new Object();
 
     /**
      * Method which returns a virtual {@link ImagePlus} out of a list

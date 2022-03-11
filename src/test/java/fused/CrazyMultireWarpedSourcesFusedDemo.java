@@ -156,7 +156,7 @@ public class CrazyMultireWarpedSourcesFusedDemo {
                 .getBdvDisplayService().show(bdvh, fused_2);
 
 
-        OMETiffExporter exporter = OMETiffExporter.builder()
+        /*OMETiffExporter exporter = OMETiffExporter.builder()
                 .lzw()
                 .tileSize(512,512)
                 .savePath("C:\\Users\\chiarutt\\test.ome.tiff")
@@ -182,7 +182,7 @@ public class CrazyMultireWarpedSourcesFusedDemo {
             }
             IJ.log("Export to OME TIFF: "+exporter.getWrittenTiles()+"/"+exporter.getTotalTiles()+" tiles written");
         }
-        IJ.log("File saved");
+        IJ.log("File saved");*/
 
     }
 
