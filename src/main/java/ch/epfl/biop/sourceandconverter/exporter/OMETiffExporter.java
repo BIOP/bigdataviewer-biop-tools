@@ -37,6 +37,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
+// Plan: using multithreading to compute byte array of tiles, taking some advance over writing thread
+// BUT : keeping sequential writing.
+
 public class OMETiffExporter {
 
     private static final Logger logger = LoggerFactory.getLogger(OMETiffExporter.class);
@@ -60,11 +63,14 @@ public class OMETiffExporter {
     final Map<Integer, Integer> mapResToWidth = new HashMap<>();
     final Map<Integer, Integer> mapResToHeight = new HashMap<>();
 
-    Map<IntsKey, byte[]> computedBlocks = new ConcurrentHashMap<>();
+    final Map<IntsKey, byte[]> computedBlocks;
 
     final Map<Integer, Integer> resToNY = new HashMap<>();
     final Map<Integer, Integer> resToNX = new HashMap<>();
     final TileIterator tileIterator;
+    final int nThreads;
+
+    volatile Object tileLock = new Object();
 
     public OMETiffExporter(Source[] sources,
                            ColorConverter[] converters,
@@ -73,7 +79,8 @@ public class OMETiffExporter {
                            int tileX,
                            int tileY,
                            String compression,
-                           String name) {
+                           String name,
+                           int nThreads) {
         Source model = sources[0];
         this.tileX = tileX;
         this.tileY = tileY;
@@ -139,20 +146,69 @@ public class OMETiffExporter {
             resToNY.put(r,nYTiles);
         }
 
-        tileIterator = new TileIterator(nResolutionLevels, sizeT, sizeC, sizeZ, resToNY, resToNX);
-
+        tileIterator = new TileIterator(nResolutionLevels, sizeT, sizeC, sizeZ, resToNY, resToNX, nThreads+1);
+        this.nThreads = nThreads;
+        computedBlocks = new ConcurrentHashMap<>(nThreads*3+1); // should be enough to avoiding overlap of hash
     }
 
-    private long coordToId(long r, long t, long c, long z, long y, long x) {
-        return 0;
+
+    private void computeTile(IntsKey key) {
+        int r = key.array[0];
+        int t = key.array[1];
+        int c = key.array[2];
+        int z = key.array[3];
+        int y = key.array[4];
+        int x = key.array[5];
+
+        long startX = x*tileX;
+        long startY = y*tileY;
+
+        long endX = (x+1)*(tileX);
+        long endY = (y+1)*(tileY);
+
+        int maxX, maxY;
+
+        if (r!=0) {
+            maxX = mapResToWidth.get(r);
+            maxY = mapResToHeight.get(r);
+        } else {
+            maxX = width;
+            maxY = height;
+        }
+
+        if (endX>maxX) endX = maxX;
+        if (endY>maxY) endY = maxY;
+
+        RandomAccessibleInterval<NumericType<?>> rai = sources[c].getSource(t,r);
+        RandomAccessibleInterval<NumericType<?>> slice = Views.hyperSlice(rai, 2, z);
+        byte[] tileByte = SourceToByteArray.raiToByteArray(
+                Views.interval(slice, new FinalInterval(new long[]{startX,startY}, new long[]{endX-1, endY-1})),
+                pixelType);
+
+        //currentTile = "x["+startX+":"+endX+"] y["+startY+":"+endY+"]";
+        computedBlocks.put(key,tileByte);
+        //Thread.currentThread()+"-"+currentTile
     }
 
-    private long[] idToCoord(long id) {
-        return new long[]{0,0,0,0,0,0};
-    }
-
-    private void getTile(IntsKey key) {
-
+    private boolean computeNextTile() {
+        IntsKey key = null;
+        synchronized (tileIterator) {
+            if (tileIterator.hasNext()) {
+                key = tileIterator.next();
+            }
+        }
+        if (key == null) {
+            synchronized (tileLock) {
+                tileLock.notifyAll();
+            }
+            return false;
+        } else {
+            computeTile(key);
+            synchronized (tileLock) {
+                tileLock.notifyAll();
+            }
+            return true;
+        }
     }
 
     public void export() throws Exception {
@@ -212,9 +268,6 @@ public class OMETiffExporter {
             }
         }
 
-        AffineTransform3D mat = new AffineTransform3D();
-
-
         omeMeta.setPixelsPhysicalSizeX(new Length(voxelSizes[0], unit), series);
         omeMeta.setPixelsPhysicalSizeY(new Length(voxelSizes[1], unit), series);
         omeMeta.setPixelsPhysicalSizeZ(new Length(voxelSizes[2], unit), series);
@@ -264,16 +317,16 @@ public class OMETiffExporter {
 
         totalTiles *= sizeT*sizeC*sizeZ;
 
-        // Plan: using multithreading to compute byte array of tiles,
-        // BUT : keeping sequential writing.
-        // That looks complicated...
-        // How to do that ?...
-        //
+        for (int i=0;i<nThreads;i++) {
+            new Thread(() -> {
+                //System.out.println("Start: "+Thread.currentThread());
+                while(computeNextTile()) {
+                    //System.out.println("Compute next tile: "+Thread.currentThread());
+                }
+                //System.out.println("Done: "+Thread.currentThread());
+            }).start();
+        }
 
-        /*for (TileIterator it = tileIterator; it.hasNext(); ) {
-            Integer[] coord = it.next();
-            System.out.println(coord[0]+":"+coord[1]+":"+coord[2]+":"+coord[3]+":"+coord[4]+":"+coord[5]);
-        }*/
 
         // generate downsampled resolutions and write to output
         for (int r = 0; r < nResolutionLevels; r++) {
@@ -298,24 +351,26 @@ public class OMETiffExporter {
                         RandomAccessibleInterval<NumericType<?>> slice = Views.hyperSlice(rai, 2, z);
                         for (int y=0; y<nYTiles; y++) {
                             for (int x=0; x<nXTiles; x++) {
-                                long startX = x*tileX;
-                                long startY = y*tileY;
+                                long startX = x * tileX;
+                                long startY = y * tileY;
 
-                                long endX = (x+1)*(tileX);
-                                long endY = (y+1)*(tileY);
+                                long endX = (x + 1) * (tileX);
+                                long endY = (y + 1) * (tileY);
 
-                                if (endX>maxX) endX = maxX;
-                                if (endY>maxY) endY = maxY;
+                                if (endX > maxX) endX = maxX;
+                                if (endY > maxY) endY = maxY;
 
                                 IntsKey key = new IntsKey(new int[]{r, t, c, z, y, x});
 
-                                /*while (!computedBlocks.containsKey(key)) {
-                                    wait();
-                                }*/
-
-                                byte[] tileByte = SourceToByteArray.raiToByteArray(
-                                        Views.interval(slice, new FinalInterval(new long[]{startX,startY}, new long[]{endX-1, endY-1})),
-                                        pixelType);
+                                if (nThreads == 0) {
+                                    computeTile(key);
+                                } else {
+                                    while (!computedBlocks.containsKey(key)) {
+                                        synchronized (tileLock) {
+                                            tileLock.wait();
+                                        }
+                                    }
+                                }
 
                                 int plane = t * sizeZ * sizeC + z * sizeC + c;
 
@@ -323,17 +378,11 @@ public class OMETiffExporter {
                                 ifd.putIFDValue(IFD.TILE_WIDTH, endX-startX);
                                 ifd.putIFDValue(IFD.TILE_LENGTH, endY-startY);
 
+                                writer.saveBytes(plane, computedBlocks.get(key), ifd, (int)startX, (int)startY, (int)(endX-startX), (int)(endY-startY));
 
-
-                                /*System.out.println("xmin:"+startX);
-                                System.out.println("xmax:"+endX);
-                                System.out.println("ymin:"+startY);
-                                System.out.println("ymax:"+endY);*/
-
-                                writer.saveBytes(plane, tileByte, ifd, (int)startX, (int)startY, (int)(endX-startX), (int)(endY-startY));
                                 writtenTiles.incrementAndGet();
-
-                                //computedBlocks.remove(key);
+                                computedBlocks.remove(key);
+                                tileIterator.decrementQueue();
                             }
                         }
                     }
@@ -387,6 +436,7 @@ public class OMETiffExporter {
         int tileX = Integer.MAX_VALUE; // = no tiling
         int tileY = Integer.MAX_VALUE; // = no tiling
         String compression = "Uncompressed";
+        int nThreads = 0;
 
         public Builder tileSize(int tileX, int tileY) {
             this.tileX = tileX;
@@ -424,6 +474,11 @@ public class OMETiffExporter {
             return this;
         }
 
+        public Builder nThreads(int nThreads) {
+            this.nThreads = nThreads;
+            return this;
+        }
+
         public OMETiffExporter create(SourceAndConverter... sacs) {
             if (path == null) throw new UnsupportedOperationException("Path not specified");
             Source[] sources = new Source[sacs.length];
@@ -435,11 +490,14 @@ public class OMETiffExporter {
             }
             File f = new File(path);
             String imageName = FilenameUtils.removeExtension(f.getName());
-            return new OMETiffExporter(sources, converters, unit, f, tileX, tileY, compression, imageName);
+            return new OMETiffExporter(sources, converters, unit, f, tileX, tileY, compression, imageName, nThreads);
         }
     }
 
     public static class TileIterator implements Iterator<IntsKey> {
+
+        AtomicLong nTilesInQueue = new AtomicLong();
+        final int maxTilesInQueue;
 
         final int nr;
         final int nt;
@@ -455,13 +513,14 @@ public class OMETiffExporter {
         int iy = 0;
         int ix = -1; // first iteration
 
-        public TileIterator(int nr, int nt, int nc, int nz, Map<Integer, Integer> resToNY, Map<Integer, Integer> resToNX) {
+        public TileIterator(int nr, int nt, int nc, int nz, Map<Integer, Integer> resToNY, Map<Integer, Integer> resToNX, int maxTilesInQueue) {
             this.nr = nr;
             this.nt = nt;
             this.nc = nc;
             this.nz = nz;
             this.resToNY = resToNY;
             this.resToNX = resToNX;
+            this.maxTilesInQueue = maxTilesInQueue;
         }
 
         @Override
@@ -505,7 +564,23 @@ public class OMETiffExporter {
                     }
                 }
             }
+            while (nTilesInQueue.get()>=maxTilesInQueue) {
+                synchronized (nTilesInQueue) {
+                    try {
+                        nTilesInQueue.wait();
+                    } catch (InterruptedException e) {
+                    }
+                }
+            }
+            nTilesInQueue.incrementAndGet();
             return new IntsKey(new int[]{ir, it, ic, iz, iy, ix});
+        }
+
+        public void decrementQueue() {
+            nTilesInQueue.decrementAndGet();
+            synchronized (nTilesInQueue) {
+                nTilesInQueue.notifyAll();
+            }
         }
     }
 

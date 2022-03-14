@@ -34,6 +34,9 @@ public class ExportToOMETIFFCommand implements BdvPlaygroundActionCommand {
     @Parameter( label = "Tile Size Y (negative for no tiling)")
     int tileSizeY = 512;
 
+    @Parameter( label = "Number of threads (0 = serial)")
+    int nThreads = 8;
+
     @Parameter( label = "Compress (LZW)")
     Boolean lzwCompression = false;
 
@@ -60,6 +63,7 @@ public class ExportToOMETIFFCommand implements BdvPlaygroundActionCommand {
         if (unit.equals("MILLIMETER")) builder.millimeter();
         if (unit.equals("MICROMETER")) builder.micrometer();
         if ((tileSizeX>0)&&(tileSizeY>0)) builder.tileSize(tileSizeX, tileSizeY);
+        builder.nThreads(nThreads);
 
         exporter = builder.create(sacs);
 
@@ -74,7 +78,6 @@ public class ExportToOMETIFFCommand implements BdvPlaygroundActionCommand {
         }).start();
 
         if (monitor) {
-
             while (exporter.getWrittenTiles() < exporter.getTotalTiles()) {
                 try {
                     Thread.sleep(5000);

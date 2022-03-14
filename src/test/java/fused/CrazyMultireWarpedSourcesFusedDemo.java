@@ -150,11 +150,28 @@ public class CrazyMultireWarpedSourcesFusedDemo {
                 AlphaFusedResampledSource.AVERAGE,
                 model, "Fused source",
                 true, true, false, 0,
-                256, 256, 1, 3).get();
+                256, 256, 1, 8).get();
 
         SourceAndConverterServices
                 .getBdvDisplayService().show(bdvh, fused_2);
 
+        try {
+            DebugTools.setRootLevel("OFF");
+            Instant start = Instant.now();
+            OMETiffExporter.builder()
+                    .millimeter()
+                    //.savePath("C:\\Users\\nicol\\test.ome.tiff")
+                    .savePath("C:\\Users\\chiarutt\\test.ome.tiff")
+                    .tileSize(512,512)
+                    .nThreads(8)
+                    .create(fused_0, fused_1, fused_2).export();
+            Instant finish = Instant.now();
+            IJ.log("Duration: "+ Duration.between(start, finish));
+            IJ.log("File saved");
+        } catch (Exception e) {
+            System.err.println("Error during saving");
+            e.printStackTrace();
+        }
 
         /*OMETiffExporter exporter = OMETiffExporter.builder()
                 .lzw()

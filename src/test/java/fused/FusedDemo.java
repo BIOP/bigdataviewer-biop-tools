@@ -7,6 +7,7 @@ import ch.epfl.biop.sourceandconverter.SourceFuserAndResampler;
 import ch.epfl.biop.sourceandconverter.exporter.OMETiffExporter;
 import com.google.gson.Gson;
 import ij.IJ;
+import loci.common.DebugTools;
 import mpicbg.spim.data.sequence.FinalVoxelDimensions;
 import net.imagej.ImageJ;
 import net.imglib2.cache.img.ReadOnlyCachedCellImgOptions;
@@ -27,6 +28,8 @@ import sc.fiji.bdvpg.sourceandconverter.display.ColorChanger;
 import sc.fiji.bdvpg.spimdata.importer.SpimDataFromXmlImporter;
 
 import java.io.File;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -82,7 +85,7 @@ public class FusedDemo {
                 AlphaFusedResampledSource.AVERAGE,
                 sacs.get(0), "Fused source",
                 true, true, false, 0,
-                64, 64, 64, 4).get();
+                64, 64, 1, 4).get();
 
         BdvHandle bdvh = SourceAndConverterServices.getBdvDisplayService().getNewBdv();
 
@@ -94,14 +97,17 @@ public class FusedDemo {
         System.out.println("Write file");
 
         try {
-
+            DebugTools.setRootLevel("OFF");
+            Instant start = Instant.now();
             OMETiffExporter.builder()
                     .millimeter()
-                    .savePath("C:\\Users\\nicol\\test.ome.tiff")
-                    //.savePath("C:\\Users\\chiarutt\\test.ome.tiff")
+                    //.savePath("C:\\Users\\nicol\\test.ome.tiff")
+                    .savePath("C:\\Users\\chiarutt\\test.ome.tiff")
                     .tileSize(128,128)
+                    .nThreads(4)
                     .create(fused).export();
-
+            Instant finish = Instant.now();
+            IJ.log("Duration: "+ Duration.between(start, finish));
             IJ.log("File saved");
         } catch (Exception e) {
             System.err.println("Error during saving");
