@@ -97,7 +97,8 @@ public class FusedDemo {
 
             OMETiffExporter.builder()
                     .millimeter()
-                    .savePath("C:\\Users\\chiarutt\\test.ome.tiff")
+                    .savePath("C:\\Users\\nicol\\test.ome.tiff")
+                    //.savePath("C:\\Users\\chiarutt\\test.ome.tiff")
                     .tileSize(128,128)
                     .create(fused).export();
 

@@ -30,11 +30,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class OMETiffExporter {
 
-    private static Logger logger = LoggerFactory.getLogger(OMETiffExporter.class);
+    private static final Logger logger = LoggerFactory.getLogger(OMETiffExporter.class);
 
     final long tileX, tileY;
     final int nResolutionLevels;
@@ -46,6 +51,20 @@ public class OMETiffExporter {
     final String compression;
     final AtomicLong writtenTiles = new AtomicLong();
     long totalTiles;
+
+    final int nChannels;
+    final NumericType pixelType;
+    final int width, height, sizeT, sizeC, sizeZ;
+    final double[] voxelSizes = new double[3];
+    final RealPoint origin = new RealPoint(3);
+    final Map<Integer, Integer> mapResToWidth = new HashMap<>();
+    final Map<Integer, Integer> mapResToHeight = new HashMap<>();
+
+    Map<IntsKey, byte[]> computedBlocks = new ConcurrentHashMap<>();
+
+    final Map<Integer, Integer> resToNY = new HashMap<>();
+    final Map<Integer, Integer> resToNX = new HashMap<>();
+    final TileIterator tileIterator;
 
     public OMETiffExporter(Source[] sources,
                            ColorConverter[] converters,
@@ -66,7 +85,74 @@ public class OMETiffExporter {
         this.converters = converters;
         this.compression = compression;
         writtenTiles.set(0);
-        totalTiles = 1; // To avoid divisions by zero
+        //totalTiles = 1; // To avoid divisions by zero
+
+        // Prepare = gets all dimensions
+        nChannels = sources.length;
+
+        if (!(model.getType() instanceof NumericType)) throw new UnsupportedOperationException("Can'r export pixel type "+model.getType().getClass());
+
+        pixelType = (NumericType) model.getType();
+
+        width = (int) model.getSource(0,0).max(0)+1;
+        height = (int) model.getSource(0,0).max(1)+1;
+
+        sizeZ = (int) model.getSource(0,0).max(2)+1;
+        sizeT = getMaxTimepoint(model);
+        sizeC = sources.length;
+
+        AffineTransform3D mat = new AffineTransform3D();
+        model.getSourceTransform(0,0, mat);
+
+        double[] m = mat.getRowPackedCopy();
+
+        for(int d = 0; d < 3; ++d) {
+            voxelSizes[d] = Math.sqrt(m[d] * m[d] + m[d + 4] * m[d + 4] + m[d + 8] * m[d + 8]);
+        }
+
+        AffineTransform3D transform3D = new AffineTransform3D();
+        model.getSourceTransform(0,0, transform3D);
+        transform3D.apply(origin, origin);
+
+        for (int i= 0;i<nResolutionLevels-1;i++) {
+            mapResToWidth.put(i+1,(int) model.getSource(0,i+1).max(0)+1);
+            mapResToHeight.put(i+1,(int) model.getSource(0,i+1).max(1)+1);
+        }
+
+        // One iteration to count the number of tiles
+
+        // some assertion : same dimensions for all  nr and c and t
+        for (int r = 0; r < nResolutionLevels; r++) {
+            int nXTiles;
+            int nYTiles;
+            int maxX, maxY;
+            if (r!=0) {
+                maxX = mapResToWidth.get(r);
+                maxY = mapResToHeight.get(r);
+            } else {
+                maxX = width;
+                maxY = height;
+            }
+            nXTiles = (int) Math.ceil(maxX/(double)tileX);
+            nYTiles = (int) Math.ceil(maxY/(double)tileY);
+            resToNX.put(r,nXTiles);
+            resToNY.put(r,nYTiles);
+        }
+
+        tileIterator = new TileIterator(nResolutionLevels, sizeT, sizeC, sizeZ, resToNY, resToNX);
+
+    }
+
+    private long coordToId(long r, long t, long c, long z, long y, long x) {
+        return 0;
+    }
+
+    private long[] idToCoord(long id) {
+        return new long[]{0,0,0,0,0,0};
+    }
+
+    private void getTile(IntsKey key) {
+
     }
 
     public void export() throws Exception {
@@ -77,19 +163,12 @@ public class OMETiffExporter {
         boolean isLittleEndian = false;
         boolean isRGB = false;
         boolean isInterleaved = false;
-        int nChannels = sources.length;
 
         int series = 0;
         omeMeta.setImageID("Image:"+series, series);
         omeMeta.setPixelsID("Pixels:"+series, series);
         omeMeta.setImageName(name, series);
-
         omeMeta.setPixelsDimensionOrder(DimensionOrder.XYCZT, series);
-        Source model = sources[0];
-
-        if (!(model.getType() instanceof NumericType)) throw new UnsupportedOperationException("Can'r export pixel type "+model.getType().getClass());
-
-        NumericType pixelType = (NumericType) model.getType();
 
         if (pixelType instanceof UnsignedShortType) {
             omeMeta.setPixelsType(PixelType.UINT16, series);
@@ -105,13 +184,6 @@ public class OMETiffExporter {
         }
 
         omeMeta.setPixelsBigEndian(!isLittleEndian, 0);
-
-        int width = (int) model.getSource(0,0).max(0)+1;
-        int height = (int) model.getSource(0,0).max(1)+1;
-
-        int sizeZ = (int) model.getSource(0,0).max(2)+1;
-        int sizeT = getMaxTimepoint(model);
-        int sizeC = sources.length;
 
         // Set resolutions
         omeMeta.setPixelsSizeX(new PositiveInteger(width), series);
@@ -142,31 +214,19 @@ public class OMETiffExporter {
 
         AffineTransform3D mat = new AffineTransform3D();
 
-        model.getSourceTransform(0,0, mat);
-
-        double[] m = mat.getRowPackedCopy();
-        double[] voxelSizes = new double[3];
-
-        for(int d = 0; d < 3; ++d) {
-            voxelSizes[d] = Math.sqrt(m[d] * m[d] + m[d + 4] * m[d + 4] + m[d + 8] * m[d + 8]);
-        }
 
         omeMeta.setPixelsPhysicalSizeX(new Length(voxelSizes[0], unit), series);
         omeMeta.setPixelsPhysicalSizeY(new Length(voxelSizes[1], unit), series);
         omeMeta.setPixelsPhysicalSizeZ(new Length(voxelSizes[2], unit), series);
         // set Origin in XYZ
-        RealPoint origin = new RealPoint(3);
-        AffineTransform3D transform3D = new AffineTransform3D();
-        model.getSourceTransform(0,0, transform3D);
-        transform3D.apply(origin, origin);
         // TODO : check if enough or other planes need to be set ?
         omeMeta.setPlanePositionX(new Length(origin.getDoublePosition(0), unit),0,0);
         omeMeta.setPlanePositionY(new Length(origin.getDoublePosition(1), unit),0,0);
         omeMeta.setPlanePositionZ(new Length(origin.getDoublePosition(2), unit),0,0);
 
         for (int i= 0;i<nResolutionLevels-1;i++) {
-            ((IPyramidStore)omeMeta).setResolutionSizeX(new PositiveInteger((int) model.getSource(0,i+1).max(0)+1),series, i + 1);
-            ((IPyramidStore)omeMeta).setResolutionSizeY(new PositiveInteger((int) model.getSource(0,i+1).max(1)+1),series, i + 1);
+            ((IPyramidStore)omeMeta).setResolutionSizeX(new PositiveInteger(mapResToWidth.get(i+1)),series, i + 1);
+            ((IPyramidStore)omeMeta).setResolutionSizeY(new PositiveInteger(mapResToHeight.get(i+1)),series, i + 1);
         }
 
         // setup writer
@@ -204,6 +264,17 @@ public class OMETiffExporter {
 
         totalTiles *= sizeT*sizeC*sizeZ;
 
+        // Plan: using multithreading to compute byte array of tiles,
+        // BUT : keeping sequential writing.
+        // That looks complicated...
+        // How to do that ?...
+        //
+
+        /*for (TileIterator it = tileIterator; it.hasNext(); ) {
+            Integer[] coord = it.next();
+            System.out.println(coord[0]+":"+coord[1]+":"+coord[2]+":"+coord[3]+":"+coord[4]+":"+coord[5]);
+        }*/
+
         // generate downsampled resolutions and write to output
         for (int r = 0; r < nResolutionLevels; r++) {
             logger.debug("Saving resolution size " + r);
@@ -236,6 +307,12 @@ public class OMETiffExporter {
                                 if (endX>maxX) endX = maxX;
                                 if (endY>maxY) endY = maxY;
 
+                                IntsKey key = new IntsKey(new int[]{r, t, c, z, y, x});
+
+                                /*while (!computedBlocks.containsKey(key)) {
+                                    wait();
+                                }*/
+
                                 byte[] tileByte = SourceToByteArray.raiToByteArray(
                                         Views.interval(slice, new FinalInterval(new long[]{startX,startY}, new long[]{endX-1, endY-1})),
                                         pixelType);
@@ -246,13 +323,17 @@ public class OMETiffExporter {
                                 ifd.putIFDValue(IFD.TILE_WIDTH, endX-startX);
                                 ifd.putIFDValue(IFD.TILE_LENGTH, endY-startY);
 
-                                System.out.println("xmin:"+startX);
+
+
+                                /*System.out.println("xmin:"+startX);
                                 System.out.println("xmax:"+endX);
                                 System.out.println("ymin:"+startY);
-                                System.out.println("ymax:"+endY);
+                                System.out.println("ymax:"+endY);*/
 
                                 writer.saveBytes(plane, tileByte, ifd, (int)startX, (int)startY, (int)(endX-startX), (int)(endY-startY));
                                 writtenTiles.incrementAndGet();
+
+                                //computedBlocks.remove(key);
                             }
                         }
                     }
@@ -260,6 +341,7 @@ public class OMETiffExporter {
             }
         }
         writer.close();
+        computedBlocks.clear();
     }
 
     public long getTotalTiles() {
@@ -290,31 +372,6 @@ public class OMETiffExporter {
                     }
                 }
             }
-            return nFrames;
-        }
-    }
-
-    public static int getMaxTimepoint(SourceAndConverter<?> sac) {
-        if (!sac.getSpimSource().isPresent(0)) {
-            return 0;
-        } else {
-            int nFrames = 1;
-            int iFrame = 1;
-
-            int previous;
-            for(previous = iFrame; iFrame < 1073741823 && sac.getSpimSource().isPresent(iFrame); iFrame *= 2) {
-                previous = iFrame;
-            }
-
-            if (iFrame > 1) {
-                for(int tp = previous; tp < iFrame + 1; ++tp) {
-                    if (!sac.getSpimSource().isPresent(tp)) {
-                        nFrames = tp;
-                        break;
-                    }
-                }
-            }
-
             return nFrames;
         }
     }
@@ -379,6 +436,101 @@ public class OMETiffExporter {
             File f = new File(path);
             String imageName = FilenameUtils.removeExtension(f.getName());
             return new OMETiffExporter(sources, converters, unit, f, tileX, tileY, compression, imageName);
+        }
+    }
+
+    public static class TileIterator implements Iterator<IntsKey> {
+
+        final int nr;
+        final int nt;
+        final int nc;
+        final int nz;
+        final Map<Integer, Integer> resToNY;
+        final Map<Integer, Integer> resToNX;
+
+        int ir = 0;
+        int it = 0;
+        int ic = 0;
+        int iz = 0;
+        int iy = 0;
+        int ix = -1; // first iteration
+
+        public TileIterator(int nr, int nt, int nc, int nz, Map<Integer, Integer> resToNY, Map<Integer, Integer> resToNX) {
+            this.nr = nr;
+            this.nt = nt;
+            this.nc = nc;
+            this.nz = nz;
+            this.resToNY = resToNY;
+            this.resToNX = resToNX;
+        }
+
+        @Override
+        public synchronized boolean hasNext() {
+            boolean last = (ir==nr-1)
+                    &&(it==nt-1)
+                    &&(ic==nc-1)
+                    &&(iz==nz-1)
+                    &&(iy==resToNY.get(ir)-1)
+                    &&(ix==resToNX.get(ir)-1);
+            return !last;
+        }
+
+        @Override
+        public synchronized IntsKey next() {
+            ix++;
+            if (ix==resToNX.get(ir)) {
+                ix=0;
+                iy++;
+                if (iy==resToNY.get(ir)) {
+                    // iy == resToNY.get(nr)
+                    iy=0;
+                    iz++;
+                    if (iz==nz) {
+                        // iz == resToNZ.get(nr)
+                        iz=0;
+                        ic++;
+                        if (ic==nc) {
+                            // iz == resToNZ.get(nr)
+                            ic=0;
+                            it++;
+                            if (it==nt) {
+                                // iz == resToNZ.get(nr)
+                                it=0;
+                                ir++;
+                                if (ir==nr) {
+                                    return null;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return new IntsKey(new int[]{ir, it, ic, iz, iy, ix});
+        }
+    }
+
+    public static final class IntsKey {
+        private final int[] array;
+
+        public IntsKey(int[] array) {
+            this.array = array;
+        }
+
+        public int[] getArray() {
+            return array.clone();
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            IntsKey bytesKey = (IntsKey) o;
+            return Arrays.equals(array, bytesKey.array);
+        }
+
+        @Override
+        public int hashCode() {
+            return Arrays.hashCode(array);
         }
     }
 
