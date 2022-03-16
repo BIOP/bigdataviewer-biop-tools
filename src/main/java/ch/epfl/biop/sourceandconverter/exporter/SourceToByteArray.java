@@ -3,8 +3,11 @@ package ch.epfl.biop.sourceandconverter.exporter;
 
 import net.imglib2.Cursor;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.NumericType;
+import net.imglib2.type.numeric.integer.GenericByteType;
+import net.imglib2.type.numeric.integer.GenericShortType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.view.IntervalView;
@@ -39,7 +42,7 @@ public class SourceToByteArray {
         for (int d=1;d<rai.numDimensions();d++) {
             nBytes*=rai.dimension(d);
         }
-        if (pixelInstance instanceof UnsignedByteType) {
+        if (pixelInstance instanceof GenericByteType) {
             Cursor<UnsignedByteType> c = (Cursor<UnsignedByteType>) Views.flatIterable(rai).cursor();
 
             nBytes*=1; // Byte
@@ -55,7 +58,7 @@ public class SourceToByteArray {
                 out[i]=c.next().getByte();
             }
             return out;
-        } else if (pixelInstance instanceof UnsignedShortType) {
+        } else if (pixelInstance instanceof GenericShortType) {
             Cursor<UnsignedShortType> c = (Cursor<UnsignedShortType>) Views.flatIterable(rai).cursor();
 
             nBytes *=2; // Short
@@ -71,6 +74,26 @@ public class SourceToByteArray {
                 int value = c.next().get();
                 out[i]=(byte)(value >>> 8);
                 out[i+1]=(byte)value;
+            }
+            return out;
+        } else if (pixelInstance instanceof ARGBType) {
+            Cursor<ARGBType> c = (Cursor<ARGBType>) Views.flatIterable(rai).cursor();
+
+            nBytes *=4; // ARGB
+
+            if (nBytes>Integer.MAX_VALUE) {
+                System.err.println("Too many bytes during export!");
+                return null;
+            }
+
+            byte[] out = new byte[(int) nBytes];
+
+            for (int i=0;i<nBytes;i+=2) {
+                int value = c.next().get();
+                out[i]=(byte)(value >>> 24);
+                out[i+2]=(byte)(value >>> 16);
+                out[i+3]=(byte)(value >>> 8);
+                out[i+4]=(byte)value;
             }
             return out;
         } else {

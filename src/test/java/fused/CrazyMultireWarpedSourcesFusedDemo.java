@@ -101,7 +101,7 @@ public class CrazyMultireWarpedSourcesFusedDemo {
 
         sources_2.addAll(demo(sources, nSourcesInX));
 
-        double pxSize = 0.005*60;
+        double pxSize = 0.005*10;
 
         AffineTransform3D location = new AffineTransform3D();
         location.scale(pxSize);
@@ -127,7 +127,7 @@ public class CrazyMultireWarpedSourcesFusedDemo {
                 AlphaFusedResampledSource.AVERAGE,
                 model, "Fused source",
                 true, true, false, 0,
-                256, 256, 1, 3).get();
+                256, 256, 1, 8).get();
 
         BdvHandle bdvh = SourceAndConverterServices.getBdvDisplayService().getNewBdv();
 
@@ -140,7 +140,7 @@ public class CrazyMultireWarpedSourcesFusedDemo {
                 AlphaFusedResampledSource.AVERAGE,
                 model, "Fused source",
                 true, true, false, 0,
-                256, 256, 1, 3).get();
+                256, 256, 1, 8).get();
 
 
         SourceAndConverterServices
@@ -163,6 +163,7 @@ public class CrazyMultireWarpedSourcesFusedDemo {
                     //.savePath("C:\\Users\\nicol\\test.ome.tiff")
                     .savePath("C:\\Users\\chiarutt\\test.ome.tiff")
                     .tileSize(512,512)
+                    .lzw()
                     .nThreads(8)
                     .create(fused_0, fused_1, fused_2).export();
             Instant finish = Instant.now();

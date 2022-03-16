@@ -9,6 +9,9 @@ import net.imagej.patcher.LegacyInjector;
 import net.imglib2.RealPoint;
 import net.imglib2.realtransform.AffineTransform3D;
 import org.scijava.convert.ConvertService;
+import org.scijava.task.DefaultTaskService;
+import org.scijava.task.Task;
+import org.scijava.task.TaskService;
 import sc.fiji.bdvpg.scijava.processors.SpimDataPostprocessor;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterAndTimeRange;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
@@ -33,6 +36,16 @@ public class SimpleIJLaunch {
 
         DebugTools.enableLogging ("OFF");
         ij.ui().showUI();
+        /*TaskService taskService = ij.get(TaskService.class);
+
+        Task task = taskService.createTask("Coucou");
+
+        task.setStatusMessage("Starting task");
+        task.setProgressMaximum(100);
+        task.setProgressValue(10);*/
+
+
+
         //DebugTools.enableIJLogging(true);
         //DebugTools.setRootLevel("DEBUG");
 

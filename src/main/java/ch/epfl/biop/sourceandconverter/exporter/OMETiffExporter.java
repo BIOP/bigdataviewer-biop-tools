@@ -185,9 +185,7 @@ public class OMETiffExporter {
                 Views.interval(slice, new FinalInterval(new long[]{startX,startY}, new long[]{endX-1, endY-1})),
                 pixelType);
 
-        //currentTile = "x["+startX+":"+endX+"] y["+startY+":"+endY+"]";
         computedBlocks.put(key,tileByte);
-        //Thread.currentThread()+"-"+currentTile
     }
 
     private boolean computeNextTile() {
@@ -319,14 +317,9 @@ public class OMETiffExporter {
 
         for (int i=0;i<nThreads;i++) {
             new Thread(() -> {
-                //System.out.println("Start: "+Thread.currentThread());
-                while(computeNextTile()) {
-                    //System.out.println("Compute next tile: "+Thread.currentThread());
-                }
-                //System.out.println("Done: "+Thread.currentThread());
+                while(computeNextTile()) { } // loops until no tile needs computation  anymore
             }).start();
         }
-
 
         // generate downsampled resolutions and write to output
         for (int r = 0; r < nResolutionLevels; r++) {
@@ -377,6 +370,7 @@ public class OMETiffExporter {
                                 IFD ifd = new IFD();
                                 ifd.putIFDValue(IFD.TILE_WIDTH, endX-startX);
                                 ifd.putIFDValue(IFD.TILE_LENGTH, endY-startY);
+                                //ifd.putIFDValue(IFD.COMPRESSION, endY-startY);
 
                                 writer.saveBytes(plane, computedBlocks.get(key), ifd, (int)startX, (int)startY, (int)(endX-startX), (int)(endY-startY));
 
