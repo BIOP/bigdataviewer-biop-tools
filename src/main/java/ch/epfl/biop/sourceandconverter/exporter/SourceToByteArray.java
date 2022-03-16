@@ -79,7 +79,7 @@ public class SourceToByteArray {
         } else if (pixelInstance instanceof ARGBType) {
             Cursor<ARGBType> c = (Cursor<ARGBType>) Views.flatIterable(rai).cursor();
 
-            nBytes *=4; // ARGB
+            nBytes *=3; // ARGB, discarding A
 
             if (nBytes>Integer.MAX_VALUE) {
                 System.err.println("Too many bytes during export!");
@@ -88,12 +88,11 @@ public class SourceToByteArray {
 
             byte[] out = new byte[(int) nBytes];
 
-            for (int i=0;i<nBytes;i+=2) {
+            for (int i=0;i<nBytes;i+=3) {
                 int value = c.next().get();
-                out[i]=(byte)(value >>> 24);
-                out[i+2]=(byte)(value >>> 16);
-                out[i+3]=(byte)(value >>> 8);
-                out[i+4]=(byte)value;
+                out[i]=(byte)(value >>> 16);
+                out[i+1]=(byte)(value >>> 8);
+                out[i+2]=(byte)value;
             }
             return out;
         } else {

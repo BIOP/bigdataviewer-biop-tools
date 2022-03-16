@@ -231,8 +231,9 @@ public class OMETiffExporter {
         } else if (pixelType instanceof FloatType) {
             omeMeta.setPixelsType(PixelType.FLOAT, series);
         } else if (pixelType instanceof ARGBType) {
+            isInterleaved = true;
             isRGB = true;
-            throw new UnsupportedOperationException("Unhandled RGB bit depth pixel.");
+            omeMeta.setPixelsType(PixelType.UINT8, series);
         } else {
             throw new UnsupportedOperationException("Unhandled pixel type class: "+pixelType.getClass().getName());
         }
@@ -244,10 +245,11 @@ public class OMETiffExporter {
         omeMeta.setPixelsSizeY(new PositiveInteger(height), series);
         omeMeta.setPixelsSizeZ(new PositiveInteger(sizeZ), series);
         omeMeta.setPixelsSizeT(new PositiveInteger(sizeT), series);
-        omeMeta.setPixelsSizeC(new PositiveInteger(nChannels), series);
+        omeMeta.setPixelsSizeC(new PositiveInteger(isRGB?nChannels*3:nChannels), series);
 
         if (isRGB) {
             omeMeta.setChannelID("Channel:0", series, 0);
+            omeMeta.setChannelName("Channel_0", series, 0);
             omeMeta.setPixelsInterleaved(isInterleaved, series);
             omeMeta.setChannelSamplesPerPixel(new PositiveInteger(3), series, 0); //nSamples = 3; // TODO : check!
         } else {
@@ -292,6 +294,7 @@ public class OMETiffExporter {
         writer.setCompression(compression);//TODO : understand why LZW compression does not work!!!
         writer.setTileSizeX((int)tileX);
         writer.setTileSizeY((int)tileY);
+        writer.setInterleaved(omeMeta.getPixelsInterleaved(series));
 
         totalTiles = 0;
 
@@ -339,9 +342,7 @@ public class OMETiffExporter {
             nYTiles = (int) Math.ceil(maxY/(double)tileY);
             for (int t=0;t<sizeT;t++) {
                 for (int c=0;c<sizeC;c++) {
-                    RandomAccessibleInterval<NumericType<?>> rai = sources[c].getSource(t,r);
                     for (int z=0;z<sizeZ;z++) {
-                        RandomAccessibleInterval<NumericType<?>> slice = Views.hyperSlice(rai, 2, z);
                         for (int y=0; y<nYTiles; y++) {
                             for (int x=0; x<nXTiles; x++) {
                                 long startX = x * tileX;
@@ -370,7 +371,6 @@ public class OMETiffExporter {
                                 IFD ifd = new IFD();
                                 ifd.putIFDValue(IFD.TILE_WIDTH, endX-startX);
                                 ifd.putIFDValue(IFD.TILE_LENGTH, endY-startY);
-                                //ifd.putIFDValue(IFD.COMPRESSION, endY-startY);
 
                                 writer.saveBytes(plane, computedBlocks.get(key), ifd, (int)startX, (int)startY, (int)(endX-startX), (int)(endY-startY));
 
