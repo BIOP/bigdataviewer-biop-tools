@@ -26,6 +26,7 @@ import ome.xml.model.enums.PixelType;
 import ome.xml.model.primitives.Color;
 import ome.xml.model.primitives.PositiveInteger;
 import org.apache.commons.io.FilenameUtils;
+import org.scijava.task.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,6 +70,7 @@ public class OMETiffExporter {
     final Map<Integer, Integer> resToNX = new HashMap<>();
     final TileIterator tileIterator;
     final int nThreads;
+    final Task task;
 
     volatile Object tileLock = new Object();
 
@@ -80,7 +82,9 @@ public class OMETiffExporter {
                            int tileY,
                            String compression,
                            String name,
-                           int nThreads) {
+                           int nThreads,
+                           Task task) {
+        this.task = task;
         Source model = sources[0];
         this.tileX = tileX;
         this.tileY = tileY;
@@ -97,7 +101,7 @@ public class OMETiffExporter {
         // Prepare = gets all dimensions
         nChannels = sources.length;
 
-        if (!(model.getType() instanceof NumericType)) throw new UnsupportedOperationException("Can'r export pixel type "+model.getType().getClass());
+        if (!(model.getType() instanceof NumericType)) throw new UnsupportedOperationException("Can't export pixel type "+model.getType().getClass());
 
         pixelType = (NumericType) model.getType();
 
@@ -149,6 +153,7 @@ public class OMETiffExporter {
         tileIterator = new TileIterator(nResolutionLevels, sizeT, sizeC, sizeZ, resToNY, resToNX, nThreads+1);
         this.nThreads = nThreads;
         computedBlocks = new ConcurrentHashMap<>(nThreads*3+1); // should be enough to avoiding overlap of hash
+
     }
 
 
@@ -210,7 +215,7 @@ public class OMETiffExporter {
     }
 
     public void export() throws Exception {
-
+        if (task!=null) task.setStatusMessage("Exporting "+file.getName()+" with "+nThreads+" threads.");
         // Copy metadata from ImagePlus:
         IMetadata omeMeta = MetadataTools.createOMEXMLMetadata();
 
@@ -318,6 +323,8 @@ public class OMETiffExporter {
 
         totalTiles *= sizeT*sizeC*sizeZ;
 
+        if (task!=null) task.setProgressMaximum(totalTiles);
+
         for (int i=0;i<nThreads;i++) {
             new Thread(() -> {
                 while(computeNextTile()) { } // loops until no tile needs computation  anymore
@@ -374,9 +381,9 @@ public class OMETiffExporter {
 
                                 writer.saveBytes(plane, computedBlocks.get(key), ifd, (int)startX, (int)startY, (int)(endX-startX), (int)(endY-startY));
 
-                                writtenTiles.incrementAndGet();
                                 computedBlocks.remove(key);
                                 tileIterator.decrementQueue();
+                                task.setProgressValue(writtenTiles.incrementAndGet());
                             }
                         }
                     }
@@ -385,6 +392,7 @@ public class OMETiffExporter {
         }
         writer.close();
         computedBlocks.clear();
+        if (task!=null) task.run(()->{});
     }
 
     public long getTotalTiles() {
@@ -431,6 +439,7 @@ public class OMETiffExporter {
         int tileY = Integer.MAX_VALUE; // = no tiling
         String compression = "Uncompressed";
         int nThreads = 0;
+        transient Task task = null;
 
         public Builder tileSize(int tileX, int tileY) {
             this.tileX = tileX;
@@ -440,6 +449,11 @@ public class OMETiffExporter {
 
         public Builder lzw() {
             this.compression = "LZW";
+            return this;
+        }
+
+        public Builder monitor(Task task) {
+            this.task = task;
             return this;
         }
 
@@ -484,7 +498,7 @@ public class OMETiffExporter {
             }
             File f = new File(path);
             String imageName = FilenameUtils.removeExtension(f.getName());
-            return new OMETiffExporter(sources, converters, unit, f, tileX, tileY, compression, imageName, nThreads);
+            return new OMETiffExporter(sources, converters, unit, f, tileX, tileY, compression, imageName, nThreads, task);
         }
     }
 

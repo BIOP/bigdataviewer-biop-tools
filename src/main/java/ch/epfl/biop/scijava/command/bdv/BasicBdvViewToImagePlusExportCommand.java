@@ -14,6 +14,8 @@ import org.scijava.ItemIO;
 import org.scijava.ItemVisibility;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import org.scijava.task.Task;
+import org.scijava.task.TaskService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
@@ -95,6 +97,9 @@ public class BasicBdvViewToImagePlusExportCommand<T extends RealType<T>> impleme
     @Parameter(type = ItemIO.OUTPUT)
     public List<ImagePlus> images;
 
+    @Parameter
+    TaskService taskService;
+
     double xSize, ySize;
 
     @Override
@@ -144,29 +149,34 @@ public class BasicBdvViewToImagePlusExportCommand<T extends RealType<T>> impleme
             try {
                 if (pixelType.equals(ARGBType.class) || pixelType.equals(VolatileARGBType.class)) {
                     typeToSources.get(pixelType).forEach(source -> {
-                            try {
-                                    images.add(ImagePlusSampler.Builder()
-                                            .cache(cacheImageFinal)
-                                            .virtual(virtualFinal)
-                                            .unit(unit)
-                                            .monitor(monitor)
-                                            .title(capturename)
-                                            .setModel(model)
-                                            .interpolate(interpolate)
-                                            .rangeT(selected_timepoints_str)
-                                            .sources(new SourceAndConverter[] {source})
-                                            .get());
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
+                        Task task = null;
+                        if (monitor) task = taskService.createTask("Bdv View export:"+capturename);
+                        try {
+                                images.add(ImagePlusSampler.Builder()
+                                        .cache(cacheImageFinal)
+                                        .virtual(virtualFinal)
+                                        .unit(unit)
+                                        .monitor(task)
+                                        .title(capturename)
+                                        .setModel(model)
+                                        .interpolate(interpolate)
+                                        .rangeT(selected_timepoints_str)
+                                        .sources(new SourceAndConverter[] {source})
+                                        .get());
+                        } catch (Exception e) {
+                            task.cancel(e.getMessage());
+                            e.printStackTrace();
+                        }
                         }
                     );
                 } else {
+                    Task task = null;
+                    if (monitor) task = taskService.createTask("Bdv View export:"+capturename);
                     images.add(ImagePlusSampler.Builder()
                             .cache(cacheImageFinal)
                             .virtual(virtualFinal)
                             .unit(unit)
-                            .monitor(monitor)
+                            .monitor(task)
                             .title(capturename)
                             .setModel(model)
                             .interpolate(interpolate)

@@ -5,6 +5,7 @@ import ch.epfl.biop.sourceandconverter.exporter.OMETiffExporter;
 import ij.IJ;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import org.scijava.task.TaskService;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
@@ -49,6 +50,9 @@ public class ExportToOMETIFFCommand implements BdvPlaygroundActionCommand {
 
     AtomicBoolean done = new AtomicBoolean(false);
 
+    @Parameter
+    TaskService taskService;
+
     @Override
     public void run() {
 
@@ -56,7 +60,9 @@ public class ExportToOMETIFFCommand implements BdvPlaygroundActionCommand {
 
         sacs = sources.toArray(new SourceAndConverter[0]);
 
-        OMETiffExporter.Builder builder = OMETiffExporter.builder()
+        OMETiffExporter.Builder builder = OMETiffExporter
+                .builder()
+                .monitor(taskService.createTask("OmeTiff export: "+file.getName()))
                 .savePath(file.getAbsolutePath());
 
         if (lzwCompression) builder.lzw();

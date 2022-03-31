@@ -1,4 +1,5 @@
 
+import bdv.BigDataViewer;
 import bdv.util.RealTransformHelper;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.bdv.bioformats.command.BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand;
@@ -12,7 +13,10 @@ import org.scijava.convert.ConvertService;
 import org.scijava.task.DefaultTaskService;
 import org.scijava.task.Task;
 import org.scijava.task.TaskService;
+import org.scijava.util.VersionUtils;
 import sc.fiji.bdvpg.scijava.processors.SpimDataPostprocessor;
+import sc.fiji.bdvpg.scijava.services.SourceAndConverterBdvDisplayService;
+import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterAndTimeRange;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceTransformHelper;
@@ -36,6 +40,8 @@ public class SimpleIJLaunch {
 
         DebugTools.enableLogging ("OFF");
         ij.ui().showUI();
+        //System.out.println(VersionUtils.getVersion(BigDataViewer.class));
+        //ij.get(SourceAndConverterBdvDisplayService.class).getNewBdv();
         /*TaskService taskService = ij.get(TaskService.class);
 
         Task task = taskService.createTask("Coucou");

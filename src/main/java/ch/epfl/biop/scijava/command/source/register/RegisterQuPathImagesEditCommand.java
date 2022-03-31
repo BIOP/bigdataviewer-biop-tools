@@ -43,10 +43,10 @@ public class RegisterQuPathImagesEditCommand implements Command {
     String message = "<html><h1>QuPath registration wizard</h1>Please select a moving and a fixed source<br></html>";
 
     @Parameter(label = "Fixed source", callback = "updateMessage")
-    SourceAndConverter fixed_source;
+    SourceAndConverter[] fixed_source;
 
     @Parameter(label = "Moving source", callback = "updateMessage")
-    SourceAndConverter moving_source;
+    SourceAndConverter[] moving_source;
 
     @Parameter
     Context scijavaCtx;
@@ -56,11 +56,11 @@ public class RegisterQuPathImagesEditCommand implements Command {
         try {
 
             // - Are they different entries ?
-            File moving_entry_folder = QuPathBdvHelper.getDataEntryFolder(moving_source);
-            File fixed_entry_folder = QuPathBdvHelper.getDataEntryFolder(fixed_source);
+            File moving_entry_folder = QuPathBdvHelper.getDataEntryFolder(moving_source[0]);
+            File fixed_entry_folder = QuPathBdvHelper.getDataEntryFolder(fixed_source[0]);
 
-            QuPathEntryEntity movingEntity = QuPathBdvHelper.getQuPathEntityFromSource(moving_source);
-            QuPathEntryEntity fixedEntity = QuPathBdvHelper.getQuPathEntityFromSource(fixed_source);
+            QuPathEntryEntity movingEntity = QuPathBdvHelper.getQuPathEntityFromSource(moving_source[0]);
+            QuPathEntryEntity fixedEntity = QuPathBdvHelper.getQuPathEntityFromSource(fixed_source[0]);
 
             int moving_series_index = movingEntity.getId();
             int fixed_series_index = fixedEntity.getId();
@@ -87,11 +87,11 @@ public class RegisterQuPathImagesEditCommand implements Command {
 
                 AffineTransform3D movingToPixel = new AffineTransform3D();
 
-                moving_source.getSpimSource().getSourceTransform(0,0,movingToPixel);
+                moving_source[0].getSpimSource().getSourceTransform(0,0,movingToPixel);
 
                 AffineTransform3D fixedToPixel = new AffineTransform3D();
 
-                fixed_source.getSpimSource().getSourceTransform(0,0,fixedToPixel);
+                fixed_source[0].getSpimSource().getSourceTransform(0,0,fixedToPixel);
 
                 if (rt instanceof InvertibleRealTransform) {
                     InvertibleRealTransformSequence irts = new InvertibleRealTransformSequence();
@@ -116,7 +116,7 @@ public class RegisterQuPathImagesEditCommand implements Command {
 
                 FileUtils.writeStringToFile(result, jsonMovingToFixed, Charset.defaultCharset());
 
-                IJ.log("Fixed: "+fixed_source.getSpimSource().getName()+" | Moving: "+moving_source.getSpimSource().getName());
+                IJ.log("Fixed: "+fixed_source[0].getSpimSource().getName()+" | Moving: "+moving_source[0].getSpimSource().getName());
                 IJ.log("Transformation file successfully written to QuPath project: "+result);
             }
 
@@ -139,13 +139,13 @@ public class RegisterQuPathImagesEditCommand implements Command {
                         .getTransform();
 
         // Launch BigWarp
-        List<SourceAndConverter> movingSacs = Arrays.stream(new SourceAndConverter[]{moving_source}).collect(Collectors.toList());
+        List<SourceAndConverter> movingSacs = Arrays.stream(moving_source).collect(Collectors.toList());
 
-        List<SourceAndConverter> fixedSacs = Arrays.stream(new SourceAndConverter[]{fixed_source}).collect(Collectors.toList());
+        List<SourceAndConverter> fixedSacs = Arrays.stream(fixed_source).collect(Collectors.toList());
 
-        List<ConverterSetup> converterSetups = Arrays.stream(new SourceAndConverter[]{moving_source}).map(src -> SourceAndConverterServices.getSourceAndConverterService().getConverterSetup(src)).collect(Collectors.toList());
+        List<ConverterSetup> converterSetups = Arrays.stream(moving_source).map(src -> SourceAndConverterServices.getSourceAndConverterService().getConverterSetup(src)).collect(Collectors.toList());
 
-        converterSetups.addAll(Arrays.stream(new SourceAndConverter[]{fixed_source}).map(src -> SourceAndConverterServices.getSourceAndConverterService().getConverterSetup(src)).collect(Collectors.toList()));
+        converterSetups.addAll(Arrays.stream(fixed_source).map(src -> SourceAndConverterServices.getSourceAndConverterService().getConverterSetup(src)).collect(Collectors.toList()));
 
 
         BigWarpLauncher bwl = new BigWarpLauncher(movingSacs, fixedSacs, "Edit QuPath Registration", converterSetups);
@@ -254,42 +254,42 @@ public class RegisterQuPathImagesEditCommand implements Command {
         if (fixed_source==null) {
             message+="Please select a fixed source <br>";
         } else {
-            if (!QuPathBdvHelper.isSourceDirectlyLinkedToQuPath(fixed_source)) {
+            if (!QuPathBdvHelper.isSourceDirectlyLinkedToQuPath(fixed_source[0])) {
                 message+="The fixed source is not originating from a QuPath project! <br>";
             } else {
                 if (moving_source == null) {
                     message += "Please select a moving source <br>";
                 } else {
-                    if (!QuPathBdvHelper.isSourceDirectlyLinkedToQuPath(moving_source)) {
+                    if (!QuPathBdvHelper.isSourceDirectlyLinkedToQuPath(moving_source[0])) {
                         message += "The moving source is not originating from a QuPath project! <br>";
                     } else {
                         try {
-                            String qupathProjectMoving = QuPathBdvHelper.getQuPathProjectFile(moving_source).getAbsolutePath();
-                            String qupathProjectFixed = QuPathBdvHelper.getQuPathProjectFile(fixed_source).getAbsolutePath();
+                            String qupathProjectMoving = QuPathBdvHelper.getQuPathProjectFile(moving_source[0]).getAbsolutePath();
+                            String qupathProjectFixed = QuPathBdvHelper.getQuPathProjectFile(fixed_source[0]).getAbsolutePath();
                             if (!qupathProjectMoving.equals(qupathProjectFixed)) {
                                 message+="Error : the moving source and the fixed source are not from the same qupath project";
                             } else {
                                 // - Are they different entries ?
-                                File moving_entry_folder = QuPathBdvHelper.getDataEntryFolder(moving_source);
-                                File fixed_entry_folder = QuPathBdvHelper.getDataEntryFolder(fixed_source);
+                                File moving_entry_folder = QuPathBdvHelper.getDataEntryFolder(moving_source[0]);
+                                File fixed_entry_folder = QuPathBdvHelper.getDataEntryFolder(fixed_source[0]);
                                 if (moving_entry_folder.getAbsolutePath().equals(fixed_entry_folder.getAbsolutePath())) {
                                     message+="Error : moving and fixed source should belong to different qupath entries. <br>";
                                     message+="You can't move two channels of the same image, <br>";
                                     message+="unless you duplicate the images in QuPath. <br>";
                                     message+="<ul>";
-                                    message += "<li>Fixed: "+fixed_source.getSpimSource().getName()+"</li>";
-                                    message += "<li>Moving: "+moving_source.getSpimSource().getName()+"</li>";
+                                    message += "<li>Fixed: "+fixed_source[0].getSpimSource().getName()+"</li>";
+                                    message += "<li>Moving: "+moving_source[0].getSpimSource().getName()+"</li>";
                                     message+="<ul>";
                                 } else {
                                     message += "Registration task properly set: <br>";
 
                                     message+="<ul>";
-                                    message += "<li>Fixed: "+fixed_source.getSpimSource().getName()+"</li>";
-                                    message += "<li>Moving: "+moving_source.getSpimSource().getName()+"</li>";
+                                    message += "<li>Fixed: "+fixed_source[0].getSpimSource().getName()+"</li>";
+                                    message += "<li>Moving: "+moving_source[0].getSpimSource().getName()+"</li>";
                                     message+="</ul>";
 
-                                    QuPathEntryEntity movingEntity = QuPathBdvHelper.getQuPathEntityFromSource(moving_source);
-                                    QuPathEntryEntity fixedEntity = QuPathBdvHelper.getQuPathEntityFromSource(fixed_source);
+                                    QuPathEntryEntity movingEntity = QuPathBdvHelper.getQuPathEntityFromSource(moving_source[0]);
+                                    QuPathEntryEntity fixedEntity = QuPathBdvHelper.getQuPathEntityFromSource(fixed_source[0]);
 
                                     int moving_series_index = movingEntity.getId();
                                     int fixed_series_index = fixedEntity.getId();

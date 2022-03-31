@@ -19,6 +19,8 @@ import org.scijava.ItemIO;
 import org.scijava.ItemVisibility;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import org.scijava.task.Task;
+import org.scijava.task.TaskService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
@@ -83,6 +85,9 @@ public class ExportToMultipleImagePlusCommand implements BdvPlaygroundActionComm
     @Parameter(required = false)
     public boolean verbose = false;
 
+    @Parameter
+    TaskService taskService;
+
     @Override
     public void run() {
 
@@ -134,12 +139,15 @@ public class ExportToMultipleImagePlusCommand implements BdvPlaygroundActionComm
         AtomicInteger iImage = new AtomicInteger();
 
         sortedSacsStream.forEach(sacKey -> {
-            String message = "Reading first plane of ("+iImage.incrementAndGet()+"/"+nImages+") - "+sacKey.getSpimSource().getName();
-            logger.debug(message);
 
-            if (verbose) {
-                IJ.log(message);
+            Task task = null;
+            String name = sacKey.getSpimSource().getName();
+
+            if (monitor) {
+                task = taskService.createTask(name+" export");
+                task.setStatusMessage("Reading first plane of ("+iImage.incrementAndGet()+"/"+nImages+") - "+sacKey.getSpimSource().getName());
             }
+
             AffineTransform3D at3d = new AffineTransform3D();
             sacKey.getSpimSource().getSourceTransform(timepointbegin, level, at3d);
 
@@ -147,7 +155,6 @@ public class ExportToMultipleImagePlusCommand implements BdvPlaygroundActionComm
             List<SourceAndConverter> sources = sacClasses.get(sacPropsKey);
 
             ImagePlus imp_out;
-            String name = sacKey.getSpimSource().getName();
             int maxTimeFrames = SourceAndConverterHelper.getMaxTimepoint(sources.toArray(new SourceAndConverter[0]));
 
             int maxZSlices = (int) sources.get(0).getSpimSource().getSource(0,level).dimension(2);
@@ -162,15 +169,17 @@ public class ExportToMultipleImagePlusCommand implements BdvPlaygroundActionComm
                         .setT(range_frames)
                         .get(sources.size(), maxZSlices, maxTimeFrames);
 
+
+
                 switch (export_mode) {
                     case "Normal":
-                        imp_out = ImagePlusGetter.getImagePlus(name, sources, level, range, monitor, parallelC, parallelZ, parallelT);
+                        imp_out = ImagePlusGetter.getImagePlus(name, sources, level, range, parallelC, parallelZ, parallelT, task);
                         break;
                     case "Virtual":
-                        imp_out = ImagePlusGetter.getVirtualImagePlus(name, sources, level, range, true, monitor);
+                        imp_out = ImagePlusGetter.getVirtualImagePlus(name, sources, level, range, true, task);
                         break;
                     case "Virtual no-cache":
-                        imp_out = ImagePlusGetter.getVirtualImagePlus(name, sources, level, range, false, monitor);
+                        imp_out = ImagePlusGetter.getVirtualImagePlus(name, sources, level, range, false, null);
                         break;
                     default: throw new UnsupportedOperationException("Unrecognized export mode "+export_mode);
                 }

@@ -13,6 +13,8 @@ import org.scijava.ItemIO;
 import org.scijava.ItemVisibility;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import org.scijava.task.Task;
+import org.scijava.task.TaskService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
@@ -116,6 +118,9 @@ public class BdvViewToImagePlusExportCommand implements BdvPlaygroundActionComma
     @Parameter(type = ItemIO.OUTPUT)
     public List<ImagePlus> images;
 
+    @Parameter
+    TaskService taskService;
+
     @Override
     public void run() {
 
@@ -163,12 +168,14 @@ public class BdvViewToImagePlusExportCommand implements BdvPlaygroundActionComma
             try {
                 if (pixelType.equals(ARGBType.class) || pixelType.equals(VolatileARGBType.class)) {
                     typeToSources.get(pixelType).forEach(source -> {
+                        Task task = null;
+                        if (monitor) task = taskService.createTask("Bdv View export:"+capturename);
                                 try {
                                     images.add(ImagePlusSampler.Builder()
                                             .cache(cacheImageFinal)
                                             .virtual(virtualFinal)
                                             .unit(unit)
-                                            .monitor(monitor)
+                                            .monitor(task)
                                             .title(capturename)
                                             .setModel(model)
                                             .interpolate(interpolate)
@@ -181,11 +188,13 @@ public class BdvViewToImagePlusExportCommand implements BdvPlaygroundActionComma
                             }
                     );
                 } else {
+                    Task task = null;
+                    if (monitor) task = taskService.createTask("Bdv View export:"+capturename);
                     images.add(ImagePlusSampler.Builder()
                             .cache(cacheImageFinal)
                             .virtual(virtualFinal)
                             .unit(unit)
-                            .monitor(monitor)
+                            .monitor(task)
                             .title(capturename)
                             .setModel(model)
                             .interpolate(interpolate)

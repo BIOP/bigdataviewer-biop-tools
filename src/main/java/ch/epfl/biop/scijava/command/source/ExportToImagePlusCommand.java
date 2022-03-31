@@ -8,6 +8,8 @@ import org.scijava.ItemIO;
 import org.scijava.ItemVisibility;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import org.scijava.task.Task;
+import org.scijava.task.TaskService;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
@@ -61,6 +63,9 @@ public class ExportToImagePlusCommand implements BdvPlaygroundActionCommand {
     @Parameter( label = "Image Info", visibility = ItemVisibility.MESSAGE, persist = false, required = false)
     String message = "[SX: , SY:, SZ:, #C:, #T:], ? Mb";
 
+    @Parameter
+    TaskService taskService;
+
     @Override
     public void run() {
 
@@ -83,15 +88,22 @@ public class ExportToImagePlusCommand implements BdvPlaygroundActionCommand {
             return;
         }
 
+        Task task = null;
+
+        if (monitor) task = taskService.createTask(name+" export");
+
         switch (export_mode) {
             case "Normal":
-                imp_out = ImagePlusGetter.getImagePlus(name, sources, level, range, monitor, parallelC, parallelZ, parallelT);
+                imp_out = ImagePlusGetter
+                        .getImagePlus(name, sources, level, range, parallelC, parallelZ, parallelT, task);
                 break;
             case "Virtual":
-                imp_out = ImagePlusGetter.getVirtualImagePlus(name, sources, level, range, true, monitor);
+                imp_out = ImagePlusGetter
+                        .getVirtualImagePlus(name, sources, level, range, true, task);
                 break;
             case "Virtual no-cache":
-                imp_out = ImagePlusGetter.getVirtualImagePlus(name, sources, level, range, false, false);
+                imp_out = ImagePlusGetter
+                        .getVirtualImagePlus(name, sources, level, range, false,  null);
                 break;
             default: throw new UnsupportedOperationException("Unrecognized export mode "+export_mode);
         }

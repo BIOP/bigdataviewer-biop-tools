@@ -17,6 +17,7 @@ import net.imglib2.type.volatiles.VolatileUnsignedByteType;
 import net.imglib2.type.volatiles.VolatileUnsignedShortType;
 import net.imglib2.util.Util;
 import net.imglib2.view.Views;
+import org.scijava.task.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,12 +57,15 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
     final boolean cache;
     final int totalPlanes;
     private final int nChannels, nZSlices, nFrames;
+    final Task task;
+    private final long totalBytes;
 
     public SourceAndConverterVirtualStack(List<SourceAndConverter> sources,
                                           int resolutionLevel,
                                           CZTRange range,
-                                          AtomicLong bytesCounter, boolean cache) {
+                                          AtomicLong bytesCounter, boolean cache, Task task) {
         this.cache = cache;
+        this.task = task;
         final int tModel = range.getRangeT().get(0);
         RandomAccessibleInterval raiModel;
         if (sources.get(0).asVolatile()!=null) {
@@ -96,6 +100,7 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
         this.bytesCounter = bytesCounter;
 
         totalPlanes = (int) range.getTotalPlanes();
+        totalBytes = (long)totalPlanes*nBytesPerProcessor;
 
         nChannels = range.getRangeC().size();
         nFrames = range.getRangeT().size();
@@ -132,7 +137,11 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
         for (Cursor<UnsignedByteType> s = ii.cursor(); s.hasNext(); idx++) {
             bytes[idx] = (byte) s.next().get();
         }
-        bytesCounter.addAndGet(nBytesPerProcessor);
+        if (task!=null) {
+           long bytesLoaded = bytesCounter.addAndGet(nBytesPerProcessor);
+           task.setProgressValue(bytesLoaded);
+           if (bytesLoaded==totalBytes) task.run(() -> {});
+        }
         return new ByteProcessor(width, height, bytes, getCM(iC));
     }
 
@@ -146,7 +155,11 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
         for (Cursor<UnsignedShortType> s = ii.cursor(); s.hasNext(); idx++) {
             shorts[idx] = (short) s.next().get();
         }
-        bytesCounter.addAndGet(nBytesPerProcessor);
+        if (task!=null) {
+            long bytesLoaded = bytesCounter.addAndGet(nBytesPerProcessor);
+            task.setProgressValue(bytesLoaded);
+            if (bytesLoaded==totalBytes) task.run(() -> {});
+        }
         return new ShortProcessor(width, height, shorts, getCM(iC));
     }
 
@@ -175,7 +188,11 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
         for (Cursor<FloatType> s = ii.cursor(); s.hasNext(); idx++) {
             floats[idx] = s.next().get();
         }
-        bytesCounter.addAndGet(nBytesPerProcessor);
+        if (task!=null) {
+            long bytesLoaded = bytesCounter.addAndGet(nBytesPerProcessor);
+            task.setProgressValue(bytesLoaded);
+            if (bytesLoaded==totalBytes) task.run(() -> {});
+        }
         return new FloatProcessor(width, height, floats, getCM(iC));
     }
 
@@ -189,7 +206,11 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
         for (Cursor<ARGBType> s = ii.cursor(); s.hasNext(); idx++) {
             ints[idx] = s.next().get();
         }
-        bytesCounter.addAndGet(nBytesPerProcessor);
+        if (task!=null) {
+            long bytesLoaded = bytesCounter.addAndGet(nBytesPerProcessor);
+            task.setProgressValue(bytesLoaded);
+            if (bytesLoaded==totalBytes) task.run(() -> {});
+        }
         return new ColorProcessor(width, height, ints);
     }
 
@@ -233,7 +254,11 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
                     // Shortcut -> skipping the loading!
                     int nReferenced = cztIdToComputedProcessor.get(cztId);
                     cachedImageProcessor.put(n,cachedImageProcessor.get(nReferenced));
-                    bytesCounter.addAndGet(nBytesPerProcessor); // Keep the counter right
+                    if (task!=null) {
+                        long bytesLoaded = bytesCounter.addAndGet(nBytesPerProcessor);
+                        task.setProgressValue(bytesLoaded);
+                        if (bytesLoaded==totalBytes) task.run(() -> {});
+                    }
                     return cachedImageProcessor.get(n);
                 } else {
                     currentlyProcessedProcessor.put(n, new Object());

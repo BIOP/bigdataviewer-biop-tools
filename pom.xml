@@ -101,7 +101,7 @@
 		<bigdataviewer-selector.version>0.1.9</bigdataviewer-selector.version>
 		<scijava.app.directory>C:/Fiji.app/</scijava.app.directory>
 
-		<bigdataviewer-core.version>10.2.2</bigdataviewer-core.version>
+		<bigdataviewer-core.version>10.3.1</bigdataviewer-core.version>
 		<bigdataviewer-vistools.version>1.0.0-beta-29</bigdataviewer-vistools.version>
 		<imglib2-cache.version>1.0.0-beta-16</imglib2-cache.version>
 		<bigwarp_fiji.version>7.0.5</bigwarp_fiji.version>
@@ -119,6 +119,12 @@
 		<bigvolumeviewer.version>0.2.0</bigvolumeviewer.version>
 
 		<releaseProfiles>sign,deploy-to-scijava</releaseProfiles>
+
+		<!--<scijava-common.version>2.87.3.99</scijava-common.version>
+		<imagej-legacy.version>0.38.2.99</imagej-legacy.version>
+		<scijava-ui-swing.version>0.13.4.99</scijava-ui-swing.version>
+		<batch-processor.version>0.4.2.99</batch-processor.version>-->
+
 	</properties>
 
 	<repositories>

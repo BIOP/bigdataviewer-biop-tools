@@ -10,6 +10,8 @@ import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.realtransform.AffineTransform3D;
+import org.scijava.task.Task;
+import org.scijava.task.TaskService;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
 import sc.fiji.bdvpg.spimdata.importer.SpimDataFromXmlImporter;
 
@@ -65,9 +67,13 @@ public class ImagePlusGetterTest {
         CZTRange range = ImagePlusGetter
                 .fromSources(sources,0,0);
 
-        ImagePlusGetter.getImagePlus("Non Virtual", sources, 0, range, true, false, true, false).show();
-        ImagePlusGetter.getVirtualImagePlus("Virtual", sources, 0, range, true, true).show();//ImagePlusGetter.getVirtualImagePlus("Virtual no cache", sources, 0, range, false, true).show();
-        ImagePlusGetter.getVirtualImagePlus("Virtual no cache", sources, 0, range, false, true).show();//ImagePlusGetter.getVirtualImagePlus("Virtual no cache", sources, 0, range, false, true).show();
+        TaskService taskService = ij.get(TaskService.class);
+
+        Task nonVirtual = taskService.createTask("nonVirtual");
+        ImagePlusGetter.getImagePlus("Non Virtual", sources, 0, range, true, false, true, nonVirtual).show();
+        Task virtual = taskService.createTask("virtual");
+        ImagePlusGetter.getVirtualImagePlus("Virtual", sources, 0, range, true, virtual).show();//ImagePlusGetter.getVirtualImagePlus("Virtual no cache", sources, 0, range, false, true).show();
+        ImagePlusGetter.getVirtualImagePlus("Virtual no cache", sources, 0, range, false, null).show();//ImagePlusGetter.getVirtualImagePlus("Virtual no cache", sources, 0, range, false, true).show();
 
     }
 }

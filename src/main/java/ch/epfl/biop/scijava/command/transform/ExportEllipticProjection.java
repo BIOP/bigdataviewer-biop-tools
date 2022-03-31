@@ -21,6 +21,8 @@ import org.scijava.ItemVisibility;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import org.scijava.task.Task;
+import org.scijava.task.TaskService;
 import org.scijava.widget.Button;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
@@ -136,6 +138,9 @@ public class ExportEllipticProjection implements Command {
 
     CZTRange range;
 
+    @Parameter
+    TaskService taskService;
+
     @Override
     public void run() {
         validateMessage();
@@ -169,6 +174,8 @@ public class ExportEllipticProjection implements Command {
         DecimalFormat df = new DecimalFormat("#.00");
         String suffixName = "_R["+df.format(rMin)+"; "+df.format(rMax)+"]_Theta["+df.format(thetaMin)+"; "+df.format(thetaMax)+"]_Phi["+df.format(phiMin)+"; "+df.format(phiMax)+"]";
         try {
+            Task task = null;
+            if (monitor) task = taskService.createTask("Elliptic projection:"+name+suffixName);
             imp_out = ImagePlusSampler.Builder()
                     .cache(cacheImage)
                     .unit(unit)
@@ -179,7 +186,7 @@ public class ExportEllipticProjection implements Command {
                     .rangeT(range_frames)
                     .rangeC(range_channels)
                     .rangeZ(range_slices)
-                    .monitor(monitor)
+                    .monitor(task)
                     .level(level)
                     .sources(sources.toArray(new SourceAndConverter[0]))
                     .get();

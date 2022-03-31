@@ -53,7 +53,7 @@ public class CrazyMultireWarpedSourcesFusedDemo {
 
         //DebugTools.enableLogging ("INFO");
 
-        int nSourcesInX = 10;
+        int nSourcesInX = 40;
 
 
         //final String filePath = "src/test/resources/mri-stack.xml";
@@ -101,7 +101,7 @@ public class CrazyMultireWarpedSourcesFusedDemo {
 
         sources_2.addAll(demo(sources, nSourcesInX));
 
-        double pxSize = 0.005*10;
+        double pxSize = 0.005;//*10;
 
         AffineTransform3D location = new AffineTransform3D();
         location.scale(pxSize);
@@ -119,7 +119,7 @@ public class CrazyMultireWarpedSourcesFusedDemo {
                         nPixX,
                         nPixY,
                         1,1,
-                        2,2,2,5).get();
+                        2,2,2,16).get();
 
         SourceAndConverterServices.getSourceAndConverterService().register(model);
 
@@ -155,7 +155,7 @@ public class CrazyMultireWarpedSourcesFusedDemo {
         SourceAndConverterServices
                 .getBdvDisplayService().show(bdvh, fused_2);
 
-        try {
+        /*try {
             DebugTools.setRootLevel("OFF");
             Instant start = Instant.now();
             OMETiffExporter.builder()
@@ -172,7 +172,7 @@ public class CrazyMultireWarpedSourcesFusedDemo {
         } catch (Exception e) {
             System.err.println("Error during saving");
             e.printStackTrace();
-        }
+        }*/
 
         /*OMETiffExporter exporter = OMETiffExporter.builder()
                 .lzw()

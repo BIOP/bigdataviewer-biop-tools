@@ -4,6 +4,7 @@ import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.operetta.utils.HyperRange;
 import ij.ImagePlus;
 import net.imglib2.realtransform.AffineTransform3D;
+import org.scijava.task.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
@@ -33,7 +34,7 @@ public class ImagePlusSampler {
                                 boolean interpolate,
                                 boolean virtual,
                                 boolean cache,
-                                boolean verbose,
+                                Task task,
                                 boolean parallelC, boolean parallelZ, boolean parallelT) throws UnsupportedOperationException {
 
         if (sourceList.size() == 0) {
@@ -66,9 +67,9 @@ public class ImagePlusSampler {
 
         ImagePlus compositeImage;
         if (!virtual) {
-            compositeImage = ImagePlusGetter.getImagePlus(imageName, resampledSourceList, 0, range, verbose, parallelC, parallelZ, parallelT);
+            compositeImage = ImagePlusGetter.getImagePlus(imageName, resampledSourceList, 0, range, parallelC, parallelZ, parallelT, task);
         } else {
-            compositeImage = ImagePlusGetter.getVirtualImagePlus(imageName, resampledSourceList, 0, range, cache, verbose);
+            compositeImage = ImagePlusGetter.getVirtualImagePlus(imageName, resampledSourceList, 0, range, cache, task);
         }
 
         compositeImage.setTitle(imageName);
@@ -87,7 +88,7 @@ public class ImagePlusSampler {
         private SourceAndConverter<?> model;
         private boolean interpolate;
         private boolean cache = true;
-        private boolean verbose = false;
+        //private boolean verbose = false;
         private boolean virtual = false;
         private int level = -1;
         private String unit;
@@ -97,6 +98,7 @@ public class ImagePlusSampler {
         private boolean parallelC = false;
         private boolean parallelZ = false;
         private boolean parallelT = false;
+        transient Task task = null;
 
         public Builder sources(SourceAndConverter[] sacs) {
             this.sacs = sacs;
@@ -128,8 +130,8 @@ public class ImagePlusSampler {
             return this;
         }
 
-        public Builder monitor(boolean flag) {
-            this.verbose = flag;
+        public Builder monitor(Task task) {
+            this.task = task;
             return this;
         }
 
@@ -198,7 +200,7 @@ public class ImagePlusSampler {
                     level,
                     range,
                     unit,
-                    interpolate,virtual, cache, verbose, parallelC, parallelZ, parallelT);
+                    interpolate,virtual, cache, task, parallelC, parallelZ, parallelT);
         }
     }
 }

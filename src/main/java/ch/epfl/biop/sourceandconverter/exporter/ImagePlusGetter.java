@@ -12,6 +12,7 @@ import net.imglib2.display.ColorConverter;
 import net.imglib2.display.LinearRange;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.ARGBType;
+import org.scijava.task.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
@@ -71,7 +72,6 @@ public class ImagePlusGetter {
      * @param range czt range which can be used to define a subset of the output image
      * @param cache if set to true, each time a plane is computed, it is stored in memory. Ultimately,
      *              this leads to filling the RAM as in a non-virtual image, if all planes are visited
-     * @param verbose if set to true, a {@link BytesMonitor} is created to follow the progression of the creation of this ImagePlus
      * @return a virtual {@link ImagePlus} out of a list of {@link SourceAndConverter},
      * taken at a certain resolution level, and which czt range is specified via a {@link CZTRange} object
      */
@@ -80,11 +80,11 @@ public class ImagePlusGetter {
                                          int resolutionLevel,
                                          CZTRange range,
                                          boolean cache,
-                                         boolean verbose) {
+                                         Task task) {
         final AtomicLong bytesCounter = new AtomicLong();
-        if (!cache) verbose = false;
+        if (!cache) task = null;
 
-        SourceAndConverterVirtualStack vStack = new SourceAndConverterVirtualStack(sources, resolutionLevel, range, bytesCounter, cache);
+        SourceAndConverterVirtualStack vStack = new SourceAndConverterVirtualStack(sources, resolutionLevel, range, bytesCounter, cache, task);
         vStack.getProcessor(1); // Avoid annoying race condition annoying with hyperstack converter
         ImagePlus out = new ImagePlus(name, vStack);
         int[] czt = range.getCZTDimensions( );
@@ -106,17 +106,10 @@ public class ImagePlusGetter {
 
         long totalBytes = (long) range.getRangeC().size() * (long) range.getRangeZ().size() * (long) range.getRangeT().size()*(long) (vStack.getBitDepth()/8)*(long) vStack.getHeight()*(long) vStack.getWidth();
 
-        if (verbose) {
-            synchronized (IJLogLock) {
-                IJ.log("Starting Getting " + name + "...");
-                String log = IJ.getLog();
-                int nLines = countLines(log) - 1;
-                new BytesMonitor(name, (m) -> {
-                    synchronized (IJLogLock) {
-                        IJ.log("\\Update" + nLines + ":" + m);
-                    }
-                }, bytesCounter::get, () -> bytesCounter.get() == totalBytes, totalBytes, 1000, true);
-            }
+        boolean monitor = task!=null;
+        if (monitor) {
+            task.setStatusMessage("Counting bytes...");
+            task.setProgressMaximum(totalBytes);
         }
 
         if ( ( czt[ 0 ] + czt[ 1 ] + czt[ 2 ] ) > 3 ) {
@@ -178,8 +171,7 @@ public class ImagePlusGetter {
      * @param sources sources to export as ImagePlus
      * @param resolutionLevel resolution Level of the sources
      * @param range czt range which can be used to define a subset of the output image
-     * @param verbose if set to true, a {@link BytesMonitor} is created to follow the progression of the creation of this ImagePlus
-     * @param parallelC loads all channels in parallet
+     * @param parallelC loads all channels in parallel
      * @param parallelZ loads all slices in parallel
      * @param parallelT loads all timepoints in parallel
      * @return a non virtual {@link ImagePlus} out of a list of {@link SourceAndConverter},
@@ -189,28 +181,21 @@ public class ImagePlusGetter {
                                          List<SourceAndConverter> sources,
                                          int resolutionLevel,
                                          CZTRange range,
-                                         boolean verbose,
                                          boolean parallelC,
                                          boolean parallelZ,
-                                         boolean parallelT) {
-        ImagePlus vImage = getVirtualImagePlus(name, sources, resolutionLevel, range, false, false );
+                                         boolean parallelT,
+                                         Task task) {
+        ImagePlus vImage = getVirtualImagePlus(name, sources, resolutionLevel, range, false, null ); // task not used here
 
         final AtomicLong bytesCounter = new AtomicLong();
 
         int nBytesPerPlane = vImage.getHeight() * vImage.getWidth() * (vImage.getBitDepth()/8);
         long totalBytes = (long) range.getRangeC().size() * (long) range.getRangeZ().size() * (long) range.getRangeT().size() * (long) nBytesPerPlane;
 
-        if (verbose) {
-            synchronized (IJLogLock) {
-                IJ.log("Starting Getting " + name + "...");
-                String log = IJ.getLog();
-                int nLines = countLines(log) - 1;
-                new BytesMonitor(name, (m) -> {
-                    synchronized (IJLogLock) {
-                        IJ.log("\\Update" + nLines + ":" + m);
-                    }
-                }, bytesCounter::get, () -> bytesCounter.get() == totalBytes, totalBytes, 1000, false);
-            }
+        boolean monitor = task!=null;
+        if (monitor) {
+            task.setStatusMessage("Counting bytes...");
+            task.setProgressMaximum(totalBytes);
         }
 
         int w = vImage.getWidth();
@@ -245,7 +230,11 @@ public class ImagePlusGetter {
                         image.setProcessor(ip);
                     }
                     stack.setProcessor(ip, n);
-                    bytesCounter.addAndGet(nBytesPerPlane);
+
+                    if (monitor) {
+                        long bytes = bytesCounter.addAndGet(nBytesPerPlane);
+                        task.setProgressValue(bytes);
+                    }
                 });
             });
         });
@@ -300,6 +289,7 @@ public class ImagePlusGetter {
             }
         }
         ImagePlusHelper.storeExtendedCalibrationToImagePlus(imp,at3D,unit, timepointbegin);
+        task.run(() ->{}); // signal task is ended
         return imp;
     }
 
