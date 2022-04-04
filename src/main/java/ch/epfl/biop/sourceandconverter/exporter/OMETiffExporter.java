@@ -83,6 +83,7 @@ public class OMETiffExporter {
                            String compression,
                            String name,
                            int nThreads,
+                           int maxTilesInQueue,
                            Task task) {
         this.task = task;
         Source model = sources[0];
@@ -150,7 +151,7 @@ public class OMETiffExporter {
             resToNY.put(r,nYTiles);
         }
 
-        tileIterator = new TileIterator(nResolutionLevels, sizeT, sizeC, sizeZ, resToNY, resToNX, nThreads+1);
+        tileIterator = new TileIterator(nResolutionLevels, sizeT, sizeC, sizeZ, resToNY, resToNX, maxTilesInQueue);
         this.nThreads = nThreads;
         computedBlocks = new ConcurrentHashMap<>(nThreads*3+1); // should be enough to avoiding overlap of hash
 
@@ -439,6 +440,7 @@ public class OMETiffExporter {
         int tileY = Integer.MAX_VALUE; // = no tiling
         String compression = "Uncompressed";
         int nThreads = 0;
+        int maxTilesInQueue = 10;
         transient Task task = null;
 
         public Builder tileSize(int tileX, int tileY) {
@@ -454,6 +456,11 @@ public class OMETiffExporter {
 
         public Builder monitor(Task task) {
             this.task = task;
+            return this;
+        }
+
+        public Builder maxTilesInQueue(int max) {
+            this.maxTilesInQueue = max;
             return this;
         }
 
@@ -498,7 +505,7 @@ public class OMETiffExporter {
             }
             File f = new File(path);
             String imageName = FilenameUtils.removeExtension(f.getName());
-            return new OMETiffExporter(sources, converters, unit, f, tileX, tileY, compression, imageName, nThreads, task);
+            return new OMETiffExporter(sources, converters, unit, f, tileX, tileY, compression, imageName, nThreads, maxTilesInQueue, task);
         }
     }
 
