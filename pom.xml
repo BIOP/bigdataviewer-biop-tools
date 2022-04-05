@@ -96,12 +96,12 @@
 		<scijava.deleteOtherVersions>true</scijava.deleteOtherVersions>
 		<license.excludes>**/resources/**</license.excludes>
 
-		<bigdataviewer-playground.version>0.4.1</bigdataviewer-playground.version>
+		<bigdataviewer-playground.version>0.4.3</bigdataviewer-playground.version>
 		<bigdataviewer-bioformats.version>0.2.22</bigdataviewer-bioformats.version>
 		<bigdataviewer-selector.version>0.1.9</bigdataviewer-selector.version>
 		<scijava.app.directory>C:/Fiji.app/</scijava.app.directory>
 
-		<bigdataviewer-core.version>10.3.1</bigdataviewer-core.version>
+		<bigdataviewer-core.version>10.2.2</bigdataviewer-core.version>
 		<bigdataviewer-vistools.version>1.0.0-beta-29</bigdataviewer-vistools.version>
 		<imglib2-cache.version>1.0.0-beta-16</imglib2-cache.version>
 		<bigwarp_fiji.version>7.0.5</bigwarp_fiji.version>
