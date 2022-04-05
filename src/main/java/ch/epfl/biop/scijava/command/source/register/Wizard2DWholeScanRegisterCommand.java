@@ -5,7 +5,6 @@ import bdv.util.*;
 import bdv.viewer.Interpolation;
 import bdv.viewer.SourceAndConverter;
 import bigwarp.BigWarp;
-import ch.epfl.biop.bdv.select.SourceSelectorBehaviour;
 import ch.epfl.biop.scijava.command.bdv.userdefinedregion.GetUserPointsCommand;
 import ch.epfl.biop.scijava.command.bdv.userdefinedregion.GetUserRectangleCommand;
 import ch.epfl.biop.scijava.command.bdv.userdefinedregion.PointsSelectorBehaviour;
@@ -25,14 +24,12 @@ import net.imglib2.img.basictypeaccess.array.ByteArray;
 import net.imglib2.realtransform.*;
 import net.imglib2.realtransform.inverse.WrappedIterativeInvertibleRealTransform;
 import net.imglib2.type.numeric.integer.ByteType;
-import org.scijava.Context;
 import org.scijava.ItemIO;
 import org.scijava.ItemVisibility;
 import org.scijava.command.CommandModule;
 import org.scijava.command.CommandService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
-import org.scijava.ui.behaviour.ClickBehaviour;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.util.Behaviours;
 import org.slf4j.Logger;
@@ -43,7 +40,6 @@ import sc.fiji.bdvpg.bdv.ManualRegistrationStopper;
 import sc.fiji.bdvpg.bdv.navigate.ViewerTransformAdjuster;
 import sc.fiji.bdvpg.bdv.supplier.BdvSupplierHelper;
 import sc.fiji.bdvpg.bdv.supplier.IBdvSupplier;
-import sc.fiji.bdvpg.bdv.supplier.biop.BiopBdvSupplier;
 import sc.fiji.bdvpg.bdv.supplier.biop.BiopSerializableBdvOptions;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
@@ -59,7 +55,6 @@ import sc.fiji.bdvpg.sourceandconverter.transform.SourceTransformHelper;
 import javax.swing.*;
 import java.util.*;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -157,7 +152,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
 
     private boolean manualRegistrationStopped = false;
 
-    AffineTransform3D preTransfromedMoving;
+    AffineTransform3D preTransformedMoving;
 
     public void setUserMessage(String message) {
         labelLogger.setText(message);
@@ -181,20 +176,20 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
 
         // These transforms are removed at the end in the wizard
         AffineTransform3D preTransformFixed = new AffineTransform3D();
-        preTransfromedMoving = new AffineTransform3D();
+        preTransformedMoving = new AffineTransform3D();
 
         if (removeZOffset) {
             AffineTransform3D at3D = new AffineTransform3D();
             moving.getSpimSource().getSourceTransform(0,0,at3D);
             preTransformFixed.translate(0,0,-at3D.get(2,3)); // Removes z offset
             fixed.getSpimSource().getSourceTransform(0,0,at3D);
-            preTransfromedMoving.translate(0,0,-at3D.get(2,3)); // Removes z offset
+            preTransformedMoving.translate(0,0,-at3D.get(2,3)); // Removes z offset
         }
 
         if (centerMovingImage) {
             RealPoint centerMoving = SourceAndConverterHelper.getSourceAndConverterCenterPoint(moving);
             RealPoint centerFixed = SourceAndConverterHelper.getSourceAndConverterCenterPoint(fixed);
-            preTransfromedMoving.translate(
+            preTransformedMoving.translate(
                     centerFixed.getDoublePosition(0)-centerMoving.getDoublePosition(0),
                     centerFixed.getDoublePosition(1)-centerMoving.getDoublePosition(1),
                     centerFixed.getDoublePosition(2)-centerMoving.getDoublePosition(2)
@@ -202,7 +197,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
         }
 
         SourceAndConverter newFixed = SourceTransformHelper.createNewTransformedSourceAndConverter(preTransformFixed, new SourceAndConverterAndTimeRange(fixed,0));
-        SourceAndConverter newMoving = SourceTransformHelper.createNewTransformedSourceAndConverter(preTransfromedMoving, new SourceAndConverterAndTimeRange(moving,0));
+        SourceAndConverter newMoving = SourceTransformHelper.createNewTransformedSourceAndConverter(preTransformedMoving, new SourceAndConverterAndTimeRange(moving,0));
 
         SourceAndConverterServices.getBdvDisplayService().remove(bdvh, new SourceAndConverter[]{fixed, moving});
         moving = newMoving;
@@ -401,7 +396,13 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
                 moving.setPosition(pts_tgt[d][i], d);
                 fixed.setPosition(pts_src[d][i], d);
             }
-            preTransfromedMoving.inverse().apply(moving, moving);
+            /*System.out.println("XB="+moving.getDoublePosition(0));
+            System.out.println("YB="+moving.getDoublePosition(1));
+            System.out.println("ZB="+moving.getDoublePosition(2));*/
+            preTransformedMoving.inverse().apply(moving, moving);
+            /*System.out.println("XA="+moving.getDoublePosition(0));
+            System.out.println("YA="+moving.getDoublePosition(1));
+            System.out.println("ZA="+moving.getDoublePosition(2));*/
             movingPts.add(moving);
             fixedPts.add(fixed);
         }
@@ -559,7 +560,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
         JButton confirmationButton = new JButton("Confirm transformation");
         confirmationButton.addActionListener((e) -> {
             if (rigidRegistrationStarted) {
-                preTransfromedMoving.concatenate(manualRegistrationStarter.getCurrentTransform().copy());
+                preTransformedMoving.concatenate(manualRegistrationStarter.getCurrentTransform().copy());
                 manualRegistrationStopper.run();
             }
             manualRegistrationStopped = true;
