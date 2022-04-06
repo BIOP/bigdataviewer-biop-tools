@@ -152,7 +152,8 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
 
     private boolean manualRegistrationStopped = false;
 
-    AffineTransform3D preTransformedMoving;
+    AffineTransform3D centeringTransform = new AffineTransform3D();
+    AffineTransform3D manualTransform = new AffineTransform3D();
 
     public void setUserMessage(String message) {
         labelLogger.setText(message);
@@ -176,20 +177,19 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
 
         // These transforms are removed at the end in the wizard
         AffineTransform3D preTransformFixed = new AffineTransform3D();
-        preTransformedMoving = new AffineTransform3D();
 
         if (removeZOffset) {
             AffineTransform3D at3D = new AffineTransform3D();
             moving.getSpimSource().getSourceTransform(0,0,at3D);
             preTransformFixed.translate(0,0,-at3D.get(2,3)); // Removes z offset
             fixed.getSpimSource().getSourceTransform(0,0,at3D);
-            preTransformedMoving.translate(0,0,-at3D.get(2,3)); // Removes z offset
+            centeringTransform.translate(0,0,-at3D.get(2,3)); // Removes z offset
         }
 
         if (centerMovingImage) {
             RealPoint centerMoving = SourceAndConverterHelper.getSourceAndConverterCenterPoint(moving);
             RealPoint centerFixed = SourceAndConverterHelper.getSourceAndConverterCenterPoint(fixed);
-            preTransformedMoving.translate(
+            centeringTransform.translate(
                     centerFixed.getDoublePosition(0)-centerMoving.getDoublePosition(0),
                     centerFixed.getDoublePosition(1)-centerMoving.getDoublePosition(1),
                     centerFixed.getDoublePosition(2)-centerMoving.getDoublePosition(2)
@@ -197,7 +197,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
         }
 
         SourceAndConverter newFixed = SourceTransformHelper.createNewTransformedSourceAndConverter(preTransformFixed, new SourceAndConverterAndTimeRange(fixed,0));
-        SourceAndConverter newMoving = SourceTransformHelper.createNewTransformedSourceAndConverter(preTransformedMoving, new SourceAndConverterAndTimeRange(moving,0));
+        SourceAndConverter newMoving = SourceTransformHelper.createNewTransformedSourceAndConverter(centeringTransform, new SourceAndConverterAndTimeRange(moving,0));
 
         SourceAndConverterServices.getBdvDisplayService().remove(bdvh, new SourceAndConverter[]{fixed, moving});
         moving = newMoving;
@@ -392,23 +392,19 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
         for (int i = 0; i<kernel.getNumLandmarks(); i++) {
             RealPoint moving = new RealPoint(3);
             RealPoint fixed = new RealPoint(3);
-            for (int d = 0; d<kernel.getNumDims();d++) { // num dims should be 2!
+            for (int d = 0; d<kernel.getNumDims();d++) {
+                // num dims should be 2!
                 moving.setPosition(pts_tgt[d][i], d);
                 fixed.setPosition(pts_src[d][i], d);
             }
-            /*System.out.println("XB="+moving.getDoublePosition(0));
-            System.out.println("YB="+moving.getDoublePosition(1));
-            System.out.println("ZB="+moving.getDoublePosition(2));*/
-            preTransformedMoving.inverse().apply(moving, moving);
-            /*System.out.println("XA="+moving.getDoublePosition(0));
-            System.out.println("YA="+moving.getDoublePosition(1));
-            System.out.println("ZA="+moving.getDoublePosition(2));*/
+            manualTransform.inverse().apply(moving, moving);
+            centeringTransform.inverse().apply(moving, moving);
             movingPts.add(moving);
             fixedPts.add(fixed);
         }
-
-        transformation = new Wrapped2DTransformAs3D(new WrappedIterativeInvertibleRealTransform<>(BigWarpHelper.getTransform(movingPts, fixedPts, true)));
-
+        transformation = new Wrapped2DTransformAs3D(
+                new WrappedIterativeInvertibleRealTransform<>(BigWarpHelper.getTransform(movingPts, fixedPts, true))
+        );
     }
 
     boolean isBigWarpFinished = false;
@@ -560,7 +556,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
         JButton confirmationButton = new JButton("Confirm transformation");
         confirmationButton.addActionListener((e) -> {
             if (rigidRegistrationStarted) {
-                preTransformedMoving.concatenate(manualRegistrationStarter.getCurrentTransform().copy());
+                manualTransform.concatenate(manualRegistrationStarter.getCurrentTransform().copy());
                 manualRegistrationStopper.run();
             }
             manualRegistrationStopped = true;

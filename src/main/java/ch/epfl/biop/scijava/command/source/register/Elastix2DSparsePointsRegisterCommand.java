@@ -127,14 +127,18 @@ public class Elastix2DSparsePointsRegisterCommand extends SelectSourcesForRegist
                         "minPixSize", 32,
                         "verbose", verbose
                 ).get().getOutput("at3D");
+                if (at!=null) {
+                    RealPoint ptCorr = new RealPoint(3);
+                    at.apply(pt, ptCorr);
+                    correspondingPts.put(pt,ptCorr);
 
-                RealPoint ptCorr = new RealPoint(3);
-                at.apply(pt, ptCorr);
-                correspondingPts.put(pt,ptCorr);
-
-                String str = "xi ="+pt.getDoublePosition(0)+"\t xf ="+ptCorr.getDoublePosition(0)+"\n";
-                str+="yi ="+pt.getDoublePosition(1)+"\t yf ="+ptCorr.getDoublePosition(1);
-                log.accept("Registration point : "+str);
+                    String str = "xi ="+pt.getDoublePosition(0)+"\t xf ="+ptCorr.getDoublePosition(0)+"\n";
+                    str+="yi ="+pt.getDoublePosition(1)+"\t yf ="+ptCorr.getDoublePosition(1);
+                    log.accept("Registration point : "+str);
+                } else {
+                    correspondingPts.put(pt,pt); // No movement
+                    log.accept("Failed registration - maybe the image has low information content ?");
+                }
                 IJ.log("#Landmark:"+counter.addAndGet(1)+"/"+pts_Fixed.size());
             } catch (InterruptedException e) {
                 e.printStackTrace();
