@@ -2,9 +2,10 @@ package ch.epfl.biop.scijava.command.source;
 
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.sourceandconverter.exporter.OMETiffExporter;
-import ij.IJ;
+import org.scijava.ItemIO;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import org.scijava.task.Task;
 import org.scijava.task.TaskService;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
@@ -14,7 +15,6 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 
 @Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Export>Export Sources To OME TIFF")
@@ -44,17 +44,13 @@ public class ExportToOMETIFFCommand implements BdvPlaygroundActionCommand {
     @Parameter( label = "Compress (LZW)")
     Boolean lzwCompression = false;
 
-    @Parameter( label = "Monitor")
-    Boolean monitor = true;
-
     OMETiffExporter exporter;
-
-    AtomicBoolean error = new AtomicBoolean(false);
-
-    AtomicBoolean done = new AtomicBoolean(false);
 
     @Parameter
     TaskService taskService;
+
+    @Parameter(type = ItemIO.OUTPUT)
+    Task task;
 
     @Override
     public void run() {
@@ -63,9 +59,11 @@ public class ExportToOMETIFFCommand implements BdvPlaygroundActionCommand {
 
         sacs = sources.toArray(new SourceAndConverter[0]);
 
+        task = taskService.createTask("Export: "+file.getName());
+
         OMETiffExporter.Builder builder = OMETiffExporter
                 .builder()
-                .monitor(taskService.createTask("OmeTiff export: "+file.getName()))
+                .monitor(task)
                 .savePath(file.getAbsolutePath());
 
         if (lzwCompression) builder.lzw();
@@ -80,23 +78,10 @@ public class ExportToOMETIFFCommand implements BdvPlaygroundActionCommand {
         new Thread(() -> {
             try {
                 exporter.export();
-                done.set(true);
             } catch (Exception e) {
-                error.set(false);
                 e.printStackTrace();
             }
         }).start();
-
-        if (monitor) {
-            while (exporter.getWrittenTiles() < exporter.getTotalTiles()) {
-                try {
-                    Thread.sleep(5000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                IJ.log("Export to OME TIFF: "+exporter.getWrittenTiles()+"/"+exporter.getTotalTiles()+" tiles written");
-            }
-        }
     }
 
     public Function<Collection<SourceAndConverter>,List<SourceAndConverter>> sorter = sacslist -> SourceAndConverterHelper.sortDefaultNoGeneric(sacslist);

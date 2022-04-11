@@ -1,29 +1,6 @@
-
-import bdv.BigDataViewer;
-import bdv.util.RealTransformHelper;
-import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.bdv.bioformats.command.BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand;
-import ij.IJ;
 import loci.common.DebugTools;
 import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;
-import net.imglib2.RealPoint;
-import net.imglib2.realtransform.AffineTransform3D;
-import org.scijava.convert.ConvertService;
-import org.scijava.task.DefaultTaskService;
-import org.scijava.task.Task;
-import org.scijava.task.TaskService;
-import org.scijava.util.VersionUtils;
-import sc.fiji.bdvpg.scijava.processors.SpimDataPostprocessor;
-import sc.fiji.bdvpg.scijava.services.SourceAndConverterBdvDisplayService;
-import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterAndTimeRange;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceTransformHelper;
-
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-
 
 public class SimpleIJLaunch {
 
