@@ -289,7 +289,7 @@ public class ImagePlusGetter {
             }
         }
         ImagePlusHelper.storeExtendedCalibrationToImagePlus(imp,at3D,unit, timepointbegin);
-        task.run(() ->{}); // signal task is ended
+        if (task!=null) task.run(() ->{}); // signal task is ended
         return imp;
     }
 

@@ -154,9 +154,7 @@ public class OMETiffExporter {
         tileIterator = new TileIterator(nResolutionLevels, sizeT, sizeC, sizeZ, resToNY, resToNX, maxTilesInQueue);
         this.nThreads = nThreads;
         computedBlocks = new ConcurrentHashMap<>(nThreads*3+1); // should be enough to avoiding overlap of hash
-
     }
-
 
     private void computeTile(IntsKey key) {
         int r = key.array[0];
@@ -193,6 +191,8 @@ public class OMETiffExporter {
 
         computedBlocks.put(key,tileByte);
     }
+
+
 
     private boolean computeNextTile() {
         IntsKey key = null;
