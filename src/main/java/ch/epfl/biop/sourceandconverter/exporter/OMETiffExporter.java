@@ -384,7 +384,7 @@ public class OMETiffExporter {
 
                                 computedBlocks.remove(key);
                                 tileIterator.decrementQueue();
-                                task.setProgressValue(writtenTiles.incrementAndGet());
+                                if(task!=null) task.setProgressValue(writtenTiles.incrementAndGet());
                             }
                         }
                     }
