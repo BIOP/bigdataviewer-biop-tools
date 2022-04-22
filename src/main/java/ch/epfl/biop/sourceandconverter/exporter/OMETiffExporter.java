@@ -3,8 +3,10 @@ package ch.epfl.biop.sourceandconverter.exporter;
 import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
 import loci.formats.MetadataTools;
+import loci.formats.in.DynamicMetadataOptions;
 import loci.formats.meta.IMetadata;
 import loci.formats.meta.IPyramidStore;
+import loci.formats.out.OMETiffWriter;
 import loci.formats.out.PyramidOMETiffWriter;
 import loci.formats.tiff.IFD;
 import net.imglib2.FinalInterval;
@@ -31,15 +33,41 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-// Plan: using multithreading to compute byte array of tiles, taking some advance over writing thread
-// BUT : keeping sequential writing.
+/**
+ * Export an array of {@link SourceAndConverter} into a OME-TIFF file, potentially multiresolution,
+ * if the original sources are multiresolution themselves.
+ *
+ * The array represents different channels. All Sources should have the same size in XYZCT, and
+ * number of resolution levels.
+ *
+ * If the sources are multiresolution, a pyramidal OME-TIFF will be saved. If you want to build the
+ * sub resolution levels (because you want to recompute them or because there are none,
+ * please use {@link OMETiffPyramidizerExporter} instead).
+ *
+ * The builder {@link Builder} should be used to export the sources. (private constructor)
+ *
+ * Parallelization can occur at the reading level, with a number of threads set with
+ * {@link Builder#nThreads(int)}. Writing to HDD is serial.
+ *
+ * For big 2d planes, tiled images can be saved with {@link Builder#tileSize(int, int)}
+ *
+ * Lzw compression possible {@link Builder#lzw()}
+ *
+ * This class should not be memory hungry, the number of data kept into ram should never exceed
+ * (max queue size + nThreads) * tile size in bytes, even with really large dataset.
+ *
+ * A {@link Task} object can be given in {@link Builder#monitor(Task)}to monitor the saving and
+ * also to cancel the export (TODO for cancellation).
+ *
+ * The RAM occupation depends on the caching mechanism (if any) in the input {@link SourceAndConverter} array.
+ *
+ * @author Nicolas Chiaruttini, EPFL, 2022
+ */
 
 public class OMETiffExporter {
 
@@ -64,7 +92,7 @@ public class OMETiffExporter {
     final Map<Integer, Integer> mapResToWidth = new HashMap<>();
     final Map<Integer, Integer> mapResToHeight = new HashMap<>();
 
-    final Map<IntsKey, byte[]> computedBlocks;
+    final Map<TileIterator.IntsKey, byte[]> computedBlocks;
 
     final Map<Integer, Integer> resToNY = new HashMap<>();
     final Map<Integer, Integer> resToNX = new HashMap<>();
@@ -74,7 +102,7 @@ public class OMETiffExporter {
 
     volatile Object tileLock = new Object();
 
-    public OMETiffExporter(Source[] sources,
+    private OMETiffExporter(Source[] sources,
                            ColorConverter[] converters,
                            Unit<Length> unit,
                            File file,
@@ -97,7 +125,6 @@ public class OMETiffExporter {
         this.converters = converters;
         this.compression = compression;
         writtenTiles.set(0);
-        //totalTiles = 1; // To avoid divisions by zero
 
         // Prepare = gets all dimensions
         nChannels = sources.length;
@@ -156,7 +183,7 @@ public class OMETiffExporter {
         computedBlocks = new ConcurrentHashMap<>(nThreads*3+1); // should be enough to avoiding overlap of hash
     }
 
-    private void computeTile(IntsKey key) {
+    private void computeTile(TileIterator.IntsKey key) {
         int r = key.array[0];
         int t = key.array[1];
         int c = key.array[2];
@@ -192,10 +219,8 @@ public class OMETiffExporter {
         computedBlocks.put(key,tileByte);
     }
 
-
-
     private boolean computeNextTile() {
-        IntsKey key = null;
+        TileIterator.IntsKey key = null;
         synchronized (tileIterator) {
             if (tileIterator.hasNext()) {
                 key = tileIterator.next();
@@ -228,7 +253,7 @@ public class OMETiffExporter {
         omeMeta.setImageID("Image:"+series, series);
         omeMeta.setPixelsID("Pixels:"+series, series);
         omeMeta.setImageName(name, series);
-        omeMeta.setPixelsDimensionOrder(DimensionOrder.XYCZT, series);
+        omeMeta.setPixelsDimensionOrder(DimensionOrder.XYZCT, series);
 
         if (pixelType instanceof UnsignedShortType) {
             omeMeta.setPixelsType(PixelType.UINT16, series);
@@ -259,11 +284,11 @@ public class OMETiffExporter {
             omeMeta.setPixelsInterleaved(isInterleaved, series);
             omeMeta.setChannelSamplesPerPixel(new PositiveInteger(3), series, 0); //nSamples = 3; // TODO : check!
         } else {
-            omeMeta.setChannelSamplesPerPixel(new PositiveInteger(1), series, 0);
+            //omeMeta.setChannelSamplesPerPixel(new PositiveInteger(1), series, 0);
             omeMeta.setPixelsInterleaved(isInterleaved, series);
             for (int c = 0; c < nChannels; c++) {
                 omeMeta.setChannelID("Channel:0:" + c, series, c);
-                // omeMeta.setChannelSamplesPerPixel(new PositiveInteger(1), series, c);
+                omeMeta.setChannelSamplesPerPixel(new PositiveInteger(1), series, c);
                 int colorCode = converters[c].getColor().get();
                 int colorRed = ARGBType.red(colorCode); //channelLUT.getRed(255);
                 int colorGreen = ARGBType.green(colorCode);
@@ -290,6 +315,7 @@ public class OMETiffExporter {
 
         // setup writer
         PyramidOMETiffWriter writer = new PyramidOMETiffWriter();
+        ((DynamicMetadataOptions)writer.getMetadataOptions()).set(OMETiffWriter.COMPANION_KEY,FilenameUtils.removeExtension(file.getAbsolutePath())+".companion.ome"); // TODO : check ome xml does not already exists ?
 
         writer.setWriteSequentially(true); // Setting this to false can be problematic!
 
@@ -362,7 +388,7 @@ public class OMETiffExporter {
                                 if (endX > maxX) endX = maxX;
                                 if (endY > maxY) endY = maxY;
 
-                                IntsKey key = new IntsKey(new int[]{r, t, c, z, y, x});
+                                TileIterator.IntsKey key = new TileIterator.IntsKey(new int[]{r, t, c, z, y, x});
 
                                 if (nThreads == 0) {
                                     computeTile(key);
@@ -374,7 +400,9 @@ public class OMETiffExporter {
                                     }
                                 }
 
-                                int plane = t * sizeZ * sizeC + z * sizeC + c;
+                                //int plane = t * sizeZ * sizeC + z * sizeC + c;
+
+                                int plane = t * sizeZ * sizeC + c * sizeZ + z;
 
                                 IFD ifd = new IFD();
                                 ifd.putIFDValue(IFD.TILE_WIDTH, endX-startX);
@@ -394,14 +422,6 @@ public class OMETiffExporter {
         writer.close();
         computedBlocks.clear();
         if (task!=null) task.run(()->{});
-    }
-
-    public long getTotalTiles() {
-        return totalTiles;
-    }
-
-    public long getWrittenTiles() {
-        return writtenTiles.get();
     }
 
     public static int getMaxTimepoint(Source source) {
@@ -506,121 +526,6 @@ public class OMETiffExporter {
             File f = new File(path);
             String imageName = FilenameUtils.removeExtension(f.getName());
             return new OMETiffExporter(sources, converters, unit, f, tileX, tileY, compression, imageName, nThreads, maxTilesInQueue, task);
-        }
-    }
-
-    public static class TileIterator implements Iterator<IntsKey> {
-
-        AtomicLong nTilesInQueue = new AtomicLong();
-        final int maxTilesInQueue;
-
-        final int nr;
-        final int nt;
-        final int nc;
-        final int nz;
-        final Map<Integer, Integer> resToNY;
-        final Map<Integer, Integer> resToNX;
-
-        int ir = 0;
-        int it = 0;
-        int ic = 0;
-        int iz = 0;
-        int iy = 0;
-        int ix = -1; // first iteration
-
-        public TileIterator(int nr, int nt, int nc, int nz, Map<Integer, Integer> resToNY, Map<Integer, Integer> resToNX, int maxTilesInQueue) {
-            this.nr = nr;
-            this.nt = nt;
-            this.nc = nc;
-            this.nz = nz;
-            this.resToNY = resToNY;
-            this.resToNX = resToNX;
-            this.maxTilesInQueue = maxTilesInQueue;
-        }
-
-        @Override
-        public synchronized boolean hasNext() {
-            boolean last = (ir==nr-1)
-                    &&(it==nt-1)
-                    &&(ic==nc-1)
-                    &&(iz==nz-1)
-                    &&(iy==resToNY.get(ir)-1)
-                    &&(ix==resToNX.get(ir)-1);
-            return !last;
-        }
-
-        @Override
-        public synchronized IntsKey next() {
-            ix++;
-            if (ix==resToNX.get(ir)) {
-                ix=0;
-                iy++;
-                if (iy==resToNY.get(ir)) {
-                    // iy == resToNY.get(nr)
-                    iy=0;
-                    iz++;
-                    if (iz==nz) {
-                        // iz == resToNZ.get(nr)
-                        iz=0;
-                        ic++;
-                        if (ic==nc) {
-                            // iz == resToNZ.get(nr)
-                            ic=0;
-                            it++;
-                            if (it==nt) {
-                                // iz == resToNZ.get(nr)
-                                it=0;
-                                ir++;
-                                if (ir==nr) {
-                                    return null;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            while (nTilesInQueue.get()>=maxTilesInQueue) {
-                synchronized (nTilesInQueue) {
-                    try {
-                        nTilesInQueue.wait();
-                    } catch (InterruptedException e) {
-                    }
-                }
-            }
-            nTilesInQueue.incrementAndGet();
-            return new IntsKey(new int[]{ir, it, ic, iz, iy, ix});
-        }
-
-        public void decrementQueue() {
-            nTilesInQueue.decrementAndGet();
-            synchronized (nTilesInQueue) {
-                nTilesInQueue.notifyAll();
-            }
-        }
-    }
-
-    public static final class IntsKey {
-        private final int[] array;
-
-        public IntsKey(int[] array) {
-            this.array = array;
-        }
-
-        public int[] getArray() {
-            return array.clone();
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            IntsKey bytesKey = (IntsKey) o;
-            return Arrays.equals(array, bytesKey.array);
-        }
-
-        @Override
-        public int hashCode() {
-            return Arrays.hashCode(array);
         }
     }
 

@@ -2,6 +2,7 @@ package ch.epfl.biop.scijava.command.source;
 
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.sourceandconverter.exporter.OMETiffExporter;
+import ch.epfl.biop.sourceandconverter.exporter.OMETiffPyramidizerExporter;
 import org.scijava.ItemIO;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
@@ -17,8 +18,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
-@Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Export>Export Sources To OME TIFF")
-public class ExportToOMETIFFCommand implements BdvPlaygroundActionCommand {
+@Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Export>Export Sources To OME TIFF (build pyramid)")
+public class ExportToOMETIFFBuildPyramidCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(label = "Sources to export")
     public SourceAndConverter[] sacs;
@@ -28,6 +29,12 @@ public class ExportToOMETIFFCommand implements BdvPlaygroundActionCommand {
 
     @Parameter( label = "Unit", choices = {"MILLIMETER", "MICROMETER"})
     String unit;
+
+    @Parameter( label = "Number of resolution levels")
+    int n_resolution_levels = 4;
+
+    @Parameter( label = "Downscaling between resolution levels")
+    int downscaling = 2;
 
     @Parameter( label = "Tile Size X (negative for no tiling)")
     int tile_size_x = 512;
@@ -56,15 +63,17 @@ public class ExportToOMETIFFCommand implements BdvPlaygroundActionCommand {
 
         Task task = taskService.createTask("Export: "+file.getName());
 
-        OMETiffExporter.Builder builder = OMETiffExporter
+        OMETiffPyramidizerExporter.Builder builder = OMETiffPyramidizerExporter
                 .builder()
                 .monitor(task)
+                .downsample(downscaling)
+                .nResolutionLevels(n_resolution_levels)
                 .savePath(file.getAbsolutePath());
 
         if (lzw_compression) builder.lzw();
         if (unit.equals("MILLIMETER")) builder.millimeter();
         if (unit.equals("MICROMETER")) builder.micrometer();
-        if ((tile_size_x>0)&&(tile_size_y >0)) builder.tileSize(tile_size_x, tile_size_y);
+        if ((tile_size_x>0)&&(tile_size_y>0)) builder.tileSize(tile_size_x, tile_size_y);
         builder.maxTilesInQueue(max_tiles_queue);
         builder.nThreads(n_threads);
 

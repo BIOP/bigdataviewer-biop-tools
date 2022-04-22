@@ -119,6 +119,7 @@
 		<bigvolumeviewer.version>0.2.0</bigvolumeviewer.version>
 
 		<releaseProfiles>sign,deploy-to-scijava</releaseProfiles>
+		<bio-formats.version>6.9.1</bio-formats.version>
 
 		<!--<scijava-common.version>2.87.3.99</scijava-common.version>
 		<imagej-legacy.version>0.38.2.99</imagej-legacy.version>

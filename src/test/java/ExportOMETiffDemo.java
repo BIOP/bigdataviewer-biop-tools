@@ -3,7 +3,7 @@ import bdv.util.BdvHandle;
 import bdv.util.BdvOptions;
 import bdv.util.BdvStackSource;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.sourceandconverter.exporter.OMETiffExporterPyramidBuilder;
+import ch.epfl.biop.sourceandconverter.exporter.OMETiffPyramidizerExporter;
 import ij.IJ;
 import ij.ImagePlus;
 import loci.common.DebugTools;
@@ -42,13 +42,13 @@ public class ExportOMETiffDemo {
         BdvHandle bdvh = initAndShowSources();
 
         //OMETiffExporter.builder()
-        OMETiffExporterPyramidBuilder.builder()
-                //.nThreads(4)
-                .savePath("C:/Users/nicol/Desktop/ometiff/blobs.ome.tiff")
+        OMETiffPyramidizerExporter.builder()
+                .nThreads(4)
+                .savePath("C:/Users/nicol/Desktop/ometiff/blobs.ome.tiff")//C:/Users/nicol/Desktop/ometiff/blobs.tiff")
                 .millimeter()
                 .downsample(2)
-                .nResolutionLevels(2)
-                .tileSize(32,32)
+                .nResolutionLevels(3)
+                .tileSize(64,64)
                 .create(source).export();
 
     }
