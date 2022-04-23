@@ -31,6 +31,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.scijava.task.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
 
 import java.io.File;
 import java.util.HashMap;
@@ -137,7 +138,7 @@ public class OMETiffExporter {
         height = (int) model.getSource(0,0).max(1)+1;
 
         sizeZ = (int) model.getSource(0,0).max(2)+1;
-        sizeT = getMaxTimepoint(model);
+        sizeT = SourceAndConverterHelper.getMaxTimepoint(model);
         sizeC = sources.length;
 
         AffineTransform3D mat = new AffineTransform3D();
@@ -422,30 +423,6 @@ public class OMETiffExporter {
         writer.close();
         computedBlocks.clear();
         if (task!=null) task.run(()->{});
-    }
-
-    public static int getMaxTimepoint(Source source) {
-        if (!source.isPresent(0)) {
-            return 0;
-        } else {
-            int nFrames = 1;
-            int iFrame = 1;
-
-            int previous;
-            for(previous = iFrame; iFrame < 1073741823 && source.isPresent(iFrame); iFrame *= 2) {
-                previous = iFrame;
-            }
-
-            if (iFrame > 1) {
-                for(int tp = previous; tp < iFrame + 1; ++tp) {
-                    if (!source.isPresent(tp)) {
-                        nFrames = tp;
-                        break;
-                    }
-                }
-            }
-            return nFrames;
-        }
     }
 
     public static Builder builder() {

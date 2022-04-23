@@ -32,6 +32,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.scijava.task.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
 
 import java.io.File;
 import java.util.HashMap;
@@ -151,7 +152,7 @@ public class OMETiffPyramidizerExporter {
         height = (int) model.getSource(0,0).max(1)+1;
 
         sizeZ = (int) model.getSource(0,0).max(2)+1;
-        sizeT = OMETiffExporter.getMaxTimepoint(model);
+        sizeT = SourceAndConverterHelper.getMaxTimepoint(model);
         sizeC = sources.length;
 
         AffineTransform3D mat = new AffineTransform3D();
