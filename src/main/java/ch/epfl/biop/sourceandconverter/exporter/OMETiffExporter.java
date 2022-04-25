@@ -316,7 +316,7 @@ public class OMETiffExporter {
 
         // setup writer
         PyramidOMETiffWriter writer = new PyramidOMETiffWriter();
-        ((DynamicMetadataOptions)writer.getMetadataOptions()).set(OMETiffWriter.COMPANION_KEY,FilenameUtils.removeExtension(file.getAbsolutePath())+".companion.ome"); // TODO : check ome xml does not already exists ?
+        //((DynamicMetadataOptions)writer.getMetadataOptions()).set(OMETiffWriter.COMPANION_KEY,FilenameUtils.removeExtension(file.getAbsolutePath())+".companion.ome"); // TODO : check ome xml does not already exists ?
 
         writer.setWriteSequentially(true); // Setting this to false can be problematic!
 
