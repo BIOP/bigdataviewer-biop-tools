@@ -3,6 +3,8 @@ package ch.epfl.biop.sourceandconverter.exporter;
 import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
 import loci.common.image.IImageScaler;
+import loci.common.image.SimpleImageScaler;
+import loci.formats.IFormatWriter;
 import loci.formats.MetadataTools;
 import loci.formats.in.OMETiffReader;
 import loci.formats.meta.IMetadata;
@@ -24,6 +26,7 @@ import net.imglib2.view.Views;
 import ome.units.UNITS;
 import ome.units.quantity.Length;
 import ome.units.unit.Unit;
+import ome.xml.meta.OMEXMLMetadata;
 import ome.xml.model.enums.DimensionOrder;
 import ome.xml.model.enums.PixelType;
 import ome.xml.model.primitives.Color;
@@ -52,7 +55,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * Parallelization can occur at the reading level, with a number of threads set with
  * {@link OMETiffPyramidizerExporter.Builder#nThreads(int)}. Writing to HDD is serial.
  *
- * For big 2d planes, tiled images can be saved with {@link OMETiffPyramidizerExporter.Builder#tileSize(int, int)}
+ * For big planes, tiled images can be saved with {@link OMETiffPyramidizerExporter.Builder#tileSize(int, int)}
  *
  * Lzw compression possible {@link OMETiffPyramidizerExporter.Builder#lzw()}
  *
@@ -69,7 +72,6 @@ import java.util.concurrent.atomic.AtomicLong;
  *
  * The RAM occupation depends on the caching mechanism (if any) in the input {@link SourceAndConverter} array.
  *
- *
  * @author Nicolas Chiaruttini, EPFL, 2022
  */
 
@@ -77,6 +79,8 @@ import java.util.concurrent.atomic.AtomicLong;
 // for a discussion about pyramid optimisation -> in the end the file is written two times - one
 // for the final ome tiff, and another one which contains the current resolution level, that will be used
 // for building the next resolution level
+// original script https://github.com/ome/bio-formats-examples/blob/master/src/main/java/GeneratePyramidResolutions.java
+// RAAAAH https://forum.image.sc/t/save-ome-tiff-as-8-bit-rgb-for-qupath/61281/3
 
 public class OMETiffPyramidizerExporter {
 
@@ -250,10 +254,10 @@ public class OMETiffPyramidizerExporter {
                 }
             }
 
-            if (localResolution.get()!=r) {
+            if ((localResolution.get()==null)||(localResolution.get()!=r)) {
                 // Need to update the reader : we are now writing the next resolution level
                 if (localReader.get()!=null) {
-                    //Closing localReader.get().getCurrentFile()
+                    //Closing the previous local reader
                     localReader.get().close();
                 } else {
                     localScaler.set(new AverageImageScaler());
@@ -262,6 +266,7 @@ public class OMETiffPyramidizerExporter {
                 IMetadata omeMeta = MetadataTools.createOMEXMLMetadata();
                 reader.setMetadataStore(omeMeta);
                 reader.setId(getFileName(r-1));
+                reader.setSeries(0);
                 localReader.set(reader);
                 localResolution.set(r);
             }
@@ -283,7 +288,7 @@ public class OMETiffPyramidizerExporter {
 
             byte[] tileByte = localScaler.get().downsample(tileBytePreviousLevel, (int) effTileSizeX, (int) effTileSizeY, downsample,
                     bytesPerPixel, isLittleEndian,
-                    isFloat, isRGB?3:1, isInterleaved);
+                    isFloat, isRGB?3:1, false);
 
             computedBlocks.put(key,tileByte);
         }
@@ -302,7 +307,7 @@ public class OMETiffPyramidizerExporter {
                 tileLock.notifyAll();
             }
             if (localReader.get()!=null) {
-                System.out.println("Closing "+localReader.get().getCurrentFile());
+                // Closing localReader.get()
                 localReader.get().close(); // Close last resolution
             }
             return false;
@@ -317,7 +322,7 @@ public class OMETiffPyramidizerExporter {
 
     boolean isLittleEndian = false;
     boolean isRGB = false;
-    boolean isInterleaved = false;
+    volatile boolean isInterleaved = false;
     boolean isFloat = false;
     int bytesPerPixel;
 
@@ -326,28 +331,38 @@ public class OMETiffPyramidizerExporter {
         meta.setImageID("Image:"+series, series);
         meta.setPixelsID("Pixels:"+series, series);
         meta.setImageName(name, series);
-        meta.setPixelsDimensionOrder(DimensionOrder.XYZCT, series);
 
         if (pixelType instanceof UnsignedShortType) {
             meta.setPixelsType(PixelType.UINT16, series);
             bytesPerPixel = 2;
+            isInterleaved = false;
+            meta.setPixelsInterleaved(false, series);
+            meta.setPixelsDimensionOrder(DimensionOrder.XYZCT, series);
         } else if (pixelType instanceof UnsignedByteType) {
             meta.setPixelsType(PixelType.UINT8, series);
             bytesPerPixel = 1;
+            isInterleaved = false;
+            meta.setPixelsInterleaved(false, series);
+            meta.setPixelsDimensionOrder(DimensionOrder.XYZCT, series);
         } else if (pixelType instanceof FloatType) {
             meta.setPixelsType(PixelType.FLOAT, series);
             bytesPerPixel = 4;
             isFloat = true;
+            isInterleaved = false;
+            meta.setPixelsInterleaved(false, series);
+            meta.setPixelsDimensionOrder(DimensionOrder.XYZCT, series);
         } else if (pixelType instanceof ARGBType) {
             isInterleaved = true;
             isRGB = true;
             bytesPerPixel = 1;
             meta.setPixelsType(PixelType.UINT8, series);
+            meta.setPixelsDimensionOrder(DimensionOrder.XYCZT, series);
+            meta.setPixelsInterleaved(true, series);
         } else {
             throw new UnsupportedOperationException("Unhandled pixel type class: "+pixelType.getClass().getName());
         }
 
-        meta.setPixelsBigEndian(!isLittleEndian, 0);
+        meta.setPixelsBigEndian(!isLittleEndian, series);
 
         // Set resolutions
         meta.setPixelsSizeX(new PositiveInteger(width), series);
@@ -359,16 +374,13 @@ public class OMETiffPyramidizerExporter {
         if (isRGB) {
             meta.setChannelID("Channel:0", series, 0);
             meta.setChannelName("Channel_0", series, 0);
-            meta.setPixelsInterleaved(isInterleaved, series);
-            meta.setChannelSamplesPerPixel(new PositiveInteger(3), series, 0); //nSamples = 3; // TODO : check!
+            meta.setChannelSamplesPerPixel(new PositiveInteger(3), series, 0);
         } else {
-            meta.setChannelSamplesPerPixel(new PositiveInteger(1), series, 0);
-            meta.setPixelsInterleaved(isInterleaved, series);
             for (int c = 0; c < nChannels; c++) {
                 meta.setChannelID("Channel:0:" + c, series, c);
-                // omeMeta.setChannelSamplesPerPixel(new PositiveInteger(1), series, c);
+                meta.setChannelSamplesPerPixel(new PositiveInteger(1), series, c);
                 int colorCode = converters[c].getColor().get();
-                int colorRed = ARGBType.red(colorCode); //channelLUT.getRed(255);
+                int colorRed = ARGBType.red(colorCode);
                 int colorGreen = ARGBType.green(colorCode);
                 int colorBlue = ARGBType.blue(colorCode);
                 int colorAlpha = ARGBType.alpha(colorCode);
@@ -410,11 +422,11 @@ public class OMETiffPyramidizerExporter {
 
         // setup writer for multiresolution file
         PyramidOMETiffWriter writer = new PyramidOMETiffWriter();
-        writer.setWriteSequentially(true); // Setting this to false can be problematic!
         writer.setMetadataRetrieve(omeMeta);
+        writer.setWriteSequentially(true); // Setting this to false can be problematic!
         writer.setBigTiff(true);
         writer.setId(file.getAbsolutePath());
-        writer.setSeries(0);
+        writer.setSeries(series);
         writer.setCompression(compression);
         writer.setTileSizeX((int)tileX);
         writer.setTileSizeY((int)tileY);
@@ -459,15 +471,24 @@ public class OMETiffPyramidizerExporter {
                 currentLevelWriter.setWriteSequentially(true); // Setting this to false can be problematic!
                 currentLevelOmeMeta.setPixelsSizeX(new PositiveInteger(maxX), series);
                 currentLevelOmeMeta.setPixelsSizeY(new PositiveInteger(maxY), series);
+                currentLevelOmeMeta.setPixelsPhysicalSizeX(new Length(voxelSizes[0]*Math.pow(downsample,r+1), unit), series);
+                currentLevelOmeMeta.setPixelsPhysicalSizeY(new Length(voxelSizes[1]*Math.pow(downsample,r+1), unit), series);
+                currentLevelOmeMeta.setPixelsDimensionOrder(DimensionOrder.XYCZT,0);
                 currentLevelWriter.setMetadataRetrieve(currentLevelOmeMeta);
                 currentLevelWriter.setBigTiff(true);
                 currentLevelWriter.setId(getFileName(r));
-                currentLevelWriter.setSeries(0);
+                currentLevelWriter.setSeries(series);
                 //currentLevelWriter.setCompression(compression); -> uncompressed -> faster
                 currentLevelWriter.setTileSizeX((int) tileX);
                 currentLevelWriter.setTileSizeY((int) tileY);
-                currentLevelWriter.setInterleaved(currentLevelOmeMeta.getPixelsInterleaved(series));
+                if (r==0) {
+                    currentLevelWriter.setInterleaved(true);
+                } else {
+                    currentLevelWriter.setInterleaved(false); // !!!! weird. See TestOMETIFFRGBMultiScaleTile
+                }
             }
+
+            if (r>0) writer.setInterleaved(false); // But why the heck ???
 
             logger.debug("Saving resolution size " + r);
             writer.setResolution(r);
@@ -496,20 +517,12 @@ public class OMETiffPyramidizerExporter {
                                 }
 
                                 int plane = t * sizeZ * sizeC + c * sizeZ + z;
-                                //int plane = t * sizeZ * sizeC + z * sizeC + c;
-
-                                IFD ifd = new IFD();
-                                ifd.putIFDValue(IFD.TILE_WIDTH, endX-startX);
-                                ifd.putIFDValue(IFD.TILE_LENGTH, endY-startY);
 
                                 if (r<nResolutionLevels-1) {
-                                    IFD ifdcl = new IFD();
-                                    ifdcl.putIFDValue(IFD.TILE_WIDTH, endX - startX);
-                                    ifdcl.putIFDValue(IFD.TILE_LENGTH, endY - startY);
-                                    currentLevelWriter.saveBytes(plane, computedBlocks.get(key), ifdcl, (int) startX, (int) startY, (int) (endX - startX), (int) (endY - startY));
+                                    currentLevelWriter.saveBytes(plane, computedBlocks.get(key), (int) startX, (int) startY, (int) (endX - startX), (int) (endY - startY));
                                 }
 
-                                writer.saveBytes(plane, computedBlocks.get(key), ifd, (int)startX, (int)startY, (int)(endX-startX), (int)(endY-startY));
+                                writer.saveBytes(plane, computedBlocks.get(key), (int)startX, (int)startY, (int)(endX-startX), (int)(endY-startY));
 
                                 computedBlocks.remove(key);
                                 tileIterator.decrementQueue();
@@ -528,9 +541,9 @@ public class OMETiffPyramidizerExporter {
                 localReader.get().close();
             }
         }
+
         for (int r = 0; r < nResolutionLevels-1; r++) {
-            boolean success = new File(getFileName(r)).delete();
-            System.out.println("r= "+r+" : "+success);
+            new File(getFileName(r)).delete();
         }
 
         writer.close();

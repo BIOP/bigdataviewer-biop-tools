@@ -2,6 +2,7 @@ package ch.epfl.biop.sourceandconverter.exporter;
 
 import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
+import ch.epfl.biop.bdv.bioformats.bioformatssource.BioFormatsBdvSource;
 import loci.formats.MetadataTools;
 import loci.formats.in.DynamicMetadataOptions;
 import loci.formats.meta.IMetadata;
@@ -266,6 +267,7 @@ public class OMETiffExporter {
             isInterleaved = true;
             isRGB = true;
             omeMeta.setPixelsType(PixelType.UINT8, series);
+            omeMeta.setPixelsDimensionOrder(DimensionOrder.XYCZT, series);
         } else {
             throw new UnsupportedOperationException("Unhandled pixel type class: "+pixelType.getClass().getName());
         }
@@ -400,8 +402,6 @@ public class OMETiffExporter {
                                         }
                                     }
                                 }
-
-                                //int plane = t * sizeZ * sizeC + z * sizeC + c;
 
                                 int plane = t * sizeZ * sizeC + c * sizeZ + z;
 

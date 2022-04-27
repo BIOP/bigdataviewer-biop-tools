@@ -94,10 +94,11 @@ public class AverageImageScaler implements IImageScaler {
 
         byte[] outBuf = new byte[newW * newH * bytesPerPixel * channels];
         int count = interleaved ? 1 : channels;
-        int pixelChannels = interleaved ? channels : 1;
+        int pixelChannels = interleaved ? channels : 1; // Either count or
 
         for (int c=0; c<count; c++) {
-            int srcOffset = c * width * height + shiftX + shiftY * width;
+            int srcOffset = c * width * height;
+            srcOffset += shiftX + shiftY * width;
             int destOffset = c * newW * newH;
             for (int yyy=newH, ye=0; yyy>0; yyy--) {
                 for (int xxx=newW, xe=0; xxx>0; xxx--) {
