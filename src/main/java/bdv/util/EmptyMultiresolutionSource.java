@@ -46,7 +46,7 @@ public class EmptyMultiresolutionSource implements Source<UnsignedShortType>, Se
                 fun, UnsignedShortType::new);
 
         if (numberOfResolutions<=0) {
-            logger.warn("Number of resolution issue, this value cannot be below 1, value ("+numberOfResolutions+")overriden to 1");
+            logger.warn("Number of resolution issue, this value cannot be below 1, value ("+numberOfResolutions+") overriden to 1");
             numberOfResolutions = 1;
         }
         params.numberOfResolutions = numberOfResolutions;
@@ -58,16 +58,26 @@ public class EmptyMultiresolutionSource implements Source<UnsignedShortType>, Se
 
         transformList = new ArrayList<>();
 
+        /*
+        double[] m = coord.getRowPackedCopy();
+        double[] voxelSizes = new double[3];
+        for(int d = 0; d < 3; ++d) {
+            voxelSizes[d] = Math.sqrt(m[d] * m[d] + m[d + 4] * m[d + 4] + m[d + 8] * m[d + 8]);
+        }
+         */
         for (int i=0;i<numberOfResolutions;i++) {
             AffineTransform3D m = new AffineTransform3D();
             m.set(at3D);
-            double px = m.get(0,3);
-            double py = m.get(1,3);
-            double pz = m.get(2,3);
-            m.scale( (double)nx/(long)currentNX, (double)ny/(long)currentNY, (double)nz/(long)currentNZ );
-            m.set(px,0,3);
-            m.set(py,1,3);
-            m.set(pz,2,3);
+            double[] mat = m.getRowPackedCopy();
+            double sX = (double)nx/(long)currentNX;
+            double sY = (double)ny/(long)currentNY;
+            double sZ = (double)nz/(long)currentNZ;
+            mat[0]*=sX;mat[4]*=sX;mat[8]*=sX;
+            mat[1]*=sY;mat[5]*=sY;mat[9]*=sY;
+            mat[2]*=sZ;mat[6]*=sZ;mat[10]*=sZ;
+            m.set(mat);
+            // this doesn't look good
+            // m.scale( (double)nx/(long)currentNX, (double)ny/(long)currentNY, (double)nz/(long)currentNZ );
             transformList.add(m);
             raiList.add(Views.interval(ra, new FinalInterval((long) currentNX,(long) currentNY, (long) currentNZ)));
             currentNX=currentNX/scalex;
