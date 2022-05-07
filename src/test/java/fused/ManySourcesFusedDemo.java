@@ -5,6 +5,7 @@ import bdv.util.source.fused.AlphaFusedResampledSource;
 import bdv.viewer.SourceAndConverter;
 import bdv.viewer.SourceGroup;
 import ch.epfl.biop.sourceandconverter.SourceFuserAndResampler;
+import loci.common.DebugTools;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imagej.ImageJ;
 import net.imglib2.realtransform.AffineTransform3D;
@@ -30,7 +31,8 @@ public class ManySourcesFusedDemo {
         ij = new ImageJ();
         ij.ui().showUI();
 
-        demo(5);
+        DebugTools.setRootLevel("OFF");
+        demo(50);
 
         AffineTransform3D location = new AffineTransform3D();
         location.scale(0.5);
