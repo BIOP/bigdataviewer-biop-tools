@@ -97,7 +97,7 @@
 		<license.excludes>**/resources/**</license.excludes>
 
 		<bigdataviewer-playground.version>0.4.4</bigdataviewer-playground.version>
-		<bigdataviewer-bioformats.version>0.2.23</bigdataviewer-bioformats.version>
+		<bigdataviewer-bioformats.version>0.3.0</bigdataviewer-bioformats.version>
 		<bigdataviewer-selector.version>0.1.9</bigdataviewer-selector.version>
 		<scijava.app.directory>C:/Fiji.app/</scijava.app.directory>
 
@@ -117,9 +117,9 @@
 
 		<Operetta_Importer.version>0.1.21</Operetta_Importer.version>
 		<bigvolumeviewer.version>0.2.0</bigvolumeviewer.version>
+		<bio-formats.version>6.9.1</bio-formats.version>
 
 		<releaseProfiles>sign,deploy-to-scijava</releaseProfiles>
-		<bio-formats.version>6.9.1</bio-formats.version>
 
 		<!--<scijava-common.version>2.87.3.99</scijava-common.version>
 		<imagej-legacy.version>0.38.2.99</imagej-legacy.version>
