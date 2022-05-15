@@ -29,7 +29,7 @@ public class SourceFuserAndResampler implements Runnable, Function<List<SourceAn
 
     boolean cache;
 
-    int cacheX, cacheY, cacheZ;
+    int cacheX, cacheY, cacheZ, cacheBounds;
 
     int defaultMipMapLevel;
 
@@ -37,7 +37,7 @@ public class SourceFuserAndResampler implements Runnable, Function<List<SourceAn
 
     String blendingMode;
 
-    private int nThreads = 4;
+    private int nThreads;
 
     public SourceFuserAndResampler(List<SourceAndConverter> sacs_in,
                                    String blendingMode,
@@ -47,7 +47,7 @@ public class SourceFuserAndResampler implements Runnable, Function<List<SourceAn
                                    boolean cache,
                                    boolean interpolate,
                                    int defaultMipMapLevel,
-                                   int cacheX, int cacheY, int cacheZ,
+                                   int cacheX, int cacheY, int cacheZ, int cacheBounds,
                                    int nThreads ) {
         this.nThreads = nThreads;
         this.blendingMode = blendingMode;
@@ -61,6 +61,7 @@ public class SourceFuserAndResampler implements Runnable, Function<List<SourceAn
         this.cacheX = cacheX;
         this.cacheY = cacheY;
         this.cacheZ = cacheZ;
+        this.cacheBounds = cacheBounds;
     }
 
     @Override
@@ -97,9 +98,10 @@ public class SourceFuserAndResampler implements Runnable, Function<List<SourceAn
                         reuseMipMaps,
                         cache,
                         interpolationMap,
-                        defaultMipMapLevel,cacheX,cacheY,cacheZ);
+                        defaultMipMapLevel,cacheX,cacheY,cacheZ, cacheBounds);
 
         SourceAndConverter sac;
+
         if (volatileIsPossible) {
             SourceAndConverter vsac;
             Source vsrcRsampled;
@@ -123,7 +125,7 @@ public class SourceFuserAndResampler implements Runnable, Function<List<SourceAn
                         reuseMipMaps,
                         false,
                         interpolationMap,
-                        defaultMipMapLevel,cacheX,cacheY,cacheZ);
+                        defaultMipMapLevel,cacheX,cacheY,cacheZ, cacheBounds);
             }
             vsac = new SourceAndConverter(vsrcRsampled,
                     SourceAndConverterHelper.cloneConverter(sacExample.asVolatile().getConverter(), sacExample.asVolatile()));

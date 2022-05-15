@@ -36,6 +36,9 @@ public class SourcesFuserAndResamplerCommand implements BdvPlaygroundActionComma
     @Parameter
     int cacheX = 64, cacheY=64, cacheZ=64;
 
+    @Parameter(label = "Number of blocks kept in memory, negative values = no bounds")
+    int cacheBounds = -1;
+
     @Parameter
     int nThreads = 4;
 
@@ -52,7 +55,7 @@ public class SourcesFuserAndResamplerCommand implements BdvPlaygroundActionComma
     public void run() {
         // Should not be parallel
         List<SourceAndConverter> sacs_list = Arrays.asList(sacs);
-        sac_out = new SourceFuserAndResampler(sacs_list, blendingMode,  model, name, reusemipmaps, cache, interpolate, defaultmipmaplevel, cacheX, cacheY, cacheZ, nThreads).get();
+        sac_out = new SourceFuserAndResampler(sacs_list, blendingMode,  model, name, reusemipmaps, cache, interpolate, defaultmipmaplevel, cacheX, cacheY, cacheZ, cacheBounds, nThreads).get();
     }
 
 }

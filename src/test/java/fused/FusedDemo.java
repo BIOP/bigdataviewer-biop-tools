@@ -78,7 +78,7 @@ public class FusedDemo {
                 AlphaFusedResampledSource.AVERAGE,
                 sacs.get(0), "Fused source",
                 true, true, false, 0,
-                64, 64, 1, 4).get();
+                64, 64, 1, -1,4).get();
 
         BdvHandle bdvh = SourceAndConverterServices.getBdvDisplayService().getNewBdv();
 

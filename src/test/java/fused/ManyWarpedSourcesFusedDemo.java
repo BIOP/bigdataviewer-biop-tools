@@ -53,7 +53,7 @@ public class ManyWarpedSourcesFusedDemo {
                 AlphaFusedResampledSource.AVERAGE,
                 model, "Fused source",
                 true, true, false, 0,
-                256, 256, 1, 8).get();
+                256, 256, 1, -1,8).get();
 
         BdvHandle bdvh = SourceAndConverterServices.getBdvDisplayService().getNewBdv();
 

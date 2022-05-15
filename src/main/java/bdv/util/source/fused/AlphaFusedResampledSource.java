@@ -13,11 +13,12 @@ import net.imglib2.Cursor;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.RealRandomAccessible;
+import net.imglib2.cache.Cache;
+import net.imglib2.cache.img.CachedCellImg;
 import net.imglib2.cache.img.DiskCachedCellImgOptions;
 import net.imglib2.cache.img.ReadOnlyCachedCellImgFactory;
 import net.imglib2.cache.img.ReadOnlyCachedCellImgOptions;
 import net.imglib2.cache.img.optional.CacheOptions;
-import net.imglib2.img.Img;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.realtransform.RealViews;
 import net.imglib2.type.NativeType;
@@ -74,6 +75,8 @@ public class AlphaFusedResampledSource< T extends NumericType<T> & NativeType<T>
      */
     transient ConcurrentHashMap<Integer, ConcurrentHashMap<Integer,RandomAccessibleInterval<T>>> cachedRAIs
             = new ConcurrentHashMap<>();
+    transient ConcurrentHashMap<Integer, ConcurrentHashMap<Integer, Cache< ?,?>>> cachedCacheRAIs
+            = new ConcurrentHashMap<>();
 
     /**
      * Model source, no need to be of type {@link T}
@@ -94,7 +97,7 @@ public class AlphaFusedResampledSource< T extends NumericType<T> & NativeType<T>
 
     private String name;
 
-    final int cacheX, cacheY, cacheZ;
+    final int cacheX, cacheY, cacheZ, cacheBound;
 
     final String blendingMode;
 
@@ -122,6 +125,7 @@ public class AlphaFusedResampledSource< T extends NumericType<T> & NativeType<T>
      *  TODO : check how the cache can be accessed / reset
      * @param originsInterpolation specifies whether the origin source should be interpolated of not in the resampling process
      *
+     *
      */
     public AlphaFusedResampledSource(Collection<Source<T>> origins,
                                      String blendingMode,
@@ -133,7 +137,8 @@ public class AlphaFusedResampledSource< T extends NumericType<T> & NativeType<T>
                                      int defaultMipMapLevel,
                                      int cacheX,
                                      int cacheY,
-                                     int cacheZ) {
+                                     int cacheZ,
+                                     int cacheBound) {
         final T t = origins.stream().findAny().get().getType().createVariable();
         this.pixelCreator = t::createVariable;
         this.blendingMode = blendingMode;
@@ -151,6 +156,7 @@ public class AlphaFusedResampledSource< T extends NumericType<T> & NativeType<T>
         this.cacheX = cacheX;
         this.cacheY = cacheY;
         this.cacheZ = cacheZ;
+        this.cacheBound = cacheBound;
     }
 
     Map<Source<T>,Map<Integer, Integer>> mipmapModelToOrigin = new HashMap<>();
@@ -266,6 +272,7 @@ public class AlphaFusedResampledSource< T extends NumericType<T> & NativeType<T>
         if (cache) {
             if (!cachedRAIs.containsKey(t)) {
                 cachedRAIs.put(t, new ConcurrentHashMap<>());
+                cachedCacheRAIs.put(t, new ConcurrentHashMap<>());
             }
 
             if (!cachedRAIs.get(t).containsKey(level)) {
@@ -274,11 +281,17 @@ public class AlphaFusedResampledSource< T extends NumericType<T> & NativeType<T>
 
                     int[] blockSize = {cacheX, cacheY, cacheZ};
 
-                    final ReadOnlyCachedCellImgOptions cacheOptions = ReadOnlyCachedCellImgOptions
-                            .options()
-                            .cacheType(DiskCachedCellImgOptions.CacheType.SOFTREF)
-                            //.maxCacheSize(10)
-                            .cellDimensions(blockSize);
+                    ReadOnlyCachedCellImgOptions cacheOptions;
+
+                    if (cacheBound>0) {
+                        cacheOptions = ReadOnlyCachedCellImgOptions
+                                .options().cacheType(CacheOptions.CacheType.BOUNDED).maxCacheSize(cacheBound)
+                                .cellDimensions(blockSize);
+                    } else {
+                        cacheOptions = ReadOnlyCachedCellImgOptions
+                                .options().cacheType(CacheOptions.CacheType.SOFTREF)
+                                .cellDimensions(blockSize);
+                    }
 
                     final ReadOnlyCachedCellImgFactory factory = new ReadOnlyCachedCellImgFactory( cacheOptions );
 
@@ -295,9 +308,8 @@ public class AlphaFusedResampledSource< T extends NumericType<T> & NativeType<T>
                     final AffineTransform3D affineTransform = new AffineTransform3D();
                     getSourceTransform(t,level,affineTransform);
 
-                    final Img<T> rai = factory.create(new long[]{sx, sy, sz}, pixelCreator.get(),
+                    final CachedCellImg< T, ? > rai = factory.create(new long[]{sx, sy, sz}, pixelCreator.get(),
                             cell -> {
-
                                 boolean[] sourcesPresentInCell = new boolean[nSources];
                                 boolean oneSourcePresent = false;
                                 for (int i=0;i<nSources;i++) {
@@ -325,6 +337,7 @@ public class AlphaFusedResampledSource< T extends NumericType<T> & NativeType<T>
                             });
 
                     cachedRAIs.get(t).put(level, rai);
+                    cachedCacheRAIs.get(t).put(level, rai.getCache());
                 } else {
                     cachedRAIs.get(t).put(level,Views.interval(buildSource(t,level), new long[]{0, 0, 0}, new long[]{sx, sy, sz}));
                 }
@@ -422,7 +435,6 @@ public class AlphaFusedResampledSource< T extends NumericType<T> & NativeType<T>
         return defaultMipMapLevel;
     }
 
-
     public long getCacheX() {
         return cacheX;
     }
@@ -434,4 +446,6 @@ public class AlphaFusedResampledSource< T extends NumericType<T> & NativeType<T>
     public long getCacheZ() {
         return cacheZ;
     }
+
+    public ConcurrentHashMap<Integer, ConcurrentHashMap<Integer, Cache< ?,?>>> getCaches() { return cachedCacheRAIs;}
 }
