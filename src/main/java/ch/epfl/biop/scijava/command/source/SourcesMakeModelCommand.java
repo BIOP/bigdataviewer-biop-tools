@@ -1,6 +1,7 @@
 package ch.epfl.biop.scijava.command.source;
 
 import bdv.viewer.SourceAndConverter;
+import ch.epfl.biop.bdv.bioformats.export.ometiff.OMETiffPyramidizerExporter;
 import ch.epfl.biop.sourceandconverter.SourceHelper;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
