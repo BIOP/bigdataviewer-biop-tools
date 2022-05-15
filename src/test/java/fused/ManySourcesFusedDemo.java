@@ -48,7 +48,7 @@ public class ManySourcesFusedDemo {
                 AlphaFusedResampledSource.AVERAGE,
                 model, "Fused source",
                 true, true, false, 0,
-                64, 64, 64, 100,8).get();
+                64, 64, 64, 1000,8).get();
 
         BdvHandle bdvh = SourceAndConverterServices.getBdvDisplayService().getNewBdv();
 
