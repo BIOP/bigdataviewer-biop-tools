@@ -97,6 +97,13 @@ public class OMETiffMultiSeriesProcessorExporter {
             .forEach(currentSeriesNode -> {
                 try {
                     // Converts as virtual image plus
+                    /*SourceAndConverter[] allChannels = currentSeriesNode.sources();
+                    List<Integer> channels = new IntRangeParser(builder.rangeC).get(allChannels.length);
+                    SourceAndConverter[] selectedChannels = new SourceAndConverter[channels.size()];
+                    for (int ic = 0; ic<channels.size();ic++) {
+                        selectedChannels[ic] = allChannels[channels.get(ic)];
+                    }*/
+
                     List<ImagePlus> ij1_images = (List<ImagePlus>) command.run(ExportToMultipleImagePlusCommand.class, false,
                             "sacs", currentSeriesNode.sources(),
                             "level", 0,

@@ -169,8 +169,6 @@ public class ExportToMultipleImagePlusCommand implements BdvPlaygroundActionComm
                         .setT(range_frames)
                         .get(sources.size(), maxZSlices, maxTimeFrames);
 
-
-
                 switch (export_mode) {
                     case "Normal":
                         imp_out = ImagePlusGetter.getImagePlus(name, sources, level, range, parallelC, parallelZ, parallelT, task);
