@@ -119,6 +119,8 @@
 		<bigvolumeviewer.version>0.2.0</bigvolumeviewer.version>
 		<bio-formats.version>6.9.1</bio-formats.version>
 
+		<ijp-kheops.version>0.2.3</ijp-kheops.version>
+
 		<releaseProfiles>sign,deploy-to-scijava</releaseProfiles>
 
 		<!--<scijava-common.version>2.87.3.99</scijava-common.version>
@@ -139,6 +141,12 @@
 		<dependency>
 			<groupId>net.imagej</groupId>
 			<artifactId>imagej-legacy</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>ch.epfl.biop</groupId>
+			<artifactId>ijp-kheops</artifactId>
+			<version>${ijp-kheops.version}</version>
 		</dependency>
 
 		<dependency>
