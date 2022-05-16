@@ -90,7 +90,7 @@ public class OMETiffMultiSeriesProcessorExporter {
 
         task.setStatusMessage("Conversion in progress");
 
-        Map<String, String> outputMap = new ConcurrentHashMap<>();
+        final Map<String, String> outputMap = new ConcurrentHashMap<>();
 
         rangeSeries.parallelStream().map(index -> seriesNode.child(index))
         //seriesNode.children().parallelStream()
@@ -110,6 +110,7 @@ public class OMETiffMultiSeriesProcessorExporter {
 
                     if (ij1_images.size() != 1) IJ.log("ERROR : ONE IMAGE EXPECTED, MULTIPLE ONES FOUND");
                     ImagePlus image = ij1_images.get(0);
+                    image.setTitle(currentSeriesNode.name()); // Fix issue with file name
                     IJ.log("Processing " + image.getTitle());
                     // Z Project
                     if (builder.z_project) {
@@ -158,11 +159,15 @@ public class OMETiffMultiSeriesProcessorExporter {
                         image.setTitle(iniTitle + "_RescaledXY_" + builder.resize_xy);
                         image.setCalibration(cal);
                     }
-                    String totalPath = builder.output_directory + File.separator + image_file.getName() + "_" + image.getTitle() + ".ome.tiff";
+                    String prefix = "";
+                    if (builder.appendFileName) prefix = image_file.getName()+"-";
+                    String totalPath = builder.output_directory + File.separator + prefix + image.getTitle() + ".ome.tiff";
                     ImagePlus finalImage = image;
                     new Thread(() -> {
                         try {
                             ImagePlusToOMETiff.writeToOMETiff(finalImage, new File(totalPath), builder.nResolutionLevels, builder.downscaleFactor, builder.compression);
+                            //System.out.println(finalImage.getTitle());
+                            //System.out.println(totalPath);
                             outputMap.put(finalImage.getTitle(), totalPath);
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -174,12 +179,21 @@ public class OMETiffMultiSeriesProcessorExporter {
                             if (currentProgress == number_of_series) {
                                 task.run(() -> {}); // finished task
                             }
+                            synchronized (iImage) {
+                                iImage.notify();
+                            }
                         }
                     }).start();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             });
+
+        while (iImage.get()!=number_of_series) {
+            synchronized (iImage) {
+                iImage.wait();
+            }
+        }
 
         // Cleanup
         sac_service.remove(allSources.toArray(new SourceAndConverter[0])); // Maybe an issue if no projection TODO : check that all files are written
@@ -239,11 +253,18 @@ public class OMETiffMultiSeriesProcessorExporter {
         String rangeZ = ""; // Done
         String rangeT = ""; // Done
 
+        boolean appendFileName = false;
+
         public Builder file(File f) {
             image_file_path = f.getAbsolutePath();
             if (output_directory==null) {
                 output_directory = f.getParent();
             }
+            return this;
+        }
+
+        public Builder appendFileName() {
+            this.appendFileName = true;
             return this;
         }
 

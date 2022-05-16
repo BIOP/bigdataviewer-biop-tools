@@ -20,14 +20,16 @@ public class IrinaWorkFlow {
         // * input : nd2
         // * input : output folder
         // * output : files path (List<String> containing paths)
-        String basePath = "dir";
+        String basePath = "E:/irinatest";
+        String nd2Path = "N:/public/irina.khven_GR-LAMAN/e12_5_saggital_round3_embryo4_middle008.nd2";
         List<String> projectedTilePaths =
-                exportAndProjectTiles(basePath+File.separator+"projected", "nd2 file path")
+                exportAndProjectTiles(basePath+File.separator+"projected", nd2Path)
                         .values()
                         .stream()
                         .collect(Collectors.toList());
 
-        projectedTilePaths.parallelStream().forEach(System.out::println);
+        projectedTilePaths.forEach(System.out::println);
+
         // 1 ---- Correct for distortion
         // * input : ome tiff file
         // * input : landmark file for correcting distortion
@@ -62,6 +64,8 @@ public class IrinaWorkFlow {
                 .nResolutionLevels(4)
                 .downscaleFactorLevels(2)
                 .removeZOffsets()
+                .rangeS("0,1") // Only 2 series
+                .rangeC("0,1")
                 .export();
     }
 
