@@ -1,8 +1,6 @@
 package distort;
 
-import bdv.gui.TransformTypeSelectDialog;
-import bdv.img.WarpedSource;
-import bdv.util.BdvHandle;
+
 import bdv.util.BigWarpHelper;
 import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
@@ -50,8 +48,6 @@ import sc.fiji.bdvpg.spimdata.exporter.XmlFromSpimDataExporter;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -59,7 +55,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -74,24 +69,24 @@ public class IrinaWorkFlow {
         // * input : nd2
         // * input : output folder
         // * output : files path (List<String> containing paths)
-        /*String basePath = "E:/irinatest";
+        String basePath = "E:/irinatest";
         String nd2Path = "D:/e12_5_saggital_round3_embryo4_middle008.nd2";
+        String landmarkFileUnwarp = "N:/public/irina.khven_GR-LAMAN/distortion/2022-04-12-Oil-landmarks.csv";
+        int cropX = 50;
+        int cropY = 20;
+
         List<String> projectedTilePaths =
                 exportAndProjectTiles(basePath+File.separator+"projected", nd2Path)
                         .values()
                         .stream()
                         .collect(Collectors.toList());
 
-        projectedTilePaths.forEach(System.out::println);
-
         // 1 ---- Correct for distortion
         // * input : ome tiff file
         // * input : landmark file for correcting distortion
         // * input : cropx cropy in pixel
         // * output : files path (List<String> containing paths)
-        String landmarkFileUnwarp = "N:/public/irina.khven_GR-LAMAN/distortion/2022-04-12-Oil-landmarks.csv";
-        int cropX = 50;
-        int cropY = 20;
+
         List<String> undistortedTilePaths =  projectedTilePaths
                 .stream()
                 .parallel()
@@ -108,42 +103,7 @@ public class IrinaWorkFlow {
         // * input : undistorted files
         // * output : one xml file per connected tiles */
 
-        String path = "E:/irinatest/undistorted/";
-/*
-        String[] undistortedTilePaths = new String[]{
-                path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 01)_ZProj_Max Intensity.ome.tiff",
-                path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 02)_ZProj_Max Intensity.ome.tiff",
-                path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 03)_ZProj_Max Intensity.ome.tiff",
-                path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 04)_ZProj_Max Intensity.ome.tiff",
-                path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 05)_ZProj_Max Intensity.ome.tiff",
-                path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 06)_ZProj_Max Intensity.ome.tiff",
-                path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 07)_ZProj_Max Intensity.ome.tiff",
-                path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 08)_ZProj_Max Intensity.ome.tiff",
-                path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 09)_ZProj_Max Intensity.ome.tiff",
-                path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 10)_ZProj_Max Intensity.ome.tiff",
-                path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 11)_ZProj_Max Intensity.ome.tiff",
-                path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 12)_ZProj_Max Intensity.ome.tiff",
-                path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 01)_ZProj_Max Intensity.ome.tiff",
-                path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 02)_ZProj_Max Intensity.ome.tiff",
-                path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 03)_ZProj_Max Intensity.ome.tiff",
-                path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 04)_ZProj_Max Intensity.ome.tiff",
-                path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 05)_ZProj_Max Intensity.ome.tiff",
-                path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 06)_ZProj_Max Intensity.ome.tiff",
-                path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 07)_ZProj_Max Intensity.ome.tiff",
-                path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 08)_ZProj_Max Intensity.ome.tiff",
-                path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 09)_ZProj_Max Intensity.ome.tiff",
-                path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 10)_ZProj_Max Intensity.ome.tiff",
-                path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 11)_ZProj_Max Intensity.ome.tiff",
-                path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 12)_ZProj_Max Intensity.ome.tiff"
-        };*/
-
-        List<String> undistortedTilePaths = new ArrayList<>();
-        for (int i = 10;i<99;i++) {
-            undistortedTilePaths.add(path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series "+i+")_ZProj_Max Intensity.ome.tiff");
-        }
-
         List<String> xmlFiles = getConnectedXmlDatasets(ij.context(), undistortedTilePaths);
-
 
         for (String xmlFile:xmlFiles) {
             String xmlBigStitcherFile = getBigStitcherXmlDataset(ij.context(), xmlFile);
@@ -369,14 +329,5 @@ public class IrinaWorkFlow {
         }
         return fileOut.getAbsolutePath();
     }
-
-    public static String stitchDataset(String xmlDataset) {
-        return null;
-    }
-
-    public static String fuseDataset(String xmlDataset) {
-        return null;
-    }
-
 
 }
