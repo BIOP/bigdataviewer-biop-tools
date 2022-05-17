@@ -2,6 +2,8 @@ package ch.epfl.biop;
 
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.bdv.bioformats.command.BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand;
+import ch.epfl.biop.bdv.bioformats.command.BioformatsBigdataviewerBridgeDatasetCommand;
+import ch.epfl.biop.bdv.bioformats.command.OpenFilesWithBigdataviewerBioformatsBridgeCommand;
 import ch.epfl.biop.bdv.bioformats.export.IntRangeParser;
 import ch.epfl.biop.bdv.bioformats.export.ometiff.OMETiffExporter;
 import ch.epfl.biop.bdv.bioformats.imageloader.SeriesNumber;
@@ -34,7 +36,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class OMETiffMultiSeriesProcessorExporter {
@@ -54,11 +58,17 @@ public class OMETiffMultiSeriesProcessorExporter {
 
         String datasetName = builder.image_file_path;
 
-        AbstractSpimData spimdata = (AbstractSpimData) command.run(BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand.class,true,
-                    "datasetname", datasetName,
-                    "unit","MICROMETER",
-                    "files", new File[]{image_file},
-                    "splitrgbchannels", false).get().getOutput("spimdata");
+        Map<String,Object> options = BioformatsBigdataviewerBridgeDatasetCommand.getDefaultParameters();
+        options.put("datasetname", datasetName);
+        options.put("unit","MICROMETER");
+        options.put("files", new File[]{image_file});
+        options.put("splitrgbchannels", false);
+        options.put("numberofblockskeptinmemory", 1);
+        options.put("usebioformatscacheblocksize", false);
+
+        AbstractSpimData spimdata = (AbstractSpimData) command.run(OpenFilesWithBigdataviewerBioformatsBridgeCommand.class,true,
+                    options
+                ).get().getOutput("spimdata");
 
         List<SourceAndConverter> allSources = sac_service.getSourceAndConverterFromSpimdata(spimdata);
 
@@ -78,6 +88,8 @@ public class OMETiffMultiSeriesProcessorExporter {
                         .child(datasetName)
                         .child(SeriesNumber.class.getSimpleName());
 
+        System.out.println("nSeries = "+seriesNode.children().size());
+
         List<Integer> rangeSeries = new IntRangeParser(builder.rangeS).get(seriesNode.children().size());
 
         int number_of_series = rangeSeries.size();
@@ -91,6 +103,10 @@ public class OMETiffMultiSeriesProcessorExporter {
         task.setStatusMessage("Conversion in progress");
 
         final Map<String, String> outputMap = new ConcurrentHashMap<>();
+
+        ForkJoinPool pool = new ForkJoinPool(builder.n_threads);
+
+        Callable c = () -> {
 
         rangeSeries.parallelStream().map(index -> seriesNode.child(index))
         //seriesNode.children().parallelStream()
@@ -109,7 +125,7 @@ public class OMETiffMultiSeriesProcessorExporter {
                             "level", 0,
                             "range_frames", builder.rangeT,
                             "range_channels", builder.rangeC,
-                            "range_slices", builder.rangeS,
+                            "range_slices", builder.rangeZ,
                             "export_mode", "Virtual no-cache", // Because we only read once!
                             "parallel", Boolean.TRUE,
                             "verbose", Boolean.TRUE
@@ -194,7 +210,9 @@ public class OMETiffMultiSeriesProcessorExporter {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-            });
+            });  return  null;};
+
+        pool.submit(c).get();
 
         while (iImage.get()!=number_of_series) {
             synchronized (iImage) {

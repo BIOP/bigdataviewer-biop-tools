@@ -101,7 +101,7 @@ public class ExportToMultipleImagePlusCommand implements BdvPlaygroundActionComm
 
         for (String entity : entitiesSplit.split(",")) {
             String ent = entity.trim().toUpperCase();
-            if (!entityClasses.containsKey(ent)){
+            if ((!entityClasses.containsKey(ent))&&(ent!=null)&&(ent.trim()!="")){
                 System.err.println("Unrecognized entity class "+ent);
             } else {
                 System.out.println("Splitting by "+ent);

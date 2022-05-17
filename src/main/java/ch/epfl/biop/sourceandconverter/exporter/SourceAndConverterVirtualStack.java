@@ -106,9 +106,9 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
         nFrames = range.getRangeT().size();
         nZSlices = range.getRangeZ().size();
 
-        if ((int) raiModel.dimension(2)!=nZSlices) {
+        /*if ((int) raiModel.dimension(2)!=nZSlices) {
             logger.error("Mismatch! nSlices = "+nZSlices+" rai Z dimension = "+raiModel.dimension(2));
-        }
+        }*/
 
     }
 

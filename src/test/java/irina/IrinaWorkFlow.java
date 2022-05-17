@@ -1,24 +1,16 @@
-package distort;
+package irina;
 
 
 import bdv.util.BigWarpHelper;
-import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
-import bigwarp.BigWarp;
-import bigwarp.BigWarpInit;
-import bigwarp.landmarks.LandmarkTableModel;
-import bigwarp.transforms.BigWarpTransform;
 import ch.epfl.biop.ImagePlusToOMETiff;
 import ch.epfl.biop.OMETiffMultiSeriesProcessorExporter;
 import ch.epfl.biop.bdv.bioformats.command.BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand;
 import ch.epfl.biop.bdv.bioformats.imageloader.FileIndex;
-import ch.epfl.biop.bdv.bioformats.imageloader.SeriesNumber;
 import ch.epfl.biop.kheops.KheopsHelper;
 import ch.epfl.biop.scijava.command.spimdata.DatasetToBigStitcherDatasetCommand;
-import ch.epfl.biop.sourceandconverter.EmptyMultiResolutionSourceAndConverterCreator;
 import ch.epfl.biop.sourceandconverter.exporter.CZTRange;
 import ch.epfl.biop.sourceandconverter.exporter.ImagePlusGetter;
-import ch.epfl.biop.wrappers.transformix.TransformHelper;
 import ij.ImagePlus;
 import loci.common.DebugTools;
 import mpicbg.spim.data.generic.AbstractSpimData;
@@ -29,17 +21,12 @@ import net.imglib2.RealInterval;
 import net.imglib2.RealPoint;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.realtransform.RealTransform;
-import net.imglib2.util.Intervals;
-import net.imglib2.util.Pair;
 import org.apache.commons.io.FilenameUtils;
 import org.scijava.Context;
 import org.scijava.command.CommandService;
-import sc.fiji.bdvpg.bdv.navigate.ViewerTransformAdjuster;
 import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
 import sc.fiji.bdvpg.scijava.services.ui.SourceAndConverterServiceUI;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterAndTimeRange;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
 import sc.fiji.bdvpg.sourceandconverter.importer.EmptySourceAndConverterCreator;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceRealTransformer;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceResampler;
@@ -69,8 +56,8 @@ public class IrinaWorkFlow {
         // * input : nd2
         // * input : output folder
         // * output : files path (List<String> containing paths)
-        String basePath = "E:/irinatest";
-        String nd2Path = "D:/e12_5_saggital_round3_embryo4_middle008.nd2";
+        String basePath = "E:/ir";
+        String nd2Path = "N:/public/irina.khven_GR-LAMAN/transverse_e12_5_round4_embryo12_no_cleanup.nd2";//"D:/e12_5_saggital_round3_embryo4_middle008.nd2";
         String landmarkFileUnwarp = "N:/public/irina.khven_GR-LAMAN/distortion/2022-04-12-Oil-landmarks.csv";
         int cropX = 50;
         int cropY = 20;
@@ -120,12 +107,13 @@ public class IrinaWorkFlow {
                 .outputFolder(exportPath)
                 .lzw()
                 .projectMax()
-                .nThreads(Runtime.getRuntime().availableProcessors()-1)
+                .nThreads(2) //Runtime.getRuntime().availableProcessors()-1)
                 .nResolutionLevels(1)
                 .downscaleFactorLevels(1)
                 .removeZOffsets()
-                //.rangeS("10:14") // Only 2 series
-                .rangeC("0,1")
+                /*.rangeS("0:9") // Only 2 series
+                .rangeC("0")
+                .rangeZ("2")*/
                 .export();
     }
 
