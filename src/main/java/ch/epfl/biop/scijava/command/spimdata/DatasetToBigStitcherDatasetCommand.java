@@ -1,22 +1,14 @@
 package ch.epfl.biop.scijava.command.spimdata;
 
-import ch.epfl.biop.bdv.bioformats.BioFormatsMetaDataHelper;
-import ch.epfl.biop.bdv.bioformats.bioformatssource.BioFormatsBdvOpener;
-import ch.epfl.biop.bdv.bioformats.export.spimdata.BioFormatsConvertFilesToSpimData;
 import ch.epfl.biop.bdv.bioformats.imageloader.BioFormatsImageLoader;
 import ch.epfl.biop.bdv.bioformats.imageloader.BioFormatsSetupLoader;
 import ch.epfl.biop.bdv.bioformats.imageloader.FileIndex;
-import ch.epfl.biop.bdv.bioformats.imageloader.XmlIoBioFormatsImgLoader;
 import ij.IJ;
-import loci.formats.IFormatReader;
-import loci.formats.meta.IMetadata;
 import mpicbg.spim.data.SpimData;
 import mpicbg.spim.data.XmlIoSpimData;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import mpicbg.spim.data.generic.sequence.BasicImgLoader;
 import mpicbg.spim.data.sequence.VoxelDimensions;
-import ome.units.UNITS;
-import ome.units.quantity.Length;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
@@ -37,7 +29,7 @@ public class DatasetToBigStitcherDatasetCommand implements Command {
     File xmlin;
 
     @Parameter(label="View setup reference for rescaling, -1 to list all voxel dimensions and pick the first", persist = false)
-    int viewsetupReference = -1;
+    int viewsetupreference = -1;
 
     @Parameter(label="Xml Bdv Dataset output", style = "save")
     File xmlout;
@@ -71,16 +63,16 @@ public class DatasetToBigStitcherDatasetCommand implements Command {
             if (imageLoader instanceof BioFormatsImageLoader) {
                 BioFormatsImageLoader imgLoader = (BioFormatsImageLoader) imageLoader;
                 int nSetups = asd.getSequenceDescription().getViewSetupsOrdered().size();
-                if (viewsetupReference==-1) {
+                if (viewsetupreference ==-1) {
                     for (int i = 0; i < nSetups; i++) {
                         BioFormatsSetupLoader setupLoader = imgLoader.getSetupImgLoader(i);
                         VoxelDimensions voxelDimensions = setupLoader.getVoxelSize(0);
                         voxelDimensions.dimension(0);
                         IJ.log("VS["+i+"] = "+voxelDimensions);
                     }
-                    viewsetupReference = 0;
+                    viewsetupreference = 0;
                 }
-                BioFormatsSetupLoader setupLoader = imgLoader.getSetupImgLoader(viewsetupReference);
+                BioFormatsSetupLoader setupLoader = imgLoader.getSetupImgLoader(viewsetupreference);
                 scalingForBigStitcher = 1./setupLoader.getVoxelSize(0).dimension(0);
             } else {
                 IJ.error("This dataset does not use the followinf image loader: spimreconstruction.biop_bioformatsimageloader - cancelling command");

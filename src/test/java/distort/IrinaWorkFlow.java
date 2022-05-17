@@ -16,6 +16,7 @@ import ch.epfl.biop.bdv.bioformats.command.BasicOpenFilesWithBigdataviewerBiofor
 import ch.epfl.biop.bdv.bioformats.imageloader.FileIndex;
 import ch.epfl.biop.bdv.bioformats.imageloader.SeriesNumber;
 import ch.epfl.biop.kheops.KheopsHelper;
+import ch.epfl.biop.scijava.command.spimdata.DatasetToBigStitcherDatasetCommand;
 import ch.epfl.biop.sourceandconverter.EmptyMultiResolutionSourceAndConverterCreator;
 import ch.epfl.biop.sourceandconverter.exporter.CZTRange;
 import ch.epfl.biop.sourceandconverter.exporter.ImagePlusGetter;
@@ -32,6 +33,7 @@ import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.realtransform.RealTransform;
 import net.imglib2.util.Intervals;
 import net.imglib2.util.Pair;
+import org.apache.commons.io.FilenameUtils;
 import org.scijava.Context;
 import org.scijava.command.CommandService;
 import sc.fiji.bdvpg.bdv.navigate.ViewerTransformAdjuster;
@@ -107,13 +109,25 @@ public class IrinaWorkFlow {
         // * output : one xml file per connected tiles */
 
         String path = "E:/irinatest/undistorted/";
-
+/*
         String[] undistortedTilePaths = new String[]{
                 path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 01)_ZProj_Max Intensity.ome.tiff",
                 path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 02)_ZProj_Max Intensity.ome.tiff",
                 path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 03)_ZProj_Max Intensity.ome.tiff",
                 path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 04)_ZProj_Max Intensity.ome.tiff",
-                //path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 05)_ZProj_Max Intensity.ome.tiff",
+                path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 05)_ZProj_Max Intensity.ome.tiff",
+                path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 06)_ZProj_Max Intensity.ome.tiff",
+                path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 07)_ZProj_Max Intensity.ome.tiff",
+                path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 08)_ZProj_Max Intensity.ome.tiff",
+                path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 09)_ZProj_Max Intensity.ome.tiff",
+                path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 10)_ZProj_Max Intensity.ome.tiff",
+                path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 11)_ZProj_Max Intensity.ome.tiff",
+                path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 12)_ZProj_Max Intensity.ome.tiff",
+                path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 01)_ZProj_Max Intensity.ome.tiff",
+                path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 02)_ZProj_Max Intensity.ome.tiff",
+                path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 03)_ZProj_Max Intensity.ome.tiff",
+                path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 04)_ZProj_Max Intensity.ome.tiff",
+                path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 05)_ZProj_Max Intensity.ome.tiff",
                 path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 06)_ZProj_Max Intensity.ome.tiff",
                 path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 07)_ZProj_Max Intensity.ome.tiff",
                 path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 08)_ZProj_Max Intensity.ome.tiff",
@@ -121,16 +135,21 @@ public class IrinaWorkFlow {
                 path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 10)_ZProj_Max Intensity.ome.tiff",
                 path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 11)_ZProj_Max Intensity.ome.tiff",
                 path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 12)_ZProj_Max Intensity.ome.tiff"
-        };
+        };*/
 
-        List<String> xmlFiles = getConnectedXmlDatasets(ij.context(), Arrays.asList(undistortedTilePaths));
+        List<String> undistortedTilePaths = new ArrayList<>();
+        for (int i = 10;i<99;i++) {
+            undistortedTilePaths.add(path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series "+i+")_ZProj_Max Intensity.ome.tiff");
+        }
 
-        /*for (String xmlFile:xmlFiles) {
-            String xmlBigStitcherFile = getBigStitcherXmlDataset(xmlFile);
-            // TODO : select a subset of images.
-            String xmlBigStitcherStitchedFile = stitchDataset(xmlBigStitcherFile);
-            String omeTiffFusedPath = fuseDataset(xmlBigStitcherStitchedFile);
-        }*/
+        List<String> xmlFiles = getConnectedXmlDatasets(ij.context(), undistortedTilePaths);
+
+
+        for (String xmlFile:xmlFiles) {
+            String xmlBigStitcherFile = getBigStitcherXmlDataset(ij.context(), xmlFile);
+            /*String xmlBigStitcherStitchedFile = stitchDataset(xmlBigStitcherFile);
+            String omeTiffFusedPath = fuseDataset(xmlBigStitcherStitchedFile);*/
+        }
         // Optional : flip / rotate*/
     }
 
@@ -249,6 +268,7 @@ public class IrinaWorkFlow {
         File parentPath = new File(new File(filePaths.get(0)).getParent());
         File[] files = filePaths.stream().map(path -> new File(path)).toArray(File[]::new);
 
+        List<String> pathsOutput = new ArrayList<>();
         try {
             String datasetName = parentPath.getAbsolutePath();
             AbstractSpimData spimdata = (AbstractSpimData) ctx.getService(CommandService.class).run(BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand.class,true,
@@ -316,6 +336,7 @@ public class IrinaWorkFlow {
                 File xmlFilePath = new File(parentPath, "bdvDataset_"+indexComponent+".xml");
                 try {
                     saveToXmlBdvDataset(ctx, filesInConnectedComponents, xmlFilePath.getAbsolutePath());
+                    pathsOutput.add(xmlFilePath.getAbsolutePath());
                 } catch (ExecutionException e) {
                     e.printStackTrace();
                 } catch (InterruptedException e) {
@@ -328,11 +349,25 @@ public class IrinaWorkFlow {
         } catch (ExecutionException e) {
             e.printStackTrace();
         }
-        return null;
+        return pathsOutput;
     }
 
-    public static String getBigStitcherXmlDataset(String xmlDataset) {
-        return null;
+    public static String getBigStitcherXmlDataset(Context context, String xmlDataset) {
+        CommandService command = context.getService(CommandService.class);
+        File fileIn = new File(xmlDataset);
+        File fileOut = new File(fileIn.getParent(), FilenameUtils.removeExtension(fileIn.getName())+"-bigstitcher.xml");
+        try {
+            command.run(DatasetToBigStitcherDatasetCommand.class,true,
+                    "xmlin", fileIn,
+                            "xmlout", fileOut,
+                    "viewsetupreference", -1
+                    ).get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+        return fileOut.getAbsolutePath();
     }
 
     public static String stitchDataset(String xmlDataset) {
