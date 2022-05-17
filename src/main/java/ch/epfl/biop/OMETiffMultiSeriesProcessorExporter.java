@@ -107,9 +107,9 @@ public class OMETiffMultiSeriesProcessorExporter {
                     List<ImagePlus> ij1_images = (List<ImagePlus>) command.run(ExportToMultipleImagePlusCommand.class, false,
                             "sacs", currentSeriesNode.sources(),
                             "level", 0,
-                            "range_frames", builder.range_frames,
-                            "range_channels", builder.range_channels,
-                            "range_slices", builder.range_slices,
+                            "range_frames", builder.rangeT,
+                            "range_channels", builder.rangeC,
+                            "range_slices", builder.rangeS,
                             "export_mode", "Virtual no-cache", // Because we only read once!
                             "parallel", Boolean.TRUE,
                             "verbose", Boolean.TRUE
@@ -241,9 +241,6 @@ public class OMETiffMultiSeriesProcessorExporter {
 
     public static class Builder {
         String image_file_path; // Done
-        String range_channels = ""; // Done
-        String range_slices = ""; // Done
-        String range_frames = ""; // Done
         Boolean z_project = false; // Done
         String z_project_method = ""; // Done
         Integer resize_xy = 1; // Done

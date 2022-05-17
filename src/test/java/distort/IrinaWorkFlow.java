@@ -4,6 +4,7 @@ import bdv.gui.TransformTypeSelectDialog;
 import bdv.img.WarpedSource;
 import bdv.util.BdvHandle;
 import bdv.util.BigWarpHelper;
+import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
 import bigwarp.BigWarp;
 import bigwarp.BigWarpInit;
@@ -11,6 +12,9 @@ import bigwarp.landmarks.LandmarkTableModel;
 import bigwarp.transforms.BigWarpTransform;
 import ch.epfl.biop.ImagePlusToOMETiff;
 import ch.epfl.biop.OMETiffMultiSeriesProcessorExporter;
+import ch.epfl.biop.bdv.bioformats.command.BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand;
+import ch.epfl.biop.bdv.bioformats.imageloader.FileIndex;
+import ch.epfl.biop.bdv.bioformats.imageloader.SeriesNumber;
 import ch.epfl.biop.kheops.KheopsHelper;
 import ch.epfl.biop.sourceandconverter.EmptyMultiResolutionSourceAndConverterCreator;
 import ch.epfl.biop.sourceandconverter.exporter.CZTRange;
@@ -18,21 +22,41 @@ import ch.epfl.biop.sourceandconverter.exporter.ImagePlusGetter;
 import ch.epfl.biop.wrappers.transformix.TransformHelper;
 import ij.ImagePlus;
 import loci.common.DebugTools;
+import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imagej.ImageJ;
+import net.imglib2.FinalRealInterval;
+import net.imglib2.Interval;
+import net.imglib2.RealInterval;
+import net.imglib2.RealPoint;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.realtransform.RealTransform;
+import net.imglib2.util.Intervals;
+import net.imglib2.util.Pair;
 import org.scijava.Context;
+import org.scijava.command.CommandService;
+import sc.fiji.bdvpg.bdv.navigate.ViewerTransformAdjuster;
+import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
+import sc.fiji.bdvpg.scijava.services.ui.SourceAndConverterServiceUI;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterAndTimeRange;
+import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
 import sc.fiji.bdvpg.sourceandconverter.importer.EmptySourceAndConverterCreator;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceRealTransformer;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceResampler;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceTransformHelper;
+import sc.fiji.bdvpg.spimdata.exporter.XmlFromSpimDataExporter;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -48,8 +72,8 @@ public class IrinaWorkFlow {
         // * input : nd2
         // * input : output folder
         // * output : files path (List<String> containing paths)
-        String basePath = "E:/irinatest";
-        String nd2Path = "N:/public/irina.khven_GR-LAMAN/e12_5_saggital_round3_embryo4_middle008.nd2";
+        /*String basePath = "E:/irinatest";
+        String nd2Path = "D:/e12_5_saggital_round3_embryo4_middle008.nd2";
         List<String> projectedTilePaths =
                 exportAndProjectTiles(basePath+File.separator+"projected", nd2Path)
                         .values()
@@ -80,11 +104,33 @@ public class IrinaWorkFlow {
                 .collect(Collectors.toList());
         // 2 ---- Define dataset and prepare it for BigStitcher, keep pixel size somewhere
         // * input : undistorted files
-        String xmlFile = getXmlDataset(undistortedTilePaths);
-        String xmlBigStitcherFile = getBigStitcherXmlDataset(xmlFile);
-        // TODO : select a subset of images.
-        String xmlBigStitcherStitchedFile = stitchDataset(xmlBigStitcherFile);
-        String omeTiffFusedPath = fuseDataset(xmlBigStitcherStitchedFile);
+        // * output : one xml file per connected tiles */
+
+        String path = "E:/irinatest/undistorted/";
+
+        String[] undistortedTilePaths = new String[]{
+                path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 01)_ZProj_Max Intensity.ome.tiff",
+                path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 02)_ZProj_Max Intensity.ome.tiff",
+                path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 03)_ZProj_Max Intensity.ome.tiff",
+                path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 04)_ZProj_Max Intensity.ome.tiff",
+                //path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 05)_ZProj_Max Intensity.ome.tiff",
+                path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 06)_ZProj_Max Intensity.ome.tiff",
+                path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 07)_ZProj_Max Intensity.ome.tiff",
+                path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 08)_ZProj_Max Intensity.ome.tiff",
+                path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 09)_ZProj_Max Intensity.ome.tiff",
+                path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 10)_ZProj_Max Intensity.ome.tiff",
+                path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 11)_ZProj_Max Intensity.ome.tiff",
+                path+"e12_5_saggital_round3_embryo4_middle008.nd2 (series 12)_ZProj_Max Intensity.ome.tiff"
+        };
+
+        List<String> xmlFiles = getConnectedXmlDatasets(ij.context(), Arrays.asList(undistortedTilePaths));
+
+        /*for (String xmlFile:xmlFiles) {
+            String xmlBigStitcherFile = getBigStitcherXmlDataset(xmlFile);
+            // TODO : select a subset of images.
+            String xmlBigStitcherStitchedFile = stitchDataset(xmlBigStitcherFile);
+            String omeTiffFusedPath = fuseDataset(xmlBigStitcherStitchedFile);
+        }*/
         // Optional : flip / rotate*/
     }
 
@@ -99,7 +145,7 @@ public class IrinaWorkFlow {
                 .nResolutionLevels(1)
                 .downscaleFactorLevels(1)
                 .removeZOffsets()
-                .rangeS("10:14") // Only 2 series
+                //.rangeS("10:14") // Only 2 series
                 .rangeC("0,1")
                 .export();
     }
@@ -144,7 +190,7 @@ public class IrinaWorkFlow {
 
         CZTRange range = new CZTRange.Builder().get(sources.size(),1,1);
 
-        ImagePlus undistorted = ImagePlusGetter.getImagePlus(new File(filePath).getName(), correctedSources, 0, range, true, false, false, null);
+        ImagePlus undistorted = ImagePlusGetter.getImagePlus(new File(filePath).getName(), correctedSources, 0, range, false, false, false, null); // Parallelisation occurs per file
 
         String totalPath = exportPath+File.separator+undistorted.getTitle();
 
@@ -153,7 +199,135 @@ public class IrinaWorkFlow {
         return totalPath;
     }
 
-    public static String getXmlDataset(List<String> undistortedTilePaths) {
+    public static void saveToXmlBdvDataset(Context ctx, List<String> filePaths, String filePath) throws ExecutionException, InterruptedException {
+        String datasetName = filePath;
+        File[] files = filePaths.stream().map(path -> new File(path)).toArray(File[]::new);
+        AbstractSpimData spimdata = (AbstractSpimData) ctx.getService(CommandService.class).run(BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand.class,true,
+                "datasetname", datasetName,
+                "unit","MICROMETER",
+                "files", files,
+                "splitrgbchannels", false).get().getOutput("spimdata");
+
+        new XmlFromSpimDataExporter(spimdata, filePath, ctx).run();
+
+        SourceAndConverterService sac_service = ctx.getService(SourceAndConverterService.class);
+        sac_service.remove(sac_service.getSourceAndConverterFromSpimdata(spimdata).toArray(new SourceAndConverter[0])); // Cleanup*/
+
+    }
+
+    private static FinalRealInterval bounds(SourceAndConverter source) {
+        Interval interval = source.getSpimSource().getSource(0, 0);
+        AffineTransform3D sourceTransform = new AffineTransform3D();
+        source.getSpimSource().getSourceTransform(0, 0, sourceTransform);
+        RealPoint corner0 = new RealPoint(new float[]{(float)interval.min(0), (float)interval.min(1), (float)interval.min(2)});
+        RealPoint corner1 = new RealPoint(new float[]{(float)interval.max(0), (float)interval.max(1), (float)interval.max(2)});
+        sourceTransform.apply(corner0, corner0);
+        sourceTransform.apply(corner1, corner1);
+        return new FinalRealInterval(new double[]{Math.min(corner0.getDoublePosition(0), corner1.getDoublePosition(0)), Math.min(corner0.getDoublePosition(1), corner1.getDoublePosition(1)), Math.min(corner0.getDoublePosition(2), corner1.getDoublePosition(2))}, new double[]{Math.max(corner0.getDoublePosition(0), corner1.getDoublePosition(0)), Math.max(corner0.getDoublePosition(1), corner1.getDoublePosition(1)), Math.max(corner0.getDoublePosition(2), corner1.getDoublePosition(2))});
+    }
+
+    private static boolean intersect2D(SourceAndConverter src1, SourceAndConverter src2) {
+        RealInterval i1 = bounds(src1);
+        RealInterval i2 = bounds(src2);
+        if (i1.realMin(0)>i2.realMax(0)) {
+            return false;
+        }
+        if (i2.realMin(0)>i1.realMax(0)) {
+            return false;
+        }
+        if (i1.realMin(1)>i2.realMax(1)) {
+            return false;
+        }
+        if (i2.realMin(1)>i1.realMax(1)) {
+            return false;
+        }
+        return true;
+    }
+
+    public static List<String> getConnectedXmlDatasets(Context ctx, List<String> filePaths) {
+
+        File parentPath = new File(new File(filePaths.get(0)).getParent());
+        File[] files = filePaths.stream().map(path -> new File(path)).toArray(File[]::new);
+
+        try {
+            String datasetName = parentPath.getAbsolutePath();
+            AbstractSpimData spimdata = (AbstractSpimData) ctx.getService(CommandService.class).run(BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand.class,true,
+                    "datasetname", datasetName,
+                    "unit","MICROMETER",
+                    "files", files,
+                    "splitrgbchannels", false).get().getOutput("spimdata");
+
+            SourceAndConverterService sac_service = ctx.getService(SourceAndConverterService.class);
+
+            SourceAndConverterServiceUI.Node filesNode =
+                    sac_service.getUI()
+                            .getRoot()
+                            .child(datasetName)
+                            .child(FileIndex.class.getSimpleName());
+
+            spimdata.setBasePath(parentPath);
+
+            Map<Integer, SourceAndConverter> fileIndexToSource = new HashMap<>();
+            Map<Integer, Set<Integer>> links = new HashMap<>();
+            Set<Integer> allNodes = new HashSet<>();
+
+            for (int i = 0; i<filePaths.size(); i++) {
+                fileIndexToSource.put(i, filesNode.child(i).sources()[0]); // We get a source per file
+                Set<Integer> singleton = new HashSet<>();
+                links.put(i, singleton);
+                allNodes.add(i);
+            }
+
+            for (int i = 0; i<filePaths.size()-1; i++) {
+                for (int j = i+1; j<filePaths.size();j++) {
+                    SourceAndConverter srci = fileIndexToSource.get(i);
+                    SourceAndConverter srcj = fileIndexToSource.get(j);
+                    if (intersect2D(srci, srcj)) {
+                        links.get(i).add(j);
+                        links.get(j).add(i);
+                    }
+                }
+            }
+
+            sac_service.remove(sac_service.getSourceAndConverterFromSpimdata(spimdata).toArray(new SourceAndConverter[0])); // Cleanup*/
+
+            List<Set<Integer>> components = new ArrayList<>();
+
+            while(!allNodes.isEmpty()) {
+                int startIndex = allNodes.iterator().next(); // Pick one
+                LinkedList<Integer> unvisitedNodes = new LinkedList<>();
+                Set<Integer> visitedNodes = new HashSet<>();
+                unvisitedNodes.add(startIndex);
+                while (unvisitedNodes.size() != 0) {
+                    Integer cNode = unvisitedNodes.getFirst();
+                    allNodes.remove(cNode);
+                    visitedNodes.add(cNode);
+                    links.get(cNode).stream().filter(n -> !visitedNodes.contains(n)).forEach(unvisitedNodes::add);
+                    unvisitedNodes.removeFirst();
+                }
+                components.add(visitedNodes);
+            }
+
+            components.forEach(c -> {
+                System.out.println("--- Component");
+                c.forEach(System.out::println);
+                List<String> filesInConnectedComponents = c.stream().map(i -> filePaths.get(i)).collect(Collectors.toList());
+                int indexComponent = components.indexOf(c);
+                File xmlFilePath = new File(parentPath, "bdvDataset_"+indexComponent+".xml");
+                try {
+                    saveToXmlBdvDataset(ctx, filesInConnectedComponents, xmlFilePath.getAbsolutePath());
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            });
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
         return null;
     }
 
