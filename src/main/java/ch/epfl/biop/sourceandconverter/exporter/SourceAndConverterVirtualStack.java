@@ -60,6 +60,16 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
     final Task task;
     private final long totalBytes;
 
+    /**
+     * Takes a list of SourceAndConverter and makes a VirtualStack out of it
+     * The sources should have the same dimensions in terms of XYZCT, but it's actively checked before an error shows up
+     * @param sources sources list in, each source is a channel
+     * @param resolutionLevel the resolution level used from the sources
+     * @param range a CZT range objet which can be used to select and or reorder the data from the sources
+     * @param bytesCounter and atomic counter which can be used to monitor the amount of bytes read in this virtual stack
+     * @param cache whether the read planes should be kept in cache or not (it's a basic cache, it's never freed unless you discard the image)
+     * @param task a task object, not sure how it's used anymore
+     */
     public SourceAndConverterVirtualStack(List<SourceAndConverter> sources,
                                           int resolutionLevel,
                                           CZTRange range,
@@ -114,11 +124,17 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
 
     ImagePlus imagePlusLocalizer = null;
 
+    /**
+     * Uses an extra ImagePlus that serves as a reference for proper CZT indexing
+     * @param imp the imageplus reference for indexing
+     */
     public void setImagePlusCZTSLocalizer(ImagePlus imp) {
         this.imagePlusLocalizer = imp;
     }
 
-    /* Returns the pixel array for the specified slice, were 1<=n<=nslices. */
+    /**
+     *  Returns the pixel array for the specified slice, were 1<=n<=nslices.
+     **/
     public Object getPixels(int n) {
         ImageProcessor ip = getProcessor(n);
         if (ip!=null)
@@ -127,6 +143,14 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
             return null;
     }
 
+    /**
+     * Returns the byte processor for the input c z t parameter, basically reads
+     * a RandomAccessibleInterval<UnsignedByteType> and feeds data to a ByteProcessor
+     * @param iC channel index
+     * @param iZ slice index
+     * @param iT frame index
+     * @return byteprocessor
+     */
     public ByteProcessor getByteProcessor(int iC, int iZ, int iT) {
         SourceAndConverter sac = sources.get(iC);
         RandomAccessibleInterval<UnsignedByteType> rai = sac.getSpimSource().getSource(iT, resolutionLevel);
@@ -145,6 +169,14 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
         return new ByteProcessor(width, height, bytes, getCM(iC));
     }
 
+    /**
+     * Returns the short processor for the input c z t parameter, basically reads
+     * a RandomAccessibleInterval<UnsignedShortType> and feeds data to a ShortProcessor
+     * @param iC channel index
+     * @param iZ slice index
+     * @param iT frame index
+     * @return shortprocessor
+     */
     public ShortProcessor getShortProcessor(int iC, int iZ, int iT) {
         SourceAndConverter<UnsignedShortType> sac = sources.get(iC);
         RandomAccessibleInterval<UnsignedShortType> rai = sac.getSpimSource().getSource(iT, resolutionLevel);
@@ -178,6 +210,14 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
         }
     }
 
+    /**
+     * Returns the short processor for the input c z t parameter, basically reads
+     * a RandomAccessibleInterval<FloatType> and feeds data to a FloatProcessor
+     * @param iC channel index
+     * @param iZ slice index
+     * @param iT frame index
+     * @return floatprocessor
+     */
     public FloatProcessor getFloatProcessor(int iC, int iZ, int iT) {
         SourceAndConverter<FloatType> sac = sources.get(iC);
         RandomAccessibleInterval<FloatType> rai = sac.getSpimSource().getSource(iT, resolutionLevel);
@@ -196,6 +236,14 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
         return new FloatProcessor(width, height, floats, getCM(iC));
     }
 
+    /**
+     * Returns the short processor for the input c z t parameter, basically reads
+     * a RandomAccessibleInterval<ARGBType> and feeds data to a ColorProcessor
+     * @param iC channel index
+     * @param iZ slice index
+     * @param iT frame index
+     * @return colorprocessor
+     */
     public ColorProcessor getColorProcessor(int iC, int iZ, int iT) {
         SourceAndConverter<ARGBType> sac = sources.get(iC);
         RandomAccessibleInterval<ARGBType> rai = sac.getSpimSource().getSource(iT, resolutionLevel);
@@ -343,6 +391,9 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
         return width;
     }
 
+    /**
+     * Just a czt key with a proper hashcode and equals function
+     */
     public static class CZTId {
         final int c,z,t;
         public CZTId(int c, int z, int t) {

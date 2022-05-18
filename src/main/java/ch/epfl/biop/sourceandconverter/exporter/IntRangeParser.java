@@ -35,6 +35,10 @@ public class IntRangeParser {
 
     final String expression;
 
+    /**
+     *
+     * @param expression string expression to parse
+     */
     public IntRangeParser(String expression) {
         this.expression = expression;
     }
@@ -132,6 +136,11 @@ public class IntRangeParser {
         return expression;
     }
 
+    /**
+     * Test
+     * @param args ignored arguments
+     * @throws Exception if something goes wrong
+     */
     public static void main(String... args) throws Exception {
         // A few examples
         int maxDisplay = 200;
