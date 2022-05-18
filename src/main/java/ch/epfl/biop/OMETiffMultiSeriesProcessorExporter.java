@@ -1,11 +1,9 @@
 package ch.epfl.biop;
 
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.bdv.bioformats.command.BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand;
 import ch.epfl.biop.bdv.bioformats.command.BioformatsBigdataviewerBridgeDatasetCommand;
 import ch.epfl.biop.bdv.bioformats.command.OpenFilesWithBigdataviewerBioformatsBridgeCommand;
 import ch.epfl.biop.bdv.bioformats.export.IntRangeParser;
-import ch.epfl.biop.bdv.bioformats.export.ometiff.OMETiffExporter;
 import ch.epfl.biop.bdv.bioformats.imageloader.SeriesNumber;
 import ch.epfl.biop.scijava.command.source.ExportToMultipleImagePlusCommand;
 import ij.IJ;
@@ -16,7 +14,6 @@ import ij.plugin.ZProjector;
 import ij.process.ImageConverter;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imglib2.RealPoint;
-import net.imglib2.ops.parse.token.Int;
 import net.imglib2.realtransform.AffineTransform3D;
 import org.scijava.Context;
 import org.scijava.command.CommandService;
@@ -34,6 +31,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -52,8 +50,6 @@ public class OMETiffMultiSeriesProcessorExporter {
 
         SourceAndConverterService sac_service = builder.ctx.getService(SourceAndConverterService.class);
 
-        //sac_service.remove(sac_service.getSourceAndConverters().toArray(new SourceAndConverter[0]));
-
         CommandService command = builder.ctx.getService(CommandService.class);
 
         String datasetName = builder.image_file_path;
@@ -64,7 +60,13 @@ public class OMETiffMultiSeriesProcessorExporter {
         options.put("files", new File[]{image_file});
         options.put("splitrgbchannels", false);
         options.put("numberofblockskeptinmemory", 1);
-        options.put("usebioformatscacheblocksize", false);
+
+        if ((builder.cacheSizeX>0)&&(builder.cacheSizeY>0)) {
+            options.put("usebioformatscacheblocksize", false);
+            options.put("cachesizex", builder.cacheSizeX);
+            options.put("cachesizey", builder.cacheSizeY);
+            options.put("cachesizez", 1);
+        }
 
         AbstractSpimData spimdata = (AbstractSpimData) command.run(OpenFilesWithBigdataviewerBioformatsBridgeCommand.class,true,
                     options
@@ -108,18 +110,9 @@ public class OMETiffMultiSeriesProcessorExporter {
 
         Callable c = () -> {
 
-        rangeSeries.parallelStream().map(index -> seriesNode.child(index))
-        //seriesNode.children().parallelStream()
-            .forEach(currentSeriesNode -> {
+        rangeSeries.parallelStream().forEach(index -> {
+                SourceAndConverterServiceUI.Node currentSeriesNode = seriesNode.child(index);
                 try {
-                    // Converts as virtual image plus
-                    /*SourceAndConverter[] allChannels = currentSeriesNode.sources();
-                    List<Integer> channels = new IntRangeParser(builder.rangeC).get(allChannels.length);
-                    SourceAndConverter[] selectedChannels = new SourceAndConverter[channels.size()];
-                    for (int ic = 0; ic<channels.size();ic++) {
-                        selectedChannels[ic] = allChannels[channels.get(ic)];
-                    }*/
-
                     List<ImagePlus> ij1_images = (List<ImagePlus>) command.run(ExportToMultipleImagePlusCommand.class, false,
                             "sacs", currentSeriesNode.sources(),
                             "level", 0,
@@ -185,12 +178,13 @@ public class OMETiffMultiSeriesProcessorExporter {
                     String prefix = "";
                     if (builder.appendFileName) prefix = image_file.getName()+"-";
                     String totalPath = builder.output_directory + File.separator + prefix + image.getTitle() + ".ome.tiff";
+                    if (builder.overrideCalibration.containsKey(index)) {
+                        image.setCalibration(builder.overrideCalibration.get(index));
+                    }
                     ImagePlus finalImage = image;
                     new Thread(() -> {
                         try {
                             ImagePlusToOMETiff.writeToOMETiff(finalImage, new File(totalPath), builder.nResolutionLevels, builder.downscaleFactor, builder.compression);
-                            //System.out.println(finalImage.getTitle());
-                            //System.out.println(totalPath);
                             outputMap.put(finalImage.getTitle(), totalPath);
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -269,11 +263,14 @@ public class OMETiffMultiSeriesProcessorExporter {
         String compression = "Uncompressed"; // Done
         Boolean removeZOffset = false; // Done
         Context ctx; // Done
+        int cacheSizeX = -1;
+        int cacheSizeY = -1;
 
         String rangeS = ""; // Done
         String rangeC = ""; // Done
         String rangeZ = ""; // Done
         String rangeT = ""; // Done
+        Map<Integer, Calibration> overrideCalibration = new HashMap<>();
 
         boolean appendFileName = false;
 
@@ -300,8 +297,19 @@ public class OMETiffMultiSeriesProcessorExporter {
             return this;
         }
 
+        public Builder setCalibration(int series, Calibration calibration) {
+            this.overrideCalibration.put(series, calibration);
+            return this;
+        }
+
         public Builder rangeC(String rangeC) {
             this.rangeC = rangeC;
+            return this;
+        }
+
+        public Builder cacheSize(int cacheSizeX, int cacheSizeY) {
+            this.cacheSizeX = cacheSizeX;
+            this.cacheSizeY = cacheSizeY;
             return this;
         }
 

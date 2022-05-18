@@ -3,6 +3,7 @@ package irina;
 import loci.common.DebugTools;
 import net.imagej.ImageJ;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
@@ -10,7 +11,9 @@ import java.nio.file.Paths;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
@@ -99,7 +102,17 @@ public class DirWatcher {
         ij.ui().showUI();
 
         // register directory and process its events
-        Path dir = Paths.get("E:/ir/projected");
-        new DirWatcher(dir).processEvents();
+        /*Path dir = Paths.get("E:/ir/projected");
+        new DirWatcher(dir).processEvents();*/
+
+        File folder = new File("E:\\ir\\projected");
+        List<File> currentFiles = Arrays.asList(folder.listFiles());
+        currentFiles.forEach(f -> {
+            System.out.println(f.getName() + " size:"+(f.length()/(1024*1024))+" Mb");
+        });
+
+    }
+
+    void test() {
     }
 }
