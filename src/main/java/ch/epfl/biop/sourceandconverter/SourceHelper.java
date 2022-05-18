@@ -117,6 +117,16 @@ public class SourceHelper {
 
     /**
      * Returns a source which spans all the sources in xy, at the center location in Z
+     * @param sources the sources to span
+     * @param timepoint the timepoint of reference for computing the bounding box
+     * @param nTimepoints number of timepoints
+     * @param pixSizeXY pixel size in xy in physical units
+     * @param pixSizeZ pixel size in xy in physical units
+     * @param nResolutionLevels number of resolution level to make in the model
+     * @param downscaleXY downscaling in XY between resolution levels
+     * @param downscaleZ downscaling in Z between resolution levels
+     * @param model_name name of the output model source
+     * @return the model source with the specified properties in the constructor
      */
     public static SourceAndConverter getModelFusedMultiSources(
             SourceAndConverter[] sources,

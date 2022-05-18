@@ -11,7 +11,7 @@ import java.util.function.Function;
 
 /**
  * A source which applies an arbitrary transform on time
- * @param <T>
+ * @param <T> the pixel type
  */
 public class MappedTimeSource<T> implements Source<T> {
 

@@ -104,28 +104,30 @@ public class AlphaFusedResampledSource< T extends NumericType<T> & NativeType<T>
     /**
      * The origin sources are accessed through their RealRandomAccessible representation :
      * - It can be accessed at any 3d point in space, with real valued coordinates : it's a field of {@link T} objects
-     *
      * The model source defines a portion of space and how it is sampled :
      *  - through its RandomAccessibleInterval bounds
      *  - and the Source affine transform
      *  - and mipmaps, if reuseMipMaps is true
-     *  @param origins origin sources
-     *
+     * @param origins origin sources
      * @param resamplingModel model source used for resampling the origin source
-     *@param name
+     * @param name name of the fused source
      * @param reuseMipMaps allows to reuse mipmaps of both the origin and the model source in the resampling
      *  mipmap reuse tries to be clever by matching the voxel size between the model source and the origin source
      *  so for instance the model source mipmap level 0 will resample the origin mipmap level 2, if the voxel size
      *  of the origin is much smaller then the model (and provided that the origin is also a multiresolution source)
      *  the way the matching is performed is specified in {@link SourceAndConverterHelper#bestLevel(Source, int, double)}.
      *  For more details and limitation, please read the documentation in the linked method above
-     *@param cache specifies whether the result of the resampling should be cached.
+     * @param cache specifies whether the result of the resampling should be cached.
      *  This allows for a fast access of resampled source after the first computation - but the synchronization with
      *  the origin and model source is lost.
      *  TODO : check how the cache can be accessed / reset
      * @param originsInterpolation specifies whether the origin source should be interpolated of not in the resampling process
-     *
-     *
+     * @param blendingMode average or sum, see {@link AlphaFusedResampledSource#AVERAGE} and {@link AlphaFusedResampledSource#SUM}
+     * @param cacheX block size along X ( dimension 0 )
+     * @param cacheY block size along Y ( dimension 1 )
+     * @param cacheZ block size along Z ( dimension 2 )
+     * @param cacheBound if negative, the cache blocks are not freed unless RAM is missing, otherwise drops blocks above this threshold
+     * @param defaultMipMapLevel if reuse mipmap is false, this is the mipmap level which is taken for the fusion
      */
     public AlphaFusedResampledSource(Collection<Source<T>> origins,
                                      String blendingMode,

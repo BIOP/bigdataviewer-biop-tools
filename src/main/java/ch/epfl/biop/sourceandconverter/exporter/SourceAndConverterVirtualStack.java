@@ -31,9 +31,8 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * Class which copies an ImagePlus, except that it applies an operation to modify
  * each ImageProcessor when it is requested.
- *
+ * <p>
  * TODO : cache CZT key to make faster the duplication of identical frames
- *
  */
 
 public class SourceAndConverterVirtualStack extends VirtualStack {
@@ -63,12 +62,13 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
     /**
      * Takes a list of SourceAndConverter and makes a VirtualStack out of it
      * The sources should have the same dimensions in terms of XYZCT, but it's actively checked before an error shows up
-     * @param sources sources list in, each source is a channel
+     *
+     * @param sources         sources list in, each source is a channel
      * @param resolutionLevel the resolution level used from the sources
-     * @param range a CZT range objet which can be used to select and or reorder the data from the sources
-     * @param bytesCounter and atomic counter which can be used to monitor the amount of bytes read in this virtual stack
-     * @param cache whether the read planes should be kept in cache or not (it's a basic cache, it's never freed unless you discard the image)
-     * @param task a task object, not sure how it's used anymore
+     * @param range           a CZT range objet which can be used to select and or reorder the data from the sources
+     * @param bytesCounter    and atomic counter which can be used to monitor the amount of bytes read in this virtual stack
+     * @param cache           whether the read planes should be kept in cache or not (it's a basic cache, it's never freed unless you discard the image)
+     * @param task            a task object, not sure how it's used anymore
      */
     public SourceAndConverterVirtualStack(List<SourceAndConverter> sources,
                                           int resolutionLevel,
@@ -78,27 +78,27 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
         this.task = task;
         final int tModel = range.getRangeT().get(0);
         RandomAccessibleInterval raiModel;
-        if (sources.get(0).asVolatile()!=null) {
-            raiModel = sources.get(0).asVolatile().getSpimSource().getSource(tModel,resolutionLevel);
+        if (sources.get(0).asVolatile() != null) {
+            raiModel = sources.get(0).asVolatile().getSpimSource().getSource(tModel, resolutionLevel);
         } else {
-            raiModel = sources.get(0).getSpimSource().getSource(tModel,resolutionLevel);
+            raiModel = sources.get(0).getSpimSource().getSource(tModel, resolutionLevel);
         }
         width = (int) raiModel.dimension(0);
         height = (int) raiModel.dimension(1);
         //nSlices = (int) raiModel.dimension(2);
-        size = (int) range.getTotalPlanes( );
+        size = (int) range.getTotalPlanes();
         final Object type = Util.getTypeFromInterval(raiModel);
-        if ((type instanceof UnsignedShortType)||(type instanceof VolatileUnsignedShortType)) {
+        if ((type instanceof UnsignedShortType) || (type instanceof VolatileUnsignedShortType)) {
             bitDepth = 16;
-        } else if ((type instanceof UnsignedByteType)||(type instanceof VolatileUnsignedByteType)) {
+        } else if ((type instanceof UnsignedByteType) || (type instanceof VolatileUnsignedByteType)) {
             bitDepth = 8;
-        } else if ((type instanceof FloatType)||(type instanceof VolatileFloatType)) {
+        } else if ((type instanceof FloatType) || (type instanceof VolatileFloatType)) {
             bitDepth = 32;
-        } else if ((type instanceof ARGBType)||(type instanceof VolatileARGBType)) {
+        } else if ((type instanceof ARGBType) || (type instanceof VolatileARGBType)) {
             bitDepth = 24;
         } else {
             bitDepth = -1;
-            throw new UnsupportedOperationException("Type "+type.getClass()+" unsupported.");
+            throw new UnsupportedOperationException("Type " + type.getClass() + " unsupported.");
         }
 
         nBytesPerProcessor = width * height * (bitDepth / 8);
@@ -106,11 +106,11 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
         this.sources = sources;
         this.resolutionLevel = resolutionLevel;
         this.range = range;
-        this.nPixPerPlane = width*height;
+        this.nPixPerPlane = width * height;
         this.bytesCounter = bytesCounter;
 
         totalPlanes = (int) range.getTotalPlanes();
-        totalBytes = (long)totalPlanes*nBytesPerProcessor;
+        totalBytes = (long) totalPlanes * nBytesPerProcessor;
 
         nChannels = range.getRangeC().size();
         nFrames = range.getRangeT().size();
@@ -126,6 +126,7 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
 
     /**
      * Uses an extra ImagePlus that serves as a reference for proper CZT indexing
+     *
      * @param imp the imageplus reference for indexing
      */
     public void setImagePlusCZTSLocalizer(ImagePlus imp) {
@@ -133,11 +134,11 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
     }
 
     /**
-     *  Returns the pixel array for the specified slice, were 1<=n<=nslices.
+     * Returns the pixel array for the specified slice, were n is between 1 and nslices.
      **/
     public Object getPixels(int n) {
         ImageProcessor ip = getProcessor(n);
-        if (ip!=null)
+        if (ip != null)
             return ip.getPixels();
         else
             return null;
@@ -145,7 +146,8 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
 
     /**
      * Returns the byte processor for the input c z t parameter, basically reads
-     * a RandomAccessibleInterval<UnsignedByteType> and feeds data to a ByteProcessor
+     * a {@link RandomAccessibleInterval} of type {@link UnsignedByteType} and feeds data to a ByteProcessor
+     *
      * @param iC channel index
      * @param iZ slice index
      * @param iT frame index
@@ -161,17 +163,19 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
         for (Cursor<UnsignedByteType> s = ii.cursor(); s.hasNext(); idx++) {
             bytes[idx] = (byte) s.next().get();
         }
-        if (task!=null) {
-           long bytesLoaded = bytesCounter.addAndGet(nBytesPerProcessor);
-           task.setProgressValue(bytesLoaded);
-           if (bytesLoaded==totalBytes) task.run(() -> {});
+        if (task != null) {
+            long bytesLoaded = bytesCounter.addAndGet(nBytesPerProcessor);
+            task.setProgressValue(bytesLoaded);
+            if (bytesLoaded == totalBytes) task.run(() -> {
+            });
         }
         return new ByteProcessor(width, height, bytes, getCM(iC));
     }
 
     /**
      * Returns the short processor for the input c z t parameter, basically reads
-     * a RandomAccessibleInterval<UnsignedShortType> and feeds data to a ShortProcessor
+     * a {@link RandomAccessibleInterval} of type {@link UnsignedShortType} and feeds data to a ShortProcessor
+     *
      * @param iC channel index
      * @param iZ slice index
      * @param iT frame index
@@ -187,10 +191,11 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
         for (Cursor<UnsignedShortType> s = ii.cursor(); s.hasNext(); idx++) {
             shorts[idx] = (short) s.next().get();
         }
-        if (task!=null) {
+        if (task != null) {
             long bytesLoaded = bytesCounter.addAndGet(nBytesPerProcessor);
             task.setProgressValue(bytesLoaded);
-            if (bytesLoaded==totalBytes) task.run(() -> {});
+            if (bytesLoaded == totalBytes) task.run(() -> {
+            });
         }
         return new ShortProcessor(width, height, shorts, getCM(iC));
     }
@@ -200,7 +205,7 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
             return null;
         } else {
             LUT[] luts = imagePlusLocalizer.getLuts();
-            if ((luts.length>iC)&&(luts[iC]!=null)&&(luts[iC].getColorModel()!=null)) {
+            if ((luts.length > iC) && (luts[iC] != null) && (luts[iC].getColorModel() != null)) {
                 return luts[iC].getColorModel();
             } else {
                 LUT lut = LUT.createLutFromColor(new Color(ARGBType.red(255), ARGBType.green(255), ARGBType.blue(255)));
@@ -212,7 +217,8 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
 
     /**
      * Returns the short processor for the input c z t parameter, basically reads
-     * a RandomAccessibleInterval<FloatType> and feeds data to a FloatProcessor
+     * a {@link RandomAccessibleInterval} of type {@link FloatType} and feeds data to a FloatProcessor
+     *
      * @param iC channel index
      * @param iZ slice index
      * @param iT frame index
@@ -228,17 +234,19 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
         for (Cursor<FloatType> s = ii.cursor(); s.hasNext(); idx++) {
             floats[idx] = s.next().get();
         }
-        if (task!=null) {
+        if (task != null) {
             long bytesLoaded = bytesCounter.addAndGet(nBytesPerProcessor);
             task.setProgressValue(bytesLoaded);
-            if (bytesLoaded==totalBytes) task.run(() -> {});
+            if (bytesLoaded == totalBytes) task.run(() -> {
+            });
         }
         return new FloatProcessor(width, height, floats, getCM(iC));
     }
 
     /**
      * Returns the short processor for the input c z t parameter, basically reads
-     * a RandomAccessibleInterval<ARGBType> and feeds data to a ColorProcessor
+     * a {@link RandomAccessibleInterval} of type {@link ARGBType} and feeds data to a ColorProcessor
+     *
      * @param iC channel index
      * @param iZ slice index
      * @param iT frame index
@@ -254,10 +262,11 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
         for (Cursor<ARGBType> s = ii.cursor(); s.hasNext(); idx++) {
             ints[idx] = s.next().get();
         }
-        if (task!=null) {
+        if (task != null) {
             long bytesLoaded = bytesCounter.addAndGet(nBytesPerProcessor);
             task.setProgressValue(bytesLoaded);
-            if (bytesLoaded==totalBytes) task.run(() -> {});
+            if (bytesLoaded == totalBytes) task.run(() -> {
+            });
         }
         return new ColorProcessor(width, height, ints);
     }
@@ -274,13 +283,13 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
     public ImageProcessor getProcessor(int n) {
         Object lockWaitedFor = null;
         int[] czt;
-        if (n==1) {
+        if (n == 1) {
             if (cachedImageProcessor.containsKey(n)) {
                 return (ImageProcessor) cachedImageProcessor.get(n).clone(); // Really weird bug.... thread lock ?
             }
         }
         if (imagePlusLocalizer == null) {
-            czt = new int[]{1,1,1};
+            czt = new int[]{1, 1, 1};
         } else {
             czt = imagePlusLocalizer.convertIndexToPosition(n);
         }
@@ -288,10 +297,10 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
         boolean waitForResult = false;
 
         if (cache) {
-            int iC = range.getRangeC().get(czt[0]-1);
-            int iZ = range.getRangeZ().get(czt[1]-1);
-            int iT = range.getRangeT().get(czt[2]-1);
-            final CZTId cztId = new CZTId(iC,iZ,iT);
+            int iC = range.getRangeC().get(czt[0] - 1);
+            int iZ = range.getRangeZ().get(czt[1] - 1);
+            int iT = range.getRangeT().get(czt[2] - 1);
+            final CZTId cztId = new CZTId(iC, iZ, iT);
             synchronized (lockAnalyzePreviousData) {
                 if (cachedImageProcessor.containsKey(n)) {
                     return cachedImageProcessor.get(n);
@@ -301,11 +310,12 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
                 } else if (cztIdToComputedProcessor.containsKey(cztId)) {
                     // Shortcut -> skipping the loading!
                     int nReferenced = cztIdToComputedProcessor.get(cztId);
-                    cachedImageProcessor.put(n,cachedImageProcessor.get(nReferenced));
-                    if (task!=null) {
+                    cachedImageProcessor.put(n, cachedImageProcessor.get(nReferenced));
+                    if (task != null) {
                         long bytesLoaded = bytesCounter.addAndGet(nBytesPerProcessor);
                         task.setProgressValue(bytesLoaded);
-                        if (bytesLoaded==totalBytes) task.run(() -> {});
+                        if (bytesLoaded == totalBytes) task.run(() -> {
+                        });
                     }
                     return cachedImageProcessor.get(n);
                 } else {
@@ -354,9 +364,9 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
             }
 
         } else {
-            int iC = range.getRangeC().get(czt[0]-1);
-            int iZ = range.getRangeZ().get(czt[1]-1);
-            int iT = range.getRangeT().get(czt[2]-1);
+            int iC = range.getRangeC().get(czt[0] - 1);
+            int iZ = range.getRangeZ().get(czt[1] - 1);
+            int iT = range.getRangeT().get(czt[2] - 1);
             switch (bitDepth) {
                 case 8:
                     return getByteProcessor(iC, iZ, iT);
@@ -366,7 +376,8 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
                     return getColorProcessor(iC, iZ, iT);
                 case 32:
                     return getFloatProcessor(iC, iZ, iT);
-                default: throw new UnsupportedOperationException("Invalid bitdepth "+bitDepth);
+                default:
+                    throw new UnsupportedOperationException("Invalid bitdepth " + bitDepth);
             }
         }
     }
@@ -395,7 +406,8 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
      * Just a czt key with a proper hashcode and equals function
      */
     public static class CZTId {
-        final int c,z,t;
+        final int c, z, t;
+
         public CZTId(int c, int z, int t) {
             this.c = c;
             this.z = z;

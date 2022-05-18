@@ -123,7 +123,7 @@ public class ImagePlusSampler {
 
         /**
          * @param model the model ( a source ) used for resampling the other sources
-         * @return
+         * @return the builder
          */
         public Builder setModel(SourceAndConverter<?> model) {
             this.model = model;
@@ -207,7 +207,7 @@ public class ImagePlusSampler {
 
         /**
          * physical unit of the world coordinates system
-         * @param unit
+         * @param unit physical unit
          * @return the builder
          */
         public Builder unit(String unit) {

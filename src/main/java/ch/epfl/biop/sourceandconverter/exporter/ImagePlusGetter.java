@@ -72,6 +72,7 @@ public class ImagePlusGetter {
      * @param range czt range which can be used to define a subset of the output image
      * @param cache if set to true, each time a plane is computed, it is stored in memory. Ultimately,
      *              this leads to filling the RAM as in a non-virtual image, if all planes are visited
+     * @param task can be used for monitoring the progression of the ImagePlus acquisition progression
      * @return a virtual {@link ImagePlus} out of a list of {@link SourceAndConverter},
      * taken at a certain resolution level, and which czt range is specified via a {@link CZTRange} object
      */
@@ -174,6 +175,7 @@ public class ImagePlusGetter {
      * @param parallelC loads all channels in parallel
      * @param parallelZ loads all slices in parallel
      * @param parallelT loads all timepoints in parallel
+     * @param task can be used for monitoring the progression of the ImagePlus acquisition progression
      * @return a non virtual {@link ImagePlus} out of a list of {@link SourceAndConverter},
      *       taken at a certain resolution level, and which czt range is specified via a {@link CZTRange} object
      */

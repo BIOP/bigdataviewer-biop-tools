@@ -30,6 +30,7 @@ public class EmptyMultiResolutionSourceAndConverterCreator implements Runnable, 
      * @param nx number of voxels in x
      * @param ny number of voxels in y
      * @param nz number of voxels in z
+     * @param nt number of timepoints
      * @param scalex downscaling factor in x between resolution levels
      * @param scaley downscaling factor in y between resolution levels
      * @param scalez downscaling factor in z between resolution levels

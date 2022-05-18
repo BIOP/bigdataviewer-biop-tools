@@ -385,8 +385,7 @@ public class OMETiffMultiSeriesProcessorExporter {
         }
 
         /**
-         * Scaling factor between each resolution level
-         * @param downscaleFactor
+         * @param downscaleFactor Scaling factor between each resolution level
          * @return the builder
          */
         public Builder downscaleFactorLevels(int downscaleFactor) {
