@@ -274,6 +274,11 @@ public class OMETiffMultiSeriesProcessorExporter {
 
         boolean appendFileName = false;
 
+        /**
+         *
+         * @param f file to export
+         * @return the builder
+         */
         public Builder file(File f) {
             image_file_path = f.getAbsolutePath();
             if (output_directory==null) {
@@ -287,57 +292,112 @@ public class OMETiffMultiSeriesProcessorExporter {
             return this;
         }
 
+        /**
+         * Where to output the converted files
+         * @param path folder path
+         * @return the builder
+         */
         public Builder outputFolder(String path) {
             output_directory = path;
             return this;
         }
 
+        /**
+         * String that is parsed by {@link IntRangeParser} in order to select and or reorder a subset of series in a multi series file
+         * @param rangeS string to parse
+         * @return the builder
+         */
         public Builder rangeS(String rangeS) {
             this.rangeS = rangeS;
             return this;
         }
 
+        /**
+         * Can be used to override the calibration of a an exported series
+         * @param series series index
+         * @param calibration calibration image object
+         * @return the builder
+         */
         public Builder setCalibration(int series, Calibration calibration) {
             this.overrideCalibration.put(series, calibration);
             return this;
         }
 
+        /**
+         * String that is parsed by {@link IntRangeParser} in order to select and or reorder a subset of channels
+         * @param rangeC string to parse
+         * @return the builder
+         */
         public Builder rangeC(String rangeC) {
             this.rangeC = rangeC;
             return this;
         }
 
+        /**
+         * Can be use to override the default cache bioformats cache size when opening the file
+         * @param cacheSizeX cache size x in pixel
+         * @param cacheSizeY cache size y in pixel
+         * @return the builder
+         */
         public Builder cacheSize(int cacheSizeX, int cacheSizeY) {
             this.cacheSizeX = cacheSizeX;
             this.cacheSizeY = cacheSizeY;
             return this;
         }
 
+        /**
+         * String that is parsed by {@link IntRangeParser} in order to select and or reorder a subset of z slices
+         * @param rangeZ string to parse
+         * @return the builder
+         */
         public Builder rangeZ(String rangeZ) {
             this.rangeZ = rangeZ;
             return this;
         }
 
+        /**
+         * String that is parsed by {@link IntRangeParser} in order to select and or reorder a subset of frames
+         * @param rangeT string to parse
+         * @return the builder
+         */
         public Builder rangeT(String rangeT) {
             this.rangeT = rangeT;
             return this;
         }
 
+        /**
+         * @param nThreads number of threads used for the conversion
+         * @return the builder
+         */
         public Builder nThreads(int nThreads) {
             this.n_threads = nThreads;
             return this;
         }
 
+        /**
+         * Number of resolution levels to be used in the conversion
+         * @param nResolutionLevels number of resolution levels
+         * @return the builder
+         */
         public Builder nResolutionLevels(int nResolutionLevels) {
             this.nResolutionLevels = nResolutionLevels;
             return this;
         }
 
+        /**
+         * Scaling factor between each resolution level
+         * @param downscaleFactor
+         * @return the builder
+         */
         public Builder downscaleFactorLevels(int downscaleFactor) {
             this.downscaleFactor = downscaleFactor;
             return this;
         }
 
+        /**
+         * Performs a maximum intensity projection over each selected slices
+         * @return the builder
+         */
         public Builder projectMax() {
             this.z_project = true;
             this.z_project_method = "Max Intensity";
@@ -345,25 +405,39 @@ public class OMETiffMultiSeriesProcessorExporter {
             return this;
         }
 
+        /**
+         * Do not keep potential z offsets
+         * @return the builder
+         */
         public Builder removeZOffsets() {
             this.removeZOffset = true;
             return this;
         }
 
+        /**
+         * Min projection
+         * @return the builder
+         */
         public Builder projectMin() {
             this.z_project = true;
             this.z_project_method = "Min Intensity";
             this.removeZOffset = true;
             return this;
         }
-
+        /**
+         * Sum projection
+         * @return the builder
+         */
         public Builder projectSum() {
             this.z_project = true;
             this.z_project_method = "Sum Slices";
             this.removeZOffset = true;
             return this;
         }
-
+        /**
+         * Stdev projection
+         * @return the builder
+         */
         public Builder projectStDev() {
             this.z_project = true;
             this.z_project_method = "Standard Deviation";
@@ -371,6 +445,10 @@ public class OMETiffMultiSeriesProcessorExporter {
             return this;
         }
 
+        /**
+         * Median projection
+         * @return the builder
+         */
         public Builder projectMedian() {
             this.z_project = true;
             this.z_project_method = "Median";
@@ -378,6 +456,10 @@ public class OMETiffMultiSeriesProcessorExporter {
             return this;
         }
 
+        /**
+         * Average projection
+         * @return the builder
+         */
         public Builder projectAverage() {
             this.z_project = true;
             this.z_project_method = "Average Intensity";
@@ -385,6 +467,10 @@ public class OMETiffMultiSeriesProcessorExporter {
             return this;
         }
 
+        /**
+         * Use lzw compression in the output
+         * @return the builder
+         */
         public Builder lzw() {
             this.compression = "LZW";
             return this;

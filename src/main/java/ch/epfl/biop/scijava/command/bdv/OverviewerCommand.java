@@ -288,6 +288,10 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
         public final SourceAndConverter sac;
         public final boolean isRGB; // Always split RGB images
 
+        /**
+         * crete the Sac Properties object
+         * @param sac source to give
+         */
         public SacProperties(SourceAndConverter sac) {
             location = new AffineTransform3D();
             sac.getSpimSource().getSourceTransform(0, 0, location);
