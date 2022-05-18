@@ -96,6 +96,9 @@ public class LayerAlphaProjectorFactory implements AccumulateProjectorFactory<AR
      */
     transient LayerMetadata layerMeta = sac -> defaultLayer;
 
+    /**
+     * Public constructor
+     */
     public LayerAlphaProjectorFactory() {
 
     }
