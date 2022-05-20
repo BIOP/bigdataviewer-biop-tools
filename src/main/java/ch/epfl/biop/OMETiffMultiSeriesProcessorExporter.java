@@ -132,15 +132,19 @@ public class OMETiffMultiSeriesProcessorExporter {
                     if (builder.z_project) {
                         String iniTitle = image.getTitle();
                         Calibration cal = image.getCalibration().copy();
-                        ZProjector zp = new ZProjector();
-                        zp.setImage(image);
-                        zp.setMethod(Arrays.asList(ZProjector.METHODS).indexOf(builder.z_project_method));
-                        zp.setStopSlice(image.getNSlices());
-                        if (image.getNSlices() > 1 || image.getNFrames() > 1) {
-                            zp.doHyperStackProjection(true);
-                        }
                         int initialBitDepth = image.getBitDepth();
-                        image = zp.getProjection();
+                        if ((image.getNFrames()>1)&&(image.getNSlices()==1)) {
+                            image = ZProjector.run(image,"max");
+                        } else {
+                            ZProjector zp = new ZProjector();
+                            zp.setImage(image);
+                            zp.setMethod(Arrays.asList(ZProjector.METHODS).indexOf(builder.z_project_method));
+                            zp.setStopSlice(image.getNSlices());
+                            if (image.getNSlices() > 1 || image.getNFrames() > 1) {
+                                zp.doHyperStackProjection(true);
+                            }
+                            image = zp.getProjection();
+                        }
                         image.setTitle(iniTitle + "_ZProj_" + builder.z_project_method);
                         cal.zOrigin = 0; // remove z offset when projecting
                         image.setCalibration(cal);
