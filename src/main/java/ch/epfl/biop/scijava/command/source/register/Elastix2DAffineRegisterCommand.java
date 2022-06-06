@@ -72,8 +72,8 @@ public class Elastix2DAffineRegisterCommand extends AbstractElastix2DRegistratio
         rh.addTransform(rp);
 
         Elastix2DAffineRegister reg = new Elastix2DAffineRegister(
-                sac_fixed,levelFixedSource,tpFixed,
-                sac_moving,levelMovingSource,tpMoving,
+                sacs_fixed,levelFixedSource,tpFixed,
+                sacs_moving,levelMovingSource,tpMoving,
                 rh,
                 pxSizeInCurrentUnit,
                 px,py,pz,sx,sy,

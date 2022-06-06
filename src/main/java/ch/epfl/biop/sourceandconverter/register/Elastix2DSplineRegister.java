@@ -24,6 +24,7 @@ import net.imglib2.RealRandomAccessible;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.realtransform.*;
 import net.imglib2.realtransform.inverse.WrappedIterativeInvertibleRealTransform;
+import sc.fiji.bdvpg.sourceandconverter.transform.SourceAffineTransformer;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceRealTransformer;
 
 import java.io.File;
@@ -34,7 +35,7 @@ import java.util.stream.Collectors;
 
 public class Elastix2DSplineRegister {
 
-    SourceAndConverter sac_fixed, sac_moving;
+    SourceAndConverter[] sacs_fixed, sacs_moving;
     int levelMipmapFixed, levelMipmapMoving;
     int tpMoving,tpFixed;
 
@@ -71,10 +72,10 @@ public class Elastix2DSplineRegister {
         et = new RemoteElastixTask(serverURL);
     }
 
-    public Elastix2DSplineRegister(SourceAndConverter sac_fixed,
+    public Elastix2DSplineRegister(SourceAndConverter[] sacs_fixed,
                                    int levelMipmapFixed,
                                    int tpFixed,
-                                   SourceAndConverter sac_moving,
+                                   SourceAndConverter[] sacs_moving,
                                    int levelMipmapMoving,
                                    int tpMoving,
                                    //RegisterHelper rh,
@@ -89,8 +90,8 @@ public class Elastix2DSplineRegister {
                                    double background_offset_value_moving,
                                    double background_offset_value_fixed,
                                    boolean showResultIJ1) {
-        this.sac_fixed = sac_fixed;
-        this.sac_moving = sac_moving;
+        this.sacs_fixed = sacs_fixed;
+        this.sacs_moving = sacs_moving;
         this.pxSizeInCurrentUnit = pxSizeInCurrentUnit;
         this.px = px;
         this.py = py;
@@ -113,6 +114,9 @@ public class Elastix2DSplineRegister {
     }
 
     public boolean run() {
+
+        SourceAndConverter sac_fixed = sacs_fixed[0];
+        SourceAndConverter sac_moving = sacs_moving[0];
 
         // Interpolation switch
         Interpolation interpolation;
@@ -341,8 +345,13 @@ public class Elastix2DSplineRegister {
 
     }
 
-    public SourceAndConverter getRegisteredSac() {
-        return new SourceRealTransformer(null, realTransformOut).apply(sac_moving);
+    public SourceAndConverter[] getRegisteredSacs() {
+        SourceAndConverter[] out = new SourceAndConverter[sacs_moving.length];
+        SourceRealTransformer srt = new SourceRealTransformer(null, realTransformOut);
+        for (int iCh=0;iCh< sacs_moving.length;iCh++) {
+            out[iCh] = srt.apply(sacs_moving[iCh]);
+        }
+        return out;
     }
 
     public RealTransform getRealTransform() {

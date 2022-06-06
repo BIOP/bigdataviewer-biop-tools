@@ -36,8 +36,8 @@ public class Elastix2DSplineRegisterServerCommand extends AbstractElastix2DRegis
     public void run() {
 
         Elastix2DSplineRegister reg = new Elastix2DSplineRegister(
-                sac_fixed,levelFixedSource,tpFixed,
-                sac_moving,levelMovingSource,tpMoving,
+                sacs_fixed,levelFixedSource,tpFixed,
+                sacs_moving,levelMovingSource,tpMoving,
                 nbControlPointsX,
                 pxSizeInCurrentUnit,
                 px,py,pz,sx,sy,

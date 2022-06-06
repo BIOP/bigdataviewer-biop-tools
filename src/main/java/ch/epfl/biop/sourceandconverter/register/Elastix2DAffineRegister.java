@@ -34,7 +34,7 @@ import java.io.IOException;
 
 public class Elastix2DAffineRegister {
 
-    SourceAndConverter sac_fixed, sac_moving;
+    SourceAndConverter[] sacs_fixed, sacs_moving;
     int levelMipmapFixed, levelMipmapMoving;
     int tpMoving,tpFixed;
 
@@ -65,10 +65,10 @@ public class Elastix2DAffineRegister {
         et = new RemoteElastixTask(serverURL);
     }
 
-    public Elastix2DAffineRegister(SourceAndConverter sac_fixed,
+    public Elastix2DAffineRegister(SourceAndConverter[] sacs_fixed,
                                    int levelMipmapFixed,
                                    int tpFixed,
-                                   SourceAndConverter sac_moving,
+                                   SourceAndConverter[] sacs_moving,
                                    int levelMipmapMoving,
                                    int tpMoving,
                                    RegisterHelper rh,
@@ -82,8 +82,8 @@ public class Elastix2DAffineRegister {
                                    double background_offset_value_fixed,
                                    boolean showResultIJ1) {
         this.rh = rh;
-        this.sac_fixed = sac_fixed;
-        this.sac_moving = sac_moving;
+        this.sacs_fixed = sacs_fixed;
+        this.sacs_moving = sacs_moving;
         this.pxSizeInCurrentUnit = pxSizeInCurrentUnit;
         this.px = px;
         this.py = py;
@@ -104,6 +104,9 @@ public class Elastix2DAffineRegister {
     }
 
     public boolean run() {
+
+        SourceAndConverter sac_fixed = sacs_fixed[0];
+        SourceAndConverter sac_moving = sacs_moving[0];
 
         // Check mipmap level
         levelMipmapFixed = Math.min(levelMipmapFixed, sac_fixed.getSpimSource().getNumMipmapLevels()-1);
@@ -345,8 +348,13 @@ public class Elastix2DAffineRegister {
         pt.setPosition(pt.getDoublePosition(2)/norm,2);
     }
 
-    public SourceAndConverter getRegisteredSac() {
-        return new SourceAffineTransformer(null, affineTransformOut).apply(sac_moving);
+    public SourceAndConverter[] getRegisteredSacs() {
+        SourceAndConverter[] out = new SourceAndConverter[sacs_moving.length];
+        SourceAffineTransformer sat = new SourceAffineTransformer(null, affineTransformOut);
+        for (int iCh=0;iCh< sacs_moving.length;iCh++) {
+            out[iCh] = sat.apply(sacs_moving[iCh]);
+        }
+        return out;
     }
 
     public AffineTransform3D getAffineTransform() {

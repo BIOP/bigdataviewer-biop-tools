@@ -106,10 +106,10 @@ public class Elastix2DSparsePointsRegisterCommand extends SelectSourcesForRegist
         streamOfPts.forEach(pt -> {
             try {
                 AffineTransform3D at = (AffineTransform3D) cs.run(Elastix2DAffineRegisterCommand.class,true,
-                        "sac_fixed", sac_fixed,
+                        "sacs_fixed", sacs_fixed,
                         "tpFixed", tpFixed,
                         "levelFixedSource", levelFixedSource,
-                        "sac_moving", sac_moving,
+                        "sacs_moving", sacs_moving,
                         "tpMoving", tpMoving,
                         "levelMovingSource", levelMovingSource,
                         "px", pt.getDoublePosition(0)-sx/2.0,

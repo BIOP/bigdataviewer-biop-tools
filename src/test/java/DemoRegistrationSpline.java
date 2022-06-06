@@ -188,10 +188,10 @@ public class DemoRegistrationSpline {
             } else {
                 // Go for the registration - on a selected rectangle
                 Future<CommandModule> task = ij.context().getService(CommandService.class).run(Elastix2DSplineRegisterCommand.class, true,
-                        "sac_fixed", fixedSource,
+                        "sacs_fixed", new SourceAndConverter[]{fixedSource},
                         "tpFixed", 0,
                         "levelFixedSource", 0,
-                        "sac_moving", movingSource,
+                        "sacs_moving", new SourceAndConverter[]{movingSource},
                         "tpMoving", 0,
                         "levelMovingSource", 0,
                         "pxSizeInCurrentUnit", 5,
@@ -237,10 +237,10 @@ public class DemoRegistrationSpline {
             } else {
                 // Go for the registration - on a selected rectangle
                 Future<CommandModule> task = ij.context().getService(CommandService.class).run(Elastix2DSplineRegisterServerCommand.class, true,
-                        "sac_fixed", fixedSource,
+                        "sacs_fixed", new SourceAndConverter[]{fixedSource},
                         "tpFixed", 0,
                         "levelFixedSource", 0,
-                        "sac_moving", movingSource,
+                        "sacs_moving", new SourceAndConverter[]{movingSource},
                         "tpMoving", 0,
                         "levelMovingSource", 0,
                         "pxSizeInCurrentUnit", 5,

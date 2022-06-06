@@ -100,10 +100,10 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
                 IJ.log("- Coarse Affine Registration");
 
                 CommandModule cm = cs.run(Elastix2DAffineRegisterCommand.class, true,
-                        "sac_fixed", globalRefSource,
+                        "sacs_fixed", new SourceAndConverter[]{globalRefSource},
                         "tpFixed", 0,
                         "levelFixedSource", SourceAndConverterHelper.bestLevel(globalRefSource, 0, 0.01),
-                        "sac_moving", currentRefSource,
+                        "sacs_moving", new SourceAndConverter[]{currentRefSource},
                         "tpMoving", 0,
                         "levelMovingSource", SourceAndConverterHelper.bestLevel(currentRefSource, 0, 0.01),
                         "px", topLeftX,
@@ -133,8 +133,8 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
                 IJ.log("- Landmarks registration");
                 tst_temp =
                         (RealTransform) cs.run(Elastix2DSparsePointsRegisterCommand.class, true,
-                                "sac_fixed", globalRefSource,
-                                "sac_moving", firstRegSrc,
+                                "sacs_fixed", new SourceAndConverter[]{globalRefSource},
+                                "sacs_moving", new SourceAndConverter[]{firstRegSrc},
                                 "tpFixed", 0,
                                 "levelFixedSource", SourceAndConverterHelper.bestLevel(globalRefSource, 0, 0.001),
                                 "tpMoving", 0,

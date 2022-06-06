@@ -7,7 +7,7 @@ import org.scijava.plugin.Parameter;
 abstract public class SelectSourcesForRegistrationCommand implements Command {
 
     @Parameter(label = "Fixed source for registration", description = "fixed source")
-    SourceAndConverter sac_fixed;
+    SourceAndConverter[] sacs_fixed;
 
     @Parameter(label = "Timepoint of the fixed source")
     int tpFixed;
@@ -16,7 +16,7 @@ abstract public class SelectSourcesForRegistrationCommand implements Command {
     int levelFixedSource;
 
     @Parameter(label = "Moving source for registration", description = "moving source")
-    SourceAndConverter sac_moving;
+    SourceAndConverter[] sacs_moving;
 
     @Parameter(label = "Timepoint of the moving source")
     int tpMoving;

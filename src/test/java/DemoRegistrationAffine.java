@@ -172,10 +172,10 @@ public class DemoRegistrationAffine {
                 Future<CommandModule> task = ij.context()
                         .getService(CommandService.class)
                         .run(Elastix2DAffineRegisterCommand.class, true,
-                            "sac_fixed", fixedSource,
+                            "sacs_fixed", new SourceAndConverter[]{fixedSource},
                             "tpFixed", 0,
                             "levelFixedSource", 0,
-                            "sac_moving", movingSource,
+                            "sacs_moving", new SourceAndConverter[]{movingSource},
                             "tpMoving", 0,
                             "levelMovingSource", 0,
                             "pxSizeInCurrentUnit", 1,
@@ -209,10 +209,10 @@ public class DemoRegistrationAffine {
                 Future<CommandModule> task = ij.context()
                         .getService(CommandService.class)
                         .run(Elastix2DAffineRegisterServerCommand.class, true,
-                                "sac_fixed", fixedSource,
+                                "sacs_fixed", new SourceAndConverter[]{fixedSource},
                                 "tpFixed", 0,
                                 "levelFixedSource", 0,
-                                "sac_moving", movingSource,
+                                "sacs_moving", new SourceAndConverter[]{movingSource},
                                 "tpMoving", 0,
                                 "levelMovingSource", 0,
                                 "pxSizeInCurrentUnit", 1,
