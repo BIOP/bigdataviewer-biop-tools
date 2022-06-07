@@ -34,7 +34,48 @@ public class Elastix2DAffineRegisterCommand extends AbstractElastix2DRegistratio
             rh.verbose();
         }
 
-        RegistrationParameters rp =  new RegParamAffine_Fast(); //
+        RegistrationParameters rp;
+
+        if (sacs_fixed.length>1) {
+            if (sacs_fixed.length==sacs_moving.length) {
+                RegistrationParameters[] rps = new RegistrationParameters[sacs_fixed.length];
+                for (int iCh = 0; iCh<sacs_fixed.length;iCh++) {
+                    rps[iCh] = getRegistrationParameters();
+                }
+                rp = RegistrationParameters.combineRegistrationParameters(rps);
+            } else {
+                System.err.println("Cannot perform multichannel registration : non identical number of channels between moving and fixed sources.");
+                rp = getRegistrationParameters();
+            }
+        } else {
+            rp = getRegistrationParameters();
+        }
+
+        rh.addTransform(rp);
+
+        Elastix2DAffineRegister reg = new Elastix2DAffineRegister(
+                sacs_fixed,levelFixedSource,tpFixed,
+                sacs_moving,levelMovingSource,tpMoving,
+                rh,
+                pxSizeInCurrentUnit,
+                px,py,pz,sx,sy,
+                background_offset_value_moving,
+                background_offset_value_fixed,
+                showImagePlusRegistrationResult);
+        reg.setInterpolate(interpolate);
+
+        boolean success = reg.run();
+
+        if (success) {
+            //registeredSource = reg.getRegisteredSac();
+            at3D = reg.getAffineTransform();
+        } else {
+            logger.error("Error during registration");
+        }
+    }
+
+    private RegistrationParameters getRegistrationParameters() {
+        RegistrationParameters rp = new RegParamAffine_Fast(); //
 
         rp.AutomaticScalesEstimation = false;
         if (automaticTransformInitialization) {
@@ -68,27 +109,6 @@ public class Elastix2DAffineRegisterCommand extends AbstractElastix2DRegistratio
             rp.ImagePyramidSchedule[2*scale] = (int) Math.pow(2, rp.NumberOfResolutions-scale-1);
             rp.ImagePyramidSchedule[2*scale+1] = (int) Math.pow(2, rp.NumberOfResolutions-scale-1);
         }
-
-        rh.addTransform(rp);
-
-        Elastix2DAffineRegister reg = new Elastix2DAffineRegister(
-                sacs_fixed,levelFixedSource,tpFixed,
-                sacs_moving,levelMovingSource,tpMoving,
-                rh,
-                pxSizeInCurrentUnit,
-                px,py,pz,sx,sy,
-                background_offset_value_moving,
-                background_offset_value_fixed,
-                showImagePlusRegistrationResult);
-        reg.setInterpolate(interpolate);
-
-        boolean success = reg.run();
-
-        if (success) {
-            //registeredSource = reg.getRegisteredSac();
-            at3D = reg.getAffineTransform();
-        } else {
-            logger.error("Error during registration");
-        }
+        return rp;
     }
 }

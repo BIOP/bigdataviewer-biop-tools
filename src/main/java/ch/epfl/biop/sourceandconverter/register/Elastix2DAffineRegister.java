@@ -5,6 +5,9 @@ import bdv.viewer.Interpolation;
 import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.fiji.imageplusutils.ImagePlusFunctions;
+import ch.epfl.biop.sourceandconverter.exporter.CZTRange;
+import ch.epfl.biop.sourceandconverter.exporter.ImagePlusGetter;
+import ch.epfl.biop.sourceandconverter.processor.SourcesResampler;
 import ch.epfl.biop.wrappers.elastix.DefaultElastixTask;
 import ch.epfl.biop.wrappers.elastix.ElastixTask;
 import ch.epfl.biop.wrappers.elastix.RegisterHelper;
@@ -27,10 +30,18 @@ import net.imglib2.RealPoint;
 import net.imglib2.RealRandomAccessible;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.realtransform.AffineTransform3D;
+import sc.fiji.bdvpg.sourceandconverter.importer.EmptySourceAndConverterCreator;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceAffineTransformer;
+import sc.fiji.bdvpg.sourceandconverter.transform.SourceResampler;
+import spimdata.imageplus.ImagePlusHelper;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public class Elastix2DAffineRegister {
 
@@ -54,14 +65,14 @@ public class Elastix2DAffineRegister {
 
     double background_offset_value_fixed = 0;
 
-    TransformixTask tt = new DefaultTransformixTask();
+    Supplier<TransformixTask> tt = () -> new DefaultTransformixTask();
 
     ElastixTask et = new DefaultElastixTask();
 
     String errorMessage = "";
 
     public void setRegistrationServer(String serverURL) {
-        tt = new RemoteTransformixTask(serverURL);
+        tt = () -> new RemoteTransformixTask(serverURL);
         et = new RemoteElastixTask(serverURL);
     }
 
@@ -105,34 +116,22 @@ public class Elastix2DAffineRegister {
 
     public boolean run() {
 
-        SourceAndConverter sac_fixed = sacs_fixed[0];
-        SourceAndConverter sac_moving = sacs_moving[0];
-
         // Check mipmap level
-        levelMipmapFixed = Math.min(levelMipmapFixed, sac_fixed.getSpimSource().getNumMipmapLevels()-1);
-        levelMipmapMoving = Math.min(levelMipmapMoving, sac_moving.getSpimSource().getNumMipmapLevels()-1);
+        levelMipmapFixed = Math.min(levelMipmapFixed, sacs_fixed[0].getSpimSource().getNumMipmapLevels()-1);
+        levelMipmapMoving = Math.min(levelMipmapMoving, sacs_moving[0].getSpimSource().getNumMipmapLevels()-1);
 
-        // Interpolation switch
-        Interpolation interpolation;
-        if (interpolate) {
-            interpolation = Interpolation.NLINEAR;
-        } else {
-            interpolation = Interpolation.NEARESTNEIGHBOR;
-        }
+        ImagePlus croppedMoving = getCroppedImage("Moving", sacs_moving, tpMoving, levelMipmapMoving);
+        ImagePlus croppedFixed = getCroppedImage("Fixed", sacs_fixed, tpFixed, levelMipmapFixed);
 
-        // Fetch cropped images from source
+        croppedMoving.show();
+        croppedFixed.show();
 
-        Source sMoving = sac_moving.getSpimSource();
-        Source sFixed = sac_fixed.getSpimSource();
-
-        // Get real random accessible from the source
-        final RealRandomAccessible ipMovingimg = sMoving.getInterpolatedSource(tpMoving, levelMipmapMoving, interpolation);
-        final RealRandomAccessible ipFixedimg = sFixed.getInterpolatedSource(tpFixed, levelMipmapFixed, interpolation);
+        Source sMoving = sacs_moving[0].getSpimSource();
+        Source sFixed = sacs_fixed[0].getSpimSource();
 
         AffineTransform3D at3D = new AffineTransform3D();
         at3D.identity();
         at3D.translate(-px,-py,-pz);
-        FinalRealInterval fi = new FinalRealInterval(new double[]{0,0,0}, new double[]{sx, sy, 0});
 
         AffineTransform3D atMoving = new AffineTransform3D();
         sMoving.getSourceTransform(tpMoving,levelMipmapMoving,atMoving);
@@ -140,33 +139,19 @@ public class Elastix2DAffineRegister {
         AffineTransform3D atFixed = new AffineTransform3D();
         sFixed.getSourceTransform(tpMoving,levelMipmapFixed,atFixed);
 
-        AffineTransform3D movat = at3D.concatenate(atMoving);
-
-        RandomAccessibleInterval viewMoving = RealCropper.getCroppedSampledRRAI(ipMovingimg,
-                movat,fi,pxSizeInCurrentUnit,pxSizeInCurrentUnit,pxSizeInCurrentUnit);
-
-        ImagePlus impM = ImageJFunctions.wrap(viewMoving, "Moving");
-
-        impM = new Duplicator().run(impM); // Virtual messes up the process, don't know why
-
         if (background_offset_value_moving!=0) {
-            impM.getProcessor().subtract(background_offset_value_moving);
+            System.err.println("Ignored background_offset_value_moving");
         }
 
         at3D.identity();
         at3D.translate(-px,-py,-pz);
-        AffineTransform3D fixat = at3D.concatenate(atFixed);
-        RandomAccessibleInterval viewFixed = RealCropper.getCroppedSampledRRAI(ipFixedimg,
-                fixat,fi,pxSizeInCurrentUnit,pxSizeInCurrentUnit,pxSizeInCurrentUnit);
-        ImagePlus impF = ImageJFunctions.wrap(viewFixed, "Fixed");
-        impF = new Duplicator().run(impF); // Virtual messes up the process, don't know why
 
         if (background_offset_value_fixed!=0) {
-            impF.getProcessor().subtract(background_offset_value_fixed);
+            System.err.println("Ignored background_offset_value_fixed");
         }
 
-        rh.setMovingImage(impM);
-        rh.setFixedImage(impF);
+        rh.setMovingImage(croppedMoving);
+        rh.setFixedImage(croppedFixed);
 
         try {
             rh.align(et);
@@ -205,25 +190,26 @@ public class Elastix2DAffineRegister {
 
         if (showResultIJ1) {
             synchronized (Elastix2DAffineRegister.class) {
-                if (impM.getBitDepth() != 24) {
-                    impF.show();
+                if (croppedMoving.getBitDepth() != 24) {
+                    croppedFixed.show();
                     ImagePlus transformedImage = ImagePlusFunctions.splitApplyRecompose(
                             imp -> {
                                 TransformHelper th = new TransformHelper();
-                                //th.verbose();
+                                th.verbose();
                                 th.setTransformFile(rh);
                                 th.setImage(imp);
-                                th.transform(tt);
+                                th.transform(tt.get());
                                 return ((ImagePlus) (th.getTransformedImage().to(ImagePlus.class)));
-                            }
-                            , impM);
+                            }, croppedMoving);
 
                     transformedImage.show();
 
-                    IJ.run(impF, "Enhance Contrast", "saturated=0.35");
+                    IJ.run(croppedFixed, "Enhance Contrast", "saturated=0.35");
                     IJ.run(transformedImage, "Enhance Contrast", "saturated=0.35");
-                    IJ.run(impF, "32-bit", "");
-                    IJ.run((ImagePlus) null, "Merge Channels...", "c1=Transformed_DUP_Moving c2=DUP_Fixed create");
+                    IJ.run(croppedFixed, "32-bit", "");
+                    if ((transformedImage.getNChannels()==1)&&(croppedFixed.getNChannels()==1)) {
+                        IJ.run((ImagePlus) null, "Merge Channels...", "c1=Transformed_Moving c2=Fixed create");
+                    }
 
                 } else {
                     System.err.println("Cannot transform RGB imagej1 images.");
@@ -322,8 +308,39 @@ public class Elastix2DAffineRegister {
 
         affineTransformOut = atMoving.concatenate(affineTransformOut.inverse());
 
-        return true; // success
+        return true;
+    }
 
+    private ImagePlus getCroppedImage(String name, SourceAndConverter[] sacs, int tp, int level) {
+
+        // Fetch cropped images from source -> resample sources
+        FinalRealInterval window = new FinalRealInterval(new double[]{px,py,pz}, new double[]{px+sx, py+sy, pz+pxSizeInCurrentUnit});
+
+        SourceAndConverter model = new EmptySourceAndConverterCreator("model",window,pxSizeInCurrentUnit,pxSizeInCurrentUnit,pxSizeInCurrentUnit).get();
+
+        SourceResampler resampler = new SourceResampler(null,
+                model,model.getSpimSource().getName(), false, false, interpolate, level
+        );
+
+
+        SourceAndConverter[] resampled =
+                Arrays.stream(sacs)
+                        .map(resampler)
+                        .collect(Collectors.toList())
+                        .toArray(new SourceAndConverter[sacs.length]);
+
+        List<Integer> channels = new ArrayList<>(sacs.length);
+        for (int i = 0; i< sacs.length;i++) {
+            channels.add(i);
+        }
+        List<Integer> slices = new ArrayList<>();
+        slices.add(0);
+        List<Integer> timepoints = new ArrayList<>();
+        timepoints.add(tp);
+
+        CZTRange range = new CZTRange(channels, slices, timepoints);
+
+        return ImagePlusGetter.getImagePlus(name,Arrays.asList(resampled),0,range,false,false,false,null);
     }
 
     public static double prodScal(RealPoint pt1, RealPoint pt2) {

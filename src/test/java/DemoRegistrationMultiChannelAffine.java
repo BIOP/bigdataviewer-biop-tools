@@ -90,11 +90,11 @@ public class DemoRegistrationMultiChannelAffine {
 
         Future<CommandModule> task = ij.context()
                 .getService(CommandService.class)
-                .run(Elastix2DSplineRegisterCommand.class, true,
-                        "sacs_fixed", new SourceAndConverter[]{fixedSource},
+                .run(Elastix2DAffineRegisterCommand.class, true,
+                        "sacs_fixed", atlasSources.toArray(new SourceAndConverter[0]),//new SourceAndConverter[]{fixedSource},//atlasSources.toArray(new SourceAndConverter[0]),//new SourceAndConverter[]{fixedSource},
                         "tpFixed", 0,
                         "levelFixedSource", 0,
-                        "sacs_moving", new SourceAndConverter[]{movingSource},
+                        "sacs_moving", sliceSources.toArray(new SourceAndConverter[0]),//new SourceAndConverter[]{movingSource},
                         "tpMoving", 0,
                         "levelMovingSource", 0,
                         "pxSizeInCurrentUnit", 0.02,
