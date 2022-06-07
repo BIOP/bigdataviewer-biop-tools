@@ -7,6 +7,8 @@ import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.fiji.imageplusutils.ImagePlusFunctions;
 import ch.epfl.biop.java.utilities.roi.ConvertibleRois;
 import ch.epfl.biop.java.utilities.roi.types.RealPointList;
+import ch.epfl.biop.sourceandconverter.exporter.CZTRange;
+import ch.epfl.biop.sourceandconverter.exporter.ImagePlusGetter;
 import ch.epfl.biop.wrappers.elastix.DefaultElastixTask;
 import ch.epfl.biop.wrappers.elastix.*;
 import ch.epfl.biop.wrappers.transformix.DefaultTransformixTask;
@@ -24,13 +26,17 @@ import net.imglib2.RealRandomAccessible;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.realtransform.*;
 import net.imglib2.realtransform.inverse.WrappedIterativeInvertibleRealTransform;
+import sc.fiji.bdvpg.sourceandconverter.importer.EmptySourceAndConverterCreator;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceAffineTransformer;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceRealTransformer;
+import sc.fiji.bdvpg.sourceandconverter.transform.SourceResampler;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class Elastix2DSplineRegister {
@@ -57,7 +63,7 @@ public class Elastix2DSplineRegister {
 
     int numberOfIterationPerScale;
 
-    TransformixTask tt = new DefaultTransformixTask();
+    Supplier<TransformixTask> tt = () -> new DefaultTransformixTask();
 
     ElastixTask et = new DefaultElastixTask();
 
@@ -68,7 +74,7 @@ public class Elastix2DSplineRegister {
     String errorMessage = "";
 
     public void setRegistrationServer(String serverURL) {
-        tt = new RemoteTransformixTask(serverURL);
+        tt = () -> new RemoteTransformixTask(serverURL);
         et = new RemoteElastixTask(serverURL);
     }
 
@@ -78,7 +84,6 @@ public class Elastix2DSplineRegister {
                                    SourceAndConverter[] sacs_moving,
                                    int levelMipmapMoving,
                                    int tpMoving,
-                                   //RegisterHelper rh,
                                    int nbControlPointsX,
                                    double pxSizeInCurrentUnit,
                                    double px,
@@ -115,25 +120,17 @@ public class Elastix2DSplineRegister {
 
     public boolean run() {
 
-        SourceAndConverter sac_fixed = sacs_fixed[0];
-        SourceAndConverter sac_moving = sacs_moving[0];
+        // Check mipmap level
+        levelMipmapFixed = Math.min(levelMipmapFixed, sacs_fixed[0].getSpimSource().getNumMipmapLevels()-1);
+        levelMipmapMoving = Math.min(levelMipmapMoving, sacs_moving[0].getSpimSource().getNumMipmapLevels()-1);
 
-        // Interpolation switch
-        Interpolation interpolation;
-        if (interpolate) {
-            interpolation = Interpolation.NLINEAR;
-        } else {
-            interpolation = Interpolation.NEARESTNEIGHBOR;
-        }
+        ImagePlus croppedMoving = getCroppedImage("Moving", sacs_moving, tpMoving, levelMipmapMoving);
+        ImagePlus croppedFixed = getCroppedImage("Fixed", sacs_fixed, tpFixed, levelMipmapFixed);
 
         // Fetch cropped images from source
 
-        Source sMoving = sac_moving.getSpimSource();
-        Source sFixed = sac_fixed.getSpimSource();
-
-        // Get real random accessible from the source
-        final RealRandomAccessible ipMovingimg = sMoving.getInterpolatedSource(tpMoving, levelMipmapMoving, interpolation);
-        final RealRandomAccessible ipFixedimg = sFixed.getInterpolatedSource(tpFixed, levelMipmapFixed, interpolation);
+        Source sMoving = sacs_moving[0].getSpimSource();
+        Source sFixed = sacs_fixed[0].getSpimSource();
 
         AffineTransform3D at3D = new AffineTransform3D();
         at3D.identity();
@@ -146,69 +143,44 @@ public class Elastix2DSplineRegister {
         AffineTransform3D atFixed = new AffineTransform3D();
         sFixed.getSourceTransform(tpMoving,levelMipmapFixed,atFixed);
 
-        AffineTransform3D movat = at3D.concatenate(atMoving);
-
-        RandomAccessibleInterval viewMoving = RealCropper.getCroppedSampledRRAI(ipMovingimg,
-                movat,fi,pxSizeInCurrentUnit,pxSizeInCurrentUnit,pxSizeInCurrentUnit);
-
-        ImagePlus impM = ImageJFunctions.wrap(viewMoving, "Moving");
-        //impM.show();
-        impM = new Duplicator().run(impM); // Virtual messes up the process, don't know why
-
         if (background_offset_value_moving!=0) {
-            impM.getProcessor().subtract(background_offset_value_moving);
+            System.err.println("Ignored background_offset_value_moving");
         }
 
         at3D.identity();
         at3D.translate(-px,-py,-pz);
-        AffineTransform3D fixat = at3D.concatenate(atFixed);
-        RandomAccessibleInterval viewFixed = RealCropper.getCroppedSampledRRAI(ipFixedimg,
-                fixat,fi,pxSizeInCurrentUnit,pxSizeInCurrentUnit,pxSizeInCurrentUnit);
-        ImagePlus impF = ImageJFunctions.wrap(viewFixed, "Fixed");
-        //impF.show();
-        impF = new Duplicator().run(impF); // Virtual messes up the process, don't know why
 
         if (background_offset_value_fixed!=0) {
-            impF.getProcessor().subtract(background_offset_value_fixed);
+            System.err.println("Ignored background_offset_value_fixed");
         }
 
-        rh.setMovingImage(impM);
-        rh.setFixedImage(impF);
+        rh.setMovingImage(croppedMoving);
+        rh.setFixedImage(croppedFixed);
 
-        RegistrationParameters rp = new RegParamBSpline_Default();
-        rp.AutomaticScalesEstimation = true;
-        double maxSize = Math.max(sx/pxSizeInCurrentUnit,sy/pxSizeInCurrentUnit);
-        int nScales = 0;
-
-        while (Math.pow(2,nScales)<maxSize) {
-            nScales++;
-        }
-        //System.out.println("nScales = "+nScales);
-        rp.NumberOfResolutions = nScales-2;
-        rp.BSplineInterpolationOrder = 1;
-        rp.MaximumNumberOfIterations = numberOfIterationPerScale;
-        //rp.Metric = "AdvancedNormalizedCorrelation";
-        /*rp.AutomaticScalesEstimation = true;
-        rp.NumberOfResolutions = 8;
-        rp.BSplineInterpolationOrder = 1;
-        rp.MaximumNumberOfIterations = 100;*/
-        //rp.FixedImagePyramid = "FixedRecursiveImagePyramid";
-        //rp.MovingImagePyramid = "MovingRecursiveImagePyramid";
-        //rp.NewSamplesEveryIteration = true;
-        //rp.Optimizer = "AdaptiveStochasticGradientDescent";
-        //rp.ASGDParameterEstimationMethod = "DisplacementDistribution";*/
-        //rp.MaximumStepLength = 20f;
-
-        int nbControlPointsY = (int)((double)nbControlPointsX/(double)(impF.getWidth())*(double) (impF.getHeight()));
+        int nbControlPointsY = (int)((double)nbControlPointsX/(double)(croppedFixed.getWidth())*(double) (croppedFixed.getHeight()));
 
         if (nbControlPointsY<2) nbControlPointsY = 2;
 
-        double dX = ((double)(impF.getWidth())/(double)(nbControlPointsX));
-        double dY = ((double)(impF.getHeight())/(double)(nbControlPointsY));
+        double dX = ((double)(croppedFixed.getWidth())/(double)(nbControlPointsX));
+        double dY = ((double)(croppedFixed.getHeight())/(double)(nbControlPointsY));
 
-        // TODO : handle 0 and 1 pixels size image cases
 
-        rp.FinalGridSpacingInVoxels = (int) dX;
+        RegistrationParameters rp;
+
+        if (sacs_fixed.length>1) {
+            if (sacs_fixed.length==sacs_moving.length) {
+                RegistrationParameters[] rps = new RegistrationParameters[sacs_fixed.length];
+                for (int iCh = 0; iCh<sacs_fixed.length;iCh++) {
+                    rps[iCh] = getRegistrationParameters((int) dX);
+                }
+                rp = RegistrationParameters.combineRegistrationParameters(rps);
+            } else {
+                System.err.println("Cannot perform multichannel registration : non identical number of channels between moving and fixed sources.");
+                rp = getRegistrationParameters((int) dX);
+            }
+        } else {
+            rp = getRegistrationParameters((int) dX);
+        }
 
         rh.addTransform(rp);
         try {
@@ -219,35 +191,27 @@ public class Elastix2DSplineRegister {
             return false;
         }
 
-        File fTransform = new File(rh.getFinalTransformFile());
-
-        ElastixTransform et;
-        try {
-            et = ElastixTransform.load(fTransform);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        }
-
         if (showResultIJ1) {
             synchronized (Elastix2DSplineRegister.class) {
-                impF.show();
+                croppedFixed.show();
                 ImagePlus transformedImage = ImagePlusFunctions.splitApplyRecompose(
                         imp -> {
                             TransformHelper th = new TransformHelper();
                             th.setTransformFile(rh);
                             th.setImage(imp);
-                            th.transform(tt);
+                            th.transform(tt.get());
                             return ((ImagePlus) (th.getTransformedImage().to(ImagePlus.class)));
                         }
-                        , impM);
+                        , croppedMoving);
 
                 transformedImage.show();
 
-                IJ.run(impF, "Enhance Contrast", "saturated=0.35");
+                IJ.run(croppedFixed, "Enhance Contrast", "saturated=0.35");
                 IJ.run(transformedImage, "Enhance Contrast", "saturated=0.35");
-                IJ.run(impF, "32-bit", "");
-                IJ.run((ImagePlus) null, "Merge Channels...", "c1=Transformed_DUP_Moving c2=DUP_Fixed create");
+                IJ.run(croppedFixed, "32-bit", "");
+                if ((transformedImage.getNChannels()==1)&&(croppedFixed.getNChannels()==1)) {
+                    IJ.run((ImagePlus) null, "Merge Channels...", "c1=Transformed_DUP_Moving c2=DUP_Fixed create");
+                }
             }
         }
 
@@ -270,7 +234,7 @@ public class Elastix2DSplineRegister {
         rois.set(rpl);
 
         th.setRois(rois);
-        th.transform(tt);
+        th.transform(tt.get());
         ConvertibleRois tr_rois = th.getTransformedRois();
 
         RealPointList rpl_tr = (RealPointList) tr_rois.to(RealPointList.class);
@@ -343,6 +307,71 @@ public class Elastix2DSplineRegister {
 
         return true; // success
 
+    }
+
+    private RegistrationParameters getRegistrationParameters(int gridSpacing) {
+        RegistrationParameters rp = new RegParamBSpline_Default();
+        rp.AutomaticScalesEstimation = true;
+        double maxSize = Math.max(sx/pxSizeInCurrentUnit,sy/pxSizeInCurrentUnit);
+        int nScales = 0;
+
+        while (Math.pow(2,nScales)<maxSize) {
+            nScales++;
+        }
+        //System.out.println("nScales = "+nScales);
+        rp.NumberOfResolutions = nScales-2;
+        rp.BSplineInterpolationOrder = 1;
+        rp.MaximumNumberOfIterations = numberOfIterationPerScale;
+        //rp.Metric = "AdvancedNormalizedCorrelation";
+        /*rp.AutomaticScalesEstimation = true;
+        rp.NumberOfResolutions = 8;
+        rp.BSplineInterpolationOrder = 1;
+        rp.MaximumNumberOfIterations = 100;*/
+        //rp.FixedImagePyramid = "FixedRecursiveImagePyramid";
+        //rp.MovingImagePyramid = "MovingRecursiveImagePyramid";
+        //rp.NewSamplesEveryIteration = true;
+        //rp.Optimizer = "AdaptiveStochasticGradientDescent";
+        //rp.ASGDParameterEstimationMethod = "DisplacementDistribution";*/
+        //rp.MaximumStepLength = 20f;
+
+
+        // TODO : handle 0 and 1 pixels size image cases
+
+        rp.FinalGridSpacingInVoxels = gridSpacing;
+        return rp;
+    }
+
+
+    private ImagePlus getCroppedImage(String name, SourceAndConverter[] sacs, int tp, int level) {
+
+        // Fetch cropped images from source -> resample sources
+        FinalRealInterval window = new FinalRealInterval(new double[]{px,py,pz}, new double[]{px+sx, py+sy, pz+pxSizeInCurrentUnit});
+
+        SourceAndConverter model = new EmptySourceAndConverterCreator("model",window,pxSizeInCurrentUnit,pxSizeInCurrentUnit,pxSizeInCurrentUnit).get();
+
+        SourceResampler resampler = new SourceResampler(null,
+                model,model.getSpimSource().getName(), false, false, interpolate, level
+        );
+
+
+        SourceAndConverter[] resampled =
+                Arrays.stream(sacs)
+                        .map(resampler)
+                        .collect(Collectors.toList())
+                        .toArray(new SourceAndConverter[sacs.length]);
+
+        List<Integer> channels = new ArrayList<>(sacs.length);
+        for (int i = 0; i< sacs.length;i++) {
+            channels.add(i);
+        }
+        List<Integer> slices = new ArrayList<>();
+        slices.add(0);
+        List<Integer> timepoints = new ArrayList<>();
+        timepoints.add(tp);
+
+        CZTRange range = new CZTRange(channels, slices, timepoints);
+
+        return ImagePlusGetter.getImagePlus(name,Arrays.asList(resampled),0,range,false,false,false,null);
     }
 
     public SourceAndConverter[] getRegisteredSacs() {

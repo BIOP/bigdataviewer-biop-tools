@@ -123,9 +123,6 @@ public class Elastix2DAffineRegister {
         ImagePlus croppedMoving = getCroppedImage("Moving", sacs_moving, tpMoving, levelMipmapMoving);
         ImagePlus croppedFixed = getCroppedImage("Fixed", sacs_fixed, tpFixed, levelMipmapFixed);
 
-        croppedMoving.show();
-        croppedFixed.show();
-
         Source sMoving = sacs_moving[0].getSpimSource();
         Source sFixed = sacs_fixed[0].getSpimSource();
 

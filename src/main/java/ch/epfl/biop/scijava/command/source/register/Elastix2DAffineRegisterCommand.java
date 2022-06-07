@@ -67,7 +67,6 @@ public class Elastix2DAffineRegisterCommand extends AbstractElastix2DRegistratio
         boolean success = reg.run();
 
         if (success) {
-            //registeredSource = reg.getRegisteredSac();
             at3D = reg.getAffineTransform();
         } else {
             logger.error("Error during registration");
