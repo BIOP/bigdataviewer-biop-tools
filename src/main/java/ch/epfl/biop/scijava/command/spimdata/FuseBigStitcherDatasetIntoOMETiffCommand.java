@@ -12,9 +12,12 @@ import ch.epfl.biop.sourceandconverter.SourceHelper;
 import ij.IJ;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import mpicbg.spim.data.generic.sequence.BasicImgLoader;
+import mpicbg.spim.data.generic.sequence.BasicViewSetup;
 import mpicbg.spim.data.sequence.Channel;
+import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.imglib2.cache.LoaderCache;
 import net.imglib2.cache.ref.BoundedSoftRefLoaderCache;
+import net.imglib2.realtransform.AffineTransform3D;
 import org.apache.commons.io.FilenameUtils;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
@@ -53,7 +56,7 @@ public class FuseBigStitcherDatasetIntoOMETiffCommand implements Command {
     @Parameter( label = "Selected Timepoints. Leave blank for all", required = false )
     String range_frames = "";
 
-    @Parameter(label = "Number of resolution levels (scale factor = 2)")
+    @Parameter(label = "Number of resolution levels (scale factor = 2)", min = "1")
     int n_resolution_levels;
 
     @Parameter
@@ -68,14 +71,11 @@ public class FuseBigStitcherDatasetIntoOMETiffCommand implements Command {
     @Parameter
     boolean split_frames = false;
 
-    @Parameter
-    double vox_size_xy_micrometer = 1;
+    double vox_size_x_micrometer = 1;
 
-    @Parameter
+    double vox_size_y_micrometer = 1;
+
     double vox_size_z_micrometer = 1;
-
-    @Parameter
-    double z_ratio = 10;
 
     @Parameter
     SourceAndConverterService sac_service;
@@ -85,6 +85,10 @@ public class FuseBigStitcherDatasetIntoOMETiffCommand implements Command {
 
     @Override
     public void run() {
+        if (n_resolution_levels<1) {
+            System.err.println("Invalid number of resolution, minimum = 1");
+        }
+
         AbstractSpimData asd = new SpimDataFromXmlImporter(xml_bigstitcher_file).get();
 
         BasicImgLoader imageLoader = asd.getSequenceDescription().getImgLoader();
@@ -135,6 +139,23 @@ public class FuseBigStitcherDatasetIntoOMETiffCommand implements Command {
         SourceAndConverterServiceUI.Node node = sac_service.getUI().getRoot().child(xml_bigstitcher_file.getName());
 
         List<SourceAndConverterServiceUI.Node> channelNodes = node.child(Channel.class.getSimpleName()).children();
+
+        // Gets Z-ratio from the first source
+
+        AffineTransform3D transform = new AffineTransform3D();
+        channelNodes.get(0).sources()[0].getSpimSource().getSourceTransform(0,0,transform);
+        IJ.log("Transform of first source = "+transform);
+        IJ.log("Pixel size XY (in pixel, so it should be one) = "+transform.get(0,0));
+        if (transform.get(0,0)!=1) IJ.log("Not ONE! ");
+        IJ.log("Pixel size Z (in pixel, equals to the anisotropy ratio) = "+transform.get(2,2));
+        double z_ratio = transform.get(2,2);
+
+        VoxelDimensions voxelDimensions = ((BasicViewSetup)asd.getSequenceDescription().getViewSetups().get(0)).getVoxelSize();
+        String unit = voxelDimensions.unit();
+        IJ.log("Units is assumed to be micrometers, and it is "+unit);
+        vox_size_x_micrometer = voxelDimensions.dimension(0);
+        vox_size_y_micrometer = voxelDimensions.dimension(1);
+        vox_size_z_micrometer = voxelDimensions.dimension(2);
 
         // Create a model source
         SourceAndConverter model = SourceHelper.getModelFusedMultiSources(channelNodes.get(0).sources(),
@@ -194,7 +215,6 @@ public class FuseBigStitcherDatasetIntoOMETiffCommand implements Command {
                 try {
                     sets.parallelStream().forEach(set -> {
                         try {
-                            IJ.log("Exporting " + set);
                             export(set.channels_set, set.slices_set, set.frames_set, nThreadPerTask, fusedSources);
                             synchronized (export) {
                                 export.setProgressValue(counter.incrementAndGet());
@@ -337,7 +357,7 @@ public class FuseBigStitcherDatasetIntoOMETiffCommand implements Command {
     private OMETiffPyramidizerExporter.Builder getDefaultBuilder() {
         OMETiffPyramidizerExporter.Builder builder = OMETiffPyramidizerExporter.builder()
                 .micrometer()
-                .setPixelSize(vox_size_xy_micrometer, vox_size_xy_micrometer, vox_size_z_micrometer)
+                .setPixelSize(vox_size_x_micrometer, vox_size_y_micrometer, vox_size_z_micrometer)
                 .monitor(taskService)
                 .downsample(2)
                 .tileSize(1024, 1024)
