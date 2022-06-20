@@ -41,9 +41,9 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static sc.fiji.bdvpg.bdv.navigate.ViewerTransformSyncStopper.MatrixApproxEquals;
 import static sc.fiji.bdvpg.scijava.services.SourceAndConverterService.getCommandName;
 import static sc.fiji.bdvpg.services.ISourceAndConverterService.SPIM_DATA_INFO;
+import static sc.fiji.bdvpg.viewers.ViewerTransformSyncStopper.MatrixApproxEquals;
 
 /**
  * Command which display sources on a grid in BigDataViewer
