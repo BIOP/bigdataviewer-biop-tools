@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>31.1.0</version>
+		<version>32.0.0-beta-4</version>
 		<relativePath />
 	</parent>
 
@@ -101,8 +101,8 @@
 		<bigdataviewer-selector.version>0.1.9</bigdataviewer-selector.version>
 		<scijava.app.directory>C:/Fiji.app/</scijava.app.directory>
 
-		<bigdataviewer-core.version>10.2.2</bigdataviewer-core.version>
-		<bigdataviewer-vistools.version>1.0.0-beta-29</bigdataviewer-vistools.version>
+		<bigdataviewer-core.version>10.4.1</bigdataviewer-core.version>
+		<bigdataviewer-vistools.version>1.0.0-beta-30</bigdataviewer-vistools.version>
 		<imglib2-cache.version>1.0.0-beta-16</imglib2-cache.version>
 		<bigwarp_fiji.version>7.0.5</bigwarp_fiji.version>
 
@@ -117,6 +117,7 @@
 
 		<Operetta_Importer.version>0.1.22</Operetta_Importer.version>
 		<bigvolumeviewer.version>0.2.0</bigvolumeviewer.version>
+		<ui-behaviour.version>2.0.6</ui-behaviour.version>
 
 		<ijp-kheops.version>0.2.3</ijp-kheops.version>
 
@@ -137,6 +138,12 @@
 	</repositories>
 
 	<dependencies>
+
+		<dependency>
+			<groupId>org.scijava</groupId>
+			<artifactId>ui-behaviour</artifactId>
+		</dependency>
+
 		<dependency>
 			<groupId>net.imagej</groupId>
 			<artifactId>imagej-legacy</artifactId>
