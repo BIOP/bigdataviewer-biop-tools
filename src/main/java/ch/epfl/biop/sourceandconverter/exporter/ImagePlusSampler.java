@@ -234,6 +234,16 @@ public class ImagePlusSampler {
         }
 
         /**
+         * if not virtual, the acquisition of all channels can be performed in parallel
+         * @param flag flag
+         * @return the builder
+         */
+        public Builder parallelC(boolean flag) {
+            this.parallelC = flag;
+            return this;
+        }
+
+        /**
          * if not virtual, the acquisition of all z slices will be performed in parallel
          * @return the builder
          */
@@ -243,11 +253,31 @@ public class ImagePlusSampler {
         }
 
         /**
+         * if not virtual, the acquisition of all z slices can be performed in parallel
+         * @param flag flag
+         * @return the builder
+         */
+        public Builder parallelZ(boolean flag) {
+            this.parallelZ = flag;
+            return this;
+        }
+
+        /**
          * if not virtual, the acquisition of all frames will be performed in parallel
          * @return the builder
          */
         public Builder parallelT() {
             this.parallelT = true;
+            return this;
+        }
+
+        /**
+         * if not virtual, the acquisition of all frames can be performed in parallel
+         * @param flag flag
+         * @return the builder
+         */
+        public Builder parallelT(boolean flag) {
+            this.parallelT = flag;
             return this;
         }
 

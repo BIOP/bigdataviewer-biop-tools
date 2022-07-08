@@ -109,6 +109,15 @@ public class BdvViewToImagePlusExportCommand implements BdvPlaygroundActionComma
     @Parameter( label = "Export mode", choices = {"Normal", "Virtual", "Virtual no-cache"}, required = false )
     private String export_mode = "Non virtual";
 
+    @Parameter( label = "Acquire channels in parallel (Normal only)", required = false)
+    Boolean parallelC = false;
+
+    @Parameter( label = "Acquire slices in parallel (Normal only)", required = false)
+    Boolean parallelZ = false;
+
+    @Parameter( label = "Acquire timepoints in parallel (Normal only)", required = false)
+    Boolean parallelT = false;
+
     //@Parameter( label = "Monitor loaded data")
     private Boolean monitor = true;
 
@@ -177,6 +186,7 @@ public class BdvViewToImagePlusExportCommand implements BdvPlaygroundActionComma
                                             .unit(unit)
                                             .monitor(task)
                                             .title(capturename)
+                                            .parallelC(parallelC).parallelZ(parallelZ).parallelT(parallelT)
                                             .setModel(model)
                                             .interpolate(interpolate)
                                             .rangeT(selected_timepoints_str)
@@ -197,6 +207,7 @@ public class BdvViewToImagePlusExportCommand implements BdvPlaygroundActionComma
                             .monitor(task)
                             .title(capturename)
                             .setModel(model)
+                            .parallelC(parallelC).parallelZ(parallelZ).parallelT(parallelT)
                             .interpolate(interpolate)
                             .rangeT(selected_timepoints_str)
                             .sources(typeToSources.get(pixelType).toArray(new SourceAndConverter[0]))
