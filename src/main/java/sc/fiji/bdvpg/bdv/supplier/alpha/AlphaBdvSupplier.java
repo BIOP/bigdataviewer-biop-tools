@@ -6,6 +6,7 @@ import bdv.util.projector.alpha.LayerAlphaProjectorFactory;
 import bdv.util.source.alpha.AlphaSourceHelper;
 import bdv.util.source.alpha.IAlphaSource;
 import bdv.viewer.*;
+import bdv.viewer.render.AccumulateProjectorARGB;
 import bdv.viewer.render.AccumulateProjectorFactory;
 import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgs;
@@ -15,7 +16,6 @@ import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.integer.ByteType;
 import net.imglib2.type.numeric.real.FloatType;
 import org.jetbrains.annotations.NotNull;
-import sc.fiji.bdvpg.bdv.projector.DefaultAccumulatorFactory;
 import sc.fiji.bdvpg.bdv.supplier.BdvSupplierHelper;
 import sc.fiji.bdvpg.bdv.supplier.IBdvSupplier;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
@@ -76,7 +76,7 @@ public class AlphaBdvSupplier implements IBdvSupplier {
 
     @Override
     public BdvHandle get() {
-        AccumulateProjectorFactory<ARGBType> projectorFactory = new DefaultAccumulatorFactory();
+        AccumulateProjectorFactory<ARGBType> projectorFactory = AccumulateProjectorARGB.factory;
 
         if (sOptions.useAlphaCompositing) {
             projectorFactory = sOptions.accumulateProjectorFactory;
