@@ -87,6 +87,15 @@ public class BasicBdvViewToImagePlusExportCommand<T extends RealType<T>> impleme
     @Parameter( label = "Export mode", choices = {"Normal", "Virtual", "Virtual no-cache"}, required = false )
     private String export_mode = "Non virtual";
 
+    @Parameter( label = "Acquire channels in parallel (Normal only)", required = false)
+    Boolean parallelC = false;
+
+    @Parameter( label = "Acquire slices in parallel (Normal only)", required = false)
+    Boolean parallelZ = false;
+
+    @Parameter( label = "Acquire timepoints in parallel (Normal only)", required = false)
+    Boolean parallelT = false;
+
     //@Parameter( label = "Monitor loaded data")
     private Boolean monitor = true;
 
@@ -159,6 +168,7 @@ public class BasicBdvViewToImagePlusExportCommand<T extends RealType<T>> impleme
                                         .monitor(task)
                                         .title(capturename)
                                         .setModel(model)
+                                        .parallelC(parallelC).parallelZ(parallelZ).parallelT(parallelT)
                                         .interpolate(interpolate)
                                         .rangeT(selected_timepoints_str)
                                         .sources(new SourceAndConverter[] {source})
@@ -179,6 +189,7 @@ public class BasicBdvViewToImagePlusExportCommand<T extends RealType<T>> impleme
                             .monitor(task)
                             .title(capturename)
                             .setModel(model)
+                            .parallelC(parallelC).parallelZ(parallelZ).parallelT(parallelT)
                             .interpolate(interpolate)
                             .rangeT(selected_timepoints_str)
                             .sources(typeToSources.get(pixelType).toArray(new SourceAndConverter[0]))
@@ -189,9 +200,6 @@ public class BasicBdvViewToImagePlusExportCommand<T extends RealType<T>> impleme
                 e.printStackTrace();
             }
         });
-
-
-
     }
 
     private SourceAndConverter<?> createModelSource() {
