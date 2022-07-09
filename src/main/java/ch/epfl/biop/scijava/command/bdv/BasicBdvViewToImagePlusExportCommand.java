@@ -113,7 +113,6 @@ public class BasicBdvViewToImagePlusExportCommand<T extends RealType<T>> impleme
 
     @Override
     public void run() {
-
         if (bdv_h.getViewerPanel().state().getSources().size()==0) {
             logger.info("No source present in Bdv. Abort command.");
             return;
