@@ -37,10 +37,10 @@ import static ch.epfl.biop.scijava.command.bdv.userdefinedregion.RectangleSelect
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
         menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>QuPath - Edit Warpy Registration")
-public class RegisterQuPathImagesEditCommand implements Command {
+public class WarpyEditRegistrationCommand implements Command {
 
     @Parameter(visibility = ItemVisibility.MESSAGE, persist = false, style = "message")
-    String message = "<html><h1>QuPath registration wizard</h1>Please select a moving and a fixed source<br></html>";
+    String message = "<html><h1>QuPath registration edition</h1>Please select a moving and a fixed source<br></html>";
 
     @Parameter(label = "Fixed source", callback = "updateMessage")
     SourceAndConverter[] fixed_source;
@@ -249,7 +249,7 @@ public class RegisterQuPathImagesEditCommand implements Command {
 
     public void updateMessage() {
 
-        String message = "<html><h1>QuPath registration wizard</h1>";
+        String message = "<html><h1>QuPath registration edition</h1>";
 
         if (fixed_source==null) {
             message+="Please select a fixed source <br>";

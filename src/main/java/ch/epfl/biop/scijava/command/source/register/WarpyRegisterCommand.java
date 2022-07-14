@@ -2,7 +2,6 @@ package ch.epfl.biop.scijava.command.source.register;
 
 import bdv.util.QuPathBdvHelper;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.scijava.command.source.register.Wizard2DWholeScanRegisterCommand;
 import ch.epfl.biop.spimdata.qupath.QuPathEntryEntity;
 import ij.IJ;
 import net.imglib2.realtransform.*;
@@ -25,9 +24,9 @@ import java.io.File;
 import java.nio.charset.Charset;
 
 @Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>QuPath - Create Warpy Registration")
-public class RegisterQuPathImagesCommand implements Command {
+public class WarpyRegisterCommand implements Command {
 
-    private static Logger logger = LoggerFactory.getLogger(RegisterQuPathImagesCommand.class);
+    private static Logger logger = LoggerFactory.getLogger(WarpyRegisterCommand.class);
 
     @Parameter(visibility = ItemVisibility.MESSAGE, persist = false, style = "message")
     String message = "<html><h1>QuPath registration wizard</h1>Please select a moving and a fixed source<br></html>";

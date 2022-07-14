@@ -1,12 +1,8 @@
 package bdv.util.source.alpha;
 
-import bdv.img.WarpedSource;
 import bdv.viewer.Source;
 import net.imglib2.Interval;
-import net.imglib2.cache.img.SingleCellArrayImg;
 import net.imglib2.realtransform.AffineTransform3D;
-import net.imglib2.type.NativeType;
-import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.real.FloatType;
 
 /**
