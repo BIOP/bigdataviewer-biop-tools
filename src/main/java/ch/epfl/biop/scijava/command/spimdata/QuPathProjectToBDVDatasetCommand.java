@@ -3,7 +3,9 @@ package ch.epfl.biop.scijava.command.spimdata;
 import ch.epfl.biop.bdv.bioformats.BioFormatsMetaDataHelper;
 import ch.epfl.biop.bdv.bioformats.bioformatssource.BioFormatsBdvOpener;
 import ch.epfl.biop.bdv.bioformats.command.BioformatsBigdataviewerBridgeDatasetCommand;
+import ch.epfl.biop.spimdata.qupath.GuiParams;
 import ch.epfl.biop.spimdata.qupath.QuPathToSpimData;
+import ij.IJ;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import ome.units.quantity.Length;
 import ome.units.unit.Unit;
@@ -44,11 +46,11 @@ public class QuPathProjectToBDVDatasetCommand extends BioformatsBigdataviewerBri
 
     @Override
     public void run() {
-
         try {
             spimData = (new QuPathToSpimData()).getSpimDataInstance(
                     quPathProject.toURI(),
-                    getOpener("")
+                    getGuiParams()
+                    //getOpener("")
                     );
             if (datasetname.equals("")) {
                 datasetname = quPathProject.getParentFile().getName();//FilenameUtils.removeExtension(FilenameUtils.getName(quPathProject.getAbsolutePath())) + ".xml";
@@ -68,7 +70,25 @@ public class QuPathProjectToBDVDatasetCommand extends BioformatsBigdataviewerBri
 
     }
 
-    public BioFormatsBdvOpener getOpener(String datalocation) {
+    public GuiParams getGuiParams(){
+        return (new GuiParams()).setUnit(this.unit)
+                                .setCachesizex(this.cachesizex)
+                                .setCachesizey(this.cachesizey)
+                                .setCachesizez(this.cachesizez)
+                                .setFlippositionx(this.flippositionx)
+                                .setFlippositiony(this.flippositiony)
+                                .setFlippositionz(this.flippositionz)
+                                .setNumberofblockskeptinmemory(this.numberofblockskeptinmemory)
+                                .setPositioniscenter(this.positioniscenter)
+                                .setPositionReferenceFrameLength(this.refframesizeinunitvoxsize)
+                                .setSplitChannels(this.splitrgbchannels)
+                                .setSwitchzandc(this.switchzandc)
+                                .setUsebioformatscacheblocksize(this.usebioformatscacheblocksize)
+                                .setVoxSizeReferenceFrameLength(this.refframesizeinunitvoxsize);
+    }
+
+
+    /*public BioFormatsBdvOpener getOpener(String datalocation) {
         Unit bfUnit = BioFormatsMetaDataHelper.getUnitFromString(this.unit);
         Length positionReferenceFrameLength = new Length(this.refframesizeinunitlocation, bfUnit);
         Length voxSizeReferenceFrameLength = new Length(this.refframesizeinunitvoxsize, bfUnit);
@@ -113,6 +133,6 @@ public class QuPathProjectToBDVDatasetCommand extends BioformatsBigdataviewerBri
 
         return opener;
     }
-
+*/
 
 }

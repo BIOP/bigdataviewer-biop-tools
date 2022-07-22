@@ -98,6 +98,7 @@
 
 		<bigdataviewer-playground.version>0.5.3</bigdataviewer-playground.version>
 		<bigdataviewer-bioformats.version>0.3.6</bigdataviewer-bioformats.version>
+		<bigdataviewer-omero.version>0.1.2-SNAPSHOT</bigdataviewer-omero.version>
 		<bigdataviewer-selector.version>0.1.9</bigdataviewer-selector.version>
 		<scijava.app.directory>C:/Fiji.app/</scijava.app.directory>
 
@@ -245,6 +246,12 @@
 			<groupId>ch.epfl.biop</groupId>
 			<artifactId>bigdataviewer-bioformats</artifactId>
 			<version>${bigdataviewer-bioformats.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>ch.epfl.biop</groupId>
+			<artifactId>bigdataviewer-omero</artifactId>
+			<version>${bigdataviewer-omero.version}</version>
 		</dependency>
 
 		<dependency>

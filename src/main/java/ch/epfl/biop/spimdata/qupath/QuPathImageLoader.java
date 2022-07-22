@@ -236,6 +236,21 @@ public class QuPathImageLoader implements ViewerImgLoader, MultiResolutionImgLoa
         }
     }
 
+    public static class QuPathOmeroSourceIdentifier {
+        int indexInQuPathProject;
+        int entryID;
+        String sourceFile;
+        int omeroIndex;
+        double angleRotationZAxis = 0;
+        URI uri;
+
+        public String toString() {
+            String str = "";
+            str+="sourceFile:"+sourceFile+"[bf:"+omeroIndex+" - qp:"+indexInQuPathProject+"]";
+            return str;
+        }
+    }
+
     public static class QuPathEntryAndChannel {
         final public QuPathBioFormatsSourceIdentifier entry;
         final public int iChannel;
