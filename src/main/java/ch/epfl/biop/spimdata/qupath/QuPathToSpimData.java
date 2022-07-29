@@ -4,7 +4,6 @@ import ch.epfl.biop.bdv.bioformats.BioFormatsMetaDataHelper;
 import ch.epfl.biop.bdv.bioformats.bioformatssource.BioFormatsBdvOpener;
 import ch.epfl.biop.bdv.bioformats.export.spimdata.BioFormatsConvertFilesToSpimData;
 import ch.epfl.biop.bdv.bioformats.imageloader.*;
-import ch.epfl.biop.omero.omerosource.OmeroSourceOpener;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import ij.IJ;
@@ -15,24 +14,20 @@ import mpicbg.spim.data.generic.AbstractSpimData;
 import mpicbg.spim.data.registration.ViewRegistration;
 import mpicbg.spim.data.registration.ViewRegistrations;
 import mpicbg.spim.data.sequence.*;
-import net.imglib2.Dimensions;
 import net.imglib2.realtransform.AffineTransform3D;
-import net.imglib2.type.numeric.ARGBType;
 import ome.units.UNITS;
 import ome.units.quantity.Length;
 import ome.units.unit.Unit;
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import spimdata.util.Displaysettings;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.IntStream;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * See documentation in {@link QuPathImageLoader}
@@ -67,10 +62,12 @@ public class QuPathToSpimData {
     Map<Integer,Channel> channelIdToChannel = new HashMap<>();
     Map<BioFormatsMetaDataHelper.BioformatsChannel,Integer> channelToId = new HashMap<>();
 
-    Map<URI, BioFormatsBdvOpener> openerMap = new HashMap<>();
+    Map<URI, AbstractSpimData> spimDataMap = new HashMap<>();
 
-    Map<URI, Integer> uriToFileIndexMap = new HashMap<>();
+    Map<URI, QuPathImageLoader.QuPathBioFormatsSourceIdentifier> uriToQPidentifiers = new HashMap<>();
+    Map<URI, IMetadata> uriToOMEMetadata = new HashMap<>();
 
+    Map<URI, MinimalQuPathProject.PixelCalibrations> uriToPixelcalibration = new HashMap<>();
     Map<Integer, QuPathImageLoader.QuPathEntryAndChannel> viewSetupToQuPathEntryAndChannel = new HashMap<>();
 
     Map<Integer, MinimalQuPathProject.ImageEntry> viewSetupToImageEntry = new HashMap<>();
@@ -138,31 +135,37 @@ public class QuPathToSpimData {
         // Many View Setups
         List<ViewSetup> viewSetups = new ArrayList<>();
 
+        AtomicReference<BioFormatsBdvOpener> bioFormatBdvOpener = new AtomicReference<>(BioFormatsBdvOpener.getOpener());
+
         try {
 
+            // get the JsonObject of the Qupath project
             JsonObject projectJson = ProjectIO.loadRawProject(new File(quPathProject));
             Gson gson = new Gson();
-            IJ.log("projectJson : "+projectJson);
             MinimalQuPathProject project = gson.fromJson(projectJson, MinimalQuPathProject.class);
             SpimData spimData = null;
-            logger.debug("Opening QuPath project " + project.uri);
 
+            logger.debug("Opening QuPath project " + project.uri);
+            IJ.log("projectJson : "+projectJson);
          //   Set<QuPathImageLoader.QuPathBioFormatsSourceIdentifier> quPathSourceIdentifiers = new HashSet<>();
 
             Map<BioFormatsBdvOpener, IFormatReader> cachedReaders = new HashMap<>(); // Performance
-            List<SpimData>ss = new ArrayList<>();
+           // List<SpimData> spimDataList = new ArrayList<>();
+
+            // import all images in BDV
             project.images.forEach(image -> {
 
                 logger.debug("Opening qupath image "+image);
 
+                // If the image was imported in qupath with a rotation
                 double angleRotationZAxis = 0;
                 if (image.serverBuilder.builderType.equals("rotated")) {
-                    String angleDegreesStr = image.serverBuilder.rotation.substring(7);//"ROTATE_ANGLE" for instance "ROTATE_0", "ROTATE_270", etc
+                    String angleDegreesStr = image.serverBuilder.rotation.substring(7); // "ROTATE_ANGLE" for instance "ROTATE_0", "ROTATE_270", etc
                     logger.debug("Rotated image server ("+angleDegreesStr+")");
                     if (angleDegreesStr.equals("NONE")) {
                         angleRotationZAxis = 0;
                     } else {
-                        angleRotationZAxis = (Double.valueOf(angleDegreesStr) / 180.0) * Math.PI;
+                        angleRotationZAxis = (Double.parseDouble(angleDegreesStr) / 180.0) * Math.PI;
                     }
                     MinimalQuPathProject.ServerBuilderMetadata metadata = image.serverBuilder.metadata; // To keep the metadata (pixel size for instance)
                     image.serverBuilder = image.serverBuilder.builder; // Skips the rotation
@@ -176,36 +179,189 @@ public class QuPathToSpimData {
                         try {
                             QuPathImageLoader.QuPathBioFormatsSourceIdentifier identifier = new QuPathImageLoader.QuPathBioFormatsSourceIdentifier();
                             identifier.angleRotationZAxis = angleRotationZAxis;
+                            URI serverBuilderUri = image.serverBuilder.uri;
+                            URI uri = new URI(serverBuilderUri.getScheme(), serverBuilderUri.getHost(), serverBuilderUri.getPath(), null);
 
 
-                            URI uri = new URI(image.serverBuilder.uri.getScheme(), image.serverBuilder.uri.getHost(), image.serverBuilder.uri.getPath(), null);
-                            IJ.log("angleRotationZAxis : " + identifier.angleRotationZAxis);
-                            IJ.log("uri : " + uri);
                             // This appears to work more reliably than converting to a File
                             String filePath = Paths.get(uri).toString();
 
-
-                            if (!openerMap.containsKey(image.serverBuilder.uri)) {
+                            if (!spimDataMap.containsKey(serverBuilderUri)) {
                                 BioFormatsBdvOpener opener = getBioFormatsBDVOpener(filePath, guiparams);
                                 opener = opener.ignoreMetadata();
+                                bioFormatBdvOpener.set(opener);
 
-                                ss.add((SpimData) (new BioFormatsConvertFilesToSpimData()).getSpimDataInstance(Collections.singletonList(opener)));
-
-                              /*  openerMap.put(image.serverBuilder.uri,opener);
-                                cachedReaders.put(opener, opener.getNewReader());
-                                uriToFileIndexMap.put(image.serverBuilder.uri, fileIndexCounter);
-                                fileIndexCounter++;*/
+                                spimDataMap.put(serverBuilderUri,(SpimData) (new BioFormatsConvertFilesToSpimData()).getSpimDataInstance(Collections.singletonList(opener)));
+                                uriToOMEMetadata.put(serverBuilderUri, (IMetadata)opener.getNewReader().getMetadataStore());
+                                // fileIndexCounter++;
+                               // cachedReaders.put(opener, opener.getNewReader());
                             }
+
+                            identifier.sourceFile = filePath;
+                            identifier.indexInQuPathProject = project.images.indexOf(image);
+                            identifier.entryID = project.images.get(identifier.indexInQuPathProject).entryID;
+                            int iSerie =  image.serverBuilder.args.indexOf("--series");
+
+                            if (iSerie==-1) {
+                                logger.error("Series not found in qupath project server builder!");
+                                identifier.bioformatsIndex = -1;
+                            } else {
+                                identifier.bioformatsIndex = Integer.parseInt(image.serverBuilder.args.get(iSerie + 1));
+                            }
+
+                            uriToQPidentifiers.put(image.serverBuilder.uri, identifier);
+                            
+                            MinimalQuPathProject.PixelCalibrations pixelCalibrations = null;
+
+                            if (image.serverBuilder!=null)
+                                if (image.serverBuilder.metadata!=null)
+                                    pixelCalibrations = image.serverBuilder.metadata.pixelCalibration;
+
+                            uriToPixelcalibration.put(serverBuilderUri,pixelCalibrations);
+                            
                         } catch (URISyntaxException e) {
                             logger.error("URI Syntax error " + e.getMessage());
                             e.printStackTrace();
-
                         }
 
+                    }else{
+                        System.out.println("");
                     }
                 }
             });
-            spimData = ss.get(0);
+
+            spimDataMap.keySet().forEach(spimUri->{
+                SpimData bioFormatSpimData = (SpimData) spimDataMap.get(spimUri);
+                QuPathImageLoader.QuPathBioFormatsSourceIdentifier identifier = uriToQPidentifiers.get(spimUri);
+
+                QuPathEntryEntity qpentry = new QuPathEntryEntity(project.images.get(identifier.indexInQuPathProject).entryID);
+                qpentry.setName(QuPathEntryEntity.getNameFromURIAndSerie(spimUri, identifier.bioformatsIndex));
+                qpentry.setQuPathProjectionLocation(Paths.get(quPathProject).toString());
+
+                SeriesNumber sn = new SeriesNumber(identifier.bioformatsIndex);
+                bioFormatSpimData.getSequenceDescription().getViewSetups().values().forEach(vss->{
+                    vss.setAttribute(sn);
+                    vss.setAttribute(qpentry);
+                });
+
+                boolean performQuPathRescaling = false;
+                MinimalQuPathProject.PixelCalibrations pixelCalibrations = uriToPixelcalibration.get(spimUri);
+                
+                AffineTransform3D quPathRescaling = new AffineTransform3D();
+                if (pixelCalibrations!=null) {
+                    double scaleX = 1.0;
+                    double scaleY = 1.0;
+                    double scaleZ = 1.0;
+                    Length[] voxSizes = BioFormatsMetaDataHelper.getSeriesVoxelSizeAsLengths(uriToOMEMetadata.get(spimUri)/*omeMeta*/, identifier.bioformatsIndex);
+                    if (pixelCalibrations.pixelWidth!=null) {
+                        MinimalQuPathProject.PixelCalibration pc = pixelCalibrations.pixelWidth;
+                        //if (pc.unit.equals("um")) {
+                        if ((voxSizes[0]!=null)&&(voxSizes[0].value(UNITS.MICROMETER)!=null)) {
+                            logger.debug("xVox size = "+pc.value+" micrometer");
+                            scaleX = pc.value/voxSizes[0].value(UNITS.MICROMETER).doubleValue();
+                        } else {
+                            Length defaultxPix = new Length(1, BioFormatsMetaDataHelper.getUnitFromString(guiparams.getUnit()));
+                            scaleX = pc.value / defaultxPix.value(UNITS.MICROMETER).doubleValue();
+                            logger.debug("rescaling x");
+                        }
+                        /*} else {
+                            logger.warn("Unrecognized unit in QuPath project: "+pc.unit);
+                        }*/
+                    }
+                    if (pixelCalibrations.pixelHeight!=null) {
+                        MinimalQuPathProject.PixelCalibration pc = pixelCalibrations.pixelHeight;
+                        //if (pc.unit.equals("um")) {
+                        if ((voxSizes[1]!=null)&&(voxSizes[1].value(UNITS.MICROMETER)!=null)) {
+                            scaleY = pc.value/voxSizes[1].value(UNITS.MICROMETER).doubleValue();
+                        } else {
+                            Length defaultxPix = new Length(1, BioFormatsMetaDataHelper.getUnitFromString(guiparams.getUnit()));
+                            scaleY = pc.value / defaultxPix.value(UNITS.MICROMETER).doubleValue();
+                            logger.debug("rescaling y");
+                        }
+                        /*} else {
+                            logger.warn("Unrecognized unit in QuPath project: "+pc.unit);
+                        }*/
+                    }
+                    if (pixelCalibrations.zSpacing!=null) {
+                        MinimalQuPathProject.PixelCalibration pc = pixelCalibrations.zSpacing;
+                        //if (pc.unit.equals("um")) { problem with micrometer character
+                        if ((voxSizes[2]!=null)&&(voxSizes[2].value(UNITS.MICROMETER)!=null)) {
+                            scaleZ = pc.value/voxSizes[2].value(UNITS.MICROMETER).doubleValue();
+                        } else {
+                            if ((voxSizes[2]!=null)) {
+
+                            } else {
+                                logger.warn("Null Z voxel size");
+                            }
+                            //logger.warn("Null Z voxel size");
+                        }
+                        /*} else {
+                            logger.warn("Unrecognized unit in QuPath project: "+pc.unit);
+                        }*/
+                    }
+                    logger.debug("ScaleX: "+scaleX+" scaleY:"+scaleY+" scaleZ:"+scaleZ);
+                    final double finalScalex = scaleX;
+                    final double finalScaley = scaleY;
+                    final double finalScalez = scaleZ;
+                    bioFormatSpimData.getViewRegistrations().getViewRegistrations().values().forEach(vr->{
+                        //AffineTransform3D affine = vr.getModel().;
+                        if ((Math.abs(finalScalex-1.0)>0.0001)||(Math.abs(finalScaley-1.0)>0.0001)||(Math.abs(finalScalez-1.0)>0.0001))  {
+                            logger.debug("Perform QuPath rescaling");
+                            quPathRescaling.scale(finalScalex, finalScaley, finalScalez);
+                            double oX = vr.getModel().get(0,3);
+                            double oY = vr.getModel().get(1,3);
+                            double oZ = vr.getModel().get(2,3);
+                            vr.getModel().preConcatenate(quPathRescaling);
+                            vr.getModel().set(oX, 0,3);
+                            vr.getModel().set(oY, 1,3);
+                            vr.getModel().set(oZ, 2,3);
+                        }
+                    });
+                }
+                
+                spimDataMap.replace(spimUri,spimDataMap.get(spimUri), bioFormatSpimData);
+                
+            });
+
+
+
+            List<TimePoint> newListOfTimePoint = new ArrayList<>();
+            int lastSize = -1;
+
+            for(AbstractSpimData spData:spimDataMap.values()) {
+                SpimData spd = (SpimData)spData;
+                if(spd.getSequenceDescription().getTimePoints().getTimePointsOrdered().size() > lastSize) {
+                    lastSize = spd.getSequenceDescription().getTimePoints().getTimePointsOrdered().size();
+                    newListOfTimePoint = spd.getSequenceDescription().getTimePoints().getTimePointsOrdered();
+                }
+            }
+
+            List<ViewSetup> newViewSetups = new ArrayList<>();
+            List<ViewRegistration> newRegistrations = new ArrayList<>();
+            List<ViewId> newMissingViews = new ArrayList<>();
+            int i = 0;
+
+            for(AbstractSpimData spData:spimDataMap.values()) {
+                SpimData spd = (SpimData)spData;
+                for(ViewSetup viewSetup: spd.getSequenceDescription().getViewSetups().values()) {
+                    newViewSetups.add(new ViewSetup(i,viewSetup.getName(),viewSetup.getSize(), viewSetup.getVoxelSize(), viewSetup.getTile(), viewSetup.getChannel(), viewSetup.getAngle(), viewSetup.getIllumination()));
+                    for(TimePoint iTp : newListOfTimePoint) {
+                        if (iTp.getId() <= spd.getViewRegistrations().getViewRegistrationsOrdered().size()) {
+                            newRegistrations.add(new ViewRegistration(iTp.getId(), i, spd.getViewRegistrations().getViewRegistration(0,0).getModel()));
+                        } else {
+                            newMissingViews.add(new ViewId(iTp.getId(), i));
+                        }
+                    }
+                    i++;
+                }
+            }
+
+            SequenceDescription sd = new SequenceDescription( new TimePoints( newListOfTimePoint ), newViewSetups , null, new MissingViews(newMissingViews));
+            sd.setImgLoader(new QuPathImageLoader(quPathProject,bioFormatBdvOpener.get(),sd,bioFormatBdvOpener.get().nFetcherThread, bioFormatBdvOpener.get().numPriorities));
+
+            final SpimData newSpimData = new SpimData( null, sd, new ViewRegistrations( newRegistrations ) );
+
+            //spimData = ss.get(0);
 
                             /*identifier.uri = image.serverBuilder.uri;
                             identifier.sourceFile = filePath;
@@ -515,7 +671,7 @@ public class QuPathToSpimData {
             /*spimData.getSequenceDescription().getViewSetups();
             spimData.getViewRegistrations().getViewRegistrations();
             spimData.getSequenceDescription().getTimePoints();*/
-            return spimData;
+            return newSpimData;
         } catch (Exception e) {
             e.printStackTrace();
         }

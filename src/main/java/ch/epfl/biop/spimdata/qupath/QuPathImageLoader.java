@@ -6,7 +6,9 @@ import bdv.img.cache.VolatileGlobalCellCache;
 import bdv.util.volatiles.SharedQueue;
 import ch.epfl.biop.bdv.bioformats.bioformatssource.BioFormatsBdvOpener;
 import ch.epfl.biop.bdv.bioformats.bioformatssource.BioFormatsBdvSource;
+import ch.epfl.biop.bdv.bioformats.imageloader.BioFormatsImageLoader;
 import ch.epfl.biop.bdv.bioformats.imageloader.BioFormatsSetupLoader;
+import ch.epfl.biop.omero.imageloader.OmeroImageLoader;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import loci.formats.IFormatReader;
@@ -25,6 +27,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.IntStream;
@@ -66,14 +69,22 @@ public class QuPathImageLoader implements ViewerImgLoader, MultiResolutionImgLoa
     final URI quPathProject;
     final BioFormatsBdvOpener openerModel;
 
-    public QuPathImageLoader(URI quPathProject, BioFormatsBdvOpener openerModel, final AbstractSequenceDescription<?, ?, ?> sequenceDescription, int numFetcherThreads, int numPriorities) {
+    public QuPathImageLoader(URI quPathProject, BioFormatsBdvOpener openerModel/*List<?> openers*/, final AbstractSequenceDescription<?, ?, ?> sequenceDescription, int numFetcherThreads, int numPriorities) {
         this.quPathProject = quPathProject;
         this.openerModel = openerModel;
         this.sequenceDescription = sequenceDescription;
         this.numFetcherThreads = numFetcherThreads;
         this.numPriorities = numPriorities;
         sq = new SharedQueue(numFetcherThreads, numPriorities);
+        /*BioFormatsImageLoader bfil;
+        OmeroImageLoader oil;
+        for (Object o: openers) {
+            if (o instanceof BioFormatsBdvOpener) {
 
+            } else (o instanceof BioFormatsBdvOpener) {
+
+            }
+        }*/
         try {
 
             JsonObject projectJson = ProjectIO.loadRawProject(new File(quPathProject));

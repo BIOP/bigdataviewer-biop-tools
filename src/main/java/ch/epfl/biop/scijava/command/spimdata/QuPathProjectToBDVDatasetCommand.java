@@ -20,6 +20,9 @@ import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Warning : a qupath project may have its source reordered and or removed :
@@ -46,6 +49,7 @@ public class QuPathProjectToBDVDatasetCommand extends BioformatsBigdataviewerBri
 
     @Override
     public void run() {
+
         try {
             spimData = (new QuPathToSpimData()).getSpimDataInstance(
                     quPathProject.toURI(),
