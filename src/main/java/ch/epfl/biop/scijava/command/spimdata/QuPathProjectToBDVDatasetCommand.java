@@ -96,12 +96,12 @@ public class QuPathProjectToBDVDatasetCommand extends BioformatsBigdataviewerBri
                     .setSpimDataName(spimData, datasetname);*/
 
                 // End of session
-                Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+               // Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                     //fail
                     System.out.println("Session active : " + gateway.isConnected());
                     gateway.disconnect();
                     System.out.println("Gateway disconnected");
-                }));
+               // }));
             }
 
         } catch (Exception e) {

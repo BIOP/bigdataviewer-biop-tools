@@ -70,6 +70,8 @@ public class QuPathToSpimData {
 
     Map<URI, AbstractSpimData> spimDataMap = new HashMap<>();
     Map<URI, QuPathImageOpener> uriToOpener = new HashMap<>();
+
+ //   Map<QuPathImageOpener, SequenceDescription> openerToSd = new HashMap<>();
     //Map<URI, QuPathImageLoader.QuPathBioFormatsSourceIdentifier> uriToQPidentifiers = new HashMap<>();
     //Map<URI, IMetadata> uriToOMEMetadata = new HashMap<>();
     //Map<URI, MinimalQuPathProject.PixelCalibrations> uriToPixelcalibration = new HashMap<>();
@@ -362,6 +364,7 @@ public class QuPathToSpimData {
                 System.out.println("bioFormatSpimData : "+bioFormatSpimData);
                 System.out.println("bioFormatSpimData.getSequenceDescription() : "+bioFormatSpimData.getSequenceDescription());
                 System.out.println("bioFormatSpimData.getSequenceDescription().getViewSetups() : "+bioFormatSpimData.getSequenceDescription().getViewSetups());
+                bioFormatSpimData.getSequenceDescription().getViewSetups().values().forEach(e->System.out.println(e.hashCode()));
                 System.out.println("bioFormatSpimData.getSequenceDescription().getViewSetups().values() : "+bioFormatSpimData.getSequenceDescription().getViewSetups().values());
                 bioFormatSpimData.getSequenceDescription().getViewSetups().values().forEach(vss->{
                     vss.setAttribute(sn);
@@ -450,7 +453,7 @@ public class QuPathToSpimData {
                 }
                 
                 spimDataMap.replace(spimUri,spimDataMap.get(spimUri), bioFormatSpimData);
-                
+//                openerToSd.put(qpOpener,bioFormatSpimData.getSequenceDescription());
             });
 
 
@@ -488,7 +491,7 @@ public class QuPathToSpimData {
 
             SequenceDescription sd = new SequenceDescription( new TimePoints( newListOfTimePoint ), newViewSetups , null, new MissingViews(newMissingViews));
             System.out.println("Before setting image loader");
-            sd.setImgLoader(new QuPathImageLoader(quPathProject, new ArrayList<>(uriToOpener.values()), sd,((BioFormatsBdvOpener)(uriToOpener.values().iterator().next().getOpener())).nFetcherThread, ((BioFormatsBdvOpener)(uriToOpener.values().iterator().next().getOpener())).numPriorities));
+            sd.setImgLoader(new QuPathImageLoader(quPathProject, new ArrayList<>(uriToOpener.values()), sd,2, 4));
 
             final SpimData newSpimData = new SpimData( null, sd, new ViewRegistrations( newRegistrations ) );
 

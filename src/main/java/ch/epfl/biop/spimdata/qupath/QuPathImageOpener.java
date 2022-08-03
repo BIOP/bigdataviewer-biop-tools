@@ -10,6 +10,7 @@ import net.imagej.ops.Ops;
 import ome.units.UNITS;
 import ome.units.quantity.Length;
 import ome.units.unit.Unit;
+import ome.xml.model.primitives.Color;
 import omero.gateway.Gateway;
 import omero.gateway.SecurityContext;
 import omero.model.enums.UnitsLength;
@@ -20,6 +21,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class QuPathImageOpener {
@@ -42,6 +44,7 @@ public class QuPathImageOpener {
     public QuPathImageLoader.QuPathBioFormatsSourceIdentifier getIdentifier(){return this.identifier;}
     public MinimalQuPathProject.PixelCalibrations getPixelCalibrations(){return this.pixelCalibrations;}
     public IMetadata getOmeMetaIdxOmeXml(){return this.omeMetaIdxOmeXml;}
+    public MinimalQuPathProject.ImageEntry getImage(){return this.image;}
 
     public QuPathImageOpener(MinimalQuPathProject.ImageEntry image, GuiParams guiparams, int indexInQuPathProject, int entryID, Gateway gateway, SecurityContext ctx) {
         this.image = image;
@@ -87,6 +90,7 @@ public class QuPathImageOpener {
                     }
                 }
 
+                this.identifier.uri = this.serverBuilderUri;
                 this.identifier.sourceFile = filePath;
                 this.identifier.indexInQuPathProject = indexInQuPathProject;
                 this.identifier.entryID = entryID;
@@ -111,13 +115,20 @@ public class QuPathImageOpener {
 
 
     public QuPathImageOpener loadMetadata(){
-        MinimalQuPathProject.PixelCalibrations pixelCalibration = this.image.serverBuilder.metadata.pixelCalibration;
-        this.omeMetaIdxOmeXml.setPixelsPhysicalSizeX(new Length(pixelCalibration.pixelWidth.value, convertStringToUnit(pixelCalibration.pixelWidth.unit)),0);
-        this.omeMetaIdxOmeXml.setPixelsPhysicalSizeY(new Length(pixelCalibration.pixelHeight.value, convertStringToUnit(pixelCalibration.pixelHeight.unit)),0);
-        this.omeMetaIdxOmeXml.setPixelsPhysicalSizeZ(new Length(pixelCalibration.zSpacing.value, convertStringToUnit(pixelCalibration.zSpacing.unit)),0);
+        if(this.image.serverBuilder.metadata != null) {
+            MinimalQuPathProject.PixelCalibrations pixelCalibration = this.image.serverBuilder.metadata.pixelCalibration;
+            if(pixelCalibration != null) {
+                this.omeMetaIdxOmeXml.setPixelsPhysicalSizeX(new Length(pixelCalibration.pixelWidth.value, convertStringToUnit(pixelCalibration.pixelWidth.unit)), 0);
+                this.omeMetaIdxOmeXml.setPixelsPhysicalSizeY(new Length(pixelCalibration.pixelHeight.value, convertStringToUnit(pixelCalibration.pixelHeight.unit)), 0);
+                this.omeMetaIdxOmeXml.setPixelsPhysicalSizeZ(new Length(pixelCalibration.zSpacing.value, convertStringToUnit(pixelCalibration.zSpacing.unit)), 0);
 
-        this.omeMetaIdxOmeXml.setChannelName(this.image.serverBuilder.metadata.channels.get(0).name,0,0);
-
+                List<MinimalQuPathProject.ChannelInfo> channels = this.image.serverBuilder.metadata.channels;
+                for (int i = 0; i < channels.size(); i++) {
+                    this.omeMetaIdxOmeXml.setChannelName(channels.get(i).name, 0, i);
+                    this.omeMetaIdxOmeXml.setChannelColor(new Color(channels.get(i).color), 0, i);
+                }
+            }
+        }
         return this;
     }
 
