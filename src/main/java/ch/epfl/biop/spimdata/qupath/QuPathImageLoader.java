@@ -68,11 +68,11 @@ public class QuPathImageLoader implements ViewerImgLoader, MultiResolutionImgLoa
     Map<Integer, QuPathEntryAndChannel> viewSetupToQuPathEntryAndChannel = new HashMap<>();
 
     final URI quPathProject;
-    final List<?> openerModel;
+    final List<QuPathImageOpener> openerModel;
 
     public QuPathImageLoader(URI quPathProject, List<QuPathImageOpener> qpOpeners, final AbstractSequenceDescription<?, ?, ?> sequenceDescription, int numFetcherThreads, int numPriorities) {
         this.quPathProject = quPathProject;
-        this.openerModel = openers;
+        this.openerModel = qpOpeners;
         this.sequenceDescription = sequenceDescription;
         this.numFetcherThreads = numFetcherThreads;
         this.numPriorities = numPriorities;
@@ -87,7 +87,7 @@ public class QuPathImageLoader implements ViewerImgLoader, MultiResolutionImgLoa
             }
         }*/
         try {
-
+            System.out.println("IL : load the project");
             JsonObject projectJson = ProjectIO.loadRawProject(new File(quPathProject));
             Gson gson = new Gson();
             MinimalQuPathProject project = gson.fromJson(projectJson, MinimalQuPathProject.class);
@@ -98,6 +98,7 @@ public class QuPathImageLoader implements ViewerImgLoader, MultiResolutionImgLoa
 
             project.images.forEach(image -> {
                 logger.debug("Opening qupath image "+image);
+                System.out.println("IL : Opening qupath image "+image);
 
                 QuPathBioFormatsSourceIdentifier identifier = new QuPathBioFormatsSourceIdentifier();
                 if (image.serverBuilder.builderType.equals("rotated")) {
@@ -117,18 +118,20 @@ public class QuPathImageLoader implements ViewerImgLoader, MultiResolutionImgLoa
                         try {
                             URI uri = new URI(image.serverBuilder.uri.getScheme(), image.serverBuilder.uri.getHost(), image.serverBuilder.uri.getPath(), null);
 
+                            System.out.println("IL : Image type BioFormat; uri :"+uri);
                             // This appears to work more reliably than converting to a File
                             String filePath = Paths.get(uri).toString();
 
                             if (!openerMap.containsKey(image.serverBuilder.uri)) {
                                 //String location = Paths.get(uri).toString();
                                 logger.debug("Creating opener for data location "+filePath);
-                                BioFormatsBdvOpener opener = null;
-                                for (Object o: openers) {
+                                BioFormatsBdvOpener opener = new BioFormatsBdvOpener((BioFormatsBdvOpener) qpOpeners.get(0).getOpener()).location(filePath);
+                                System.out.println("IL : BioFormatsBdvOpener opener :"+opener);
+                               /* for (Object o: qpOpeners) {
                                     if (o instanceof BioFormatsBdvOpener) {
                                         opener = new BioFormatsBdvOpener((BioFormatsBdvOpener) o).location(filePath);
                                     }
-                                }
+                                }*/
 
                                 opener.setCache(sq);
                                 openerMap.put(image.serverBuilder.uri,opener);
@@ -182,7 +185,7 @@ public class QuPathImageLoader implements ViewerImgLoader, MultiResolutionImgLoa
                         }
 
                     } else {
-                        if (image.serverBuilder.providerClassName.equals("qupath.ext.biop.servers.omero.raw.OmeroRawImageServerBuilder")) {
+                       /* if (image.serverBuilder.providerClassName.equals("qupath.ext.biop.servers.omero.raw.OmeroRawImageServerBuilder")) {
                             try {
                                 URI uri = new URI(image.serverBuilder.uri.getScheme(), image.serverBuilder.uri.getHost(), image.serverBuilder.uri.getPath(), null);
 
@@ -193,7 +196,7 @@ public class QuPathImageLoader implements ViewerImgLoader, MultiResolutionImgLoa
                                     //String location = Paths.get(uri).toString();
                                     logger.debug("Creating opener for data location "+filePath);
                                     OmeroSourceOpener opener = null;
-                                    for (Object o: openers) {
+                                    for (Object o: qpOpeners) {
                                         if (o instanceof OmeroSourceOpener) {
                                             opener = new OmeroSourceOpener((OmeroSourceOpener)o).location(filePath);
                                         }
@@ -249,10 +252,10 @@ public class QuPathImageLoader implements ViewerImgLoader, MultiResolutionImgLoa
                                 logger.error("URI Syntax error "+e.getMessage());
                                 e.printStackTrace();
                             }
-                        }else{
+                        }else{*/
                             logger.error("Unsupported "+image.serverBuilder.providerClassName+" class name provider");
 
-                        }
+                      //  }
                     }
                 } else {
                     logger.error("Unsupported "+image.serverBuilder.builderType+" server builder");
@@ -306,7 +309,7 @@ public class QuPathImageLoader implements ViewerImgLoader, MultiResolutionImgLoa
         return quPathProject;
     }
 
-    public BioFormatsBdvOpener  getModelOpener() {
+    public List<QuPathImageOpener>  getModelOpener() {
         return openerModel;
     }
 

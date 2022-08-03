@@ -3,12 +3,18 @@ package ch.epfl.biop.scijava.command.spimdata;
 import ch.epfl.biop.bdv.bioformats.BioFormatsMetaDataHelper;
 import ch.epfl.biop.bdv.bioformats.bioformatssource.BioFormatsBdvOpener;
 import ch.epfl.biop.bdv.bioformats.command.BioformatsBigdataviewerBridgeDatasetCommand;
+import ch.epfl.biop.ij2command.OmeroTools;
 import ch.epfl.biop.spimdata.qupath.GuiParams;
 import ch.epfl.biop.spimdata.qupath.QuPathToSpimData;
 import ij.IJ;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import ome.units.quantity.Length;
 import ome.units.unit.Unit;
+import omero.gateway.Gateway;
+import omero.gateway.LoginCredentials;
+import omero.gateway.SecurityContext;
+import omero.gateway.ServerInformation;
+import omero.log.SimpleLogger;
 import org.apache.commons.io.FilenameUtils;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
@@ -23,6 +29,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
+import static ch.epfl.biop.ij2command.OmeroTools.getSecurityContext;
 
 /**
  * Warning : a qupath project may have its source reordered and or removed :
@@ -43,6 +51,17 @@ public class QuPathProjectToBDVDatasetCommand extends BioformatsBigdataviewerBri
     @Parameter(label = "Dataset name (leave empty to name it like the QuPath project)", persist = false)
     public String datasetname = ""; // Cheat to allow dataset renaming
 
+    @Parameter(label = "OMERO host")
+    String host;
+
+    @Parameter(label = "Enter your gaspar username")
+    String username;
+
+    @Parameter(label = "Enter your gaspar password", style = "password", persist = false)
+    String password;
+
+    static int port = 4064;
+
     @Parameter(type = ItemIO.OUTPUT)
     AbstractSpimData spimData;
 
@@ -51,16 +70,24 @@ public class QuPathProjectToBDVDatasetCommand extends BioformatsBigdataviewerBri
     public void run() {
 
         try {
-            spimData = (new QuPathToSpimData()).getSpimDataInstance(
-                    quPathProject.toURI(),
-                    getGuiParams()
-                    //getOpener("")
-                    );
-            if (datasetname.equals("")) {
-                datasetname = quPathProject.getParentFile().getName();//FilenameUtils.removeExtension(FilenameUtils.getName(quPathProject.getAbsolutePath())) + ".xml";
-            }
+            Gateway gateway = connectToOmero();
 
-            // Directly registers it to prevent memory leak...
+            if(gateway != null) {
+                SecurityContext ctx = OmeroTools.getSecurityContext(gateway);
+                ctx.setServerInformation(new ServerInformation(host));
+
+                spimData = (new QuPathToSpimData()).getSpimDataInstance(
+                        quPathProject.toURI(),
+                        getGuiParams(),
+                        gateway,
+                        ctx
+                        //getOpener("")
+                );
+                if (datasetname.equals("")) {
+                    datasetname = quPathProject.getParentFile().getName();//FilenameUtils.removeExtension(FilenameUtils.getName(quPathProject.getAbsolutePath())) + ".xml";
+                }
+
+                // Directly registers it to prevent memory leak...
             /*SourceAndConverterServices
                     .getSourceAndConverterService()
                     .register(spimData);
@@ -68,10 +95,27 @@ public class QuPathProjectToBDVDatasetCommand extends BioformatsBigdataviewerBri
                     .getSourceAndConverterService()
                     .setSpimDataName(spimData, datasetname);*/
 
+                // End of session
+                Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                    //fail
+                    System.out.println("Session active : " + gateway.isConnected());
+                    gateway.disconnect();
+                    System.out.println("Gateway disconnected");
+                }));
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
 
+    }
+
+
+    public Gateway connectToOmero() throws Exception {
+        Gateway gateway =  OmeroTools.omeroConnect(host, port, username, password);
+        System.out.println( "Session active : "+gateway.isConnected() );
+
+        return gateway;
     }
 
     public GuiParams getGuiParams(){

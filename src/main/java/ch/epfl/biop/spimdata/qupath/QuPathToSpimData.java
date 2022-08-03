@@ -20,6 +20,8 @@ import net.imglib2.realtransform.AffineTransform3D;
 import ome.units.UNITS;
 import ome.units.quantity.Length;
 import ome.units.unit.Unit;
+import omero.gateway.Gateway;
+import omero.gateway.SecurityContext;
 import omero.model.enums.UnitsLength;
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
@@ -31,6 +33,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 /**
  * See documentation in {@link QuPathImageLoader}
@@ -170,7 +173,7 @@ public class QuPathToSpimData {
     }*/
 
 
-    public AbstractSpimData getSpimDataInstance(URI quPathProject, GuiParams guiparams) {
+    public AbstractSpimData getSpimDataInstance(URI quPathProject, GuiParams guiparams, Gateway gateway, SecurityContext ctx) {
         viewSetupCounter = 0;
         nTileCounter = 0;
         maxTimepoints = -1;
@@ -183,8 +186,8 @@ public class QuPathToSpimData {
         // Many View Setups
         List<ViewSetup> viewSetups = new ArrayList<>();
 
-        AtomicReference<BioFormatsBdvOpener> bioFormatBdvOpener = new AtomicReference<>(BioFormatsBdvOpener.getOpener());
-        AtomicReference<OmeroSourceOpener> omeroBdvOpener = new AtomicReference<>(OmeroSourceOpener.getOpener());
+        //AtomicReference<BioFormatsBdvOpener> bioFormatBdvOpener = new AtomicReference<>(BioFormatsBdvOpener.getOpener());
+        //AtomicReference<OmeroSourceOpener> omeroBdvOpener = new AtomicReference<>(OmeroSourceOpener.getOpener());
 
         try {
 
@@ -193,6 +196,8 @@ public class QuPathToSpimData {
             Gson gson = new Gson();
             MinimalQuPathProject project = gson.fromJson(projectJson, MinimalQuPathProject.class);
             SpimData spimData = null;
+           // Map<URI, BioFormatsBdvOpener> bioFormatsBdvOpeners = new HashMap<>();
+            //Map<URI, OmeroSourceOpener> omeroSourceOpeners = new HashMap<>();
 
             logger.debug("Opening QuPath project " + project.uri);
             IJ.log("projectJson : "+projectJson);
@@ -202,21 +207,52 @@ public class QuPathToSpimData {
            // List<SpimData> spimDataList = new ArrayList<>();
 
             // import all images in BDV
-            project.images.forEach(image -> {
 
-                logger.debug("Opening qupath image "+image);
+           /* project.images.forEach(image -> {
                 int indexInQuPathProject = project.images.indexOf(image);
                 QuPathImageOpener qpOpener = new QuPathImageOpener(image,guiparams,indexInQuPathProject, project.images.get(indexInQuPathProject).entryID).PixelCalibration();
+                Object opener = qpOpener.getOpener();
+                if(opener instanceof BioFormatsBdvOpener) {
+                    try {
+                        bioFormatsBdvOpeners.put(new URI(qpOpener.getURI().toString()+"_"+qpOpener.getIdentifier().bioformatsIndex), (BioFormatsBdvOpener) opener);
+                        uriToOpener.put(new URI(qpOpener.getURI().toString()+"_"+qpOpener.getIdentifier().bioformatsIndex), qpOpener);
+                    } catch (URISyntaxException e) {
+                        throw new RuntimeException(e);
+                    }
+                } else if (opener instanceof OmeroSourceOpener) {
+                    omeroSourceOpeners.put(qpOpener.getURI(), (OmeroSourceOpener) opener);
+                    uriToOpener.put(qpOpener.getURI(), qpOpener);
+                }
+            });
+            if(!bioFormatsBdvOpeners.values().isEmpty())
+                spimDataMap.put("BioFormats",(SpimData) (new BioFormatsConvertFilesToSpimData()).getSpimDataInstance(new ArrayList<>(bioFormatsBdvOpeners.values())));
+            if(!omeroSourceOpeners.values().isEmpty())
+                spimDataMap.put("Omero", (SpimData) (new OmeroToSpimData()).getSpimDataInstance(new ArrayList<>(omeroSourceOpeners.values())));*/
+
+
+           project.images.forEach(image -> {
+                System.out.println("Size of images in qupath Project : " +project.images.size());
+                logger.debug("Opening qupath image "+image);
+                System.out.println("Opening qupath image "+image);
+                QuPathImageOpener qpOpener = new QuPathImageOpener(image, guiparams, project.images.indexOf(image), image.entryID, gateway, ctx).loadMetadata().PixelCalibration();
 
                // uriToQPidentifiers.put(qpOpener.getURI(), qpOpener.getIdentifier());
                // uriToPixelcalibration.put(qpOpener.getURI(), qpOpener.getPixelCalibrations());
                 Object opener = qpOpener.getOpener();
+                System.out.println("Uri for image "+image+"  ; uri : " + qpOpener.getURI());
                 if(opener instanceof BioFormatsBdvOpener) {
-                    spimDataMap.put(qpOpener.getURI(), (SpimData) (new BioFormatsConvertFilesToSpimData()).getSpimDataInstance(Collections.singletonList((BioFormatsBdvOpener) qpOpener.getOpener())));
+                    try {
+                        spimDataMap.put(new URI(qpOpener.getURI().toString()+"_"+qpOpener.getIdentifier().bioformatsIndex), (SpimData) (new BioFormatsConvertFilesToSpimData()).getSpimDataInstance(Collections.singletonList((BioFormatsBdvOpener) qpOpener.getOpener())));
+                        uriToOpener.put(new URI(qpOpener.getURI().toString()+"_"+qpOpener.getIdentifier().bioformatsIndex), qpOpener);
+                    } catch (URISyntaxException e) {
+                        throw new RuntimeException(e);
+                    }
                 } else if (opener instanceof OmeroSourceOpener) {
+                    System.out.println("OmeroOpeners : "+(OmeroSourceOpener)qpOpener.getOpener());
                     spimDataMap.put(qpOpener.getURI(), (SpimData) (new OmeroToSpimData()).getSpimDataInstance(Collections.singletonList((OmeroSourceOpener)qpOpener.getOpener())));
+                    uriToOpener.put(qpOpener.getURI(), qpOpener);
                 }
-                uriToOpener.put(qpOpener.getURI(), qpOpener);
+
 
 
                 // If the image was imported in qupath with a rotation
@@ -296,6 +332,22 @@ public class QuPathToSpimData {
                 }*/
             });
 
+            System.out.println("Size of spimdataMap : "+spimDataMap.keySet().size());
+            spimDataMap.keySet().forEach(spuri->{
+
+                System.out.println("spuri : "+spuri);
+                SpimData bioFormatSpimData = (SpimData) spimDataMap.get(spuri);
+                System.out.println("SpimData : "+bioFormatSpimData);
+                System.out.println("TimePoints : "+bioFormatSpimData.getSequenceDescription().getTimePoints().getTimePointsOrdered());
+                System.out.println("ViewSetups ");
+                bioFormatSpimData.getSequenceDescription().getViewSetupsOrdered().forEach(e->System.out.println(e.getName()));
+                System.out.println("MissingValues ");
+                bioFormatSpimData.getSequenceDescription().getMissingViews().getMissingViews().forEach(e->System.out.println("Missing time point : "+e.getTimePointId()+" ; ViewSetup Id  : "+e.getViewSetupId()));
+                System.out.println("ViewRegistation ");
+                bioFormatSpimData.getViewRegistrations().getViewRegistrationsOrdered().forEach(e->System.out.println("Registration time point : "+e.getTimePointId()+" ; ViewSetup Id  : "+e.getViewSetupId()));
+            });
+
+
             spimDataMap.keySet().forEach(spimUri->{
                 SpimData bioFormatSpimData = (SpimData) spimDataMap.get(spimUri);
                 QuPathImageOpener qpOpener = uriToOpener.get(spimUri);
@@ -307,6 +359,10 @@ public class QuPathToSpimData {
                 qpentry.setQuPathProjectionLocation(Paths.get(quPathProject).toString());
 
                 SeriesNumber sn = new SeriesNumber(identifier.bioformatsIndex);
+                System.out.println("bioFormatSpimData : "+bioFormatSpimData);
+                System.out.println("bioFormatSpimData.getSequenceDescription() : "+bioFormatSpimData.getSequenceDescription());
+                System.out.println("bioFormatSpimData.getSequenceDescription().getViewSetups() : "+bioFormatSpimData.getSequenceDescription().getViewSetups());
+                System.out.println("bioFormatSpimData.getSequenceDescription().getViewSetups().values() : "+bioFormatSpimData.getSequenceDescription().getViewSetups().values());
                 bioFormatSpimData.getSequenceDescription().getViewSetups().values().forEach(vss->{
                     vss.setAttribute(sn);
                     vss.setAttribute(qpentry);
@@ -320,6 +376,12 @@ public class QuPathToSpimData {
                     double scaleX = 1.0;
                     double scaleY = 1.0;
                     double scaleZ = 1.0;
+                    System.out.println("qpOpener.getOmeMetaIdxOmeXml() : "+qpOpener.getOmeMetaIdxOmeXml());
+                    System.out.println("identifier.bioformatsIndex : "+identifier.bioformatsIndex);
+                    System.out.println("qpOpener.getOmeMetaIdxOmeXml().pixelPysicalSizeX : "+qpOpener.getOmeMetaIdxOmeXml().getPixelsPhysicalSizeX(identifier.bioformatsIndex));
+                    System.out.println("qpOpener.getOmeMetaIdxOmeXml().pixelPysicalSizey : "+qpOpener.getOmeMetaIdxOmeXml().getPixelsPhysicalSizeY(identifier.bioformatsIndex));
+                    System.out.println("qpOpener.getOmeMetaIdxOmeXml().pixelPysicalSizez : "+qpOpener.getOmeMetaIdxOmeXml().getPixelsPhysicalSizeZ(identifier.bioformatsIndex));
+                    System.out.println("qpOpener.getOmeMetaIdxOmeXml().getChannelName : "+qpOpener.getOmeMetaIdxOmeXml().getChannelName(0,0));
                     Length[] voxSizes = BioFormatsMetaDataHelper.getSeriesVoxelSizeAsLengths(qpOpener.getOmeMetaIdxOmeXml()/*omeMeta*/, identifier.bioformatsIndex);
                     if (pixelCalibrations.pixelWidth!=null) {
                         MinimalQuPathProject.PixelCalibration pc = pixelCalibrations.pixelWidth;
@@ -425,9 +487,20 @@ public class QuPathToSpimData {
             }
 
             SequenceDescription sd = new SequenceDescription( new TimePoints( newListOfTimePoint ), newViewSetups , null, new MissingViews(newMissingViews));
-            sd.setImgLoader(new QuPathImageLoader(quPathProject,bioFormatBdvOpener.get(),sd,bioFormatBdvOpener.get().nFetcherThread, bioFormatBdvOpener.get().numPriorities));
+            System.out.println("Before setting image loader");
+            sd.setImgLoader(new QuPathImageLoader(quPathProject, new ArrayList<>(uriToOpener.values()), sd,((BioFormatsBdvOpener)(uriToOpener.values().iterator().next().getOpener())).nFetcherThread, ((BioFormatsBdvOpener)(uriToOpener.values().iterator().next().getOpener())).numPriorities));
 
             final SpimData newSpimData = new SpimData( null, sd, new ViewRegistrations( newRegistrations ) );
+
+            System.out.println("newSpimData spuri : "+newSpimData);
+            System.out.println("newSpimData TimePoints : "+newSpimData.getSequenceDescription().getTimePoints().getTimePointsOrdered());
+            System.out.println("newSpimData ViewSetups ");
+            newSpimData.getSequenceDescription().getViewSetupsOrdered().forEach(e->System.out.println(e.getName()));
+            System.out.println("newSpimData MissingValues ");
+            newSpimData.getSequenceDescription().getMissingViews().getMissingViews().forEach(e->System.out.println("Missing time point : "+e.getTimePointId()+" ; ViewSetup Id  : "+e.getViewSetupId()));
+            System.out.println("newSpimData ViewRegistation ");
+            newSpimData.getViewRegistrations().getViewRegistrationsOrdered().forEach(e->System.out.println("Registration time point : "+e.getTimePointId()+" ; ViewSetup Id  : "+e.getViewSetupId()));
+
 
             //spimData = ss.get(0);
 

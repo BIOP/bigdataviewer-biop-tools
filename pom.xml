@@ -121,6 +121,9 @@
 
 		<ijp-kheops.version>0.2.3</ijp-kheops.version>
 
+		<omero-gateway.version>5.6.5</omero-gateway.version>
+		<omero-blitz.version>5.5.8</omero-blitz.version>
+
 		<releaseProfiles>sign,deploy-to-scijava</releaseProfiles>
 
 		<!--<scijava-common.version>2.87.3.99</scijava-common.version>
@@ -270,6 +273,24 @@
 			<groupId>ch.epfl.biop</groupId>
 			<artifactId>elastix_registration_server</artifactId>
 			<version>${elastix_registration_server.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.openmicroscopy</groupId>
+			<artifactId>omero-gateway</artifactId>
+			<version>${omero-gateway.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.openmicroscopy</groupId>
+			<artifactId>omero-blitz</artifactId>
+			<version>${omero-blitz.version}</version>
+			<exclusions>
+				<exclusion>  <!-- declare the exclusion here -->
+					<groupId>net.sourceforge.findbugs</groupId>
+					<artifactId>annotations</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 	</dependencies>

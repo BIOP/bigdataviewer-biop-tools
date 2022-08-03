@@ -45,6 +45,7 @@ import java.io.File;
 import java.net.URI;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static mpicbg.spim.data.XmlKeys.IMGLOADER_FORMAT_ATTRIBUTE_NAME;
@@ -92,7 +93,7 @@ public class XmlIoQuPathImgLoader implements XmlIoBasicImgLoader< QuPathImageLoa
 
             URI qpProjURI = (new Gson()).fromJson(qupathProjectUri, URI.class);
 
-            return new QuPathImageLoader(qpProjURI, modelOpener, sequenceDescription, numFetcherThreads, numPriorities);
+            return new QuPathImageLoader(qpProjURI, Collections.singletonList(new QuPathImageOpener(modelOpener)), sequenceDescription, numFetcherThreads, numPriorities);
         }
         catch ( final Exception e )
         {
