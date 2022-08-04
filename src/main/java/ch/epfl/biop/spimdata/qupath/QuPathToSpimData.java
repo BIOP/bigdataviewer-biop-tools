@@ -379,12 +379,12 @@ public class QuPathToSpimData {
                     double scaleX = 1.0;
                     double scaleY = 1.0;
                     double scaleZ = 1.0;
-                    System.out.println("qpOpener.getOmeMetaIdxOmeXml() : "+qpOpener.getOmeMetaIdxOmeXml());
+                  /*  System.out.println("qpOpener.getOmeMetaIdxOmeXml() : "+qpOpener.getOmeMetaIdxOmeXml());
                     System.out.println("identifier.bioformatsIndex : "+identifier.bioformatsIndex);
                     System.out.println("qpOpener.getOmeMetaIdxOmeXml().pixelPysicalSizeX : "+qpOpener.getOmeMetaIdxOmeXml().getPixelsPhysicalSizeX(identifier.bioformatsIndex));
                     System.out.println("qpOpener.getOmeMetaIdxOmeXml().pixelPysicalSizey : "+qpOpener.getOmeMetaIdxOmeXml().getPixelsPhysicalSizeY(identifier.bioformatsIndex));
                     System.out.println("qpOpener.getOmeMetaIdxOmeXml().pixelPysicalSizez : "+qpOpener.getOmeMetaIdxOmeXml().getPixelsPhysicalSizeZ(identifier.bioformatsIndex));
-                    System.out.println("qpOpener.getOmeMetaIdxOmeXml().getChannelName : "+qpOpener.getOmeMetaIdxOmeXml().getChannelName(0,0));
+                    System.out.println("qpOpener.getOmeMetaIdxOmeXml().getChannelName : "+qpOpener.getOmeMetaIdxOmeXml().getChannelName(0,0));*/
                     Length[] voxSizes = BioFormatsMetaDataHelper.getSeriesVoxelSizeAsLengths(qpOpener.getOmeMetaIdxOmeXml()/*omeMeta*/, identifier.bioformatsIndex);
                     if (pixelCalibrations.pixelWidth!=null) {
                         MinimalQuPathProject.PixelCalibration pc = pixelCalibrations.pixelWidth;
@@ -490,12 +490,12 @@ public class QuPathToSpimData {
             }
 
             SequenceDescription sd = new SequenceDescription( new TimePoints( newListOfTimePoint ), newViewSetups , null, new MissingViews(newMissingViews));
-            System.out.println("Before setting image loader");
+           // System.out.println("Before setting image loader");
             sd.setImgLoader(new QuPathImageLoader(quPathProject, new ArrayList<>(uriToOpener.values()), sd,2, 4));
 
             final SpimData newSpimData = new SpimData( null, sd, new ViewRegistrations( newRegistrations ) );
 
-            System.out.println("newSpimData spuri : "+newSpimData);
+           /*System.out.println("newSpimData spuri : "+newSpimData);
             System.out.println("newSpimData TimePoints : "+newSpimData.getSequenceDescription().getTimePoints().getTimePointsOrdered());
             System.out.println("newSpimData ViewSetups ");
             newSpimData.getSequenceDescription().getViewSetupsOrdered().forEach(e->System.out.println(e.getName()));
@@ -503,7 +503,7 @@ public class QuPathToSpimData {
             newSpimData.getSequenceDescription().getMissingViews().getMissingViews().forEach(e->System.out.println("Missing time point : "+e.getTimePointId()+" ; ViewSetup Id  : "+e.getViewSetupId()));
             System.out.println("newSpimData ViewRegistation ");
             newSpimData.getViewRegistrations().getViewRegistrationsOrdered().forEach(e->System.out.println("Registration time point : "+e.getTimePointId()+" ; ViewSetup Id  : "+e.getViewSetupId()));
-
+            */
 
             //spimData = ss.get(0);
 
