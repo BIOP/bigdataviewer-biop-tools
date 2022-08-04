@@ -3,7 +3,6 @@ package ch.epfl.biop.spimdata.qupath;
 import bdv.AbstractViewerSetupImgLoader;
 import bdv.viewer.Source;
 import ch.epfl.biop.bdv.bioformats.bioformatssource.BioFormatsBdvOpener;
-import ch.epfl.biop.bdv.bioformats.imageloader.BioFormatsImageLoader;
 import ch.epfl.biop.bdv.bioformats.imageloader.BioFormatsSetupLoader;
 import ch.epfl.biop.omero.imageloader.OmeroSetupLoader;
 import ch.epfl.biop.omero.omerosource.OmeroSourceOpener;
@@ -17,12 +16,21 @@ import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.real.FloatType;
 
+/**
+ * See documentation in {@link QuPathImageLoader}
+ *
+ * This class builds the setupLoader corresponding to the opener type (Bioformat or Omero) and get all the necessary
+ * info from this loader.
+ *
+ * @author Rémy Dornier, EPFL, BIOP, 2022
+ */
+
 public class QuPathSetupLoader<T extends NumericType<T>,V extends Volatile<T> & NumericType<V>> extends AbstractViewerSetupImgLoader<T, V> implements MultiResolutionSetupImgLoader< T > {
 
     QuPathImageOpener opener;
     Object imageSetupLoader;
-   // public Source<T> concreteSource;
-   // public Source<V> volatileSource;
+    public Source<T> concreteSource;
+    public Source<V> volatileSource;
     final public int iSerie,iChannel;
 
     public QuPathSetupLoader(QuPathImageOpener qpOpener, int serieIndex, int channelIndex, T type, V volatileType) {
@@ -32,7 +40,7 @@ public class QuPathSetupLoader<T extends NumericType<T>,V extends Volatile<T> & 
         this.iChannel = channelIndex;
         this.iSerie = serieIndex;
 
-
+        // get the setup loader corresponding to BioFormat opener
         if(qpOpener.getOpener() instanceof BioFormatsBdvOpener){
             BioFormatsSetupLoader<?,?> bfSetupLoader = new BioFormatsSetupLoader(
                     (BioFormatsBdvOpener) this.opener.getOpener(),
@@ -40,11 +48,12 @@ public class QuPathSetupLoader<T extends NumericType<T>,V extends Volatile<T> & 
                     channelIndex,
                     type,
                     volatileType);
-           // this.concreteSource = (Source<T>)bfSetupLoader.concreteSource;
-            //this.volatileSource = (Source<V>)bfSetupLoader.volatileSource;
+            this.concreteSource = (Source<T>)bfSetupLoader.concreteSource;
+            this.volatileSource = (Source<V>)bfSetupLoader.volatileSource;
             this.imageSetupLoader = bfSetupLoader;
 
         }else{
+            // get the setup loader corresponding to Omero opener
             if(qpOpener.getOpener() instanceof OmeroSourceOpener){
                 try {
                     OmeroSetupLoader<?,?> omeSetupLoader = new OmeroSetupLoader(
@@ -52,8 +61,8 @@ public class QuPathSetupLoader<T extends NumericType<T>,V extends Volatile<T> & 
                             channelIndex,
                             type,
                             volatileType);
-                   // this.concreteSource = (Source<T>)omeSetupLoader.concreteSource;
-                   // this.volatileSource = (Source<V>)omeSetupLoader.volatileSource;
+                    this.concreteSource = (Source<T>)omeSetupLoader.concreteSource;
+                    this.volatileSource = (Source<V>)omeSetupLoader.volatileSource;
                     this.imageSetupLoader = omeSetupLoader;
                 } catch (Exception e) {
                     e.printStackTrace();
