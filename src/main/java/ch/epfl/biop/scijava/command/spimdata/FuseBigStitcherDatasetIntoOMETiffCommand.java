@@ -41,35 +41,44 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Plugin(type = Command.class, menuPath = ScijavaBdvDefaults.RootMenu+"BDVDataset>Fuse a BigStitcher dataset to OME-Tiff")
 public class FuseBigStitcherDatasetIntoOMETiffCommand implements Command {
 
-    @Parameter
+    @Parameter(label = "BigStitcher XML file", style = "open")
     File xml_bigstitcher_file;
 
-    @Parameter(style ="save")
-    File output_path;
+    @Parameter(label = "Output folder", style ="directory")
+    File output_path_directory;
 
-    @Parameter( label = "Selected Channels. Leave blank for all", required = false )
+    @Parameter( label = "Selected channels. Leave blank for all", required = false )
     String range_channels = "";
 
-    @Parameter( label = "Selected Slices. Leave blank for all", required = false )
+    @Parameter( label = "Selected slices. Leave blank for all", required = false )
     String range_slices = "";
 
-    @Parameter( label = "Selected Timepoints. Leave blank for all", required = false )
+    @Parameter( label = "Selected timepoints. Leave blank for all", required = false )
     String range_frames = "";
 
     @Parameter(label = "Number of resolution levels (scale factor = 2)", min = "1")
     int n_resolution_levels;
 
-    @Parameter
+    @Parameter(label = "Use LZW compression")
     boolean use_lzw_compression;
 
-    @Parameter
+    @Parameter(label = "Split slices")
     boolean split_slices = false;
 
-    @Parameter
+    @Parameter(label = "Split channels")
     boolean split_channels = false;
 
-    @Parameter
+    @Parameter(label = "Split frames")
     boolean split_frames = false;
+
+    @Parameter(label = "Use custom XY/Z anisotropy ratio")
+    boolean override_z_ratio = false;
+
+    @Parameter(label = "XY/Z anisotropy ratio")
+    double z_ratio = 1.0;
+
+    @Parameter(label = "Interpolate when fusing (~4x slower)")
+    boolean use_interpolation = false;
 
     double vox_size_x_micrometer = 1;
 
@@ -83,11 +92,18 @@ public class FuseBigStitcherDatasetIntoOMETiffCommand implements Command {
     @Parameter
     TaskService taskService;
 
+    File output_path;
+
     @Override
     public void run() {
+
         if (n_resolution_levels<1) {
             System.err.println("Invalid number of resolution, minimum = 1");
         }
+
+        output_path_directory.mkdirs();
+
+        output_path = new File(output_path_directory,FilenameUtils.removeExtension(xml_bigstitcher_file.getName())+".ome.tiff");
 
         AbstractSpimData asd = new SpimDataFromXmlImporter(xml_bigstitcher_file).get();
 
@@ -145,10 +161,18 @@ public class FuseBigStitcherDatasetIntoOMETiffCommand implements Command {
         AffineTransform3D transform = new AffineTransform3D();
         channelNodes.get(0).sources()[0].getSpimSource().getSourceTransform(0,0,transform);
         IJ.log("Transform of first source = "+transform);
-        IJ.log("Pixel size XY (in pixel, so it should be one) = "+transform.get(0,0));
-        if (transform.get(0,0)!=1) IJ.log("Not ONE! ");
-        IJ.log("Pixel size Z (in pixel, equals to the anisotropy ratio) = "+transform.get(2,2));
-        double z_ratio = transform.get(2,2);
+        // The sample can be rotated. Here we try to get the max value of the line for each voxel
+        double voxSX = Math.max(Math.max(Math.abs(transform.get(0,0)), Math.abs(transform.get(0,1))), Math.abs(transform.get(0,2)));
+        double voxSY = Math.max(Math.max(Math.abs(transform.get(1,0)), Math.abs(transform.get(1,1))), Math.abs(transform.get(1,2)));
+        double voxSZ = Math.max(Math.max(Math.abs(transform.get(2,0)), Math.abs(transform.get(2,1))), Math.abs(transform.get(2,2)));
+
+        IJ.log("Pixel size X (in pixel, so it should be one) = "+voxSX);
+        IJ.log("Pixel size Y (in pixel, so it should be one) = "+voxSY);
+        if (voxSX!=1) IJ.log("Not ONE! ");
+        IJ.log("Pixel size Z (in pixel, equals to the anisotropy ratio) = "+voxSZ);
+        if (!override_z_ratio) z_ratio = voxSZ;
+        if (voxSX!=voxSY) IJ.log("You probably performed a rotation, XY will be resampled with an equal pixel size");
+        IJ.log("Anisotropy ratio used = "+z_ratio);
 
         VoxelDimensions voxelDimensions = ((BasicViewSetup)asd.getSequenceDescription().getViewSetups().get(0)).getVoxelSize();
         String unit = voxelDimensions.unit();
@@ -175,7 +199,7 @@ public class FuseBigStitcherDatasetIntoOMETiffCommand implements Command {
                             model,
                             xml_bigstitcher_file.getName()+"_Channel"+iChannel,
                             false, true,
-                            false, 0, 1024, 1024, 1, nThreads*10, nThreads).get();
+                            use_interpolation, 0, 1024, 1024, 1, nThreads*10, nThreads).get();
         }
 
         // OME Tiff exporter
