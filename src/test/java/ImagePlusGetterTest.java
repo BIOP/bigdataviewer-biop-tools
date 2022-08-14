@@ -10,6 +10,9 @@ import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.realtransform.AffineTransform3D;
+import net.imglib2.type.NativeType;
+import net.imglib2.type.numeric.NumericType;
+import net.imglib2.type.numeric.integer.UnsignedShortType;
 import org.scijava.task.Task;
 import org.scijava.task.TaskService;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
@@ -25,7 +28,7 @@ public class ImagePlusGetterTest {
         LegacyInjector.preinit();
     }
 
-    public static void main(String... args) throws Exception {
+    public static <T extends NumericType<T> & NativeType<T>> void main(String... args) throws Exception {
 
         ImageJ ij = new ImageJ();
         ij.ui().showUI();
@@ -45,7 +48,7 @@ public class ImagePlusGetterTest {
 
         final AbstractSpimData spimData = importer.get();
 
-        List<SourceAndConverter> allSources = SourceAndConverterServices
+        List<SourceAndConverter<?>> allSources = SourceAndConverterServices
                 .getSourceAndConverterService()
                 .getSourceAndConverterFromSpimdata(spimData);
 
@@ -55,7 +58,7 @@ public class ImagePlusGetterTest {
         /*SourceAndConverterServices
                 .getSourceAndConverterDisplayService()
                 .show(sac);*/
-        ArrayList<SourceAndConverter> sources = new ArrayList<>();
+        ArrayList<SourceAndConverter<?>> sources = new ArrayList<>();
         sources.add(allSources.get(0));
 
         if (allSources.size()>1) {
@@ -70,10 +73,18 @@ public class ImagePlusGetterTest {
         TaskService taskService = ij.get(TaskService.class);
 
         Task nonVirtual = taskService.createTask("nonVirtual");
-        ImagePlusGetter.getImagePlus("Non Virtual", sources, 0, range, true, false, true, nonVirtual).show();
+        List<SourceAndConverter<T>> sanitizedList = ImagePlusGetter.sanitizeList(sources);
+        ImagePlusGetter.getImagePlus("Non Virtual",
+                sanitizedList,
+                0,
+                range,
+                true,
+                false,
+                true,
+                nonVirtual).show();
         Task virtual = taskService.createTask("virtual");
-        ImagePlusGetter.getVirtualImagePlus("Virtual", sources, 0, range, true, virtual).show();//ImagePlusGetter.getVirtualImagePlus("Virtual no cache", sources, 0, range, false, true).show();
-        ImagePlusGetter.getVirtualImagePlus("Virtual no cache", sources, 0, range, false, null).show();//ImagePlusGetter.getVirtualImagePlus("Virtual no cache", sources, 0, range, false, true).show();
+        ImagePlusGetter.getVirtualImagePlus("Virtual", sanitizedList, 0, range, true, virtual).show();//ImagePlusGetter.getVirtualImagePlus("Virtual no cache", sources, 0, range, false, true).show();
+        ImagePlusGetter.getVirtualImagePlus("Virtual no cache", sanitizedList, 0, range, false, null).show();//ImagePlusGetter.getVirtualImagePlus("Virtual no cache", sources, 0, range, false, true).show();
 
     }
 }

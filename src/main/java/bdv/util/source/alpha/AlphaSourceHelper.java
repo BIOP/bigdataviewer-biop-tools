@@ -34,9 +34,9 @@ public class AlphaSourceHelper {
         }
         ISourceAndConverterService sacService = SourceAndConverterServices.getSourceAndConverterService();
 
-        List<SourceAndConverter> sacList = sacService.getSourceAndConvertersFromSource(source);
+        List<SourceAndConverter<?>> sacList = sacService.getSourceAndConvertersFromSource(source);
 
-        Optional<SourceAndConverter> source_already_associated_with_alpha = sacList.stream().filter(src -> getExistingAlphaSource(src)!=null).findFirst();
+        Optional<SourceAndConverter<?>> source_already_associated_with_alpha = sacList.stream().filter(src -> getExistingAlphaSource(src)!=null).findFirst();
 
         // Deal done
         if (source_already_associated_with_alpha.isPresent()) {

@@ -31,11 +31,11 @@ import static bdv.util.RealTransformHelper.BigWarpFileFromRealTransform;
 public class EditSourcesWarpingCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(type = ItemIO.BOTH)
-    SourceAndConverter[] movingSources;
+    SourceAndConverter<?>[] movingSources;
 
 
     @Parameter(required = false)
-    SourceAndConverter[] fixedSources;
+    SourceAndConverter<?>[] fixedSources;
 
     @Parameter
     boolean is2D;
@@ -55,10 +55,10 @@ public class EditSourcesWarpingCommand implements BdvPlaygroundActionCommand {
 
         RealTransform rt = ((WarpedSource) movingSources[0].getSpimSource()).getTransform();
 
-        List<SourceAndConverter> movingSacs = Arrays.stream(movingSources).collect(Collectors.toList());
+        List<SourceAndConverter<?>> movingSacs = Arrays.stream(movingSources).collect(Collectors.toList());
 
         List<ConverterSetup> converterSetups = Arrays.stream(movingSources).map(src -> SourceAndConverterServices.getSourceAndConverterService().getConverterSetup(src)).collect(Collectors.toList());
-        List<SourceAndConverter> fixedSacs;
+        List<SourceAndConverter<?>> fixedSacs;
 
         if (fixedSources!=null) {
             fixedSacs = Arrays.stream(fixedSources).collect(Collectors.toList());

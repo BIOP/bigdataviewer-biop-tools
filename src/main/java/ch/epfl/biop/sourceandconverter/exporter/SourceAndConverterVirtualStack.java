@@ -7,7 +7,9 @@ import ij.process.*;
 import net.imglib2.Cursor;
 import net.imglib2.IterableInterval;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.ARGBType;
+import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.type.numeric.real.FloatType;
@@ -35,7 +37,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * TODO : cache CZT key to make faster the duplication of identical frames
  */
 
-public class SourceAndConverterVirtualStack extends VirtualStack {
+public class SourceAndConverterVirtualStack<T extends NumericType<T> & NativeType<T>> extends VirtualStack {
 
     private static final Logger logger = LoggerFactory.getLogger(SourceAndConverterVirtualStack.class);
 
@@ -47,7 +49,7 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
     Map<Integer, Object> currentlyProcessedProcessor = new HashMap<>();
     Map<CZTId, Integer> cztIdToComputedProcessor = new HashMap<>();
 
-    final List<SourceAndConverter> sources;
+    final List<SourceAndConverter<T>> sources;
     final int resolutionLevel;
     final CZTRange range;
     final int nBytesPerProcessor;
@@ -70,7 +72,7 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
      * @param cache           whether the read planes should be kept in cache or not (it's a basic cache, it's never freed unless you discard the image)
      * @param task            a task object, not sure how it's used anymore
      */
-    public SourceAndConverterVirtualStack(List<SourceAndConverter> sources,
+    public SourceAndConverterVirtualStack(List<SourceAndConverter<T>> sources,
                                           int resolutionLevel,
                                           CZTRange range,
                                           AtomicLong bytesCounter, boolean cache, Task task) {
@@ -182,7 +184,7 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
      * @return shortprocessor
      */
     public ShortProcessor getShortProcessor(int iC, int iZ, int iT) {
-        SourceAndConverter<UnsignedShortType> sac = sources.get(iC);
+        SourceAndConverter sac = sources.get(iC);
         RandomAccessibleInterval<UnsignedShortType> rai = sac.getSpimSource().getSource(iT, resolutionLevel);
         RandomAccessibleInterval<UnsignedShortType> slice = Views.hyperSlice(rai, 2, iZ);
         short[] shorts = new short[nPixPerPlane];
@@ -225,7 +227,7 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
      * @return floatprocessor
      */
     public FloatProcessor getFloatProcessor(int iC, int iZ, int iT) {
-        SourceAndConverter<FloatType> sac = sources.get(iC);
+        SourceAndConverter sac = sources.get(iC);
         RandomAccessibleInterval<FloatType> rai = sac.getSpimSource().getSource(iT, resolutionLevel);
         RandomAccessibleInterval<FloatType> slice = Views.hyperSlice(rai, 2, iZ);
         float[] floats = new float[nPixPerPlane];
@@ -253,7 +255,7 @@ public class SourceAndConverterVirtualStack extends VirtualStack {
      * @return colorprocessor
      */
     public ColorProcessor getColorProcessor(int iC, int iZ, int iT) {
-        SourceAndConverter<ARGBType> sac = sources.get(iC);
+        SourceAndConverter sac = sources.get(iC);
         RandomAccessibleInterval<ARGBType> rai = sac.getSpimSource().getSource(iT, resolutionLevel);
         RandomAccessibleInterval<ARGBType> slice = Views.hyperSlice(rai, 2, iZ);
         int[] ints = new int[nPixPerPlane];

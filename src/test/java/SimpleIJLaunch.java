@@ -1,10 +1,7 @@
-import bdv.ij.ApplyBigwarpPlugin;
-import bdv.util.BdvFunctions;
-import ch.epfl.biop.sourceandconverter.processor.SourcesResampler;
+
 import loci.common.DebugTools;
 import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;
-import sc.fiji.bdvpg.scijava.services.SourceAndConverterBdvDisplayService;
 
 public class SimpleIJLaunch {
 

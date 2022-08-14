@@ -78,7 +78,7 @@ public class Rot3DReSampleCommand implements BdvPlaygroundActionCommand {
         AbstractSpimData asd = (new SpimDataFromImagePlusGetter()).apply(imp_in);
         sac_service.register(asd);
         sac_service.setSpimDataName(asd, imp_in.getTitle());
-        List<SourceAndConverter> sacs = SourceAndConverterServices.getSourceAndConverterService().getSourceAndConverterFromSpimdata(asd);
+        List<SourceAndConverter<?>> sacs = SourceAndConverterServices.getSourceAndConverterService().getSourceAndConverterFromSpimdata(asd);
 
         if (rm.getCount()<2) {
             System.err.println("Error : 2 point Rois should be present in the Roi Manager to reorient a stack");

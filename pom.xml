@@ -96,15 +96,15 @@
 		<scijava.deleteOtherVersions>true</scijava.deleteOtherVersions>
 		<license.excludes>**/resources/**</license.excludes>
 
-		<bigdataviewer-playground.version>0.6.0-SNAPSHOT</bigdataviewer-playground.version>
+		<bigdataviewer-playground.version>0.6.0-SNAPSHOT-beta2</bigdataviewer-playground.version>
 		<bigdataviewer-bioformats.version>0.3.7-SNAPSHOT-10.4.1</bigdataviewer-bioformats.version>
 		<bigdataviewer-selector.version>0.1.10-SNAPSHOT-10.4.1</bigdataviewer-selector.version>
 		<scijava.app.directory>C:/Fiji.app/</scijava.app.directory>
 
-		<bigdataviewer-core.version>10.4.2</bigdataviewer-core.version>
+		<bigdataviewer-core.version>10.4.3</bigdataviewer-core.version>
 		<bigdataviewer-vistools.version>1.0.0-beta-30</bigdataviewer-vistools.version>
 		<imglib2-cache.version>1.0.0-beta-16</imglib2-cache.version>
-		<bigwarp_fiji.version>7.0.5</bigwarp_fiji.version>
+		<bigwarp_fiji.version>7.0.6-SNAPSHOT</bigwarp_fiji.version>
 
 		<leastsquares.version>1.0.0</leastsquares.version>
 		<ijl-utilities-wrappers.version>0.6.0</ijl-utilities-wrappers.version>
@@ -117,7 +117,7 @@
 
 		<Operetta_Importer.version>0.1.22</Operetta_Importer.version>
 		<bigvolumeviewer.version>0.2.0</bigvolumeviewer.version>
-		<ui-behaviour.version>2.0.6</ui-behaviour.version>
+		<ui-behaviour.version>2.0.7</ui-behaviour.version>
 
 		<ijp-kheops.version>0.2.3</ijp-kheops.version>
 

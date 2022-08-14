@@ -63,10 +63,10 @@ public class CrazyMultireWarpedSourcesFusedDemo {
                         .getUI()
                         .getTreePathFromString(filePath+">Channel>1");
 
-        List<SourceAndConverter> sources =
+        List<SourceAndConverter<?>> sources =
                 ij.get(SourceAndConverterService.class).getUI().getSourceAndConvertersFromTreePath(tp);
 
-        List<SourceAndConverter> sources_0 = new ArrayList<>();
+        List<SourceAndConverter<?>> sources_0 = new ArrayList<>();
 
         sources_0.addAll(demo(sources, nSourcesInX));
 
@@ -209,9 +209,9 @@ public class CrazyMultireWarpedSourcesFusedDemo {
         TestHelper.closeFijiAndBdvs(ij);
     }
 
-    public static List<SourceAndConverter> demo(List<SourceAndConverter> sources, int numberOfSourcesInOneAxis) {
+    public static List<SourceAndConverter<?>> demo(List<SourceAndConverter<?>> sources, int numberOfSourcesInOneAxis) {
 
-        ArrayList<SourceAndConverter> sacs = new ArrayList<>();
+        ArrayList<SourceAndConverter<?>> sacs = new ArrayList<>();
 
         int sourceIndex = 0;
         for (int x = 0; x < numberOfSourcesInOneAxis;x++) {
@@ -267,19 +267,13 @@ public class CrazyMultireWarpedSourcesFusedDemo {
                 WrappedIterativeInvertibleRealTransform invertibleRealTransform = new WrappedIterativeInvertibleRealTransform(rt);
                 Wrapped2DTransformAs3D rt3d = new Wrapped2DTransformAs3D(invertibleRealTransform);
 
-                SourceRealTransformer srt = new SourceRealTransformer(sac, rt3d);
-                srt.run();
-                SourceAndConverter warped_sac = srt.getSourceOut();
+                SourceAndConverter warped_sac = new SourceRealTransformer(sac, rt3d).get();
                 SourceAndConverterServices
                         .getSourceAndConverterService()
                                 .register(warped_sac);
 
                 AlphaSourceHelper.setAlphaSource(warped_sac, alphaSac); // Keeps bounds
-
-                SourceAffineTransformer sat = new SourceAffineTransformer(warped_sac, at3d);
-                sat.run();
-
-                SourceAndConverter transformedSac = sat.getSourceOut();
+                SourceAndConverter transformedSac = new SourceAffineTransformer(warped_sac, at3d).get();
 
                 sacs.add(transformedSac);
                 sourceIndex++;

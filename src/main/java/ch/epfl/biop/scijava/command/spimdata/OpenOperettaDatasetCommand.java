@@ -330,7 +330,7 @@ public class OpenOperettaDatasetCommand implements Command {
                 String wellName =  "R" + row + "-C" + col;
                 TreePath p = sourceService.getUI().getTreePathFromString(opm.getPlateName()+">Wells>"+wellName);
 
-                List<SourceAndConverter> sources = sourceService.getUI().getSourceAndConvertersFromTreePath(p);
+                List<SourceAndConverter<?>> sources = sourceService.getUI().getSourceAndConvertersFromTreePath(p);
                 sources.stream().forEach(source -> new BrightnessAdjuster(source,minDisplayValue,maxDisplayValue).run());
                 List<SourceAndConverterAndTimeRange> sourceAndTime = sources.stream().map(source ->
                     new SourceAndConverterAndTimeRange(source,0,opm.getRange().getRangeT().size())
@@ -368,7 +368,7 @@ public class OpenOperettaDatasetCommand implements Command {
                 for (int iCh = 0; iCh<maxChannels; iCh++) {
                     SourceGroup group = groups.get(iCh);
                     TreePath p = sourceService.getUI().getTreePathFromString(opm.getPlateName()+">Channel>"+iCh);
-                    List<SourceAndConverter> sourcesInChannel = sourceService.getUI().getSourceAndConvertersFromTreePath(p);
+                    List<SourceAndConverter<?>> sourcesInChannel = sourceService.getUI().getSourceAndConvertersFromTreePath(p);
                     List<SourceAndConverter<?>> sourcesCast = sourcesInChannel.stream().map(sac -> (SourceAndConverter<?>) sac).collect(Collectors.toList());
                     bdvh.getViewerPanel().state().addSourcesToGroup(sourcesCast, group);
                     bdvh.getViewerPanel().state().setGroupName(group, "Channel "+iCh);

@@ -44,7 +44,7 @@ public class DemoRegistrationMultiChannelSpline {
                         .positionReferenceFrameLength(new Length(1,UNITS.METER)));
 
         SourceAndConverterServices.getSourceAndConverterService().register(atlasDataset);
-        List<SourceAndConverter> atlasSources = SourceAndConverterServices.getSourceAndConverterService().getSourceAndConverterFromSpimdata(atlasDataset);
+        List<SourceAndConverter<?>> atlasSources = SourceAndConverterServices.getSourceAndConverterService().getSourceAndConverterFromSpimdata(atlasDataset);
 
         opener =
                 BioFormatsConvertFilesToSpimData
@@ -56,7 +56,7 @@ public class DemoRegistrationMultiChannelSpline {
                         .positionReferenceFrameLength(new Length(1,UNITS.METER)));
 
         SourceAndConverterServices.getSourceAndConverterService().register(sliceDataset);
-        List<SourceAndConverter> sliceSources = SourceAndConverterServices.getSourceAndConverterService().getSourceAndConverterFromSpimdata(sliceDataset);
+        List<SourceAndConverter<?>> sliceSources = SourceAndConverterServices.getSourceAndConverterService().getSourceAndConverterFromSpimdata(sliceDataset);
 
         SourceAndConverterBdvDisplayService displayService = SourceAndConverterServices.getBdvDisplayService();
         BdvHandle bdvh = displayService.getNewBdv();

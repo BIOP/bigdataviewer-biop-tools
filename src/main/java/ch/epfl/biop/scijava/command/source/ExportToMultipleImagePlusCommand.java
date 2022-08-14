@@ -111,7 +111,7 @@ public class ExportToMultipleImagePlusCommand implements BdvPlaygroundActionComm
 
         List<SourceAndConverter<?>> sourceList = sorter.apply(Arrays.asList(sacs));
 
-        Map<OverviewerCommand.SacProperties, List<SourceAndConverter>> sacClasses = sourceList
+        Map<OverviewerCommand.SacProperties, List<SourceAndConverter<?>>> sacClasses = sourceList
                 .stream()
                 .collect(Collectors.groupingBy(sac -> {
                     OverviewerCommand.SacProperties props = new OverviewerCommand.SacProperties(sac);
@@ -152,7 +152,7 @@ public class ExportToMultipleImagePlusCommand implements BdvPlaygroundActionComm
             sacKey.getSpimSource().getSourceTransform(timepointbegin, level, at3d);
 
             OverviewerCommand.SacProperties sacPropsKey = keySetSac.get(sacKey).get(0);
-            List<SourceAndConverter> sources = sacClasses.get(sacPropsKey);
+            List<SourceAndConverter<?>> sources = sacClasses.get(sacPropsKey);
 
             ImagePlus imp_out;
             int maxTimeFrames = SourceAndConverterHelper.getMaxTimepoint(sources.toArray(new SourceAndConverter[0]));
@@ -169,19 +169,9 @@ public class ExportToMultipleImagePlusCommand implements BdvPlaygroundActionComm
                         .setT(range_frames)
                         .get(sources.size(), maxZSlices, maxTimeFrames);
 
-                switch (export_mode) {
-                    case "Normal":
-                        imp_out = ImagePlusGetter.getImagePlus(name, sources, level, range, parallelC, parallelZ, parallelT, task);
-                        break;
-                    case "Virtual":
-                        imp_out = ImagePlusGetter.getVirtualImagePlus(name, sources, level, range, true, task);
-                        break;
-                    case "Virtual no-cache":
-                        imp_out = ImagePlusGetter.getVirtualImagePlus(name, sources, level, range, false, null);
-                        break;
-                    default: throw new UnsupportedOperationException("Unrecognized export mode "+export_mode);
-                }
-                temporaryImageArray[sortedSacs.indexOf(sacKey)] = imp_out;
+                temporaryImageArray[sortedSacs.indexOf(sacKey)] =
+                        ExportToImagePlusCommand.computeImage(sources, task, range, name, level, parallelC, parallelZ, parallelT, export_mode);
+
             } catch (Exception e) {
                 logger.error("Invalid range "+e.getMessage());
             }

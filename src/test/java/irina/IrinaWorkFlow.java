@@ -21,6 +21,8 @@ import net.imglib2.RealInterval;
 import net.imglib2.RealPoint;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.realtransform.RealTransform;
+import net.imglib2.type.NativeType;
+import net.imglib2.type.numeric.NumericType;
 import org.apache.commons.io.FilenameUtils;
 import org.scijava.Context;
 import org.scijava.command.CommandService;
@@ -117,7 +119,7 @@ public class IrinaWorkFlow {
                 .export();
     }
 
-    public static String correctDistortion( String exportPath, String filePath, String landmarkFileUnwarp, int cropX, int cropY, boolean interpolate) throws Exception {
+    public static <T extends NumericType<T> & NativeType<T>> String correctDistortion(String exportPath, String filePath, String landmarkFileUnwarp, int cropX, int cropY, boolean interpolate) throws Exception {
 
         List<SourceAndConverter> sources = KheopsHelper.getSourcesFromFile(filePath, 1024, 1024, 16, 1).idToSources.get(0);
 
@@ -125,7 +127,7 @@ public class IrinaWorkFlow {
         AffineTransform3D transform = new AffineTransform3D();
         sources.get(0).getSpimSource().getSourceTransform(0,0,transform);
 
-        Function<SourceAndConverter,SourceAndConverter>
+        Function<SourceAndConverter<?>,SourceAndConverter<?>>
                 physicalToPixel = source ->
                 SourceTransformHelper.createNewTransformedSourceAndConverter(transform.inverse(), new SourceAndConverterAndTimeRange(source,0));
 
@@ -140,15 +142,16 @@ public class IrinaWorkFlow {
 
         RealTransform realTransform = BigWarpHelper.realTransformFromBigWarpFile(new File(landmarkFileUnwarp), true);
 
-        Function<SourceAndConverter,SourceAndConverter> unwarp = new SourceRealTransformer(null, realTransform);
+        Function<SourceAndConverter<?>,SourceAndConverter<?>> unwarp = new SourceRealTransformer(null, realTransform);
 
-        Function<SourceAndConverter,SourceAndConverter> cropAndRaster = new SourceResampler(null,croppedModel,"Model_Cropped", false, false, interpolate, 0);
+        Function<SourceAndConverter<?>,SourceAndConverter<?>> cropAndRaster = new SourceResampler(null,croppedModel,"Model_Cropped", false, false, interpolate, 0);
 
-        Function<SourceAndConverter,SourceAndConverter>
+        Function<SourceAndConverter<?>,SourceAndConverter<?>>
                 pixelToPhysical = source ->
                 SourceTransformHelper.createNewTransformedSourceAndConverter(transform, new SourceAndConverterAndTimeRange(source,0));
 
-        List<SourceAndConverter> correctedSources = sources.stream()
+        List<SourceAndConverter<?>> correctedSources = sources.stream()
+                .map(src -> (SourceAndConverter<?>) src)
                 .map(physicalToPixel)
                 .map(unwarp)
                 .map(cropAndRaster)
@@ -157,7 +160,9 @@ public class IrinaWorkFlow {
 
         CZTRange range = new CZTRange.Builder().get(sources.size(),1,1);
 
-        ImagePlus undistorted = ImagePlusGetter.getImagePlus(new File(filePath).getName(), correctedSources, 0, range, false, false, false, null); // Parallelisation occurs per file
+        List<SourceAndConverter<T>> sanitizedList = ImagePlusGetter.sanitizeList(correctedSources);
+
+        ImagePlus undistorted = ImagePlusGetter.getImagePlus(new File(filePath).getName(), sanitizedList, 0, range, false, false, false, null); // Parallelisation occurs per file
 
         String totalPath = exportPath+File.separator+undistorted.getTitle();
 

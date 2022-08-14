@@ -40,11 +40,11 @@ public class ManySourcesFusedDemo {
 
         SourceAndConverter model = new EmptySourceAndConverterCreator("Model", location, 8000,6000,1).get();
 
-        List<SourceAndConverter> all_sources = SourceAndConverterServices.getSourceAndConverterService().getSourceAndConverters();
+        List<SourceAndConverter<?>> all_sources = SourceAndConverterServices.getSourceAndConverterService().getSourceAndConverters();
 
         SourceAndConverterServices.getSourceAndConverterService().register(model);
 
-        SourceAndConverter fused = new SourceFuserAndResampler(all_sources,
+        SourceAndConverter<?> fused = new SourceFuserAndResampler(all_sources,
                 AlphaFusedResampledSource.AVERAGE,
                 model, "Fused source",
                 true, true, false, 0,
@@ -101,10 +101,7 @@ public class ManySourcesFusedDemo {
                     at3d.scale(0.5 + Math.random() / 4, 0.5 + Math.random() / 4, 1);
                     at3d.translate(200 * x, 200 * y, 0);
 
-                    SourceAffineTransformer sat = new SourceAffineTransformer(sac, at3d);
-                    sat.run();
-
-                    SourceAndConverter transformedSac = sat.getSourceOut();
+                    SourceAndConverter transformedSac = new SourceAffineTransformer(sac, at3d).get();
 
                     sacs.add(transformedSac);
                 }
