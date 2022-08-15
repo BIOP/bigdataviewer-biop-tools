@@ -11,7 +11,7 @@
 
 	<groupId>ch.epfl.biop</groupId>
 	<artifactId>bigdataviewer-biop-tools</artifactId>
-	<version>0.4.0-SNAPSHOT</version>
+	<version>0.4.0-SNAPSHOT-beta</version>
 
 	<name>Biop Bigdataviewer Tools and Plugins </name>
 	<description>Big data viewer tools BIOP - EPFL</description>
@@ -110,7 +110,7 @@
 		<ijl-utilities-wrappers.version>0.6.0</ijl-utilities-wrappers.version>
 		<image-transform-converters.version>0.1.5</image-transform-converters.version>
 
-		<bigdataviewer-spimdata-extras.version>0.1.6</bigdataviewer-spimdata-extras.version>
+		<bigdataviewer-spimdata-extras.version>0.1.7-SNAPSHOT-10.4.1</bigdataviewer-spimdata-extras.version>
 		<elastix_registration_server.version>0.1.4</elastix_registration_server.version>
 
 		<bigdataviewer-playground-display.version>0.2.1-SNAPSHOT-10.4.1</bigdataviewer-playground-display.version>
