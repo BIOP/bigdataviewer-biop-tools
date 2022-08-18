@@ -6,6 +6,7 @@ import bdv.img.cache.VolatileGlobalCellCache;
 import bdv.util.volatiles.SharedQueue;
 import ch.epfl.biop.bdv.bioformats.bioformatssource.BioFormatsBdvOpener;
 import ch.epfl.biop.bdv.bioformats.bioformatssource.BioFormatsBdvSource;
+import ch.epfl.biop.bdv.bioformats.imageloader.FileSerieChannel;
 import ch.epfl.biop.omero.omerosource.OmeroSourceOpener;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -78,6 +79,7 @@ public class QuPathImageLoader implements ViewerImgLoader, MultiResolutionImgLoa
             qpOpeners.forEach(qpOpener -> {
                 // get the image corresponding to the opener
                 MinimalQuPathProject.ImageEntry image = qpOpener.getImage();
+                System.out.println("QuPathImageLoader image : "+image);
                 logger.debug("Opening qupath image "+image);
                // System.out.println("IL : Opening qupath image "+image);
 
@@ -186,26 +188,30 @@ public class QuPathImageLoader implements ViewerImgLoader, MultiResolutionImgLoa
 
                             // create a new reader
                             IFormatReader memo = opener.getNewReader();
-                            memo.setSeries(identifier.bioformatsIndex);
+                            IntStream series = IntStream.range(0, memo.getSeriesCount());
 
                             // get metadata
                             IMetadata omeMeta = (IMetadata) memo.getMetadataStore();
                             memo.setMetadataStore(omeMeta);
-                            IntStream channels = IntStream.range(0, qpOpener.getOmeMetaIdxOmeXml().getChannelCount(identifier.bioformatsIndex));
 
-                            // Register Setups (one per channel and one per timepoint)
-                            Type<?> t = BioFormatsBdvSource.getBioformatsBdvSourceType(memo, identifier.bioformatsIndex);
-                            Volatile<?> v = BioFormatsBdvSource.getVolatileOf((NumericType<?>)t);
-                            channels.forEach(
-                                    iCh -> {
-                                        QuPathEntryAndChannel usc = new QuPathEntryAndChannel(identifier, iCh);
-                                        viewSetupToQuPathEntryAndChannel.put(viewSetupCounter,usc);
-                                        tTypeGetter.put(viewSetupCounter,(NumericType<?>)t);
-                                        vTypeGetter.put(viewSetupCounter, v);
-                                        openerMap.put(viewSetupCounter,qpOpener);
-                                        viewSetupCounter++;
+                            series.forEach(iSerie -> {
+                                        memo.setSeries(iSerie);
+
+                                        IntStream channels = IntStream.range(0, qpOpener.getOmeMetaIdxOmeXml().getChannelCount(iSerie));
+
+                                        // Register Setups (one per channel and one per timepoint)
+                                        Type<?> t = BioFormatsBdvSource.getBioformatsBdvSourceType(memo, iSerie);
+                                        Volatile<?> v = BioFormatsBdvSource.getVolatileOf((NumericType<?>) t);
+                                        channels.forEach(
+                                                iCh -> {
+                                                    QuPathEntryAndChannel usc = new QuPathEntryAndChannel(identifier, iCh);
+                                                    viewSetupToQuPathEntryAndChannel.put(viewSetupCounter, usc);
+                                                    tTypeGetter.put(viewSetupCounter, (NumericType<?>) t);
+                                                    vTypeGetter.put(viewSetupCounter, v);
+                                                    openerMap.put(viewSetupCounter, qpOpener);
+                                                    viewSetupCounter++;
+                                                });
                                     });
-
                      /*   } catch (URISyntaxException e) {
                             logger.error("URI Syntax error "+e.getMessage());
                             e.printStackTrace();
@@ -236,10 +242,12 @@ public class QuPathImageLoader implements ViewerImgLoader, MultiResolutionImgLoa
                             }
                         }else{
                             logger.error("Unsupported "+image.serverBuilder.providerClassName+" provider Class Name");
+                            System.out.println("Unsupported "+image.serverBuilder.providerClassName+" provider Class Name");
                         }
                     }
                 } else {
                     logger.error("Unsupported "+image.serverBuilder.builderType+" server builder");
+                    System.out.println("Unsupported "+image.serverBuilder.builderType+" server builder");
                 }
             });
 
@@ -254,6 +262,7 @@ public class QuPathImageLoader implements ViewerImgLoader, MultiResolutionImgLoa
             cache = new VolatileGlobalCellCache(sq);
         } catch (Exception e) {
             logger.error("Exception "+e.getMessage());
+            System.out.println("Exception "+e.getMessage());
             e.printStackTrace();
         }
     }

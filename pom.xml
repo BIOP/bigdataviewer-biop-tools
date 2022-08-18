@@ -98,7 +98,7 @@
 
 		<bigdataviewer-playground.version>0.5.3</bigdataviewer-playground.version>
 		<bigdataviewer-bioformats.version>0.3.6</bigdataviewer-bioformats.version>
-		<bigdataviewer-omero.version>0.1.2-SNAPSHOT</bigdataviewer-omero.version>
+		<bigdataviewer-omero.version>0.1.2-SNAPSHOT-beta</bigdataviewer-omero.version>
 		<bigdataviewer-selector.version>0.1.9</bigdataviewer-selector.version>
 		<scijava.app.directory>C:/Fiji.app/</scijava.app.directory>
 

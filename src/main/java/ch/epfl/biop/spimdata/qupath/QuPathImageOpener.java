@@ -2,6 +2,7 @@ package ch.epfl.biop.spimdata.qupath;
 
 import ch.epfl.biop.bdv.bioformats.BioFormatsMetaDataHelper;
 import ch.epfl.biop.bdv.bioformats.bioformatssource.BioFormatsBdvOpener;
+import ch.epfl.biop.ij2command.OmeroTools;
 import ch.epfl.biop.omero.omerosource.OmeroSourceOpener;
 import loci.formats.MetadataTools;
 import loci.formats.meta.IMetadata;
@@ -11,6 +12,10 @@ import ome.units.unit.Unit;
 import ome.xml.model.primitives.Color;
 import omero.gateway.Gateway;
 import omero.gateway.SecurityContext;
+import omero.gateway.model.PixelsData;
+import omero.model.IObject;
+import omero.model.LengthI;
+import omero.model.PlaneInfo;
 import omero.model.enums.UnitsLength;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,6 +106,7 @@ public class QuPathImageOpener {
 
         if (this.image.serverBuilder.builderType.equals("uri")) {
             logger.debug("URI image server");
+            System.out.println("URI image server");
             try {
                 this.identifier = new QuPathImageLoader.QuPathSourceIdentifier();
                 identifier.angleRotationZAxis = angleRotationZAxis;
@@ -111,9 +117,12 @@ public class QuPathImageOpener {
                 if (this.providerClassName.equals("qupath.lib.images.servers.bioformats.BioFormatsServerBuilder")) {
                     // This appears to work more reliably than converting to a File
                     filePath = Paths.get(uri).toString();
+                    System.out.println("FilePath for the opener : "+ filePath);
                     BioFormatsBdvOpener bfOpener = getInitializedBioFormatsBDVOpener(filePath, guiparams).ignoreMetadata();
                     this.opener = bfOpener;
                     this.omeMetaIdxOmeXml = (IMetadata) bfOpener.getNewReader().getMetadataStore();
+
+                    System.out.println("bfOpener.getSeriesCount() :"+bfOpener.getNewReader().getSeriesCount());
                 }
                 else {
                     // get the OMERO opener
@@ -124,6 +133,7 @@ public class QuPathImageOpener {
                     }
                     else {
                         logger.error("Unsupported "+this.providerClassName+" provider Class Name");
+                        System.out.println("Unsupported "+this.providerClassName+" provider Class Name");
                         return false;
                     }
                 }
@@ -138,13 +148,17 @@ public class QuPathImageOpener {
 
                 if (iSerie == -1) {
                     logger.error("Series not found in qupath project server builder!");
+                    System.out.println("Series not found in qupath project server builder!");
                     this.identifier.bioformatsIndex = 0;// was initially -1 but put to 0 because of index -1 does not exists (in QuPathToSpimData / BioFormatsMetaDataHelper.getSeriesVoxelSizeAsLengths()
                 } else {
                     this.identifier.bioformatsIndex = Integer.parseInt(this.image.serverBuilder.args.get(iSerie + 1));
+                    //this.serverBuilderUri = new URI(this.serverBuilderUri.toString() + "_"+this.identifier.bioformatsIndex);
                 }
-
+                System.out.println("iSerie : "+iSerie);
+                System.out.println("this.identifier.bioformatsIndex : "+this.identifier.bioformatsIndex);
             } catch (Exception e) {
                 logger.error("URI Syntax error " + e.getMessage());
+                System.out.println("URI Syntax error " + e.getMessage());
                 e.printStackTrace();
             }
         }
@@ -165,6 +179,16 @@ public class QuPathImageOpener {
 
                 if (pixelCalibration != null) {
                     // fill pixels size and unit
+                    System.out.println("pixelCalibration.pixelWidth.value : "+pixelCalibration.pixelWidth.value);
+                    System.out.println("pixelCalibration.pixelWidth.unit : "+pixelCalibration.pixelWidth.unit);
+                    System.out.println("convertStringToUnit(pixelCalibration.pixelWidth.unit) : "+convertStringToUnit(pixelCalibration.pixelWidth.unit).getSymbol());
+                    System.out.println("pixelCalibration.pixelHeight.value : "+pixelCalibration.pixelHeight.value);
+                    System.out.println("pixelCalibration.pixelHeight.unit : "+pixelCalibration.pixelHeight.unit);
+                    System.out.println("convertStringToUnit(pixelCalibration.pixelHeight.unit) : "+convertStringToUnit(pixelCalibration.pixelHeight.unit).getSymbol());
+                    System.out.println("pixelCalibration.zSpacing.value : "+pixelCalibration.zSpacing.value);
+                    System.out.println("pixelCalibration.zSpacing.unit : "+pixelCalibration.zSpacing.unit);
+                    System.out.println("convertStringToUnit(pixelCalibration.zSpacing.unit) : "+convertStringToUnit(pixelCalibration.zSpacing.unit).getSymbol());
+                    System.out.println("this.omeMetaIdxOmeXml : "+this.omeMetaIdxOmeXml);
                     this.omeMetaIdxOmeXml.setPixelsPhysicalSizeX(new Length(pixelCalibration.pixelWidth.value, convertStringToUnit(pixelCalibration.pixelWidth.unit)), 0);
                     this.omeMetaIdxOmeXml.setPixelsPhysicalSizeY(new Length(pixelCalibration.pixelHeight.value, convertStringToUnit(pixelCalibration.pixelHeight.unit)), 0);
                     this.omeMetaIdxOmeXml.setPixelsPhysicalSizeZ(new Length(pixelCalibration.zSpacing.value, convertStringToUnit(pixelCalibration.zSpacing.unit)), 0);
@@ -192,6 +216,7 @@ public class QuPathImageOpener {
             case "µm" : return UNITS.MICROMETER;
             case "mm" : return UNITS.MILLIMETER;
             case "cm" : return UNITS.CENTIMETER;
+            case "px" : return UNITS.PIXEL;
             default: return UNITS.REFERENCEFRAME;
         }
     }
@@ -232,11 +257,12 @@ public class QuPathImageOpener {
      */
     public OmeroSourceOpener getInitializedOmeroBDVOpener(String datalocation, GuiParams guiParams, Gateway gateway, SecurityContext ctx) throws Exception {
         Unit bfUnit = BioFormatsMetaDataHelper.getUnitFromString(guiParams.getUnit());
+        System.out.println("bfUnit in omero : "+bfUnit.getSymbol());
         Length positionReferenceFrameLength = new Length(guiParams.getRefframesizeinunitlocation(), bfUnit);
         Length voxSizeReferenceFrameLength = new Length(guiParams.getVoxSizeReferenceFrameLength(), bfUnit);
 
         // create the Omero opener
-        OmeroSourceOpener opener = OmeroSourceOpener.getOpener().location(datalocation).ignoreMetadata();
+        OmeroSourceOpener opener = new OmeroSourceOpener().location(datalocation).ignoreMetadata();
 
         // flip x, y and z axis
         if (!guiParams.getFlippositionx().equals("AUTO") && guiParams.getFlippositionx().equals("TRUE")) {
@@ -253,6 +279,8 @@ public class QuPathImageOpener {
 
         // set unit length and references
         UnitsLength unit = guiParams.getUnit().equals("MILLIMETER")?UnitsLength.MILLIMETER:guiParams.getUnit().equals("MICROMETER")?UnitsLength.MICROMETER:guiParams.getUnit().equals("NANOMETER")?UnitsLength.NANOMETER:null;
+        System.out.println("unit (UnitsLength) : "+unit);
+        System.out.println("unit (UnitsLength) : "+unit.name());
         opener = opener.unit(unit);
         opener = opener.positionReferenceFrameLength(positionReferenceFrameLength);
         opener = opener.voxSizeReferenceFrameLength(voxSizeReferenceFrameLength);
@@ -265,6 +293,28 @@ public class QuPathImageOpener {
         // set omero connection
         String[] imageString = datalocation.split("%3D");
         String[] omeroId = imageString[1].split("-");
+
+        /*
+        PixelsData pixels = OmeroTools.getPixelsDataFromOmeroID(Long.parseLong(omeroId[1]), gateway, ctx);
+        List<IObject> objectinfos = gateway.getQueryService(ctx)
+                .findAllByQuery("select info from PlaneInfo as info " +
+                                "join fetch info.deltaT as dt " +
+                                "join fetch info.exposureTime as et " +
+                                "where info.pixels.id=" + pixels.getId(),
+                        null);
+        System.out.println(objectinfos);
+        if(objectinfos.size() != 0) {
+            //one plane per (c,z,t) combination: we assume that X and Y stage positions are the same in all planes and therefore take the 1st plane
+            PlaneInfo planeinfo = (PlaneInfo) (objectinfos.get(0));
+            System.out.println("planeinfo : "+planeinfo);
+            System.out.println("planeinfo.getPositionX() : "+planeinfo.getPositionX());
+            System.out.println("planeinfo.getPositionY() : "+planeinfo.getPositionY());
+            //Convert the offsets in the unit given in the builder
+            omero.model.Length lengthPosX = new LengthI(planeinfo.getPositionX(), UnitsLength.MICROMETER);
+            System.out.println("lengthPosX : "+lengthPosX);
+            omero.model.Length lengthPosY = new LengthI(planeinfo.getPositionY(), UnitsLength.MICROMETER);
+            System.out.println("lengthPosY : "+lengthPosY);
+        }*/
         opener.gateway(gateway).securityContext(ctx).imageID(Long.parseLong(omeroId[1])).host(ctx.getServerInformation().getHost()).create();
 
         return opener;
