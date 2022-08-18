@@ -193,8 +193,8 @@ public class QuPathImageLoader implements ViewerImgLoader, MultiResolutionImgLoa
                             // get metadata
                             IMetadata omeMeta = (IMetadata) memo.getMetadataStore();
                             memo.setMetadataStore(omeMeta);
-
-                            series.forEach(iSerie -> {
+                            int iSerie = identifier.bioformatsIndex;
+                           // series.forEach(iSerie -> {
                                         memo.setSeries(iSerie);
 
                                         IntStream channels = IntStream.range(0, qpOpener.getOmeMetaIdxOmeXml().getChannelCount(iSerie));
@@ -211,7 +211,7 @@ public class QuPathImageLoader implements ViewerImgLoader, MultiResolutionImgLoa
                                                     openerMap.put(viewSetupCounter, qpOpener);
                                                     viewSetupCounter++;
                                                 });
-                                    });
+                                 //   });
                      /*   } catch (URISyntaxException e) {
                             logger.error("URI Syntax error "+e.getMessage());
                             e.printStackTrace();

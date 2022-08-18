@@ -66,7 +66,8 @@ public class QuPathToSpimData {
 
     Map<URI, AbstractSpimData> spimDataMap = new HashMap<>();
     Map<URI, QuPathImageOpener> uriToOpener = new HashMap<>();
-
+    Map<URI, String> uriToImageName = new HashMap<>();
+    List<URI> rawURI = new ArrayList<>();
  //   Map<QuPathImageOpener, SequenceDescription> openerToSd = new HashMap<>();
     //Map<URI, QuPathImageLoader.QuPathSourceIdentifier> uriToQPidentifiers = new HashMap<>();
     //Map<URI, IMetadata> uriToOMEMetadata = new HashMap<>();
@@ -140,19 +141,41 @@ public class QuPathToSpimData {
                 Object opener = qpOpener.getOpener();
                System.out.println("opener  "+opener);
                 System.out.println("opener name  "+opener.getClass().getName());
-                System.out.println("Uri for image "+image+"  ; uri : " + qpOpener.getURI());
+                System.out.println("qpOpener.getIdentifier().bioformatsIndex : "+qpOpener.getIdentifier().bioformatsIndex);
+                System.out.println("Uri for image "+ qpOpener.getOmeMetaIdxOmeXml().getImageName(qpOpener.getIdentifier().bioformatsIndex)+"  ; uri : " + qpOpener.getURI());
+
+               URI enhancedURI;
+               try {
+                   String imageName = qpOpener.getOmeMetaIdxOmeXml().getImageName(qpOpener.getIdentifier().bioformatsIndex);
+
+                   if(imageName != null && !imageName.isEmpty()) {
+                       enhancedURI = new URI(qpOpener.getURI().toString() + "/" +imageName);
+                       uriToImageName.put(enhancedURI,imageName);
+                   }else {
+                       enhancedURI = qpOpener.getURI();
+                       String[] nameWithoutExtension = image.imageName.split("\\.");
+                       uriToImageName.put(enhancedURI,nameWithoutExtension[0]);
+                   }
+               } catch (URISyntaxException e) {
+                   throw new RuntimeException(e);
+               }
 
                // build spimdata
-                if(opener instanceof BioFormatsBdvOpener) {
-                    spimDataMap.put(qpOpener.getURI()/*new URI(qpOpener.getURI().toString()+"_"+qpOpener.getIdentifier().bioformatsIndex)*/, (SpimData) (new BioFormatsConvertFilesToSpimData()).getSpimDataInstance(Collections.singletonList((BioFormatsBdvOpener) qpOpener.getOpener())));
-                    uriToOpener.put(qpOpener.getURI()/*new URI(qpOpener.getURI().toString()+"_"+qpOpener.getIdentifier().bioformatsIndex)*/, qpOpener);
+               if(!rawURI.contains(qpOpener.getURI())) {
+                   if (opener instanceof BioFormatsBdvOpener) {
+                       spimDataMap.put(enhancedURI/*qpOpener.getURI()*//*new URI(qpOpener.getURI().toString()+"_"+qpOpener.getIdentifier().bioformatsIndex)*/, (SpimData) (new BioFormatsConvertFilesToSpimData()).getSpimDataInstance(Collections.singletonList((BioFormatsBdvOpener) qpOpener.getOpener())));
+                       //uriToOpener.put(enhancedURI/*qpOpener.getURI()*//*new URI(qpOpener.getURI().toString()+"_"+qpOpener.getIdentifier().bioformatsIndex)*/, qpOpener);
 
-                } else if (opener instanceof OmeroSourceOpener) {
-                    //System.out.println("OmeroOpeners : "+(OmeroSourceOpener)qpOpener.getOpener());
-                    spimDataMap.put(qpOpener.getURI(), (SpimData) (new OmeroToSpimData()).getSpimDataInstance(Collections.singletonList((OmeroSourceOpener)qpOpener.getOpener())));
-                    uriToOpener.put(qpOpener.getURI(), qpOpener);
-                }
-
+                   } else if (opener instanceof OmeroSourceOpener) {
+                       //System.out.println("OmeroOpeners : "+(OmeroSourceOpener)qpOpener.getOpener());
+                       spimDataMap.put(enhancedURI/*qpOpener.getURI()*/, (SpimData) (new OmeroToSpimData()).getSpimDataInstance(Collections.singletonList((OmeroSourceOpener) qpOpener.getOpener())));
+                       //uriToOpener.put(enhancedURI/*qpOpener.getURI()*/, qpOpener);
+                   }
+                   rawURI.add(qpOpener.getURI());
+               }else{
+                  spimDataMap.put(enhancedURI,spimDataMap.get(spimDataMap.keySet().stream().filter(e -> e.toString().contains(qpOpener.getURI().toString())).findFirst().get()));
+               }
+               uriToOpener.put(enhancedURI, qpOpener);
                 // If the image was imported in qupath with a rotation
              /*   double angleRotationZAxis = 0;
                 if (image.serverBuilder.builderType.equals("rotated")) {
@@ -250,9 +273,15 @@ public class QuPathToSpimData {
             System.out.println("Spimdatamap : "+spimDataMap);
             System.out.println("Spimdatamap key : "+spimDataMap.keySet());
             System.out.println("Spimdatamap values : "+spimDataMap.values());
+            System.out.println("uriToImageName values : "+uriToImageName.values());
+            System.out.println("uriToOpener values : "+uriToOpener.values());
+
            /* ArrayList<URI> q = new ArrayList<>(spimDataMap.keySet());
             if(true)
                 return spimDataMap.get(q.get(q.size()-1));*/
+            System.out.println("Size the spimdatamap : "+ spimDataMap.size());
+            System.out.println("Size the uriToOpener : "+ uriToOpener.size());
+            System.out.println("Size the uriToImageName : "+ uriToImageName.size());
             spimDataMap.keySet().forEach(spimUri->{
                 // get spimdata, opener and identifier
                 SpimData localSpimData = (SpimData) spimDataMap.get(spimUri);
@@ -274,7 +303,7 @@ public class QuPathToSpimData {
 
                 // update spimdata
                 localSpimData.getSequenceDescription().getViewSetups().values().forEach(vss->{
-                  //  vss.setAttribute(sn);
+                    vss.setAttribute(sn);
                     vss.setAttribute(qpentry);
                 });
 
@@ -386,28 +415,33 @@ public class QuPathToSpimData {
             int i = 0;
 
             // create one spimdata by merging all previous spim data
-            for(AbstractSpimData spData:spimDataMap.values()) {
-                SpimData spd = (SpimData)spData;
+            for(URI spURI:spimDataMap.keySet()) {
+                SpimData spd = (SpimData)spimDataMap.get(spURI);
                 System.out.println("spd.getSequenceDescription().getViewSetups().values() : "+spd.getSequenceDescription().getViewSetups().values());
                 for(ViewSetup viewSetup: spd.getSequenceDescription().getViewSetups().values()) {
-                    ViewSetup newViewSetup = new ViewSetup(i, viewSetup.getName(), viewSetup.getSize(), viewSetup.getVoxelSize(), viewSetup.getTile(), viewSetup.getChannel(), viewSetup.getAngle(), viewSetup.getIllumination());
-                    Map<String, Entity> attributes = viewSetup.getAttributes();
-                    attributes.values().forEach(newViewSetup::setAttribute);
-                    newViewSetups.add(newViewSetup);
+                    System.out.println("viewSetup.getName() : "+viewSetup.getName());
+                    if(viewSetup.getName().contains(uriToImageName.get(spURI))) {
+                        ViewSetup newViewSetup = new ViewSetup(i, viewSetup.getName(), viewSetup.getSize(), viewSetup.getVoxelSize(), viewSetup.getTile(), viewSetup.getChannel(), viewSetup.getAngle(), viewSetup.getIllumination());
+                        Map<String, Entity> attributes = viewSetup.getAttributes();
+                        attributes.values().forEach(newViewSetup::setAttribute);
+                        newViewSetups.add(newViewSetup);
 
-                    for(TimePoint iTp : newListOfTimePoint) {
-                        if (iTp.getId() < spd.getSequenceDescription().getTimePoints().getTimePointsOrdered().size()/*spd.getViewRegistrations().getViewRegistrationsOrdered().size()*/) {
-                            newRegistrations.add(new ViewRegistration(iTp.getId(), i, spd.getViewRegistrations().getViewRegistration(0,0).getModel()));
-                        } else {
-                            newMissingViews.add(new ViewId(iTp.getId(), i));
+                        for (TimePoint iTp : newListOfTimePoint) {
+                            if (iTp.getId() < spd.getSequenceDescription().getTimePoints().getTimePointsOrdered().size()/*spd.getViewRegistrations().getViewRegistrationsOrdered().size()*/) {
+                                newRegistrations.add(new ViewRegistration(iTp.getId(), i, spd.getViewRegistrations().getViewRegistration(0, 0).getModel()));
+                            } else {
+                                newMissingViews.add(new ViewId(iTp.getId(), i));
+                            }
                         }
+                        i++;
                     }
-                    i++;
                 }
             }
 
             SequenceDescription sd = new SequenceDescription( new TimePoints( newListOfTimePoint ), newViewSetups , null, new MissingViews(newMissingViews));
-            sd.setImgLoader(new QuPathImageLoader(quPathProject, new ArrayList<>(uriToOpener.values()), sd,2, 4));
+           /* List<BioFormatsBdvOpener> ertjdv = new ArrayList<>();
+            uriToOpener.values().forEach(e->ertjdv.add((BioFormatsBdvOpener) e.getOpener()));*/
+            sd.setImgLoader(new QuPathImageLoader(quPathProject, new ArrayList<>(uriToOpener.values()), sd,2, 4)/*new BioFormatsImageLoader(ertjdv, sd,2, 4)*/);
 
             System.out.println("newRegistrations.size() : "+newRegistrations.size());
 

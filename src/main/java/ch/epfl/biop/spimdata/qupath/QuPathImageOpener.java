@@ -49,6 +49,8 @@ public class QuPathImageOpener {
     private QuPathImageLoader.QuPathSourceIdentifier identifier;
     private Boolean canCreateOpener;
     private MinimalQuPathProject.PixelCalibrations pixelCalibrations = null;
+    private int seriesCount;
+
 
     // getter functions
     public URI getURI(){return this.serverBuilderUri;}
@@ -57,6 +59,7 @@ public class QuPathImageOpener {
     public MinimalQuPathProject.PixelCalibrations getPixelCalibrations(){return this.pixelCalibrations;}
     public IMetadata getOmeMetaIdxOmeXml(){return this.omeMetaIdxOmeXml;}
     public MinimalQuPathProject.ImageEntry getImage(){return this.image;}
+    public int getSeriesCount(){return this.seriesCount;}
 
 
     /**
@@ -120,6 +123,7 @@ public class QuPathImageOpener {
                     System.out.println("FilePath for the opener : "+ filePath);
                     BioFormatsBdvOpener bfOpener = getInitializedBioFormatsBDVOpener(filePath, guiparams).ignoreMetadata();
                     this.opener = bfOpener;
+                    this.seriesCount = bfOpener.getNewReader().getSeriesCount();
                     this.omeMetaIdxOmeXml = (IMetadata) bfOpener.getNewReader().getMetadataStore();
 
                     System.out.println("bfOpener.getSeriesCount() :"+bfOpener.getNewReader().getSeriesCount());
@@ -129,6 +133,7 @@ public class QuPathImageOpener {
                     if (this.providerClassName.equals("qupath.ext.biop.servers.omero.raw.OmeroRawImageServerBuilder")) {
                         filePath = this.serverBuilderUri.toString();
                         this.opener = getInitializedOmeroBDVOpener(filePath, guiparams, gateway, ctx).ignoreMetadata();
+                        this.seriesCount = 1;
                         this.omeMetaIdxOmeXml = MetadataTools.createOMEXMLMetadata();
                     }
                     else {
