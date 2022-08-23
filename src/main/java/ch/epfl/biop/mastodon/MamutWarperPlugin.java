@@ -5,19 +5,14 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.mastodon.app.ui.ViewMenuBuilder;
-import org.mastodon.mamut.MamutAppModel;
 import org.mastodon.mamut.MamutMenuBuilder;
-import org.mastodon.mamut.model.Model;
-import org.mastodon.mamut.model.Spot;
 import org.mastodon.mamut.plugin.MamutPlugin;
 import org.mastodon.mamut.plugin.MamutPluginAppModel;
 import org.mastodon.ui.keymap.CommandDescriptionProvider;
 import org.mastodon.ui.keymap.CommandDescriptions;
 import org.mastodon.ui.keymap.KeyConfigContexts;
-import org.scijava.Context;
 import org.scijava.command.CommandService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
@@ -31,9 +26,9 @@ import org.scijava.ui.behaviour.util.Actions;
 @Plugin( type = MamutPlugin.class )
 public class MamutWarperPlugin implements MamutPlugin
 {
-    private static final String ACTION_CREATE_WARPED_VIEW = "[Warp dataset] warp dataset";
+    private static final String ACTION_WARP_SPOTS = "[Warp spots] warp spots";
 
-    private static final String[] ACTION_CREATE_WARPED_VIEW_KEYS = new String[] {"not mapped"};
+    private static final String[] ACTION_WARP_SPOTS_KEYS = new String[] {"not mapped"};
 
     /*
      * Command descriptions for all provided commands
@@ -49,7 +44,7 @@ public class MamutWarperPlugin implements MamutPlugin
         @Override
         public void getCommandDescriptions( final CommandDescriptions descriptions )
         {
-            descriptions.add( ACTION_CREATE_WARPED_VIEW, ACTION_CREATE_WARPED_VIEW_KEYS, "Warped dataset and detections" );
+            descriptions.add(ACTION_WARP_SPOTS, ACTION_WARP_SPOTS_KEYS, "Warp spots" );
         }
     }
 
@@ -60,22 +55,19 @@ public class MamutWarperPlugin implements MamutPlugin
 
     static
     {
-        menuTexts.put( ACTION_CREATE_WARPED_VIEW, "Create a warped view of the dataset" );
+        menuTexts.put(ACTION_WARP_SPOTS, "Warp spots according to a json elliptical transform file" );
     }
 
     @Parameter
     CommandService command;
 
-    private final AbstractNamedAction createWarpedView = new AbstractNamedAction( ACTION_CREATE_WARPED_VIEW )
+    private final AbstractNamedAction warpSpots = new AbstractNamedAction(ACTION_WARP_SPOTS)
     {
         private static final long serialVersionUID = 1L;
 
         @Override
-        public void actionPerformed( final ActionEvent e )
-        {
-
+        public void actionPerformed( final ActionEvent e ) {
             command.run(MamutWarperCommand.class, true, "appModel", appModel);
-
         }
     };
 
@@ -84,7 +76,7 @@ public class MamutWarperPlugin implements MamutPlugin
     {
         return Arrays.asList(
                 MamutMenuBuilder.menu( "Plugins",
-                        MamutMenuBuilder.item( ACTION_CREATE_WARPED_VIEW ) ) );
+                        MamutMenuBuilder.item(ACTION_WARP_SPOTS) ) );
     }
 
     @Override
@@ -96,7 +88,7 @@ public class MamutWarperPlugin implements MamutPlugin
     @Override
     public void installGlobalActions( final Actions actions )
     {
-        actions.namedAction(createWarpedView, ACTION_CREATE_WARPED_VIEW_KEYS );
+        actions.namedAction(warpSpots, ACTION_WARP_SPOTS_KEYS);
     }
 
     @Override

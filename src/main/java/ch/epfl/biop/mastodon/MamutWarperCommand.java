@@ -2,6 +2,7 @@ package ch.epfl.biop.mastodon;
 
 import bdv.util.Elliptical3DTransform;
 import ij.IJ;
+import ij.gui.ImageCanvas;
 import org.mastodon.mamut.MamutAppModel;
 import org.mastodon.mamut.model.Model;
 import org.mastodon.mamut.model.Spot;
@@ -39,7 +40,6 @@ public class MamutWarperCommand implements Command {
             IJ.error(e.getMessage());
             return;
         }
-
         MamutAppModel am = appModel.getAppModel();
         Model model = am.getModel();
         ReentrantReadWriteLock.WriteLock lock = model.getGraph().getLock().writeLock();
