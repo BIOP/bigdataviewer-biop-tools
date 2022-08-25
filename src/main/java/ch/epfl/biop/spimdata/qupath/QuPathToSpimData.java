@@ -4,6 +4,7 @@ import ch.epfl.biop.bdv.bioformats.BioFormatsMetaDataHelper;
 import ch.epfl.biop.bdv.bioformats.bioformatssource.BioFormatsBdvOpener;
 import ch.epfl.biop.bdv.bioformats.export.spimdata.BioFormatsConvertFilesToSpimData;
 import ch.epfl.biop.bdv.bioformats.imageloader.*;
+import ch.epfl.biop.ij2command.OmeroTools;
 import ch.epfl.biop.omero.imageloader.OmeroToSpimData;
 import ch.epfl.biop.omero.omerosource.OmeroSourceOpener;
 import com.google.gson.Gson;
@@ -20,9 +21,11 @@ import ome.units.UNITS;
 import ome.units.quantity.Length;
 import omero.gateway.Gateway;
 import omero.gateway.SecurityContext;
+import omero.gateway.ServerInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.swing.*;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -68,6 +71,8 @@ public class QuPathToSpimData {
     Map<URI, QuPathImageOpener> uriToOpener = new HashMap<>();
     Map<URI, String> uriToImageName = new HashMap<>();
     List<URI> rawURI = new ArrayList<>();
+
+    Map<String, OmeroTools.GatewaySecurityContext> hostToGatewayCtx = new HashMap<>();
  //   Map<QuPathImageOpener, SequenceDescription> openerToSd = new HashMap<>();
     //Map<URI, QuPathImageLoader.QuPathSourceIdentifier> uriToQPidentifiers = new HashMap<>();
     //Map<URI, IMetadata> uriToOMEMetadata = new HashMap<>();
@@ -77,7 +82,7 @@ public class QuPathToSpimData {
     //Map<Integer, MinimalQuPathProject.ImageEntry> viewSetupToImageEntry = new HashMap<>();
 
 
-    public AbstractSpimData getSpimDataInstance(URI quPathProject, GuiParams guiparams, Gateway gateway, SecurityContext ctx) {
+    public AbstractSpimData getSpimDataInstance(URI quPathProject, GuiParams guiparams/*, Gateway gateway, SecurityContext ctx*/) {
         /*viewSetupCounter = 0;
         nTileCounter = 0;
         maxTimepoints = -1;
@@ -137,7 +142,34 @@ public class QuPathToSpimData {
 
                 logger.debug("Opening qupath image "+image);
                 System.out.println("Opening qupath image "+image);
-               QuPathImageOpener qpOpener = new QuPathImageOpener(image, guiparams, project.images.indexOf(image)).create(gateway,ctx).loadMetadata();
+               QuPathImageOpener qpOpener = new QuPathImageOpener(image, guiparams, project.images.indexOf(image));//.create(gateway,ctx).loadMetadata();
+               try {
+                   if(image.serverBuilder.providerClassName.equals("qupath.ext.biop.servers.omero.raw.OmeroRawImageServerBuilder")) {
+                       if (!hostToGatewayCtx.containsKey(image.serverBuilder.providerClassName)) {
+                          // String[] credentials = OmeroTools.getUserCredentials();
+                           Boolean onlyCredentials = false;
+                           String[] credentials = OmeroTools.getOmeroConnectionInputParameters(onlyCredentials);
+                           String host = credentials[0];
+                           int port = Integer.parseInt(credentials[1]);
+                           String username = credentials[2];
+                           String password = credentials[3];
+                           credentials = new String[]{};
+
+                           Gateway gateway = OmeroTools.omeroConnect(host, port, username, password);
+                           SecurityContext ctx = OmeroTools.getSecurityContext(gateway);
+                           OmeroTools.GatewaySecurityContext gtCtx = new OmeroTools.GatewaySecurityContext(host, port, gateway, ctx);
+                           ctx.setServerInformation(new ServerInformation(host));
+                           hostToGatewayCtx.put(image.serverBuilder.providerClassName, gtCtx);
+                       }
+
+                       OmeroTools.GatewaySecurityContext gtCtx = hostToGatewayCtx.get(image.serverBuilder.providerClassName);
+                       qpOpener.create(gtCtx.host, gtCtx.port, gtCtx.gateway,gtCtx.ctx).loadMetadata();
+
+                   } else qpOpener.create("",-1,null,null).loadMetadata();
+               } catch (Exception e) {
+                   throw new RuntimeException(e);
+               }
+
                Object opener = qpOpener.getOpener();
                System.out.println("opener  "+opener);
                 System.out.println("opener name  "+opener.getClass().getName());
@@ -772,6 +804,8 @@ public class QuPathToSpimData {
             e.printStackTrace();
             System.out.println("Error in try/catch spimdata");
         }
+
+        hostToGatewayCtx.values().forEach(e-> e.gateway.disconnect());
 
         return null;
     }

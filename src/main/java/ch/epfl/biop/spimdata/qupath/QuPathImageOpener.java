@@ -52,7 +52,9 @@ public class QuPathImageOpener {
     private MinimalQuPathProject.ImageEntry image;
     private GuiParams defaultParams;
     private int indexInQuPathProject;
-    //private int entryID;
+    private String host;
+    private int port;
+
 
 
     // getter functions
@@ -64,7 +66,8 @@ public class QuPathImageOpener {
     public MinimalQuPathProject.ImageEntry getImage(){return this.image;}
     public GuiParams getDefaultParams(){return this.defaultParams;}
     public int getSeriesCount(){return this.seriesCount;}
-
+    public String getHost(){return this.host;}
+    public int getPort(){return this.port;}
 
     /**
      * Constructor building the qupath opener
@@ -80,7 +83,10 @@ public class QuPathImageOpener {
        // this.canCreateOpener = createOpener(gateway, ctx);
     }
 
-    public QuPathImageOpener create(Gateway gateway, SecurityContext ctx){
+    public QuPathImageOpener create(String host, int port, Gateway gateway, SecurityContext ctx){
+        this.host = host;
+        this.port = port;
+
         // get the rotation angle if the image has been loaded in qupath with the rotation command
         double angleRotationZAxis = getAngleRotationZAxis(this.image);
 

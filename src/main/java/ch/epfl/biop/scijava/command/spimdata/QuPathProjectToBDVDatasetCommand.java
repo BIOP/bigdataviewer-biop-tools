@@ -51,7 +51,7 @@ public class QuPathProjectToBDVDatasetCommand extends BioformatsBigdataviewerBri
     @Parameter(label = "Dataset name (leave empty to name it like the QuPath project)", persist = false)
     public String datasetname = ""; // Cheat to allow dataset renaming
 
-    @Parameter(label = "OMERO host")
+   /* @Parameter(label = "OMERO host")
     String host;
 
     @Parameter(label = "Enter your gaspar username")
@@ -60,7 +60,7 @@ public class QuPathProjectToBDVDatasetCommand extends BioformatsBigdataviewerBri
     @Parameter(label = "Enter your gaspar password", style = "password", persist = false)
     String password;
 
-    static int port = 4064;
+    static int port = 4064;*/
 
     @Parameter(type = ItemIO.OUTPUT)
     AbstractSpimData spimData;
@@ -70,18 +70,18 @@ public class QuPathProjectToBDVDatasetCommand extends BioformatsBigdataviewerBri
     public void run() {
 
         try {
-            Gateway gateway =  OmeroTools.omeroConnect(host, port, username, password);
-            System.out.println( "Session active : "+gateway.isConnected() );
+           // Gateway gateway =  OmeroTools.omeroConnect(host, port, username, password);
+           // System.out.println( "Session active : "+gateway.isConnected() );
 
-            if(gateway != null) {
-                SecurityContext ctx = OmeroTools.getSecurityContext(gateway);
-                ctx.setServerInformation(new ServerInformation(host));
+            //if(gateway != null) {
+              //  SecurityContext ctx = OmeroTools.getSecurityContext(gateway);
+              //  ctx.setServerInformation(new ServerInformation(host));
 
                 spimData = (new QuPathToSpimData()).getSpimDataInstance(
                         quPathProject.toURI(),
-                        getGuiParams(),
-                        gateway,
-                        ctx
+                        getGuiParams()//,
+                       // gateway,
+                       // ctx
                         //getOpener("")
                 );
                 if (datasetname.equals("")) {
@@ -99,11 +99,11 @@ public class QuPathProjectToBDVDatasetCommand extends BioformatsBigdataviewerBri
                 // End of session
                // Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                     //fail
-                    gateway.disconnect();
-                    System.out.println("Gateway disconnected");
-                    System.out.println("Session active : " + gateway.isConnected());
+                  //  gateway.disconnect();
+              //      System.out.println("Gateway disconnected");
+             //       System.out.println("Session active : " + gateway.isConnected());
                // }));
-            }
+          //  }
 
         } catch (Exception e) {
             e.printStackTrace();

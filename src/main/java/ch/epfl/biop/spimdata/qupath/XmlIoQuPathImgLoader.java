@@ -66,7 +66,7 @@ public class XmlIoQuPathImgLoader implements XmlIoBasicImgLoader< QuPathImageLoa
     public static final String OPENER_MODEL_TAG = "opener_model";
     public static final String DATASET_NUMBER_TAG = "dataset_number";
 
-    Map<String, XmlIoQuPathImgLoader.GatewaySecurityContext> hostToGatewayCtx = new HashMap<>();
+    Map<String, OmeroTools.GatewaySecurityContext> hostToGatewayCtx = new HashMap<>();
 
     @Override
     public Element toXml(QuPathImageLoader imgLoader, File basePath) {
@@ -113,34 +113,23 @@ public class XmlIoQuPathImgLoader implements XmlIoBasicImgLoader< QuPathImageLoa
 
                 if(opener.getImage().serverBuilder.providerClassName.equals("qupath.ext.biop.servers.omero.raw.OmeroRawImageServerBuilder")) {
                     if (!hostToGatewayCtx.containsKey(opener.getImage().serverBuilder.providerClassName)) {
-                        // No : add it in the channel hashmap
-                        //Get username
-                        String username = (String) JOptionPane.showInputDialog(null, "Enter Your OMERO Username: ", null);
+                        Boolean onlyCredentials = true;
+                        String[] credentials = OmeroTools.getOmeroConnectionInputParameters(onlyCredentials);
+                        String username = credentials[0];
+                        String password = credentials[1];
+                        credentials = new String[]{};
 
-                        // get password
-                        JPasswordField jpf = new JPasswordField(24);
-                        Box box = Box.createHorizontalBox();
-                        box.add(jpf);
-                        JOptionPane.showConfirmDialog(null, box, "Enter Your OMERO Password: ", JOptionPane.OK_CANCEL_OPTION);
-                        char[] chArray = jpf.getPassword();
-                        String password = new String(chArray);
-                        Arrays.fill(chArray, (char) 0);
-
-                        String host = "omero-server.epfl.ch";
-                        Gateway gateway = OmeroTools.omeroConnect(host, 4064, username, password);
-                        System.out.println("Gateway : "+gateway);
-
+                        Gateway gateway = OmeroTools.omeroConnect(opener.getHost(), opener.getPort(), username, password);
                         SecurityContext ctx = OmeroTools.getSecurityContext(gateway);
-                        System.out.println("ctx : "+ctx);
-                        GatewaySecurityContext gtCtx = new GatewaySecurityContext(gateway, ctx);
-                        ctx.setServerInformation(new ServerInformation(host));
+                        OmeroTools.GatewaySecurityContext gtCtx = new OmeroTools.GatewaySecurityContext(opener.getHost(), opener.getPort(),gateway, ctx);
+                        ctx.setServerInformation(new ServerInformation(opener.getHost()));
                         hostToGatewayCtx.put(opener.getImage().serverBuilder.providerClassName, gtCtx);
                     }
 
-                    GatewaySecurityContext gtCtx = hostToGatewayCtx.get(opener.getImage().serverBuilder.providerClassName);
-                    opener.create(gtCtx.gateway,gtCtx.ctx).loadMetadata();
+                    OmeroTools.GatewaySecurityContext gtCtx = hostToGatewayCtx.get(opener.getImage().serverBuilder.providerClassName);
+                    opener.create(gtCtx.host,gtCtx.port,gtCtx.gateway,gtCtx.ctx).loadMetadata();
 
-                } else opener.create(null,null).loadMetadata();
+                } else opener.create("",-1,null,null).loadMetadata();
 
                 openers.add(opener);
             }
@@ -160,6 +149,8 @@ public class XmlIoQuPathImgLoader implements XmlIoBasicImgLoader< QuPathImageLoa
 
             URI qpProjURI = (new Gson()).fromJson(qupathProjectUri, URI.class);
 
+            hostToGatewayCtx.values().forEach(e-> e.gateway.disconnect());
+
             return new QuPathImageLoader(qpProjURI, openers/*Collections.singletonList(new QuPathImageOpener(modelOpener))*/, sequenceDescription, numFetcherThreads, numPriorities);
         }
         catch ( final Exception e )
@@ -169,7 +160,7 @@ public class XmlIoQuPathImgLoader implements XmlIoBasicImgLoader< QuPathImageLoa
         }
     }
 
-    public static class GatewaySecurityContext {
+   /* public static class GatewaySecurityContext {
         public Gateway gateway;
         public SecurityContext ctx;
 
@@ -177,6 +168,6 @@ public class XmlIoQuPathImgLoader implements XmlIoBasicImgLoader< QuPathImageLoa
             this.gateway = gateway;
             this.ctx = ctx;
         }
-    }
+    }*/
 }
 
