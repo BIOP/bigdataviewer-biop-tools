@@ -75,6 +75,9 @@ public class XmlIoQuPathImgLoader implements XmlIoBasicImgLoader< QuPathImageLoa
             final int numPriorities = XmlHelpers.getInt(elem, CACHE_NUM_PRIORITIES);
 
             String openerClassName = XmlHelpers.getText( elem, OPENER_CLASS_TAG );
+            if (openerClassName.equals("ch.epfl.biop.bdv.bioformats.bioformatssource.BioFormatsBdvOpener")) {
+                openerClassName = BioFormatsBdvOpener.class.getName(); // Fix for old versions
+            }
 
             if (!openerClassName.equals(BioFormatsBdvOpener.class.getName())) {
                 throw new UnsupportedOperationException("Error class "+openerClassName+" not recognized.");

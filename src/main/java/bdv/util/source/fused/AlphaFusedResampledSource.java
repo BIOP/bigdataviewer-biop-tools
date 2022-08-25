@@ -309,7 +309,7 @@ public class AlphaFusedResampledSource< T extends NumericType<T> & NativeType<T>
                     final int nSources = arrayAlphaSources.length;
                     final AffineTransform3D affineTransform = new AffineTransform3D();
                     getSourceTransform(t,level,affineTransform);
-
+TODO : CHANGE CACHING FOR PDV PG CACHE!
                     final CachedCellImg< T, ? > rai = factory.create(new long[]{sx, sy, sz}, pixelCreator.get(),
                             cell -> {
                                 boolean[] sourcesPresentInCell = new boolean[nSources];

@@ -99,7 +99,7 @@
 		<bigdataviewer-playground.version>0.6.0-SNAPSHOT</bigdataviewer-playground.version>
 		<bigdataviewer-bioformats.version>0.4.0-SNAPSHOT</bigdataviewer-bioformats.version>
 		<bigdataviewer-selector.version>0.1.10-SNAPSHOT-10.4.1</bigdataviewer-selector.version>
-		<scijava.app.directory>C:/Fiji.app/</scijava.app.directory>
+		<!--<scijava.app.directory>C:/Fiji.app/</scijava.app.directory>-->
 
 		<bigdataviewer-core.version>10.4.3</bigdataviewer-core.version>
 		<bigdataviewer-vistools.version>1.0.0-beta-30</bigdataviewer-vistools.version>
