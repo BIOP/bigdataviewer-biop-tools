@@ -41,24 +41,28 @@ import java.util.List;
 public class QuPathImageOpener {
 
     protected static Logger logger = LoggerFactory.getLogger(QuPathImageOpener.class);
-    private Object opener;
+    transient private Object opener;
+   // transient private URI serverBuilderUri;
+   // transient private String providerClassName;
+    transient private IMetadata omeMetaIdxOmeXml;
+    transient private QuPathImageLoader.QuPathSourceIdentifier identifier;
+   // transient private Boolean canCreateOpener;
+    transient private MinimalQuPathProject.PixelCalibrations pixelCalibrations = null;
+    transient private int seriesCount;
     private MinimalQuPathProject.ImageEntry image;
-    private URI serverBuilderUri;
-    private String providerClassName;
-    private IMetadata omeMetaIdxOmeXml;
-    private QuPathImageLoader.QuPathSourceIdentifier identifier;
-    private Boolean canCreateOpener;
-    private MinimalQuPathProject.PixelCalibrations pixelCalibrations = null;
-    private int seriesCount;
+    private GuiParams defaultParams;
+    private int indexInQuPathProject;
+    //private int entryID;
 
 
     // getter functions
-    public URI getURI(){return this.serverBuilderUri;}
+    public URI getURI(){return this.image.serverBuilder.uri;}
     public Object getOpener(){return this.opener;}
     public QuPathImageLoader.QuPathSourceIdentifier getIdentifier(){return this.identifier;}
     public MinimalQuPathProject.PixelCalibrations getPixelCalibrations(){return this.pixelCalibrations;}
     public IMetadata getOmeMetaIdxOmeXml(){return this.omeMetaIdxOmeXml;}
     public MinimalQuPathProject.ImageEntry getImage(){return this.image;}
+    public GuiParams getDefaultParams(){return this.defaultParams;}
     public int getSeriesCount(){return this.seriesCount;}
 
 
@@ -68,42 +72,15 @@ public class QuPathImageOpener {
      * @param image
      * @param guiparams
      * @param indexInQuPathProject
-     * @param entryID
-     * @param gateway
-     * @param ctx
      */
-    public QuPathImageOpener(MinimalQuPathProject.ImageEntry image, GuiParams guiparams, int indexInQuPathProject, int entryID, Gateway gateway, SecurityContext ctx) {
+    public QuPathImageOpener(MinimalQuPathProject.ImageEntry image, GuiParams guiparams, int indexInQuPathProject/*, int entryID*//*, Gateway gateway, SecurityContext ctx*/) {
         this.image = image;
-        this.serverBuilderUri = image.serverBuilder.uri;
-        this.providerClassName = image.serverBuilder.providerClassName;
-        this.canCreateOpener = createOpener(guiparams, indexInQuPathProject, entryID, gateway, ctx);
+        this.indexInQuPathProject = indexInQuPathProject;
+        this.defaultParams = guiparams;
+       // this.canCreateOpener = createOpener(gateway, ctx);
     }
 
-
-    /**
-     * This constructor is used by XmlIoQuPathImgLoader class
-     * //TODO Have a look to this class and try to fit with current QuPathImageOpener or modify QuPathImageOpener so that all the fields are filled
-     * @param opener : Bioformats-BDV opener
-     */
-    public QuPathImageOpener(BioFormatsBdvOpener opener) {
-        this.image = null;
-        this.serverBuilderUri = null;
-        this.providerClassName = "qupath.lib.images.servers.bioformats.BioFormatsServerBuilder";
-        this.canCreateOpener = true;
-        this.opener = opener;
-    }
-
-
-    /**
-     * Build the minimal QuPath opener
-     * @param guiparams : defaults parameters for all openers
-     * @param indexInQuPathProject : image index in the QuPath project
-     * @param entryID
-     * @param gateway : logged-in gateway already connected to OMERO session
-     * @param ctx : the corresponding security context
-     * @return
-     */
-    private boolean createOpener(GuiParams guiparams, int indexInQuPathProject, int entryID, Gateway gateway, SecurityContext ctx) {
+    public QuPathImageOpener create(Gateway gateway, SecurityContext ctx){
         // get the rotation angle if the image has been loaded in qupath with the rotation command
         double angleRotationZAxis = getAngleRotationZAxis(this.image);
 
@@ -112,42 +89,40 @@ public class QuPathImageOpener {
             System.out.println("URI image server");
             try {
                 this.identifier = new QuPathImageLoader.QuPathSourceIdentifier();
-                identifier.angleRotationZAxis = angleRotationZAxis;
-                URI uri = new URI(this.serverBuilderUri.getScheme(), this.serverBuilderUri.getHost(), this.serverBuilderUri.getPath(), null);
+                this.identifier.angleRotationZAxis = angleRotationZAxis;
+                URI uri = new URI(this.image.serverBuilder.uri.getScheme(), this.image.serverBuilder.uri.getHost(), this.image.serverBuilder.uri.getPath(), null);
                 String filePath;
 
-                // get the bioFormats opener
-                if (this.providerClassName.equals("qupath.lib.images.servers.bioformats.BioFormatsServerBuilder")) {
+                if (this.image.serverBuilder.providerClassName.equals("qupath.lib.images.servers.bioformats.BioFormatsServerBuilder")) {
                     // This appears to work more reliably than converting to a File
                     filePath = Paths.get(uri).toString();
-                    System.out.println("FilePath for the opener : "+ filePath);
-                    BioFormatsBdvOpener bfOpener = getInitializedBioFormatsBDVOpener(filePath, guiparams).ignoreMetadata();
+
+                    BioFormatsBdvOpener bfOpener = getInitializedBioFormatsBDVOpener(filePath).ignoreMetadata();
                     this.opener = bfOpener;
                     this.seriesCount = bfOpener.getNewReader().getSeriesCount();
                     this.omeMetaIdxOmeXml = (IMetadata) bfOpener.getNewReader().getMetadataStore();
-
-                    System.out.println("bfOpener.getSeriesCount() :"+bfOpener.getNewReader().getSeriesCount());
                 }
                 else {
-                    // get the OMERO opener
-                    if (this.providerClassName.equals("qupath.ext.biop.servers.omero.raw.OmeroRawImageServerBuilder")) {
-                        filePath = this.serverBuilderUri.toString();
-                        this.opener = getInitializedOmeroBDVOpener(filePath, guiparams, gateway, ctx).ignoreMetadata();
+                    if (this.image.serverBuilder.providerClassName.equals("qupath.ext.biop.servers.omero.raw.OmeroRawImageServerBuilder")) {
+                        filePath = this.image.serverBuilder.uri.toString();
+                        this.opener = getInitializedOmeroBDVOpener(filePath, gateway, ctx).ignoreMetadata();
                         this.seriesCount = 1;
+
                         this.omeMetaIdxOmeXml = MetadataTools.createOMEXMLMetadata();
+                        System.out.println("this.omeMetaIdxOmeXml : "+this.omeMetaIdxOmeXml);
                     }
                     else {
-                        logger.error("Unsupported "+this.providerClassName+" provider Class Name");
-                        System.out.println("Unsupported "+this.providerClassName+" provider Class Name");
-                        return false;
+                        logger.error("Unsupported "+this.image.serverBuilder.providerClassName+" provider Class Name");
+                        System.out.println("Unsupported " + this.image.serverBuilder.providerClassName + " provider Class Name");
+                        return this;
                     }
-                }
+                 }
 
                 // fill the identifier
-                this.identifier.uri = this.serverBuilderUri;
+                this.identifier.uri = this.image.serverBuilder.uri;
                 this.identifier.sourceFile = filePath;
-                this.identifier.indexInQuPathProject = indexInQuPathProject;
-                this.identifier.entryID = entryID;
+                this.identifier.indexInQuPathProject = this.indexInQuPathProject;
+                this.identifier.entryID = this.image.entryID;
 
                 int iSerie = this.image.serverBuilder.args.indexOf("--series");
 
@@ -167,9 +142,8 @@ public class QuPathImageOpener {
                 e.printStackTrace();
             }
         }
-        return true;
-    }
-
+        return this;
+    };
 
     /**
      * Fill the opener metadata with QuPath metadata
@@ -254,47 +228,48 @@ public class QuPathImageOpener {
     /**
      * create and initialize an OmeroSourceOpener object to read images from OMERO in BDV
      * @param datalocation : url of the image
-     * @param guiParams : default parameters for all openers
      * @param gateway : connected gateway
      * @param ctx
      * @return
      * @throws Exception
      */
-    public OmeroSourceOpener getInitializedOmeroBDVOpener(String datalocation, GuiParams guiParams, Gateway gateway, SecurityContext ctx) throws Exception {
-        Unit bfUnit = BioFormatsMetaDataHelper.getUnitFromString(guiParams.getUnit());
+    public OmeroSourceOpener getInitializedOmeroBDVOpener(String datalocation, Gateway gateway, SecurityContext ctx) throws Exception {
+        Unit bfUnit = BioFormatsMetaDataHelper.getUnitFromString(this.defaultParams.getUnit());
         System.out.println("bfUnit in omero : "+bfUnit.getSymbol());
-        Length positionReferenceFrameLength = new Length(guiParams.getRefframesizeinunitlocation(), bfUnit);
-        Length voxSizeReferenceFrameLength = new Length(guiParams.getVoxSizeReferenceFrameLength(), bfUnit);
+        Length positionReferenceFrameLength = new Length(this.defaultParams.getRefframesizeinunitlocation(), bfUnit);
+        Length voxSizeReferenceFrameLength = new Length(this.defaultParams.getVoxSizeReferenceFrameLength(), bfUnit);
 
         // create the Omero opener
         OmeroSourceOpener opener = new OmeroSourceOpener().location(datalocation).ignoreMetadata();
 
         // flip x, y and z axis
-        if (!guiParams.getFlippositionx().equals("AUTO") && guiParams.getFlippositionx().equals("TRUE")) {
+        if (!this.defaultParams.getFlippositionx().equals("AUTO") && this.defaultParams.getFlippositionx().equals("TRUE")) {
             opener = opener.flipPositionX();
         }
 
-        if (!guiParams.getFlippositiony().equals("AUTO") && guiParams.getFlippositiony().equals("TRUE")) {
+        if (!this.defaultParams.getFlippositiony().equals("AUTO") && this.defaultParams.getFlippositiony().equals("TRUE")) {
             opener = opener.flipPositionY();
         }
 
-        if (!guiParams.getFlippositionz().equals("AUTO") && guiParams.getFlippositionz().equals("TRUE")) {
+        if (!this.defaultParams.getFlippositionz().equals("AUTO") && this.defaultParams.getFlippositionz().equals("TRUE")) {
             opener = opener.flipPositionZ();
         }
 
         // set unit length and references
-        UnitsLength unit = guiParams.getUnit().equals("MILLIMETER")?UnitsLength.MILLIMETER:guiParams.getUnit().equals("MICROMETER")?UnitsLength.MICROMETER:guiParams.getUnit().equals("NANOMETER")?UnitsLength.NANOMETER:null;
+        UnitsLength unit = this.defaultParams.getUnit().equals("MILLIMETER")?UnitsLength.MILLIMETER:this.defaultParams.getUnit().equals("MICROMETER")?UnitsLength.MICROMETER:this.defaultParams.getUnit().equals("NANOMETER")?UnitsLength.NANOMETER:null;
         System.out.println("unit (UnitsLength) : "+unit);
         System.out.println("unit (UnitsLength) : "+unit.name());
         opener = opener.unit(unit);
+        System.out.println("opener --2:"+opener);
         opener = opener.positionReferenceFrameLength(positionReferenceFrameLength);
+        System.out.println("opener --1:"+opener);
         opener = opener.voxSizeReferenceFrameLength(voxSizeReferenceFrameLength);
-
+        System.out.println("opener 0:"+opener);
         // split RGB channels
-        if (guiParams.getSplitChannels()) {
+        if (this.defaultParams.getSplitChannels()) {
             opener = opener.splitRGBChannels();
         }
-
+        System.out.println("opener 1:"+opener);
         // set omero connection
         String[] imageString = datalocation.split("%3D");
         String[] omeroId = imageString[1].split("-");
@@ -320,8 +295,13 @@ public class QuPathImageOpener {
             omero.model.Length lengthPosY = new LengthI(planeinfo.getPositionY(), UnitsLength.MICROMETER);
             System.out.println("lengthPosY : "+lengthPosY);
         }*/
+        System.out.println("opener 2:"+opener);
+        System.out.println("gateway:"+gateway);
+        System.out.println("ctx:"+ctx);
+        System.out.println("Long.parseLong(omeroId[1]):"+Long.parseLong(omeroId[1]));
+        System.out.println("ctx.getServerInformation().getHost():"+ctx.getServerInformation().getHost());
         opener.gateway(gateway).securityContext(ctx).imageID(Long.parseLong(omeroId[1])).host(ctx.getServerInformation().getHost()).create();
-
+        System.out.println("opener 3:"+opener);
         return opener;
     }
 
@@ -329,14 +309,13 @@ public class QuPathImageOpener {
     /**
      * create and initialize an BioFormatsBdvOpener object to read images from Bioformats in BDV
      * @param datalocation : uri of the image
-     * @param guiParams : default parameters for all openers
      * @return
      * @throws Exception
      */
-    public BioFormatsBdvOpener getInitializedBioFormatsBDVOpener(String datalocation, GuiParams guiParams) {
-        Unit bfUnit = BioFormatsMetaDataHelper.getUnitFromString(guiParams.getUnit());
-        Length positionReferenceFrameLength = new Length(guiParams.getRefframesizeinunitlocation(), bfUnit);
-        Length voxSizeReferenceFrameLength = new Length(guiParams.getVoxSizeReferenceFrameLength(), bfUnit);
+    public BioFormatsBdvOpener getInitializedBioFormatsBDVOpener(String datalocation) {
+        Unit bfUnit = BioFormatsMetaDataHelper.getUnitFromString(this.defaultParams.getUnit());
+        Length positionReferenceFrameLength = new Length(this.defaultParams.getRefframesizeinunitlocation(), bfUnit);
+        Length voxSizeReferenceFrameLength = new Length(this.defaultParams.getVoxSizeReferenceFrameLength(), bfUnit);
 
         // create the bioformats opener
         BioFormatsBdvOpener opener = BioFormatsBdvOpener.getOpener()
@@ -344,18 +323,18 @@ public class QuPathImageOpener {
                 .ignoreMetadata();
 
         // Switch channels and Z axis
-        if (!guiParams.getSwitchzandc().equals("AUTO")) {
-            opener = opener.switchZandC(guiParams.getSwitchzandc().equals("TRUE"));
+        if (!this.defaultParams.getSwitchzandc().equals("AUTO")) {
+            opener = opener.switchZandC(this.defaultParams.getSwitchzandc().equals("TRUE"));
         }
 
         // configure cache block size
-        if (!guiParams.getUsebioformatscacheblocksize()) {
-            opener = opener.cacheBlockSize(guiParams.getCachesizex(), guiParams.getCachesizey(), guiParams.getCachesizez());
+        if (!this.defaultParams.getUsebioformatscacheblocksize()) {
+            opener = opener.cacheBlockSize(this.defaultParams.getCachesizex(), this.defaultParams.getCachesizey(), this.defaultParams.getCachesizez());
         }
 
         // configure the coordinates origin convention
-        if (!guiParams.getPositoniscenter().equals("AUTO")) {
-            if (guiParams.getPositoniscenter().equals("TRUE")) {
+        if (!this.defaultParams.getPositoniscenter().equals("AUTO")) {
+            if (this.defaultParams.getPositoniscenter().equals("TRUE")) {
                 opener = opener.centerPositionConvention();
             } else {
                 opener = opener.cornerPositionConvention();
@@ -363,15 +342,15 @@ public class QuPathImageOpener {
         }
 
         // flip x,y and z axis
-        if (!guiParams.getFlippositionx().equals("AUTO") && guiParams.getFlippositionx().equals("TRUE")) {
+        if (!this.defaultParams.getFlippositionx().equals("AUTO") && this.defaultParams.getFlippositionx().equals("TRUE")) {
             opener = opener.flipPositionX();
         }
 
-        if (!guiParams.getFlippositiony().equals("AUTO") && guiParams.getFlippositiony().equals("TRUE")) {
+        if (!this.defaultParams.getFlippositiony().equals("AUTO") && this.defaultParams.getFlippositiony().equals("TRUE")) {
             opener = opener.flipPositionY();
         }
 
-        if (!guiParams.getFlippositionz().equals("AUTO") && guiParams.getFlippositionz().equals("TRUE")) {
+        if (!this.defaultParams.getFlippositionz().equals("AUTO") && this.defaultParams.getFlippositionz().equals("TRUE")) {
             opener = opener.flipPositionZ();
         }
 
@@ -381,7 +360,7 @@ public class QuPathImageOpener {
         opener = opener.voxSizeReferenceFrameLength(voxSizeReferenceFrameLength);
 
         // split channels
-        if (guiParams.getSplitChannels()) {
+        if (this.defaultParams.getSplitChannels()) {
             opener = opener.splitRGBChannels();
         }
         return opener;

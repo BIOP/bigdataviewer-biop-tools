@@ -70,7 +70,8 @@ public class QuPathProjectToBDVDatasetCommand extends BioformatsBigdataviewerBri
     public void run() {
 
         try {
-            Gateway gateway = connectToOmero();
+            Gateway gateway =  OmeroTools.omeroConnect(host, port, username, password);
+            System.out.println( "Session active : "+gateway.isConnected() );
 
             if(gateway != null) {
                 SecurityContext ctx = OmeroTools.getSecurityContext(gateway);
@@ -98,9 +99,9 @@ public class QuPathProjectToBDVDatasetCommand extends BioformatsBigdataviewerBri
                 // End of session
                // Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                     //fail
-                    System.out.println("Session active : " + gateway.isConnected());
                     gateway.disconnect();
                     System.out.println("Gateway disconnected");
+                    System.out.println("Session active : " + gateway.isConnected());
                // }));
             }
 
@@ -110,13 +111,6 @@ public class QuPathProjectToBDVDatasetCommand extends BioformatsBigdataviewerBri
 
     }
 
-
-    public Gateway connectToOmero() throws Exception {
-        Gateway gateway =  OmeroTools.omeroConnect(host, port, username, password);
-        System.out.println( "Session active : "+gateway.isConnected() );
-
-        return gateway;
-    }
 
     public GuiParams getGuiParams(){
         return (new GuiParams()).setUnit(this.unit)

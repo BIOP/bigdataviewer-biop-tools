@@ -137,8 +137,8 @@ public class QuPathToSpimData {
 
                 logger.debug("Opening qupath image "+image);
                 System.out.println("Opening qupath image "+image);
-                QuPathImageOpener qpOpener = new QuPathImageOpener(image, guiparams, project.images.indexOf(image), image.entryID, gateway, ctx).loadMetadata();
-                Object opener = qpOpener.getOpener();
+               QuPathImageOpener qpOpener = new QuPathImageOpener(image, guiparams, project.images.indexOf(image)).create(gateway,ctx).loadMetadata();
+               Object opener = qpOpener.getOpener();
                System.out.println("opener  "+opener);
                 System.out.println("opener name  "+opener.getClass().getName());
                 System.out.println("qpOpener.getIdentifier().bioformatsIndex : "+qpOpener.getIdentifier().bioformatsIndex);
