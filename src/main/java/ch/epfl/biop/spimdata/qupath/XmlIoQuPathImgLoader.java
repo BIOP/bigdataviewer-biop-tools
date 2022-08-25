@@ -32,8 +32,7 @@
  */
 package ch.epfl.biop.spimdata.qupath;
 
-import ch.epfl.biop.bdv.bioformats.bioformatssource.BioFormatsBdvOpener;
-import ch.epfl.biop.bdv.bioformats.imageloader.BioFormatsImageLoader;
+import ch.epfl.biop.bdv.bioformats.imageloader.BioFormatsBdvOpener;
 import com.google.gson.Gson;
 import mpicbg.spim.data.XmlHelpers;
 import mpicbg.spim.data.generic.sequence.AbstractSequenceDescription;
@@ -43,9 +42,6 @@ import org.jdom2.Element;
 
 import java.io.File;
 import java.net.URI;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
 
 import static mpicbg.spim.data.XmlKeys.IMGLOADER_FORMAT_ATTRIBUTE_NAME;
 

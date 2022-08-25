@@ -11,7 +11,7 @@
 
 	<groupId>ch.epfl.biop</groupId>
 	<artifactId>bigdataviewer-biop-tools</artifactId>
-	<version>0.4.0-SNAPSHOT-beta</version>
+	<version>0.4.0-SNAPSHOT</version>
 
 	<name>Biop Bigdataviewer Tools and Plugins </name>
 	<description>Big data viewer tools BIOP - EPFL</description>
@@ -96,8 +96,8 @@
 		<scijava.deleteOtherVersions>true</scijava.deleteOtherVersions>
 		<license.excludes>**/resources/**</license.excludes>
 
-		<bigdataviewer-playground.version>0.6.0-SNAPSHOT-beta2</bigdataviewer-playground.version>
-		<bigdataviewer-bioformats.version>0.3.7-SNAPSHOT-10.4.1</bigdataviewer-bioformats.version>
+		<bigdataviewer-playground.version>0.6.0-SNAPSHOT</bigdataviewer-playground.version>
+		<bigdataviewer-bioformats.version>0.4.0-SNAPSHOT</bigdataviewer-bioformats.version>
 		<bigdataviewer-selector.version>0.1.10-SNAPSHOT-10.4.1</bigdataviewer-selector.version>
 		<scijava.app.directory>C:/Fiji.app/</scijava.app.directory>
 

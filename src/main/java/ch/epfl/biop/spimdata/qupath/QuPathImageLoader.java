@@ -3,9 +3,9 @@ package ch.epfl.biop.spimdata.qupath;
 import bdv.ViewerImgLoader;
 import bdv.cache.CacheControl;
 import bdv.img.cache.VolatileGlobalCellCache;
-import bdv.util.volatiles.SharedQueue;
-import ch.epfl.biop.bdv.bioformats.bioformatssource.BioFormatsBdvOpener;
-import ch.epfl.biop.bdv.bioformats.bioformatssource.BioFormatsBdvSource;
+import bdv.cache.SharedQueue;
+import ch.epfl.biop.bdv.bioformats.imageloader.BioFormatsBdvOpener;
+import ch.epfl.biop.bdv.bioformats.imageloader.BioFormatsImageLoader;
 import ch.epfl.biop.bdv.bioformats.imageloader.BioFormatsSetupLoader;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -47,9 +47,9 @@ public class QuPathImageLoader implements ViewerImgLoader, MultiResolutionImgLoa
     private static final Logger logger = LoggerFactory.getLogger(QuPathImageLoader.class);
 
     final AbstractSequenceDescription<?, ?, ?> sequenceDescription;
-    protected VolatileGlobalCellCache cache;
+    VolatileGlobalCellCache cache;
     protected SharedQueue sq;
-    Map<Integer, BioFormatsSetupLoader<?,?>> imgLoaders = new ConcurrentHashMap<>();
+    Map<Integer, BioFormatsSetupLoader<?,?,?>> imgLoaders = new ConcurrentHashMap<>();
     Map<URI, BioFormatsBdvOpener> openerMap = new HashMap<>();
 
     public final int numFetcherThreads;
@@ -73,6 +73,7 @@ public class QuPathImageLoader implements ViewerImgLoader, MultiResolutionImgLoa
         this.numFetcherThreads = numFetcherThreads;
         this.numPriorities = numPriorities;
         sq = new SharedQueue(numFetcherThreads, numPriorities);
+        cache = new VolatileGlobalCellCache(sq);
 
         try {
 
@@ -146,8 +147,8 @@ public class QuPathImageLoader implements ViewerImgLoader, MultiResolutionImgLoa
 
                             IntStream channels = IntStream.range(0, omeMeta.getChannelCount(identifier.bioformatsIndex));
                             // Register Setups (one per channel and one per timepoint)
-                            Type<?> t = BioFormatsBdvSource.getBioformatsBdvSourceType(memo, identifier.bioformatsIndex);
-                            Volatile<?> v = BioFormatsBdvSource.getVolatileOf((NumericType<?>)t);
+                            Type<?> t = BioFormatsImageLoader.getBioformatsBdvSourceType(memo, identifier.bioformatsIndex);
+                            Volatile<?> v = BioFormatsImageLoader.getVolatileOf((NumericType<?>)t);
                             channels.forEach(
                                     iCh -> {
                                         QuPathEntryAndChannel usc = new QuPathEntryAndChannel(identifier, iCh);
@@ -178,7 +179,6 @@ public class QuPathImageLoader implements ViewerImgLoader, MultiResolutionImgLoa
                     e.printStackTrace();
                 }
             });
-            cache = new VolatileGlobalCellCache(sq);
         } catch (Exception e) {
             logger.error("Exception "+e.getMessage());
             e.printStackTrace();
@@ -186,7 +186,7 @@ public class QuPathImageLoader implements ViewerImgLoader, MultiResolutionImgLoa
     }
 
     @Override
-    public BioFormatsSetupLoader<?,?> getSetupImgLoader(int setupId) {
+    public BioFormatsSetupLoader<?,?,?> getSetupImgLoader(int setupId) {
         if (imgLoaders.containsKey(setupId)) {
             // Already created - return it
             return imgLoaders.get(setupId);
@@ -196,13 +196,20 @@ public class QuPathImageLoader implements ViewerImgLoader, MultiResolutionImgLoa
             int iS = qec.entry.bioformatsIndex;
             int iC = qec.iChannel;
             logger.debug("loading qupath entry number = "+qec.entry+"setupId = "+setupId+" series"+iS+" channel "+iC);
-            BioFormatsSetupLoader<?,?> imgL = new BioFormatsSetupLoader(
-                    opener,
-                    iS,
-                    iC,
-                    tTypeGetter.get(setupId),
-                    vTypeGetter.get(setupId)
-            );
+            BioFormatsSetupLoader imgL = null;
+            try {
+                imgL = new BioFormatsSetupLoader(
+                        opener,
+                        iS,
+                        iC,
+                        setupId,
+                        tTypeGetter.get(setupId),
+                        vTypeGetter.get(setupId),
+                        () -> cache
+                );
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             imgLoaders.put(setupId,imgL);
             return imgL;
         }
