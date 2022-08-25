@@ -6,7 +6,6 @@ import bdv.img.cache.VolatileGlobalCellCache;
 import bdv.util.volatiles.SharedQueue;
 import ch.epfl.biop.bdv.bioformats.bioformatssource.BioFormatsBdvOpener;
 import ch.epfl.biop.bdv.bioformats.bioformatssource.BioFormatsBdvSource;
-import ch.epfl.biop.bdv.bioformats.imageloader.FileSerieChannel;
 import ch.epfl.biop.omero.omerosource.OmeroSourceOpener;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -67,155 +66,48 @@ public class QuPathImageLoader implements ViewerImgLoader, MultiResolutionImgLoa
         sq = new SharedQueue(numFetcherThreads, numPriorities);
 
         try {
-            // get the qupath project
+            // deserialize qupath project
             JsonObject projectJson = ProjectIO.loadRawProject(new File(quPathProject));
             Gson gson = new Gson();
             MinimalQuPathProject project = gson.fromJson(projectJson, MinimalQuPathProject.class);
-
             logger.debug("Opening QuPath project " + project.uri);
-
-            //Map<BioFormatsBdvOpener, IFormatReader> cachedReaders = new HashMap<>(); // Performance
 
             qpOpeners.forEach(qpOpener -> {
                 // get the image corresponding to the opener
                 MinimalQuPathProject.ImageEntry image = qpOpener.getImage();
-                System.out.println("QuPathImageLoader image : "+image);
                 logger.debug("Opening qupath image "+image);
-               // System.out.println("IL : Opening qupath image "+image);
-
-               /* QuPathSourceIdentifier identifier = new QuPathSourceIdentifier();
-                if (image.serverBuilder.builderType.equals("rotated")) {
-                    String angleDegreesStr = image.serverBuilder.rotation.substring(7);//"ROTATE_ANGLE" for instance "ROTATE_0", "ROTATE_270", etc
-                    logger.debug("Rotated image server ("+angleDegreesStr+")");
-                    if (angleDegreesStr.equals("NONE")) {
-                        identifier.angleRotationZAxis = 0;
-                    } else {
-                        identifier.angleRotationZAxis = (Double.parseDouble(angleDegreesStr) / 180.0) * Math.PI;
-                    }
-                    image.serverBuilder = image.serverBuilder.builder;
-                }*/
 
                 if (image.serverBuilder.builderType.equals("uri")) {
                     logger.debug("URI image server");
                     if (image.serverBuilder.providerClassName.equals("qupath.lib.images.servers.bioformats.BioFormatsServerBuilder")) {
-                       /* try {
-                            URI uri = new URI(image.serverBuilder.uri.getScheme(), image.serverBuilder.uri.getHost(), image.serverBuilder.uri.getPath(), null);
+                        // get the BioFormats opener
+                        QuPathSourceIdentifier identifier = qpOpener.getIdentifier();
+                        BioFormatsBdvOpener opener = (BioFormatsBdvOpener) qpOpener.getOpener();
+                        opener.setCache(sq);
 
-                            System.out.println("IL : Image type BioFormat; uri :"+uri);
-                            // This appears to work more reliably than converting to a File
-                            String filePath = Paths.get(uri).toString();
+                        // create a new reader
+                        IFormatReader memo = opener.getNewReader();
 
-                            if (!openerMap.containsKey(image.serverBuilder.uri)) {
-                                //String location = Paths.get(uri).toString();
-                                logger.debug("Creating opener for data location "+filePath);
-                                BioFormatsBdvOpener opener = new BioFormatsBdvOpener((BioFormatsBdvOpener) qpOpeners.get(0).getOpener()).location(filePath);
-                                System.out.println("IL : BioFormatsBdvOpener opener :"+opener);
-                               // for (Object o: qpOpeners) {
-                               //     if (o instanceof BioFormatsBdvOpener) {
-                               //         opener = new BioFormatsBdvOpener((BioFormatsBdvOpener) o).location(filePath);
-                               //     }
-                               // }
+                        // get metadata
+                        IMetadata omeMeta = (IMetadata) memo.getMetadataStore();
+                        memo.setMetadataStore(omeMeta);
 
-                                opener.setCache(sq);
-                                openerMap.put(image.serverBuilder.uri,opener);
-                                cachedReaders.put(opener, opener.getNewReader());
-                            }
+                        // get series
+                        int iSerie = identifier.bioformatsIndex;
+                        memo.setSeries(iSerie);
+                        IntStream channels = IntStream.range(0, qpOpener.getOmeMetaIdxOmeXml().getChannelCount(iSerie));
 
-                            identifier.uri = image.serverBuilder.uri;
-                            identifier.sourceFile = filePath;
-                            identifier.indexInQuPathProject = qpOpener.getIdentifier().indexInQuPathProject;//project.images.indexOf(image);
-                            identifier.entryID = qpOpener.getIdentifier().entryID;//project.images.get(identifier.indexInQuPathProject).entryID;
-
-
-
-                            //QuPathSourceIdentifier identifier = qpOpener.getIdentifier();
-                            int iSerie =  image.serverBuilder.args.indexOf("--series");
-
-                            if (iSerie==-1) {
-                                logger.error("Series not found in qupath project server builder!");
-                                identifier.bioformatsIndex = -1;
-                            } else {
-                                identifier.bioformatsIndex = Integer.parseInt(image.serverBuilder.args.get(iSerie + 1));
-                            }
-
-                            System.out.println("Identifier 1 / uri : "+identifier.uri);
-                            System.out.println("Identifier 1 / sourceFile : "+identifier.sourceFile);
-                            System.out.println("Identifier 1 / indexInQuPathProject : "+identifier.indexInQuPathProject);
-                            System.out.println("Identifier 1 / entryID : "+identifier.entryID);
-                            System.out.println("Identifier 1 / bioformatsIndex : "+identifier.bioformatsIndex);
-                            System.out.println("Identifier 1 / angleRotationZAxis : "+identifier.angleRotationZAxis);
-                            QuPathSourceIdentifier identifier2 = qpOpener.getIdentifier();
-                            System.out.println("identifier2  / uri : "+identifier2.uri);
-                            System.out.println("identifier2  / sourceFile : "+identifier2.sourceFile);
-                            System.out.println("identifier2 / indexInQuPathProject : "+identifier2.indexInQuPathProject);
-                            System.out.println("identifier2  / entryID : "+identifier2.entryID);
-                            System.out.println("identifier2  / bioformatsIndex : "+identifier2.bioformatsIndex);
-                            System.out.println("identifier2  / angleRotationZAxis : "+identifier2.angleRotationZAxis);
-
-                            logger.debug(identifier.toString());
-
-                            BioFormatsBdvOpener opener = openerMap.get(image.serverBuilder.uri);
-                            IFormatReader memo = cachedReaders.get(opener);
-                            memo.setSeries(identifier.bioformatsIndex);
-
-                            logger.debug("Number of Series : " + memo.getSeriesCount());
-                            IMetadata omeMeta = (IMetadata) memo.getMetadataStore();
-                            memo.setMetadataStore(omeMeta);
-
-                            logger.debug("\t Serie " + identifier2.bioformatsIndex + " Number of timesteps = " + omeMeta.getPixelsSizeT(identifier2.bioformatsIndex).getNumberValue().intValue());
-                            // ---------- Serie > Channels
-                            logger.debug("\t Serie " + identifier2.bioformatsIndex + " Number of channels = " + omeMeta.getChannelCount(identifier2.bioformatsIndex));
-
-
-
-                            IntStream channels = IntStream.range(0, omeMeta.getChannelCount(identifier2.bioformatsIndex));
-                            // Register Setups (one per channel and one per timepoint)
-                            Type<?> t = BioFormatsBdvSource.getBioformatsBdvSourceType(memo, identifier2.bioformatsIndex);
-                            Volatile<?> v = BioFormatsBdvSource.getVolatileOf((NumericType<?>)t);
-                            channels.forEach(
-                                    iCh -> {
-                                        QuPathEntryAndChannel usc = new QuPathEntryAndChannel(identifier2, iCh);
-                                        viewSetupToQuPathEntryAndChannel.put(viewSetupCounter,usc);
-                                        tTypeGetter.put(viewSetupCounter,(NumericType<?>)t);
-                                        vTypeGetter.put(viewSetupCounter, v);
-                                        viewSetupCounter++;
-                                    });*/
-
-                            // get the BioFormats opener
-                            QuPathSourceIdentifier identifier = qpOpener.getIdentifier();
-                            BioFormatsBdvOpener opener = (BioFormatsBdvOpener) qpOpener.getOpener();
-                            opener.setCache(sq);
-
-                            // create a new reader
-                            IFormatReader memo = opener.getNewReader();
-                            IntStream series = IntStream.range(0, memo.getSeriesCount());
-
-                            // get metadata
-                            IMetadata omeMeta = (IMetadata) memo.getMetadataStore();
-                            memo.setMetadataStore(omeMeta);
-                            int iSerie = identifier.bioformatsIndex;
-                           // series.forEach(iSerie -> {
-                                        memo.setSeries(iSerie);
-
-                                        IntStream channels = IntStream.range(0, qpOpener.getOmeMetaIdxOmeXml().getChannelCount(iSerie));
-
-                                        // Register Setups (one per channel and one per timepoint)
-                                        Type<?> t = BioFormatsBdvSource.getBioformatsBdvSourceType(memo, iSerie);
-                                        Volatile<?> v = BioFormatsBdvSource.getVolatileOf((NumericType<?>) t);
-                                        channels.forEach(
-                                                iCh -> {
-                                                    QuPathEntryAndChannel usc = new QuPathEntryAndChannel(identifier, iCh);
-                                                    viewSetupToQuPathEntryAndChannel.put(viewSetupCounter, usc);
-                                                    tTypeGetter.put(viewSetupCounter, (NumericType<?>) t);
-                                                    vTypeGetter.put(viewSetupCounter, v);
-                                                    openerMap.put(viewSetupCounter, qpOpener);
-                                                    viewSetupCounter++;
-                                                });
-                                 //   });
-                     /*   } catch (URISyntaxException e) {
-                            logger.error("URI Syntax error "+e.getMessage());
-                            e.printStackTrace();
-                        }*/
+                        // Register Setups (one per channel and one per timepoint)
+                        Type<?> t = BioFormatsBdvSource.getBioformatsBdvSourceType(memo, iSerie);
+                        Volatile<?> v = BioFormatsBdvSource.getVolatileOf((NumericType<?>) t);
+                        channels.forEach(iCh -> {
+                                    QuPathEntryAndChannel usc = new QuPathEntryAndChannel(identifier, iCh);
+                                    viewSetupToQuPathEntryAndChannel.put(viewSetupCounter, usc);
+                                    tTypeGetter.put(viewSetupCounter, (NumericType<?>) t);
+                                    vTypeGetter.put(viewSetupCounter, v);
+                                    openerMap.put(viewSetupCounter, qpOpener);
+                                    viewSetupCounter++;
+                                });
 
                     } else {
                         if (image.serverBuilder.providerClassName.equals("qupath.ext.biop.servers.omero.raw.OmeroRawImageServerBuilder")) {
@@ -251,43 +143,15 @@ public class QuPathImageLoader implements ViewerImgLoader, MultiResolutionImgLoa
                 }
             });
 
-            // Cleaning opened readers
-           /* cachedReaders.values().forEach(reader -> {
-                try {
-                    reader.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });*/
             cache = new VolatileGlobalCellCache(sq);
         } catch (Exception e) {
             logger.error("Exception "+e.getMessage());
-            System.out.println("Exception "+e.getMessage());
             e.printStackTrace();
         }
     }
 
     @Override
     public QuPathSetupLoader<?,?> getSetupImgLoader(int setupId) {
-        /*if (imgLoaders.containsKey(setupId)) {
-            // Already created - return it
-            return (BioFormatsSetupLoader<?,?>)imgLoaders.get(setupId);
-        } else {
-            QuPathEntryAndChannel qec = viewSetupToQuPathEntryAndChannel.get(setupId);
-            QuPathImageOpener opener = this.openerMap.get(setupId);
-            int iS = qec.entry.bioformatsIndex;
-            int iC = qec.iChannel;
-            logger.debug("loading qupath entry number = "+qec.entry+"setupId = "+setupId+" series"+iS+" channel "+iC);
-            BioFormatsSetupLoader<?,?> imgL = new BioFormatsSetupLoader(
-                    (BioFormatsBdvOpener) opener.getOpener(),
-                    iS,
-                    iC,
-                    tTypeGetter.get(setupId),
-                    vTypeGetter.get(setupId)
-            );
-            imgLoaders.put(setupId,imgL);
-            return imgL;
-        }*/
         if (imgLoaders.containsKey(setupId)) {
             // Already created - return it
             return imgLoaders.get(setupId);
