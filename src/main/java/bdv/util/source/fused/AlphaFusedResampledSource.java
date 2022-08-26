@@ -16,24 +16,44 @@ import net.imglib2.RealRandomAccessible;
 import net.imglib2.cache.Cache;
 import net.imglib2.cache.img.CachedCellImg;
 import net.imglib2.cache.img.DiskCachedCellImgOptions;
+import net.imglib2.cache.img.LoadedCellCacheLoader;
 import net.imglib2.cache.img.ReadOnlyCachedCellImgFactory;
 import net.imglib2.cache.img.ReadOnlyCachedCellImgOptions;
 import net.imglib2.cache.img.optional.CacheOptions;
+import net.imglib2.img.basictypeaccess.AccessFlags;
+import net.imglib2.img.basictypeaccess.ArrayDataAccessFactory;
+import net.imglib2.img.cell.Cell;
+import net.imglib2.img.cell.CellGrid;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.realtransform.RealViews;
 import net.imglib2.type.NativeType;
+import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.NumericType;
+import net.imglib2.type.numeric.integer.GenericByteType;
+import net.imglib2.type.numeric.integer.GenericIntType;
+import net.imglib2.type.numeric.integer.GenericLongType;
+import net.imglib2.type.numeric.integer.GenericShortType;
+import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.type.operators.SetZero;
 import net.imglib2.view.ExtendedRandomAccessibleInterval;
 import net.imglib2.view.Views;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sc.fiji.bdvpg.cache.BdvPGLoaderCache;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
+
+import static net.imglib2.img.basictypeaccess.AccessFlags.VOLATILE;
+import static net.imglib2.type.PrimitiveType.BYTE;
+import static net.imglib2.type.PrimitiveType.DOUBLE;
+import static net.imglib2.type.PrimitiveType.FLOAT;
+import static net.imglib2.type.PrimitiveType.INT;
+import static net.imglib2.type.PrimitiveType.LONG;
+import static net.imglib2.type.PrimitiveType.SHORT;
 
 /**
  *
@@ -74,8 +94,6 @@ public class AlphaFusedResampledSource< T extends NumericType<T> & NativeType<T>
      * Hashmap to cache RAIs (mipmaps and timepoints), used only if {@link AlphaFusedResampledSource#cache} is true
      */
     transient ConcurrentHashMap<Integer, ConcurrentHashMap<Integer,RandomAccessibleInterval<T>>> cachedRAIs
-            = new ConcurrentHashMap<>();
-    transient ConcurrentHashMap<Integer, ConcurrentHashMap<Integer, Cache< ?,?>>> cachedCacheRAIs
             = new ConcurrentHashMap<>();
 
     /**
@@ -200,9 +218,7 @@ public class AlphaFusedResampledSource< T extends NumericType<T> & NativeType<T>
             AffineTransform3D at3d = new AffineTransform3D();
             rootOrigin.getSourceTransform(0,l,at3d);
             double mid = //SourceAndConverterHelper.getCharacteristicVoxelSize(at3d);
-
             SourceAndConverterHelper.getCharacteristicVoxelSize(origin,0,l);
-
             originVoxSize.get(origin).add(mid);
         }
 
@@ -274,17 +290,13 @@ public class AlphaFusedResampledSource< T extends NumericType<T> & NativeType<T>
         if (cache) {
             if (!cachedRAIs.containsKey(t)) {
                 cachedRAIs.put(t, new ConcurrentHashMap<>());
-                cachedCacheRAIs.put(t, new ConcurrentHashMap<>());
             }
 
             if (!cachedRAIs.get(t).containsKey(level)) {
                 if (cache) {
                     final AlphaFused3DRandomAccessible<T> nonCached = buildSource(t, level);
-
                     int[] blockSize = {cacheX, cacheY, cacheZ};
-
                     ReadOnlyCachedCellImgOptions cacheOptions;
-
                     if (cacheBound>0) {
                         cacheOptions = ReadOnlyCachedCellImgOptions
                                 .options().cacheType(CacheOptions.CacheType.BOUNDED).maxCacheSize(cacheBound)
@@ -294,8 +306,6 @@ public class AlphaFusedResampledSource< T extends NumericType<T> & NativeType<T>
                                 .options().cacheType(CacheOptions.CacheType.SOFTREF)
                                 .cellDimensions(blockSize);
                     }
-
-                    final ReadOnlyCachedCellImgFactory factory = new ReadOnlyCachedCellImgFactory( cacheOptions );
 
                     List<IAlphaSource> iteratedAlphaSources = new ArrayList<>();
 
@@ -309,37 +319,72 @@ public class AlphaFusedResampledSource< T extends NumericType<T> & NativeType<T>
                     final int nSources = arrayAlphaSources.length;
                     final AffineTransform3D affineTransform = new AffineTransform3D();
                     getSourceTransform(t,level,affineTransform);
-TODO : CHANGE CACHING FOR PDV PG CACHE!
-                    final CachedCellImg< T, ? > rai = factory.create(new long[]{sx, sy, sz}, pixelCreator.get(),
-                            cell -> {
-                                boolean[] sourcesPresentInCell = new boolean[nSources];
-                                boolean oneSourcePresent = false;
-                                for (int i=0;i<nSources;i++) {
-                                    IAlphaSource alpha = arrayAlphaSources[i];
-                                    if (!alpha.doBoundingBoxCulling()) {
-                                        sourcesPresentInCell[i] = true;
-                                        oneSourcePresent = true;
-                                    } else {
-                                        sourcesPresentInCell[i] = alpha.intersectBox(affineTransform.copy(), cell, t);
-                                        oneSourcePresent = oneSourcePresent || sourcesPresentInCell[i];
-                                    }
-                                }
-                                if (oneSourcePresent) {
-                                    RandomAccess<T> nonCachedAccess = nonCached.randomAccess(sourcesPresentInCell);
-                                    Cursor<T> out = Views.flatIterable(cell).cursor();
-                                    T t_in;
-                                    while (out.hasNext()) {
-                                        t_in = out.next();
-                                        nonCachedAccess.setPosition(out);
-                                        t_in.set(nonCachedAccess.get());
-                                    }
-                                } else {
-                                    cell.forEach(SetZero::setZero);
-                                }
-                            });
 
-                    cachedRAIs.get(t).put(level, rai);
-                    cachedCacheRAIs.get(t).put(level, rai.getCache());
+                    final CachedCellImg<T, ?> img;
+                    final CellGrid grid = new CellGrid(new long[]{sx, sy, sz}, blockSize);
+                    T type = pixelCreator.get();
+                    final Cache<Long, Cell<?>> cache =
+                            new BdvPGLoaderCache(this, t, level)
+                                    .withLoader(
+                                            LoadedCellCacheLoader.get(grid, cell -> {
+                                                boolean[] sourcesPresentInCell = new boolean[nSources];
+                                                boolean oneSourcePresent = false;
+                                                for (int i=0;i<nSources;i++) {
+                                                    IAlphaSource alpha = arrayAlphaSources[i];
+                                                    if (!alpha.doBoundingBoxCulling()) {
+                                                        sourcesPresentInCell[i] = true;
+                                                        oneSourcePresent = true;
+                                                    } else {
+                                                        sourcesPresentInCell[i] = alpha.intersectBox(affineTransform.copy(), cell, t);
+                                                        oneSourcePresent = oneSourcePresent || sourcesPresentInCell[i];
+                                                    }
+                                                }
+                                                if (oneSourcePresent) {
+                                                    RandomAccess<T> nonCachedAccess = nonCached.randomAccess(sourcesPresentInCell);
+                                                    Cursor<T> out = Views.flatIterable(cell).cursor();
+                                                    T t_in;
+                                                    while (out.hasNext()) {
+                                                        t_in = out.next();
+                                                        nonCachedAccess.setPosition(out);
+                                                        t_in.set(nonCachedAccess.get());
+                                                    }
+                                                } else {
+                                                    cell.forEach(SetZero::setZero);
+                                                }
+                                            }, pixelCreator.get(), AccessFlags.setOf(
+                                                    VOLATILE)));
+                    if (GenericByteType.class.isInstance(type)) {
+                        img = new CachedCellImg(grid, type, cache, ArrayDataAccessFactory.get(
+                                BYTE, AccessFlags.setOf(VOLATILE)));
+                    }
+                    else if (GenericShortType.class.isInstance(type)) {
+                        img = new CachedCellImg(grid, type, cache, ArrayDataAccessFactory.get(
+                                SHORT, AccessFlags.setOf(VOLATILE)));
+                    }
+                    else if (GenericIntType.class.isInstance(type)) {
+                        img = new CachedCellImg(grid, type, cache, ArrayDataAccessFactory.get(INT,
+                                AccessFlags.setOf(VOLATILE)));
+                    }
+                    else if (GenericLongType.class.isInstance(type)) {
+                        img = new CachedCellImg(grid, type, cache, ArrayDataAccessFactory.get(
+                                LONG, AccessFlags.setOf(VOLATILE)));
+                    }
+                    else if (FloatType.class.isInstance(type)) {
+                        img = new CachedCellImg(grid, type, cache, ArrayDataAccessFactory.get(
+                                FLOAT, AccessFlags.setOf(VOLATILE)));
+                    }
+                    else if (DoubleType.class.isInstance(type)) {
+                        img = new CachedCellImg(grid, type, cache, ArrayDataAccessFactory.get(
+                                DOUBLE, AccessFlags.setOf(VOLATILE)));
+                    }
+                    else if (ARGBType.class.isInstance(type)) {
+                        img = new CachedCellImg(grid, type, cache, ArrayDataAccessFactory.get(INT,
+                                AccessFlags.setOf(VOLATILE)));
+                    }
+                    else {
+                        img = null;
+                    }
+                    cachedRAIs.get(t).put(level, img);
                 } else {
                     cachedRAIs.get(t).put(level,Views.interval(buildSource(t,level), new long[]{0, 0, 0}, new long[]{sx, sy, sz}));
                 }
@@ -415,7 +460,7 @@ TODO : CHANGE CACHING FOR PDV PG CACHE!
 
     @Override
     public T getType() {
-        return pixelCreator.get();//origins.stream().findAny().get().getType().createVariable();
+        return pixelCreator.get();
     }
 
     @Override
@@ -449,5 +494,4 @@ TODO : CHANGE CACHING FOR PDV PG CACHE!
         return cacheZ;
     }
 
-    public ConcurrentHashMap<Integer, ConcurrentHashMap<Integer, Cache< ?,?>>> getCaches() { return cachedCacheRAIs;}
 }
