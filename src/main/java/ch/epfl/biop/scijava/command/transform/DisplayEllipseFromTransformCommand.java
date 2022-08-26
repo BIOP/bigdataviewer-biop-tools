@@ -8,6 +8,7 @@ import net.imglib2.FinalInterval;
 import net.imglib2.Interval;
 import net.imglib2.RealRandomAccessible;
 import net.imglib2.realtransform.AffineTransform3D;
+import net.imglib2.realtransform.BoundingBoxEstimation;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
@@ -59,6 +60,7 @@ public class DisplayEllipseFromTransformCommand implements Command {
         final Source< UnsignedShortType > s = new RealRandomAccessibleIntervalSource<>( rra, interval, type, new AffineTransform3D(), "Ellipse" );
 
         WarpedSource ws = new WarpedSource(s,"Ellipsoid");
+        ws.setBoundingBoxEstimator(new BoundingBoxEstimation(BoundingBoxEstimation.Method.CORNERS));
         ws.updateTransform(e3Dt.inverse());
         ws.setIsTransformed(true);
 
