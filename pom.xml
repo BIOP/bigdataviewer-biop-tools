@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>32.0.0-beta-6</version>
+		<version>32.0.0</version>
 		<relativePath />
 	</parent>
 
@@ -96,37 +96,25 @@
 		<scijava.deleteOtherVersions>true</scijava.deleteOtherVersions>
 		<license.excludes>**/resources/**</license.excludes>
 
-		<bigdataviewer-playground.version>0.6.0-SNAPSHOT</bigdataviewer-playground.version>
+		<bigdataviewer-playground.version>0.6.0</bigdataviewer-playground.version>
 		<bigdataviewer-bioformats.version>0.4.0-SNAPSHOT</bigdataviewer-bioformats.version>
-		<bigdataviewer-selector.version>0.1.10-SNAPSHOT-10.4.1</bigdataviewer-selector.version>
+		<bigdataviewer-selector.version>0.2.1</bigdataviewer-selector.version>
 		<!--<scijava.app.directory>C:/Fiji.app/</scijava.app.directory>-->
-
-		<bigdataviewer-core.version>10.4.3</bigdataviewer-core.version>
-		<bigdataviewer-vistools.version>1.0.0-beta-30</bigdataviewer-vistools.version>
-		<imglib2-cache.version>1.0.0-beta-16</imglib2-cache.version>
-		<bigwarp_fiji.version>7.0.6</bigwarp_fiji.version>
 
 		<leastsquares.version>1.0.0</leastsquares.version>
 		<ijl-utilities-wrappers.version>0.6.0</ijl-utilities-wrappers.version>
 		<image-transform-converters.version>0.1.5</image-transform-converters.version>
 
-		<bigdataviewer-spimdata-extras.version>0.1.7-SNAPSHOT-10.4.1</bigdataviewer-spimdata-extras.version>
+		<bigdataviewer-spimdata-extras.version>0.2.0</bigdataviewer-spimdata-extras.version>
 		<elastix_registration_server.version>0.1.4</elastix_registration_server.version>
 
 		<bigdataviewer-playground-display.version>0.2.1-SNAPSHOT-10.4.1</bigdataviewer-playground-display.version>
 
 		<Operetta_Importer.version>0.1.22</Operetta_Importer.version>
 		<bigvolumeviewer.version>0.2.0</bigvolumeviewer.version>
-		<ui-behaviour.version>2.0.7</ui-behaviour.version>
-
 		<ijp-kheops.version>0.2.3</ijp-kheops.version>
 
 		<releaseProfiles>sign,deploy-to-scijava</releaseProfiles>
-
-		<!--<scijava-common.version>2.87.3.99</scijava-common.version>
-		<imagej-legacy.version>0.38.2.99</imagej-legacy.version>
-		<scijava-ui-swing.version>0.13.4.99</scijava-ui-swing.version>
-		<batch-processor.version>0.4.2.99</batch-processor.version>-->
 
 	</properties>
 
