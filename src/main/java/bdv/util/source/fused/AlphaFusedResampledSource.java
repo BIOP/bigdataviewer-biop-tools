@@ -40,7 +40,7 @@ import net.imglib2.view.ExtendedRandomAccessibleInterval;
 import net.imglib2.view.Views;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sc.fiji.bdvpg.cache.BdvPGLoaderCache;
+import sc.fiji.bdvpg.cache.GlobalLoaderCache;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
 
 import java.util.*;
@@ -324,7 +324,7 @@ public class AlphaFusedResampledSource< T extends NumericType<T> & NativeType<T>
                     final CellGrid grid = new CellGrid(new long[]{sx, sy, sz}, blockSize);
                     T type = pixelCreator.get();
                     final Cache<Long, Cell<?>> cache =
-                            new BdvPGLoaderCache(this, t, level)
+                            new GlobalLoaderCache(this, t, level)
                                     .withLoader(
                                             LoadedCellCacheLoader.get(grid, cell -> {
                                                 boolean[] sourcesPresentInCell = new boolean[nSources];

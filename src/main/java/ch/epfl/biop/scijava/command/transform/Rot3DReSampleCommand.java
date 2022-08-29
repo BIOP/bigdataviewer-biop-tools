@@ -9,6 +9,8 @@ import ij.measure.Calibration;
 import ij.plugin.frame.RoiManager;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imglib2.realtransform.AffineTransform3D;
+import net.imglib2.type.NativeType;
+import net.imglib2.type.numeric.NumericType;
 import net.imglib2.util.LinAlgHelpers;
 import org.scijava.ItemIO;
 import org.scijava.plugin.Parameter;
@@ -35,7 +37,7 @@ description = "Required : two point roi in the ROI Manager and an ImagePlus. " +
         "This command reorients a 3D IJ1 image (ImagePlus) by creating another IJ1 image where" +
         "the two points Roi are aligned in Z. Hyperstakcs are supporteda and metadata (original pixel size)" +
         "matters.")
-public class Rot3DReSampleCommand implements BdvPlaygroundActionCommand {
+public class Rot3DReSampleCommand<T extends NumericType<T> & NativeType<T>> implements BdvPlaygroundActionCommand {
 
     @Parameter
     ImagePlus imp_in;
@@ -203,18 +205,18 @@ public class Rot3DReSampleCommand implements BdvPlaygroundActionCommand {
             System.out.println("model is null");
         }
 
-        SourceResampler sampler = new SourceResampler(null, model, "Sampler", false, false, interpolate,0);
+        SourceResampler<T> sampler = new SourceResampler(null, model, "Sampler", false, false, interpolate,0);
 
-        List<SourceAndConverter> reoriented_sources = sacs.stream().map(sampler::apply).collect(Collectors.toList());
+        List<SourceAndConverter<T>> reoriented_sources = sacs.stream().map(source -> sampler.apply((SourceAndConverter<T>) source)).collect(Collectors.toList());
 
-        Map<SourceAndConverter, ConverterSetup> mapCS = new HashMap<>();
+        Map<SourceAndConverter<T>, ConverterSetup> mapCS = new HashMap<>();
         reoriented_sources.forEach(sac -> mapCS.put(sac,
                     SourceAndConverterServices
                         .getSourceAndConverterService()
                         .getConverterSetup(sac)
                 ));
 
-        Map<SourceAndConverter, Integer> mapMipmap = new HashMap<>();
+        Map<SourceAndConverter<T>, Integer> mapMipmap = new HashMap<>();
         reoriented_sources.forEach(sac -> mapMipmap.put(sac, 0)); // Only one resolution exists
 
         imp_out = ImagePlusHelper.wrap(
