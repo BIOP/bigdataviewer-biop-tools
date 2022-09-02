@@ -107,50 +107,7 @@ public class FuseBigStitcherDatasetIntoOMETiffCommand implements Command {
 
         AbstractSpimData asd = new SpimDataFromXmlImporter(xml_bigstitcher_file).get();
 
-        BasicImgLoader imageLoader = asd.getSequenceDescription().getImgLoader();
-        /*
-        if the PR https://github.com/bigdataviewer/bigdataviewer-core/pull/137 is accepted:
-        if (imageLoader instanceof CacheOverrider) {
-            CacheOverrider co = (CacheOverrider) imageLoader;
-            SharedQueue queue = new SharedQueue(numberOfFetcherThreads, numberOfPriorities);
-            LoaderCache loaderCache;
-            if (maxNumberOfCells>0) {
-                loaderCache = new BoundedSoftRefLoaderCache<>(maxNumberOfCells);
-            } else {
-                loaderCache = new SoftRefLoaderCache();
-            }
-            VolatileGlobalCellCache cache = new VolatileGlobalCellCache(queue, loaderCache);
-            co.setCache(cache);
-        } else {
-            IJ.log("Can't override cache with image loader type: "+imageLoader.getClass().getName());
-        }*/
-        // ---------------------- Hacking through reflection while waiting for the PR
-
         int nThreads = Runtime.getRuntime().availableProcessors()-1;
-        int maxNumberOfCells  = nThreads * 200;
-
-        LoaderCache  loaderCache = new BoundedSoftRefLoaderCache<>(maxNumberOfCells);
-        VolatileGlobalCellCache cache = new VolatileGlobalCellCache(nThreads, 5);
-        // Now override the backingCache field of the VolatileGlobalCellCache
-        try {
-            Field backingCacheField = VolatileGlobalCellCache.class.getDeclaredField("backingCache");
-            backingCacheField.setAccessible(true);
-            backingCacheField.set(cache,loaderCache);
-            // Now overrides the cache in the ImageLoader
-            if (imageLoader instanceof Hdf5ImageLoader) {
-                Field cacheField = Hdf5ImageLoader.class.getDeclaredField("cache");
-                cacheField.setAccessible(true);
-                cacheField.set(imageLoader,cache);
-            } else if (imageLoader instanceof N5ImageLoader) {
-                Field cacheField = N5ImageLoader.class.getDeclaredField("cache");
-                cacheField.setAccessible(true);
-                cacheField.set(imageLoader,cache);
-            } else {
-                IJ.log("Can't override cache with image loader type: "+imageLoader.getClass().getName());
-            }
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            e.printStackTrace();
-        }
 
         SourceAndConverterServiceUI.Node node = sac_service.getUI().getRoot().child(xml_bigstitcher_file.getName());
 

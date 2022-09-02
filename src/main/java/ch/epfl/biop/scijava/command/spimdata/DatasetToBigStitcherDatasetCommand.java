@@ -42,19 +42,6 @@ public class DatasetToBigStitcherDatasetCommand implements Command {
         }
 
         try {
-            /*BioFormatsBdvOpener opener = BioFormatsConvertFilesToSpimData.getDefaultOpener(file.getAbsolutePath()).micrometer();
-            IFormatReader reader = opener.getNewReader();
-            Length[] voxSizes = BioFormatsMetaDataHelper.getSeriesVoxelSizeAsLengths((IMetadata) reader.getMetadataStore(), 0);//.getSeriesRootTransform()
-            double pixSizeXYMicrometer = voxSizes[0].value(UNITS.MICROMETER).doubleValue();
-            double scalingForBigStitcher = 1 / pixSizeXYMicrometer;
-            reader.close();
-
-            AbstractSpimData<?> asd = BioFormatsConvertFilesToSpimData.getSpimData(
-                    opener
-                            .voxSizeReferenceFrameLength(new Length(1, UNITS.MICROMETER))
-                            .positionReferenceFrameLength(new Length(1, UNITS.MICROMETER)));
-            */
-
             AbstractSpimData<?> asd = new XmlIoSpimData().load(xmlin.getAbsolutePath());
 
             // We assume all pixel sizes are equal
@@ -75,7 +62,7 @@ public class DatasetToBigStitcherDatasetCommand implements Command {
                 BioFormatsSetupLoader setupLoader = imgLoader.getSetupImgLoader(viewsetupreference);
                 scalingForBigStitcher = 1./setupLoader.getVoxelSize(0).dimension(0);
             } else {
-                IJ.error("This dataset does not use the followinf image loader: spimreconstruction.biop_bioformatsimageloader - cancelling command");
+                IJ.error("This dataset does not use the following image loader: spimreconstruction.biop_bioformatsimageloader - cancelling command");
                 return;
             }
 

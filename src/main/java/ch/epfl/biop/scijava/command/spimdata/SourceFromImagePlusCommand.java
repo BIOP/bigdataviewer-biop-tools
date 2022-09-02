@@ -15,11 +15,6 @@ public class SourceFromImagePlusCommand implements BdvPlaygroundActionCommand {
     @Parameter
     ImagePlus imagePlus;
 
-    //@Parameter(type = ItemIO.OUTPUT) // Removed because because using it as a parameter currently prevents
-    // its naming...
-    // So it's like the postprocessor of the SpimData is done inside the command
-    // AbstractSpimData asd;
-
     @Parameter
     SourceAndConverterService sac_service;
 
