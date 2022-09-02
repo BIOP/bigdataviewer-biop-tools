@@ -1,7 +1,7 @@
 import bdv.util.BdvHandle;
 import bdv.viewer.SourceAndConverter;
+import ch.epfl.biop.bdv.bioformats.bioformatssource.BioFormatsBdvOpener;
 import ch.epfl.biop.bdv.bioformats.export.spimdata.BioFormatsConvertFilesToSpimData;
-import ch.epfl.biop.bdv.bioformats.imageloader.BioFormatsBdvOpener;
 import ch.epfl.biop.scijava.command.source.register.Elastix2DSplineRegisterCommand;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imagej.ImageJ;

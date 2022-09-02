@@ -1,8 +1,8 @@
 package ch.epfl.biop.scijava.command.spimdata;
 
 import ch.epfl.biop.bdv.bioformats.BioFormatsMetaDataHelper;
+import ch.epfl.biop.bdv.bioformats.bioformatssource.BioFormatsBdvOpener;
 import ch.epfl.biop.bdv.bioformats.export.spimdata.BioFormatsConvertFilesToSpimData;
-import ch.epfl.biop.bdv.bioformats.imageloader.BioFormatsBdvOpener;
 import ch.epfl.biop.bdv.bioformats.imageloader.FileIndex;
 import ij.IJ;
 import loci.formats.IFormatReader;

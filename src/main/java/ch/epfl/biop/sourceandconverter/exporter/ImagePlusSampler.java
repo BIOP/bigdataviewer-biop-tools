@@ -1,7 +1,7 @@
 package ch.epfl.biop.sourceandconverter.exporter;
 
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.operetta.utils.HyperRange;
+import ch.epfl.biop.bdv.img.imageplus.ImagePlusHelper;
 import ij.ImagePlus;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.NativeType;
@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceResampler;
-import spimdata.imageplus.ImagePlusHelper;
 
 import java.util.*;
 import java.util.function.Function;

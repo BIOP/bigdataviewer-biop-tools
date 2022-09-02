@@ -2,6 +2,8 @@ package ch.epfl.biop.scijava.command.transform;
 
 import bdv.tools.brightness.ConverterSetup;
 import bdv.viewer.SourceAndConverter;
+import ch.epfl.biop.bdv.img.imageplus.ImagePlusHelper;
+import ch.epfl.biop.bdv.img.imageplus.ImagePlusToSpimData;
 import ij.ImagePlus;
 import ij.gui.PointRoi;
 import ij.gui.Roi;
@@ -20,8 +22,6 @@ import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
 import sc.fiji.bdvpg.sourceandconverter.importer.EmptySourceAndConverterCreator;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceResampler;
-import spimdata.imageplus.ImagePlusHelper;
-import spimdata.imageplus.SpimDataFromImagePlusGetter;
 
 import java.util.HashMap;
 import java.util.List;
@@ -77,7 +77,7 @@ public class Rot3DReSampleCommand<T extends NumericType<T> & NativeType<T>> impl
 
     public void run() {
 
-        AbstractSpimData asd = (new SpimDataFromImagePlusGetter()).apply(imp_in);
+        AbstractSpimData asd = ImagePlusToSpimData.getSpimData(imp_in);
         sac_service.register(asd);
         sac_service.setSpimDataName(asd, imp_in.getTitle());
         List<SourceAndConverter<?>> sacs = SourceAndConverterServices.getSourceAndConverterService().getSourceAndConverterFromSpimdata(asd);

@@ -105,7 +105,7 @@
 		<ijl-utilities-wrappers.version>0.6.0</ijl-utilities-wrappers.version>
 		<image-transform-converters.version>0.1.5</image-transform-converters.version>
 
-		<bigdataviewer-spimdata-extras.version>0.2.0</bigdataviewer-spimdata-extras.version>
+		<bigdataviewer-spimdata-extras.version>0.3.1</bigdataviewer-spimdata-extras.version>
 		<elastix_registration_server.version>0.1.4</elastix_registration_server.version>
 
 		<bigdataviewer-playground-display.version>0.3.0</bigdataviewer-playground-display.version>
@@ -113,6 +113,7 @@
 		<Operetta_Importer.version>0.1.22</Operetta_Importer.version>
 		<bigvolumeviewer.version>0.2.0</bigvolumeviewer.version>
 		<ijp-kheops.version>0.2.3</ijp-kheops.version>
+		<bigdataviewer-image-loaders.version>0.2.1-SNAPSHOT</bigdataviewer-image-loaders.version>
 
 		<releaseProfiles>sign,deploy-to-scijava</releaseProfiles>
 
@@ -126,6 +127,12 @@
 	</repositories>
 
 	<dependencies>
+
+		<dependency>
+			<groupId>ch.epfl.biop</groupId>
+			<artifactId>bigdataviewer-image-loaders</artifactId>
+			<version>${bigdataviewer-image-loaders.version}</version>
+		</dependency>
 
 		<dependency>
 			<groupId>org.scijava</groupId>
@@ -234,12 +241,6 @@
 			<groupId>sc.fiji</groupId>
 			<artifactId>bigvolumeviewer</artifactId>
 			<version>${bigvolumeviewer.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>ch.epfl.biop</groupId>
-			<artifactId>bigdataviewer-bioformats</artifactId>
-			<version>${bigdataviewer-bioformats.version}</version>
 		</dependency>
 
 		<dependency>

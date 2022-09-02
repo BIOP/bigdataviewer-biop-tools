@@ -2,9 +2,13 @@ package ch.epfl.biop.scijava.command.source.register;
 
 import bdv.util.QuPathBdvHelper;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.spimdata.qupath.QuPathEntryEntity;
+import ch.epfl.biop.bdv.img.qupath.entity.QuPathEntryEntity;
 import ij.IJ;
-import net.imglib2.realtransform.*;
+import net.imglib2.realtransform.AffineTransform3D;
+import net.imglib2.realtransform.InvertibleRealTransform;
+import net.imglib2.realtransform.InvertibleRealTransformSequence;
+import net.imglib2.realtransform.RealTransform;
+import net.imglib2.realtransform.RealTransformSequence;
 import org.apache.commons.io.FileUtils;
 import org.scijava.Context;
 import org.scijava.ItemVisibility;
