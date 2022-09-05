@@ -37,9 +37,9 @@ public class DemoBoundedTransform {
         // Import SpimData
         SpimDataFromXmlImporter importer = new SpimDataFromXmlImporter(filePath);
 
-        AbstractSpimData spimData = importer.get();
+        AbstractSpimData<?> spimData = importer.get();
 
-        SourceAndConverter sacFixed = SourceAndConverterServices
+        SourceAndConverter<?> sacFixed = SourceAndConverterServices
                 .getSourceAndConverterService()
                 .getSourceAndConverterFromSpimdata(spimData)
                 .get(0);
@@ -48,7 +48,7 @@ public class DemoBoundedTransform {
 
         spimData = importer.get();
 
-        SourceAndConverter sacMoving = SourceAndConverterServices
+        SourceAndConverter<?> sacMoving = SourceAndConverterServices
                 .getSourceAndConverterService()
                 .getSourceAndConverterFromSpimdata(spimData)
                 .get(0);
@@ -69,10 +69,10 @@ public class DemoBoundedTransform {
 
         new ViewerTransformAdjuster(bdvHandle, sacFixed).run();
 
-        List<SourceAndConverter> movingSources = new ArrayList<>();
+        List<SourceAndConverter<?>> movingSources = new ArrayList<>();
         movingSources.add(sacMoving);
 
-        List<SourceAndConverter> fixedSources = new ArrayList<>();
+        List<SourceAndConverter<?>> fixedSources = new ArrayList<>();
         fixedSources.add(sacFixed);
 
         List<ConverterSetup> converterSetups = movingSources.stream().map(src -> SourceAndConverterServices.getSourceAndConverterService().getConverterSetup(src)).collect(Collectors.toList());

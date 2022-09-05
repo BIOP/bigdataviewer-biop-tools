@@ -3,8 +3,8 @@ import bdv.util.BdvHandle;
 import bdv.util.BdvOptions;
 import bdv.util.BdvStackSource;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.bdv.bioformats.bioformatssource.BioFormatsBdvOpener;
 import ch.epfl.biop.bdv.bioformats.export.spimdata.BioFormatsConvertFilesToSpimData;
+import ch.epfl.biop.bdv.bioformats.imageloader.BioFormatsBdvOpener;
 import ch.epfl.biop.bdv.select.SelectedSourcesListener;
 import ch.epfl.biop.bdv.select.SourceSelectorBehaviour;
 import ch.epfl.biop.bdv.select.ToggleListener;
@@ -66,7 +66,7 @@ public class DemoRegistrationMultiChannelAffine {
                         .positionReferenceFrameLength(new Length(1,UNITS.METER)));
 
         SourceAndConverterServices.getSourceAndConverterService().register(atlasDataset);
-        List<SourceAndConverter> atlasSources = SourceAndConverterServices.getSourceAndConverterService().getSourceAndConverterFromSpimdata(atlasDataset);
+        List<SourceAndConverter<?>> atlasSources = SourceAndConverterServices.getSourceAndConverterService().getSourceAndConverterFromSpimdata(atlasDataset);
 
         opener =
                 BioFormatsConvertFilesToSpimData
@@ -78,7 +78,7 @@ public class DemoRegistrationMultiChannelAffine {
                         .positionReferenceFrameLength(new Length(1,UNITS.METER)));
 
         SourceAndConverterServices.getSourceAndConverterService().register(sliceDataset);
-        List<SourceAndConverter> sliceSources = SourceAndConverterServices.getSourceAndConverterService().getSourceAndConverterFromSpimdata(sliceDataset);
+        List<SourceAndConverter<?>> sliceSources = SourceAndConverterServices.getSourceAndConverterService().getSourceAndConverterFromSpimdata(sliceDataset);
 
         SourceAndConverterBdvDisplayService displayService = SourceAndConverterServices.getBdvDisplayService();
         BdvHandle bdvh = displayService.getNewBdv();

@@ -1,13 +1,12 @@
 package ch.epfl.biop.scijava.command.spimdata;
 
 import ch.epfl.biop.bdv.bioformats.BioFormatsMetaDataHelper;
-import ch.epfl.biop.bdv.bioformats.bioformatssource.BioFormatsBdvOpener;
 import ch.epfl.biop.bdv.bioformats.command.BioformatsBigdataviewerBridgeDatasetCommand;
+import ch.epfl.biop.bdv.bioformats.imageloader.BioFormatsBdvOpener;
 import ch.epfl.biop.spimdata.qupath.QuPathToSpimData;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import ome.units.quantity.Length;
 import ome.units.unit.Unit;
-import org.apache.commons.io.FilenameUtils;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
@@ -15,7 +14,6 @@ import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
 
 import java.io.File;
 

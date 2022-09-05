@@ -43,10 +43,10 @@ public class WarpyEditRegistrationCommand implements Command {
     String message = "<html><h1>QuPath registration edition</h1>Please select a moving and a fixed source<br></html>";
 
     @Parameter(label = "Fixed source", callback = "updateMessage")
-    SourceAndConverter[] fixed_source;
+    SourceAndConverter<?>[] fixed_source;
 
     @Parameter(label = "Moving source", callback = "updateMessage")
-    SourceAndConverter[] moving_source;
+    SourceAndConverter<?>[] moving_source;
 
     @Parameter
     Context scijavaCtx;
@@ -139,9 +139,9 @@ public class WarpyEditRegistrationCommand implements Command {
                         .getTransform();
 
         // Launch BigWarp
-        List<SourceAndConverter> movingSacs = Arrays.stream(moving_source).collect(Collectors.toList());
+        List<SourceAndConverter<?>> movingSacs = Arrays.stream(moving_source).collect(Collectors.toList());
 
-        List<SourceAndConverter> fixedSacs = Arrays.stream(fixed_source).collect(Collectors.toList());
+        List<SourceAndConverter<?>> fixedSacs = Arrays.stream(fixed_source).collect(Collectors.toList());
 
         List<ConverterSetup> converterSetups = Arrays.stream(moving_source).map(src -> SourceAndConverterServices.getSourceAndConverterService().getConverterSetup(src)).collect(Collectors.toList());
 

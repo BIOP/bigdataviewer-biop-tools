@@ -79,7 +79,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
     CommandService cs;
 
     @Parameter(label = "Fixed reference source")
-    SourceAndConverter fixed;
+    SourceAndConverter<?> fixed;
 
     @Parameter(label = "Background offset value for moving image")
     double background_offset_value_moving = 0;
@@ -88,10 +88,10 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
     double background_offset_value_fixed = 0;
 
     @Parameter(label = "Moving source used for registration to the reference")
-    SourceAndConverter moving;
+    SourceAndConverter<?> moving;
 
     @Parameter(label = "Sources to transform, including the moving source if needed")
-    SourceAndConverter[] sourcesToTransform;
+    SourceAndConverter<?>[] sourcesToTransform;
 
     //@Parameter
     BdvHandle bdvh;
@@ -139,7 +139,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
     SourceAndConverterBdvDisplayService sacbds;
 
     @Parameter(type = ItemIO.OUTPUT)
-    SourceAndConverter[] transformedSources;
+    SourceAndConverter<?>[] transformedSources;
 
     @Parameter(type = ItemIO.OUTPUT)
     RealTransform transformation;
@@ -300,13 +300,13 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
                 IJ.log("BigWarp registration...");
 
                 // The user wants big warp to correct landmark points
-                List<SourceAndConverter> movingSacs = Arrays.stream(new SourceAndConverter[]{moving}).collect(Collectors.toList());
+                List<SourceAndConverter<?>> movingSacs = Arrays.stream(new SourceAndConverter<?>[]{moving}).collect(Collectors.toList());
 
-                List<SourceAndConverter> fixedSacs = Arrays.stream(new SourceAndConverter[]{fixed}).collect(Collectors.toList());
+                List<SourceAndConverter<?>> fixedSacs = Arrays.stream(new SourceAndConverter<?>[]{fixed}).collect(Collectors.toList());
 
-                List<ConverterSetup> converterSetups = Arrays.stream(new SourceAndConverter[]{moving}).map(src -> SourceAndConverterServices.getSourceAndConverterService().getConverterSetup(src)).collect(Collectors.toList());
+                List<ConverterSetup> converterSetups = Arrays.stream(new SourceAndConverter<?>[]{moving}).map(src -> SourceAndConverterServices.getSourceAndConverterService().getConverterSetup(src)).collect(Collectors.toList());
 
-                converterSetups.addAll(Arrays.stream(new SourceAndConverter[]{fixed}).map(src -> SourceAndConverterServices.getSourceAndConverterService().getConverterSetup(src)).collect(Collectors.toList()));
+                converterSetups.addAll(Arrays.stream(new SourceAndConverter<?>[]{fixed}).map(src -> SourceAndConverterServices.getSourceAndConverterService().getConverterSetup(src)).collect(Collectors.toList()));
 
                 // Launch BigWarp
                 BigWarpLauncher bwl = new BigWarpLauncher(movingSacs, fixedSacs, "Big Warp", converterSetups);
@@ -355,12 +355,9 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
             preTransformLandmarks();
             IJ.log("Registration DONE.");
 
-            // Now transforms all the sources required to be transformed
-            SourceRealTransformer srt = new SourceRealTransformer(null,transformation);
-
             transformedSources = Arrays.stream(sourcesToTransform)
-                    .map(srt)
-                    .toArray(SourceAndConverter[]::new);
+                    .map(source -> new SourceRealTransformer(transformation).apply(source))
+                    .toArray(SourceAndConverter<?>[]::new);
 
             // Cleaning temporary transformed working sources
             SourceAndConverterServices
@@ -439,9 +436,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
         bw.getViewerFrameP().getCardPanel().addCard("BigWarp Registration", cardpanelP, true);
 
         JButton confirmQ = new JButton("Click to finish");
-        confirmQ.addActionListener((e) -> {
-            isBigWarpFinished = true;
-        });
+        confirmQ.addActionListener((e) -> isBigWarpFinished = true);
 
         JPanel cardpanelQ = box(false,
                 new JLabel("BigWarp registration"),
@@ -503,13 +498,13 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
         JButton autoScaleMoving = new JButton("Autoscale moving");
         autoScaleMoving.addActionListener((e) -> {
             bdvh.getViewerPanel().showMessage("Autoscaling moving image");
-            new BrightnessAutoAdjuster(moving,0).run();
+            new BrightnessAutoAdjuster<>(moving,0).run();
         });
 
         JButton autoScaleFixed = new JButton("Autoscale fixed");
         autoScaleFixed.addActionListener((e) -> {
             bdvh.getViewerPanel().showMessage("Autoscaling fixed image");
-            new BrightnessAutoAdjuster(fixed,0).run();
+            new BrightnessAutoAdjuster<>(fixed,0).run();
         });
 
         JPanel panel = box(false,
@@ -589,7 +584,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
         addPoints.addActionListener((e) -> {
             try {
                 System.out.println("IN action listener");
-                double spacing_mm = Double.valueOf(gridSpacing.getText())/1000.0;
+                double spacing_mm = Double.parseDouble(gridSpacing.getText())/1000.0;
                 if (spacing_mm>(patchSize_mm / 10.0)) {
 
                     double xStart = cx;

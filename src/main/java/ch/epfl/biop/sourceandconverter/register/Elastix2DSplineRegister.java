@@ -26,6 +26,8 @@ import net.imglib2.RealRandomAccessible;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.realtransform.*;
 import net.imglib2.realtransform.inverse.WrappedIterativeInvertibleRealTransform;
+import net.imglib2.type.NativeType;
+import net.imglib2.type.numeric.NumericType;
 import sc.fiji.bdvpg.sourceandconverter.importer.EmptySourceAndConverterCreator;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceAffineTransformer;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceRealTransformer;
@@ -39,9 +41,11 @@ import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-public class Elastix2DSplineRegister {
+public class Elastix2DSplineRegister<FT extends NativeType<FT> & NumericType<FT>,
+        MT extends NativeType<MT> & NumericType<MT>> {
 
-    SourceAndConverter[] sacs_fixed, sacs_moving;
+    SourceAndConverter<FT>[] sacs_fixed;
+    SourceAndConverter<MT>[] sacs_moving;
     int levelMipmapFixed, levelMipmapMoving;
     int tpMoving,tpFixed;
 
@@ -78,10 +82,10 @@ public class Elastix2DSplineRegister {
         et = new RemoteElastixTask(serverURL);
     }
 
-    public Elastix2DSplineRegister(SourceAndConverter[] sacs_fixed,
+    public Elastix2DSplineRegister(SourceAndConverter<FT>[] sacs_fixed,
                                    int levelMipmapFixed,
                                    int tpFixed,
-                                   SourceAndConverter[] sacs_moving,
+                                   SourceAndConverter<MT>[] sacs_moving,
                                    int levelMipmapMoving,
                                    int tpMoving,
                                    int nbControlPointsX,
@@ -129,8 +133,8 @@ public class Elastix2DSplineRegister {
 
         // Fetch cropped images from source
 
-        Source sMoving = sacs_moving[0].getSpimSource();
-        Source sFixed = sacs_fixed[0].getSpimSource();
+        Source<MT> sMoving = sacs_moving[0].getSpimSource();
+        Source<FT> sFixed = sacs_fixed[0].getSpimSource();
 
         AffineTransform3D at3D = new AffineTransform3D();
         at3D.identity();
@@ -342,23 +346,21 @@ public class Elastix2DSplineRegister {
     }
 
 
-    private ImagePlus getCroppedImage(String name, SourceAndConverter[] sacs, int tp, int level) {
+    private<T extends NativeType<T> & NumericType<T>> ImagePlus getCroppedImage(String name, SourceAndConverter<T>[] sacs, int tp, int level) {
 
         // Fetch cropped images from source -> resample sources
         FinalRealInterval window = new FinalRealInterval(new double[]{px,py,pz}, new double[]{px+sx, py+sy, pz+pxSizeInCurrentUnit});
 
         SourceAndConverter model = new EmptySourceAndConverterCreator("model",window,pxSizeInCurrentUnit,pxSizeInCurrentUnit,pxSizeInCurrentUnit).get();
 
-        SourceResampler resampler = new SourceResampler(null,
+        SourceResampler<T> resampler = new SourceResampler<>(null,
                 model,model.getSpimSource().getName(), false, false, interpolate, level
         );
 
-
-        SourceAndConverter[] resampled =
+        List<SourceAndConverter<T>> resampled =
                 Arrays.stream(sacs)
                         .map(resampler)
-                        .collect(Collectors.toList())
-                        .toArray(new SourceAndConverter[sacs.length]);
+                        .collect(Collectors.toList());
 
         List<Integer> channels = new ArrayList<>(sacs.length);
         for (int i = 0; i< sacs.length;i++) {
@@ -371,7 +373,7 @@ public class Elastix2DSplineRegister {
 
         CZTRange range = new CZTRange(channels, slices, timepoints);
 
-        return ImagePlusGetter.getImagePlus(name,Arrays.asList(resampled),0,range,false,false,false,null);
+        return ImagePlusGetter.getImagePlus(name, resampled,0,range,false,false,false,null);
     }
 
     public SourceAndConverter[] getRegisteredSacs() {

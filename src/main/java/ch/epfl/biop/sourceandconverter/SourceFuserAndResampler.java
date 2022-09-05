@@ -6,6 +6,7 @@ import bdv.util.volatiles.SharedQueue;
 import bdv.viewer.Interpolation;
 import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
+import net.imglib2.type.numeric.NumericType;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
 
 import java.util.ArrayList;
@@ -17,9 +18,9 @@ import java.util.function.Function;
 // TODO : check that at least a source is there
 // TODO : Make volatile source if possible
 
-public class SourceFuserAndResampler implements Runnable, Function<List<SourceAndConverter>, SourceAndConverter> {
+public class SourceFuserAndResampler<T extends NumericType<T>> implements Runnable, Function<List<SourceAndConverter<T>>, SourceAndConverter<T>> {
 
-    List<SourceAndConverter> sacs_in;
+    List<SourceAndConverter<T>> sacs_in;
 
     SourceAndConverter model;
 
@@ -39,7 +40,7 @@ public class SourceFuserAndResampler implements Runnable, Function<List<SourceAn
 
     private int nThreads;
 
-    public SourceFuserAndResampler(List<SourceAndConverter> sacs_in,
+    public SourceFuserAndResampler(List<SourceAndConverter<T>> sacs_in,
                                    String blendingMode,
                                    SourceAndConverter model,
                                    String name,
@@ -69,12 +70,12 @@ public class SourceFuserAndResampler implements Runnable, Function<List<SourceAn
 
     }
 
-    public SourceAndConverter get() {
+    public SourceAndConverter<T> get() {
         return apply(sacs_in);
     }
 
     @Override
-    public SourceAndConverter apply(List<SourceAndConverter> srcs) {
+    public SourceAndConverter<T> apply(List<SourceAndConverter<T>> srcs) {
         SourceAndConverter sacExample = srcs.get(0);
         // TODO : check all types are ok
 

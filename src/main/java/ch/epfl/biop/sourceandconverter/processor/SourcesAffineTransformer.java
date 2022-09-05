@@ -17,11 +17,12 @@ public class SourcesAffineTransformer implements SourcesProcessor {
     }
 
     @Override
-    public SourceAndConverter[] apply(SourceAndConverter[] sourceAndConverters) {
-        return Arrays.stream(sourceAndConverters)
-                .map(sac -> SourceTransformHelper.createNewTransformedSourceAndConverter(at3d, new SourceAndConverterAndTimeRange(sac, 0)))
-                .collect(Collectors.toList())
-                .toArray(new SourceAndConverter[sourceAndConverters.length]);
+    public SourceAndConverter<?>[] apply(SourceAndConverter<?>[] sourceAndConverters) {
+        SourceAndConverter<?>[] out = new SourceAndConverter<?>[sourceAndConverters.length];
+        for (int i = 0;i<out.length;i++) {
+            out[i] = SourceTransformHelper.createNewTransformedSourceAndConverter(at3d, new SourceAndConverterAndTimeRange(sourceAndConverters[i], 0));
+        }
+        return out;
     }
 
     public String toString() {

@@ -11,7 +11,9 @@ import ij.process.LUT;
 import net.imglib2.display.ColorConverter;
 import net.imglib2.display.LinearRange;
 import net.imglib2.realtransform.AffineTransform3D;
+import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.ARGBType;
+import net.imglib2.type.numeric.NumericType;
 import org.scijava.task.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +24,7 @@ import java.awt.*;
 import java.text.DecimalFormat;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
@@ -76,8 +79,8 @@ public class ImagePlusGetter {
      * @return a virtual {@link ImagePlus} out of a list of {@link SourceAndConverter},
      * taken at a certain resolution level, and which czt range is specified via a {@link CZTRange} object
      */
-    public static ImagePlus getVirtualImagePlus(String name,
-                                         List<SourceAndConverter> sources,
+    public static <T extends NumericType<T> & NativeType<T>> ImagePlus getVirtualImagePlus(String name,
+                                         List<SourceAndConverter<T>> sources,
                                          int resolutionLevel,
                                          CZTRange range,
                                          boolean cache,
@@ -179,14 +182,14 @@ public class ImagePlusGetter {
      * @return a non virtual {@link ImagePlus} out of a list of {@link SourceAndConverter},
      *       taken at a certain resolution level, and which czt range is specified via a {@link CZTRange} object
      */
-    public static ImagePlus getImagePlus(String name,
-                                         List<SourceAndConverter> sources,
-                                         int resolutionLevel,
-                                         CZTRange range,
-                                         boolean parallelC,
-                                         boolean parallelZ,
-                                         boolean parallelT,
-                                         Task task) {
+    public static <T extends NumericType<T> & NativeType<T>> ImagePlus getImagePlus(String name,
+                                                                                  List<SourceAndConverter<T>> sources,
+                                                                                  int resolutionLevel,
+                                                                                  CZTRange range,
+                                                                                  boolean parallelC,
+                                                                                  boolean parallelZ,
+                                                                                  boolean parallelT,
+                                                                                  Task task) {
         ImagePlus vImage = getVirtualImagePlus(name, sources, resolutionLevel, range, false, null ); // task not used here
 
         final AtomicLong bytesCounter = new AtomicLong();
@@ -309,7 +312,7 @@ public class ImagePlusGetter {
         return new CZTRange.Builder().get(1,maxZSlices, maxTimeFrames);
     }
 
-    public static CZTRange fromSources(List<SourceAndConverter> sources, int t, int resolutionLevel) throws Exception {
+    public static CZTRange fromSources(List<SourceAndConverter<?>> sources, int t, int resolutionLevel) throws Exception {
         int maxTimeFrames = SourceAndConverterHelper.getMaxTimepoint(sources.get(0));
         int maxZSlices = (int) sources.get(0).getSpimSource().getSource(t,resolutionLevel).dimension(2);
         return new CZTRange.Builder().get(sources.size(),maxZSlices, maxTimeFrames);
@@ -397,6 +400,14 @@ public class ImagePlusGetter {
             }
             logger.debug("Exit monitor thread of task "+taskName);
         }
+    }
+
+    public static <T extends NumericType<T> & NativeType<T>> List<SourceAndConverter<T>> sanitizeList(List<SourceAndConverter<?>> sources) {
+        List<SourceAndConverter<T>> sanitizedList = new ArrayList<>();
+        for (SourceAndConverter<?> source: sources) {
+            sanitizedList.add((SourceAndConverter<T>) source);
+        }
+        return sanitizedList;
     }
 
 }

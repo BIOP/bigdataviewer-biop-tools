@@ -153,19 +153,14 @@ public class ManyWarpedSourcesFusedDemo {
 
                     SourceAndConverter alphaSac = AlphaSourceHelper.getOrBuildAlphaSource(sac);
 
-                    SourceRealTransformer srt = new SourceRealTransformer(sac, rt3d);
-                    srt.run();
-                    SourceAndConverter warped_sac = srt.getSourceOut();
+                    SourceAndConverter warped_sac = new SourceRealTransformer(sac, rt3d).get();
                     SourceAndConverterServices
                             .getSourceAndConverterService()
                                     .register(warped_sac);
 
                     AlphaSourceHelper.setAlphaSource(warped_sac, alphaSac); // Keeps bounds
 
-                    SourceAffineTransformer sat = new SourceAffineTransformer(warped_sac, at3d);
-                    sat.run();
-
-                    SourceAndConverter transformedSac = sat.getSourceOut();
+                    SourceAndConverter transformedSac = new SourceAffineTransformer(warped_sac, at3d).get();
 
                     sacs.add(transformedSac);
                 }

@@ -4,6 +4,8 @@ import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.operetta.utils.HyperRange;
 import ij.ImagePlus;
 import net.imglib2.realtransform.AffineTransform3D;
+import net.imglib2.type.NativeType;
+import net.imglib2.type.numeric.NumericType;
 import org.scijava.task.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,8 +26,8 @@ public class ImagePlusSampler {
         return new Builder();
     }
 
-    private static ImagePlus get(String imageName,
-                                List<SourceAndConverter> sourceList,
+    private static <T extends NumericType<T> & NativeType<T>> ImagePlus get(String imageName,
+                                List<SourceAndConverter<T>> sourceList,
                                 SourceAndConverter model,
                                 boolean automipmap,
                                 int level,
@@ -46,9 +48,9 @@ public class ImagePlusSampler {
         }
 
         // The core of it : resampling each source with the model
-        List<SourceAndConverter> resampledSourceList = sourceList
+        List<SourceAndConverter<T>> resampledSourceList = sourceList
                 .stream()
-                .map(sac -> new SourceResampler(sac,model,sac.getSpimSource().getName()+"_SampledLike_"+model.getSpimSource().getName(), automipmap, cache, interpolate, level).get())
+                .map(sac -> new SourceResampler<>(sac,model,sac.getSpimSource().getName()+"_SampledLike_"+model.getSpimSource().getName(), automipmap, cache, interpolate, level).get())
                 .collect(Collectors.toList());
 
         SourceAndConverterServices.getSourceAndConverterService().register(model);

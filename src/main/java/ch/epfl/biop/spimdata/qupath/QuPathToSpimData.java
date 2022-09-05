@@ -1,7 +1,6 @@
 package ch.epfl.biop.spimdata.qupath;
 
 import ch.epfl.biop.bdv.bioformats.BioFormatsMetaDataHelper;
-import ch.epfl.biop.bdv.bioformats.bioformatssource.BioFormatsBdvOpener;
 import ch.epfl.biop.bdv.bioformats.imageloader.*;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;

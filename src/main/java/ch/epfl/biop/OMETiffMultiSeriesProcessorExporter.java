@@ -72,7 +72,7 @@ public class OMETiffMultiSeriesProcessorExporter {
                     options
                 ).get().getOutput("spimdata");
 
-        List<SourceAndConverter> allSources = sac_service.getSourceAndConverterFromSpimdata(spimdata);
+        List<SourceAndConverter<?>> allSources = sac_service.getSourceAndConverterFromSpimdata(spimdata);
 
         if (builder.removeZOffset) {
             for (SourceAndConverter source: allSources) {
