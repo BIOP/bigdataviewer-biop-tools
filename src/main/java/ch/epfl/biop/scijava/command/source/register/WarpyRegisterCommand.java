@@ -2,7 +2,7 @@ package ch.epfl.biop.scijava.command.source.register;
 
 import bdv.util.QuPathBdvHelper;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.spimdata.qupath.QuPathEntryEntity;
+import ch.epfl.biop.bdv.img.legacy.qupath.entity.QuPathEntryEntity;
 import ij.IJ;
 import net.imglib2.realtransform.*;
 import org.apache.commons.io.FileUtils;

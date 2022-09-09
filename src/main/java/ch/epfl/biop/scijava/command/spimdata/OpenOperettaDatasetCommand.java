@@ -4,7 +4,7 @@ import bdv.util.BdvHandle;
 import bdv.viewer.DisplayMode;
 import bdv.viewer.SourceAndConverter;
 import bdv.viewer.SourceGroup;
-import ch.epfl.biop.bdv.bioformats.command.OpenFilesWithBigdataviewerBioformatsBridgeCommand;
+import ch.epfl.biop.bdv.img.legacy.bioformats.command.OpenFilesWithBigdataviewerBioformatsBridgeCommand;
 import ch.epfl.biop.operetta.OperettaManager;
 import ij.IJ;
 import loci.formats.FormatException;

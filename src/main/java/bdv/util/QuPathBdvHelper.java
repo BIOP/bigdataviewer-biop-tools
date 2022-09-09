@@ -2,7 +2,7 @@ package bdv.util;
 
 import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.spimdata.qupath.QuPathEntryEntity;
+import ch.epfl.biop.bdv.img.legacy.qupath.entity.QuPathEntryEntity;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import mpicbg.spim.data.generic.sequence.BasicViewSetup;
 import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;

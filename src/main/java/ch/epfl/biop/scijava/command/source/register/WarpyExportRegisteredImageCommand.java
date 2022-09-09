@@ -2,13 +2,11 @@ package ch.epfl.biop.scijava.command.source.register;
 
 import bdv.util.QuPathBdvHelper;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.bdv.bioformats.command.ExportToOMETiffBuildPyramidCommand;
-import ch.epfl.biop.bdv.bioformats.export.ometiff.OMETiffPyramidizerExporter;
-import ch.epfl.biop.spimdata.qupath.QuPathEntryEntity;
+import ch.epfl.biop.bdv.img.legacy.qupath.entity.QuPathEntryEntity;
+import ch.epfl.biop.kheops.command.KheopsExportSourcesBuildPyramidCommand;
 import com.google.gson.stream.JsonReader;
 import ij.IJ;
 import net.imglib2.realtransform.*;
-import net.imglib2.realtransform.inverse.WrappedIterativeInvertibleRealTransform;
 import org.scijava.Context;
 import org.scijava.ItemVisibility;
 import org.scijava.command.Command;
@@ -101,7 +99,7 @@ public class WarpyExportRegisteredImageCommand implements Command {
             }
 
             scijavaCtx.getService(CommandService.class)
-                    .run(ExportToOMETiffBuildPyramidCommand.class, true,
+                    .run(KheopsExportSourcesBuildPyramidCommand.class, true,
                             "sacs",  exportedSources.toArray(new SourceAndConverter[0]),
                             "range_channels", "",
                             "unit","millimeter",

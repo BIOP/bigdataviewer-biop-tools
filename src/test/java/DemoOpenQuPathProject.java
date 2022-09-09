@@ -1,4 +1,4 @@
-import ch.epfl.biop.bdv.bioformats.command.BioformatsBigdataviewerBridgeDatasetCommand;
+import ch.epfl.biop.bdv.img.legacy.bioformats.command.BioformatsBigdataviewerBridgeDatasetCommand;
 import ch.epfl.biop.scijava.command.spimdata.QuPathProjectToBDVDatasetCommand;
 import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;

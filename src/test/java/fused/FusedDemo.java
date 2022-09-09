@@ -3,7 +3,7 @@ package fused;
 import bdv.util.BdvHandle;
 import bdv.util.source.fused.AlphaFusedResampledSource;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.bdv.bioformats.export.ometiff.OMETiffExporter;
+import ch.epfl.biop.kheops.ometiff.OMETiffExporter;
 import ch.epfl.biop.sourceandconverter.SourceFuserAndResampler;
 import ij.IJ;
 import loci.common.DebugTools;

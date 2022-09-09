@@ -5,7 +5,7 @@ import bdv.util.BdvHandle;
 import bdv.util.QuPathBdvHelper;
 import bdv.viewer.SourceAndConverter;
 import bigwarp.BigWarp;
-import ch.epfl.biop.spimdata.qupath.QuPathEntryEntity;
+import ch.epfl.biop.bdv.img.legacy.qupath.entity.QuPathEntryEntity;
 import com.google.gson.stream.JsonReader;
 import ij.IJ;
 import net.imglib2.realtransform.*;

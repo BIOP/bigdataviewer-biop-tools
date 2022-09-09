@@ -1,9 +1,9 @@
 package ch.epfl.biop.scijava.command.spimdata;
 
-import ch.epfl.biop.bdv.bioformats.BioFormatsMetaDataHelper;
-import ch.epfl.biop.bdv.bioformats.command.BioformatsBigdataviewerBridgeDatasetCommand;
-import ch.epfl.biop.bdv.bioformats.imageloader.BioFormatsBdvOpener;
-import ch.epfl.biop.spimdata.qupath.QuPathToSpimData;
+import ch.epfl.biop.bdv.img.legacy.bioformats.BioFormatsBdvOpener;
+import ch.epfl.biop.bdv.img.legacy.bioformats.BioFormatsTools;
+import ch.epfl.biop.bdv.img.legacy.bioformats.command.BioformatsBigdataviewerBridgeDatasetCommand;
+import ch.epfl.biop.bdv.img.legacy.qupath.QuPathToSpimData;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import ome.units.quantity.Length;
 import ome.units.unit.Unit;
@@ -67,7 +67,7 @@ public class QuPathProjectToBDVDatasetCommand extends BioformatsBigdataviewerBri
     }
 
     public BioFormatsBdvOpener getOpener(String datalocation) {
-        Unit bfUnit = BioFormatsMetaDataHelper.getUnitFromString(this.unit);
+        Unit bfUnit = BioFormatsTools.getUnitFromString(this.unit);
         Length positionReferenceFrameLength = new Length(this.refframesizeinunitlocation, bfUnit);
         Length voxSizeReferenceFrameLength = new Length(this.refframesizeinunitvoxsize, bfUnit);
         BioFormatsBdvOpener opener = BioFormatsBdvOpener.getOpener()

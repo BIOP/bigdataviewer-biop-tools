@@ -1,7 +1,8 @@
 import bdv.util.BdvHandle;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.bdv.bioformats.export.spimdata.BioFormatsConvertFilesToSpimData;
-import ch.epfl.biop.bdv.bioformats.imageloader.BioFormatsBdvOpener;
+import ch.epfl.biop.bdv.img.legacy.bioformats.BioFormatsBdvOpener;
+import ch.epfl.biop.bdv.img.legacy.bioformats.BioFormatsToSpimData;
+import ch.epfl.biop.bdv.img.legacy.bioformats.command.BioformatsBigdataviewerBridgeDatasetCommand;
 import ch.epfl.biop.scijava.command.source.register.Elastix2DSplineRegisterCommand;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imagej.ImageJ;
@@ -34,10 +35,10 @@ public class DemoRegistrationMultiChannelSpline {
         ij.ui().showUI();
 
         BioFormatsBdvOpener opener =
-                BioFormatsConvertFilesToSpimData
-                        .getDefaultOpener("src/test/resources/multichanreg/Atlas.tif");
+                new BioformatsBigdataviewerBridgeDatasetCommand()
+                        .getOpener("src/test/resources/multichanreg/Atlas.tif");
 
-        AbstractSpimData atlasDataset = BioFormatsConvertFilesToSpimData.getSpimData(
+        AbstractSpimData atlasDataset = BioFormatsToSpimData.getSpimData(
                 opener
                         .voxSizeReferenceFrameLength(new Length(1, UNITS.MILLIMETER))
                         .positionReferenceFrameLength(new Length(1,UNITS.METER)));
@@ -45,11 +46,10 @@ public class DemoRegistrationMultiChannelSpline {
         SourceAndConverterServices.getSourceAndConverterService().register(atlasDataset);
         List<SourceAndConverter<?>> atlasSources = SourceAndConverterServices.getSourceAndConverterService().getSourceAndConverterFromSpimdata(atlasDataset);
 
-        opener =
-                BioFormatsConvertFilesToSpimData
-                        .getDefaultOpener("src/test/resources/multichanreg/Slice.tif");
+        opener =  new BioformatsBigdataviewerBridgeDatasetCommand()
+                        .getOpener("src/test/resources/multichanreg/Slice.tif");
 
-        AbstractSpimData sliceDataset = BioFormatsConvertFilesToSpimData.getSpimData(
+        AbstractSpimData sliceDataset = BioFormatsToSpimData.getSpimData(
                 opener
                         .voxSizeReferenceFrameLength(new Length(1, UNITS.MILLIMETER))
                         .positionReferenceFrameLength(new Length(1,UNITS.METER)));

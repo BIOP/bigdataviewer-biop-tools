@@ -2,7 +2,7 @@ package ch.epfl.biop.scijava.command.source.register;
 
 import bdv.util.BigWarpHelper;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.bdv.bioformats.command.BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand;
+import ch.epfl.biop.bdv.img.legacy.bioformats.command.BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand;
 import ij.IJ;
 import net.imagej.ImageJ;
 import net.imglib2.RealPoint;

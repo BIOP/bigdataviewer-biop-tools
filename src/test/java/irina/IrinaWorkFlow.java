@@ -1,12 +1,11 @@
 package irina;
 
-
 import bdv.util.BigWarpHelper;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.ImagePlusToOMETiff;
 import ch.epfl.biop.OMETiffMultiSeriesProcessorExporter;
-import ch.epfl.biop.bdv.bioformats.command.BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand;
-import ch.epfl.biop.bdv.bioformats.imageloader.FileIndex;
+import ch.epfl.biop.bdv.img.legacy.bioformats.command.BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand;
+import ch.epfl.biop.bdv.img.legacy.bioformats.entity.FileIndex;
 import ch.epfl.biop.kheops.KheopsHelper;
 import ch.epfl.biop.scijava.command.spimdata.DatasetToBigStitcherDatasetCommand;
 import ch.epfl.biop.sourceandconverter.exporter.CZTRange;

@@ -1,41 +1,19 @@
-import bdv.util.BdvFunctions;
 import bdv.util.BdvHandle;
-import bdv.util.BdvOptions;
-import bdv.util.BdvStackSource;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.bdv.bioformats.export.spimdata.BioFormatsConvertFilesToSpimData;
-import ch.epfl.biop.bdv.bioformats.imageloader.BioFormatsBdvOpener;
-import ch.epfl.biop.bdv.select.SelectedSourcesListener;
-import ch.epfl.biop.bdv.select.SourceSelectorBehaviour;
-import ch.epfl.biop.bdv.select.ToggleListener;
+import ch.epfl.biop.bdv.img.legacy.bioformats.BioFormatsBdvOpener;
+import ch.epfl.biop.bdv.img.legacy.bioformats.BioFormatsToSpimData;
+import ch.epfl.biop.bdv.img.legacy.bioformats.command.BioformatsBigdataviewerBridgeDatasetCommand;
 import ch.epfl.biop.scijava.command.source.register.Elastix2DAffineRegisterCommand;
-import ch.epfl.biop.scijava.command.source.register.Elastix2DAffineRegisterServerCommand;
-import ch.epfl.biop.scijava.command.source.register.Elastix2DSplineRegisterCommand;
-import ij.IJ;
-import ij.ImagePlus;
-import mpicbg.spim.data.SpimData;
-import mpicbg.spim.data.XmlIoSpimData;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;
-import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.img.display.imagej.ImageJFunctions;
-import net.imglib2.realtransform.AffineTransform3D;
-import net.imglib2.type.numeric.ARGBType;
 import ome.units.UNITS;
 import ome.units.quantity.Length;
 import org.scijava.command.CommandModule;
 import org.scijava.command.CommandService;
-import org.scijava.ui.behaviour.ClickBehaviour;
-import org.scijava.ui.behaviour.io.InputTriggerConfig;
-import org.scijava.ui.behaviour.util.Behaviours;
 import sc.fiji.bdvpg.scijava.services.SourceAndConverterBdvDisplayService;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterAndTimeRange;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceTransformHelper;
-import spimdata.imageplus.SpimDataFromImagePlusGetter;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Future;
 
@@ -57,10 +35,10 @@ public class DemoRegistrationMultiChannelAffine {
         ij.ui().showUI();
 
         BioFormatsBdvOpener opener =
-                BioFormatsConvertFilesToSpimData
-                        .getDefaultOpener("src/test/resources/multichanreg/Atlas.tif");
+                new BioformatsBigdataviewerBridgeDatasetCommand()
+                        .getOpener("src/test/resources/multichanreg/Atlas.tif");
 
-        AbstractSpimData atlasDataset = BioFormatsConvertFilesToSpimData.getSpimData(
+        AbstractSpimData atlasDataset = BioFormatsToSpimData.getSpimData(
                 opener
                         .voxSizeReferenceFrameLength(new Length(1, UNITS.MILLIMETER))
                         .positionReferenceFrameLength(new Length(1,UNITS.METER)));
@@ -69,10 +47,10 @@ public class DemoRegistrationMultiChannelAffine {
         List<SourceAndConverter<?>> atlasSources = SourceAndConverterServices.getSourceAndConverterService().getSourceAndConverterFromSpimdata(atlasDataset);
 
         opener =
-                BioFormatsConvertFilesToSpimData
-                        .getDefaultOpener("src/test/resources/multichanreg/Slice.tif");
+                new BioformatsBigdataviewerBridgeDatasetCommand()
+                        .getOpener("src/test/resources/multichanreg/Slice.tif");
 
-        AbstractSpimData sliceDataset = BioFormatsConvertFilesToSpimData.getSpimData(
+        AbstractSpimData sliceDataset = BioFormatsToSpimData.getSpimData(
                 opener
                         .voxSizeReferenceFrameLength(new Length(1, UNITS.MILLIMETER))
                         .positionReferenceFrameLength(new Length(1,UNITS.METER)));

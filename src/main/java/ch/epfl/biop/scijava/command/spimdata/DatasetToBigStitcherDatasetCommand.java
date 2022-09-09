@@ -1,8 +1,8 @@
 package ch.epfl.biop.scijava.command.spimdata;
 
-import ch.epfl.biop.bdv.bioformats.imageloader.BioFormatsImageLoader;
-import ch.epfl.biop.bdv.bioformats.imageloader.BioFormatsSetupLoader;
-import ch.epfl.biop.bdv.bioformats.imageloader.FileIndex;
+import ch.epfl.biop.bdv.img.legacy.bioformats.BioFormatsImageLoader;
+import ch.epfl.biop.bdv.img.legacy.bioformats.BioFormatsSetupLoader;
+import ch.epfl.biop.bdv.img.legacy.bioformats.entity.FileIndex;
 import ij.IJ;
 import mpicbg.spim.data.SpimData;
 import mpicbg.spim.data.XmlIoSpimData;

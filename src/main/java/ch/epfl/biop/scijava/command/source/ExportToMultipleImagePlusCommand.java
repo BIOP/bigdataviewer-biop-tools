@@ -1,20 +1,16 @@
 package ch.epfl.biop.scijava.command.source;
 
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.bdv.bioformats.imageloader.FileIndex;
-import ch.epfl.biop.bdv.bioformats.imageloader.SeriesNumber;
+import ch.epfl.biop.bdv.img.legacy.bioformats.entity.FileIndex;
+import ch.epfl.biop.bdv.img.legacy.bioformats.entity.SeriesNumber;
 import ch.epfl.biop.scijava.command.bdv.OverviewerCommand;
 import ch.epfl.biop.sourceandconverter.exporter.CZTRange;
-import ch.epfl.biop.sourceandconverter.exporter.ImagePlusGetter;
-import ij.IJ;
 import ij.ImagePlus;
 import mpicbg.spim.data.generic.base.Entity;
 import mpicbg.spim.data.sequence.Angle;
 import mpicbg.spim.data.sequence.Illumination;
 import mpicbg.spim.data.sequence.Tile;
 import net.imglib2.realtransform.AffineTransform3D;
-import net.imglib2.type.numeric.ARGBType;
-import net.imglib2.type.volatiles.VolatileARGBType;
 import org.scijava.ItemIO;
 import org.scijava.ItemVisibility;
 import org.scijava.plugin.Parameter;

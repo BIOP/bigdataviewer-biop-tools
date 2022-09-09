@@ -11,7 +11,7 @@
 
 	<groupId>ch.epfl.biop</groupId>
 	<artifactId>bigdataviewer-biop-tools</artifactId>
-	<version>0.4.0-SNAPSHOT</version>
+	<version>0.4.91</version>
 
 	<name>Biop Bigdataviewer Tools and Plugins </name>
 	<description>Big data viewer tools BIOP - EPFL</description>
@@ -96,20 +96,24 @@
 		<scijava.deleteOtherVersions>true</scijava.deleteOtherVersions>
 		<license.excludes>**/resources/**</license.excludes>
 
+		<!-- general imagej dependencies -->
+		<!-- bigdataviewer dependencies -->
+		<bigvolumeviewer.version>0.2.0</bigvolumeviewer.version>
+		<!-- bdv playground related dependencies -->
 		<bigdataviewer-playground.version>0.6.0</bigdataviewer-playground.version>
-		<bigdataviewer-bioformats.version>0.4.0</bigdataviewer-bioformats.version>
-		<bigdataviewer-selector.version>0.2.1</bigdataviewer-selector.version>
+		<bigdataviewer-image-loaders.version>0.3.1</bigdataviewer-image-loaders.version>
 		<bigdataviewer-playground-display.version>0.3.0</bigdataviewer-playground-display.version>
 		<bigdataviewer-spimdata-extras.version>0.2.0</bigdataviewer-spimdata-extras.version>
-		<!--<scijava.app.directory>C:/Fiji.app/</scijava.app.directory>-->
-
-		<leastsquares.version>1.0.0</leastsquares.version>
-		<ijl-utilities-wrappers.version>0.6.0</ijl-utilities-wrappers.version>
 		<image-transform-converters.version>0.1.5</image-transform-converters.version>
 		<elastix_registration_server.version>0.1.4</elastix_registration_server.version>
+
+		<!-- biop dependencies -->
+		<ijl-utilities-wrappers.version>0.7.0</ijl-utilities-wrappers.version>
 		<Operetta_Importer.version>0.1.22</Operetta_Importer.version>
-		<bigvolumeviewer.version>0.2.0</bigvolumeviewer.version>
-		<ijp-kheops.version>0.2.3</ijp-kheops.version>
+		<ijp-kheops.version>0.3.1</ijp-kheops.version>
+
+		<!-- maths -->
+		<leastsquares.version>1.0.0</leastsquares.version>
 
 		<releaseProfiles>sign,deploy-to-scijava</releaseProfiles>
 
@@ -124,20 +128,10 @@
 
 	<dependencies>
 
-		<dependency>
-			<groupId>org.scijava</groupId>
-			<artifactId>ui-behaviour</artifactId>
-		</dependency>
-
+		<!-- imagej and scijava dependencies -->
 		<dependency>
 			<groupId>net.imagej</groupId>
 			<artifactId>imagej-legacy</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>ch.epfl.biop</groupId>
-			<artifactId>ijp-kheops</artifactId>
-			<version>${ijp-kheops.version}</version>
 		</dependency>
 
 		<dependency>
@@ -146,30 +140,34 @@
 		</dependency>
 
 		<dependency>
+			<groupId>net.imagej</groupId>
+			<artifactId>ij</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.scijava</groupId>
+			<artifactId>scijava-common</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.scijava</groupId>
+			<artifactId>scijava-ui-swing</artifactId>
+		</dependency>
+
+		<!-- bigdataviewer dependencies -->
+		<dependency>
+			<groupId>org.scijava</groupId>
+			<artifactId>ui-behaviour</artifactId>
+		</dependency>
+
+		<dependency>
 			<groupId>sc.fiji</groupId>
 			<artifactId>bigdataviewer-vistools</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>ch.epfl.biop</groupId>
-			<artifactId>bigdataviewer-selector</artifactId>
-			<version>${bigdataviewer-selector.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>ch.epfl.biop</groupId>
-			<artifactId>Operetta_Importer</artifactId>
-			<version>${Operetta_Importer.version}</version>
-		</dependency>
-
-		<dependency>
 			<groupId>sc.fiji</groupId>
 			<artifactId>bigdataviewer-core</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>net.imagej</groupId>
-			<artifactId>ij</artifactId>
 		</dependency>
 
 		<dependency>
@@ -183,60 +181,17 @@
 		</dependency>
 
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.scijava</groupId>
-			<artifactId>scijava-common</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.scijava</groupId>
-			<artifactId>scijava-ui-swing</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.orangepalantir</groupId>
-			<artifactId>leastsquares</artifactId>
-			<version>${leastsquares.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-math3</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>ch.epfl.biop</groupId>
-			<artifactId>ijl-utilities-wrappers</artifactId>
-			<version>${ijl-utilities-wrappers.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.itc</groupId>
-			<artifactId>image-transform-converters</artifactId>
-			<version>${image-transform-converters.version}</version>
-		</dependency>
-
-        <dependency>
-            <groupId>sc.fiji</groupId>
-            <artifactId>bigdataviewer-playground</artifactId>
-            <version>${bigdataviewer-playground.version}</version>
-        </dependency>
-
-		<dependency>
 			<groupId>sc.fiji</groupId>
 			<artifactId>bigvolumeviewer</artifactId>
 			<version>${bigvolumeviewer.version}</version>
 		</dependency>
 
+		<!-- bdv playground related dependencies -->
+
 		<dependency>
-			<groupId>ch.epfl.biop</groupId>
-			<artifactId>bigdataviewer-bioformats</artifactId>
-			<version>${bigdataviewer-bioformats.version}</version>
+			<groupId>sc.fiji</groupId>
+			<artifactId>bigdataviewer-playground</artifactId>
+			<version>${bigdataviewer-playground.version}</version>
 		</dependency>
 
 		<dependency>
@@ -252,9 +207,60 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.itc</groupId>
+			<artifactId>image-transform-converters</artifactId>
+			<version>${image-transform-converters.version}</version>
+		</dependency>
+
+		<!-- BIOP dependencies -->
+		<dependency>
+			<groupId>ch.epfl.biop</groupId>
+			<artifactId>Operetta_Importer</artifactId>
+			<version>${Operetta_Importer.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>ch.epfl.biop</groupId>
+			<artifactId>ijl-utilities-wrappers</artifactId>
+			<version>${ijl-utilities-wrappers.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>ch.epfl.biop</groupId>
+			<artifactId>bigdataviewer-image-loaders</artifactId>
+			<version>${bigdataviewer-image-loaders.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>ch.epfl.biop</groupId>
+			<artifactId>ijp-kheops</artifactId>
+			<version>${ijp-kheops.version}</version>
+		</dependency>
+
+		<!-- maths -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-math3</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.orangepalantir</groupId>
+			<artifactId>leastsquares</artifactId>
+			<version>${leastsquares.version}</version>
+		</dependency>
+
+		<dependency>
 			<groupId>ch.epfl.biop</groupId>
 			<artifactId>elastix_registration_server</artifactId>
 			<version>${elastix_registration_server.version}</version>
+		</dependency>
+
+		<!-- test dependencies -->
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
 		</dependency>
 
 	</dependencies>

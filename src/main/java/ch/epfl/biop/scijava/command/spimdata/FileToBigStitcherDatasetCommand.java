@@ -1,9 +1,9 @@
 package ch.epfl.biop.scijava.command.spimdata;
 
-import ch.epfl.biop.bdv.bioformats.BioFormatsMetaDataHelper;
-import ch.epfl.biop.bdv.bioformats.export.spimdata.BioFormatsConvertFilesToSpimData;
-import ch.epfl.biop.bdv.bioformats.imageloader.BioFormatsBdvOpener;
-import ch.epfl.biop.bdv.bioformats.imageloader.FileIndex;
+import ch.epfl.biop.bdv.img.legacy.bioformats.BioFormatsBdvOpener;
+import ch.epfl.biop.bdv.img.legacy.bioformats.BioFormatsToSpimData;
+import ch.epfl.biop.bdv.img.legacy.bioformats.BioFormatsTools;
+import ch.epfl.biop.bdv.img.legacy.bioformats.entity.FileIndex;
 import ij.IJ;
 import loci.formats.IFormatReader;
 import loci.formats.meta.IMetadata;
@@ -42,14 +42,14 @@ public class FileToBigStitcherDatasetCommand implements Command {
         }
 
         try {
-            BioFormatsBdvOpener opener = BioFormatsConvertFilesToSpimData.getDefaultOpener(file.getAbsolutePath()).micrometer();
+            BioFormatsBdvOpener opener = BioFormatsToSpimData.getDefaultOpener(file.getAbsolutePath()).micrometer();
             IFormatReader reader = opener.getNewReader();
-            Length[] voxSizes = BioFormatsMetaDataHelper.getSeriesVoxelSizeAsLengths((IMetadata) reader.getMetadataStore(), 0);//.getSeriesRootTransform()
+            Length[] voxSizes = BioFormatsTools.getSeriesVoxelSizeAsLengths((IMetadata) reader.getMetadataStore(), 0);//.getSeriesRootTransform()
             double pixSizeXYMicrometer = voxSizes[0].value(UNITS.MICROMETER).doubleValue();
             double scalingForBigStitcher = 1 / pixSizeXYMicrometer;
             reader.close();
 
-            AbstractSpimData<?> asd = BioFormatsConvertFilesToSpimData.getSpimData(
+            AbstractSpimData<?> asd = BioFormatsToSpimData.getSpimData(
                     opener
                             .voxSizeReferenceFrameLength(new Length(1, UNITS.MICROMETER))
                             .positionReferenceFrameLength(new Length(1, UNITS.MICROMETER)));

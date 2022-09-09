@@ -1,11 +1,11 @@
 package ch.epfl.biop;
 
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.bdv.bioformats.command.BioformatsBigdataviewerBridgeDatasetCommand;
-import ch.epfl.biop.bdv.bioformats.command.OpenFilesWithBigdataviewerBioformatsBridgeCommand;
-import ch.epfl.biop.bdv.bioformats.export.IntRangeParser;
-import ch.epfl.biop.bdv.bioformats.imageloader.SeriesNumber;
+import ch.epfl.biop.bdv.img.legacy.bioformats.command.BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand;
+import ch.epfl.biop.bdv.img.legacy.bioformats.command.BioformatsBigdataviewerBridgeDatasetCommand;
+import ch.epfl.biop.bdv.img.legacy.bioformats.entity.SeriesNumber;
 import ch.epfl.biop.scijava.command.source.ExportToMultipleImagePlusCommand;
+import ch.epfl.biop.sourceandconverter.exporter.IntRangeParser;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.measure.Calibration;
@@ -68,7 +68,7 @@ public class OMETiffMultiSeriesProcessorExporter {
             options.put("cachesizez", 1);
         }
 
-        AbstractSpimData spimdata = (AbstractSpimData) command.run(OpenFilesWithBigdataviewerBioformatsBridgeCommand.class,true,
+        AbstractSpimData spimdata = (AbstractSpimData) command.run(BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand.class,true,
                     options
                 ).get().getOutput("spimdata");
 
