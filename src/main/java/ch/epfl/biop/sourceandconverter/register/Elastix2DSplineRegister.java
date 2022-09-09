@@ -214,7 +214,7 @@ public class Elastix2DSplineRegister<FT extends NativeType<FT> & NumericType<FT>
                 IJ.run(transformedImage, "Enhance Contrast", "saturated=0.35");
                 IJ.run(croppedFixed, "32-bit", "");
                 if ((transformedImage.getNChannels()==1)&&(croppedFixed.getNChannels()==1)) {
-                    IJ.run((ImagePlus) null, "Merge Channels...", "c1=Transformed_DUP_Moving c2=DUP_Fixed create");
+                    IJ.run((ImagePlus) null, "Merge Channels...", "c1=Transformed_Moving c2=Fixed create");
                 }
             }
         }

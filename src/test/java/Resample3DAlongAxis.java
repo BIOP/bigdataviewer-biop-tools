@@ -53,6 +53,7 @@ public class Resample3DAlongAxis {
 
         RandomAccessibleIntervalSource<UnsignedByteType> rais;
 
+        // DO NOT WORK
          rais = new RandomAccessibleIntervalSource<UnsignedByteType>(
                 Views.expandZero(sac.getSpimSource().getSource(0,0)),
                 new UnsignedByteType(),
