@@ -124,16 +124,7 @@ public class ResampledTransformFieldSource implements ITransformFieldSource {
         AffineTransform3D atOrigin = new AffineTransform3D();
         origin.getSourceTransform(t, 0, atOrigin);
         at.concatenate(atOrigin);
-        RandomAccessible<RealPoint> ra = /*new FunctionRandomAccessible<>(3, (p,v) -> {
-            //System.out.println("call");
-            v.setPosition(new double[]{
-                    Math.random() * 50.0+50.0,
-                    Math.random() * 50.0+50.0,
-                    Math.random() * 50.0+50.0
-            });
-        }, this::getType);*/
-
-                RealViews.affine(ipimg, at); // Gets the view
+        RandomAccessible<RealPoint> ra = RealViews.affine(ipimg, at); // Gets the view
 
         // ... interval
         RandomAccessibleInterval<RealPoint> view =
@@ -171,11 +162,7 @@ public class ResampledTransformFieldSource implements ITransformFieldSource {
 
     @Override
     public RealRandomAccessible<RealPoint> getInterpolatedSource(int t, int level, Interpolation method) {
-        final RealPoint zero = getType();
-
         ExtendedRandomAccessibleInterval<RealPoint, RandomAccessibleInterval<RealPoint>> eView =
-                //Views.extendValue(getSource(t, level), zero);
-
         Views.extendBorder(getSource(t, level));
         
         @SuppressWarnings("UnnecessaryLocalVariable")
@@ -185,7 +172,12 @@ public class ResampledTransformFieldSource implements ITransformFieldSource {
 
     @Override
     public void getSourceTransform(int t, int level, AffineTransform3D transform) {
+        //transform.identity();
         resamplingModel.getSourceTransform(t, level, transform);
+        /*AffineTransform3D transform_orig = new AffineTransform3D();
+        resamplingModel.getSourceTransform(t, level, transform_orig);
+        transform.set(transform_orig.inverse());*/
+
     }
 
     @Override
@@ -208,7 +200,61 @@ public class ResampledTransformFieldSource implements ITransformFieldSource {
         return resamplingModel.getNumMipmapLevels();
     }
 
-    public static RandomAccessibleInterval<RealPoint>
+    public RandomAccessibleInterval<RealPoint>
+    wrapAsVolatileCachedCellImg(final RandomAccessibleInterval<RealPoint> source,
+                                final int[] blockSize, Object objectSource, int timepoint, int level)
+    {
+
+        /*final int[] blockSize = new int[]{blockSize_points[0], blockSize_points[1], blockSize_points[2], 3};
+        RandomAccessibleInterval<FloatType> source = dimensionChannels(source_points);
+
+        final long[] dimensions = Intervals.dimensionsAsLongArray(source);
+
+        final CellGrid grid = new CellGrid(dimensions, blockSize);
+
+        final Caches.RandomAccessibleLoader<FloatType> loader = new Caches.RandomAccessibleLoader<>(Views.zeroMin(source));
+
+        final FloatType type = new FloatType();
+
+        final Cache<Long, Cell<?>> cache = new GlobalLoaderCache(objectSource,
+                timepoint, level).withLoader(LoadedCellCacheLoader.get(grid, loader, type,
+                AccessFlags.setOf(VOLATILE)));
+
+        final CachedCellImg<FloatType, ?> img = new CachedCellImg(grid, type, cache, ArrayDataAccessFactory.get(
+                FLOAT, AccessFlags.setOf(VOLATILE)));
+
+        return mergeDimensions(img);*/
+
+        int nElements = (int)(source.dimension(0)*source.dimension(1)*source.dimension(2)*3);
+
+        //float[] backingArray = new float[nElements];
+
+        Cursor<RealPoint> cursor = Views.flatIterable(source).localizingCursor();
+        int i = 0;
+        final float[][][][] backingArray = new float[(int)source.dimension(0)][(int)source.dimension(1)][(int)source.dimension(2)][3];
+        float[] location = new float[3];
+
+        AffineTransform3D transform3D = new AffineTransform3D();
+        getSourceTransform(0,0,transform3D);
+        while(cursor.hasNext()) {
+            cursor.fwd();
+            cursor.get().localize(location);
+            int xp = cursor.getIntPosition(0);
+            int yp = cursor.getIntPosition(1);
+            int zp = cursor.getIntPosition(2);
+            backingArray[xp][yp][zp][0] = location[0];
+            backingArray[xp][yp][zp][1] = location[1];
+            backingArray[xp][yp][zp][2] = location[2];
+        }
+        FunctionRandomAccessible<RealPoint> rai = new FunctionRandomAccessible<>(3,(loc, point) -> {
+            float[] coordinates = backingArray[loc.getIntPosition(0)] [loc.getIntPosition(1)][loc.getIntPosition(2)];
+            point.setPosition(coordinates);
+        }, () -> new RealPoint(3));
+
+        return Views.interval(rai, source);
+    }
+
+    /*public static RandomAccessibleInterval<RealPoint>
     wrapAsVolatileCachedCellImg(final RandomAccessibleInterval<RealPoint> source_points,
                                 final int[] blockSize_points, Object objectSource, int timepoint, int level)
     {
@@ -232,7 +278,7 @@ public class ResampledTransformFieldSource implements ITransformFieldSource {
                 FLOAT, AccessFlags.setOf(VOLATILE)));
         
         return mergeDimensions(img);
-    }
+    }*/
 
     static class RealPointSampleConverter implements SamplerConverter< RealPoint, FloatType>
     {

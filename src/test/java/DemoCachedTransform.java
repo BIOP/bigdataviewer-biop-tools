@@ -17,9 +17,11 @@ import net.imglib2.realtransform.RealTransform;
 import net.imglib2.type.numeric.ARGBType;
 import sc.fiji.bdvpg.bdv.navigate.ViewerTransformAdjuster;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
+import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
 import sc.fiji.bdvpg.sourceandconverter.display.BrightnessAutoAdjuster;
 import sc.fiji.bdvpg.sourceandconverter.register.BigWarpLauncher;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceRealTransformer;
+import sc.fiji.bdvpg.sourceandconverter.transform.SourceResampler;
 import sc.fiji.bdvpg.spimdata.importer.SpimDataFromXmlImporter;
 
 import java.util.ArrayList;
@@ -103,17 +105,13 @@ public class DemoCachedTransform {
 
         ITransformFieldSource source = new TransformFieldSource(bwl.getBigWarp().getBwTransform().getTransformation(0), "BigWarp Transformation");
 
-
-
-
-
-
-
         EmptySource.EmptySourceParams params = new EmptySource.EmptySourceParams();
         params.name = "Model Source";
-        params.nx = 150;
-        params.ny = 150;
-        params.nz = 150;
+        params.nx = 25;
+        params.ny = 25;
+        params.nz = 25;
+        params.at3D.scale(20,20,20);
+        params.at3D.translate(-100,-100, -100);
 
         EmptySource model = new EmptySource(params);
 
@@ -127,6 +125,11 @@ public class DemoCachedTransform {
         SourceAndConverter tr = new SourceRealTransformer(null,transform).apply(sacFixed);
         SourceAndConverterServices.getBdvDisplayService()
                 .show(bdvHandle, tr);
+
+        SourceAndConverter resampled = new SourceResampler(fixedSources.get(0), SourceAndConverterHelper.createSourceAndConverter(model), "Model Size", false, false, false, 0).get();
+
+        SourceAndConverterServices.getBdvDisplayService()
+                .show(bdvHandle, resampled);
 
     }
 }

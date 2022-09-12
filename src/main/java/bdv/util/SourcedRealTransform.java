@@ -5,7 +5,9 @@ import net.imglib2.RealLocalizable;
 import net.imglib2.RealPoint;
 import net.imglib2.RealPositionable;
 import net.imglib2.RealRandomAccessible;
+import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.realtransform.RealTransform;
+import net.imglib2.realtransform.RealViews;
 
 /**
  * This RealTransform class takes a Source<RealPoint> and turns it into a RealTransform object
@@ -16,10 +18,12 @@ public class SourcedRealTransform implements RealTransform {
 
     final ITransformFieldSource source;
     final RealRandomAccessible<RealPoint> realRandomAccess;
+    final AffineTransform3D transform3D = new AffineTransform3D();
 
     public SourcedRealTransform(ITransformFieldSource source) {
         this.source = source;
-        this.realRandomAccess = source.getInterpolatedSource(0,0,null);
+        source.getSourceTransform(0,0, transform3D);
+        this.realRandomAccess = RealViews.affine(source.getInterpolatedSource(0,0,null), transform3D);
     }
 
     @Override
