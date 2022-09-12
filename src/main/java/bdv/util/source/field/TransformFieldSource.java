@@ -39,7 +39,7 @@ public class TransformFieldSource implements ITransformFieldSource {
         RealTransform transformCopy = transform.copy();
         return new FunctionRealRandomAccessible<>(sourceDimensions, (position, value) -> {
             transformCopy.apply(position, value);
-        }, () -> new RealPoint(targetDimensions)); // new or keep ?
+        }, this::getType); // new or keep ?
     }
 
     @Override
