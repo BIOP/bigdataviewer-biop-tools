@@ -16,7 +16,7 @@ public class RealPointNLinearInterpolator extends Floor<RandomAccess< RealPoint 
 
     final protected ExtendedRealPoint tmp;
 
-    protected RealPointNLinearInterpolator( final ResampledTransformFieldSource.RealPointNLinearInterpolator interpolator )
+    protected RealPointNLinearInterpolator( final RealPointNLinearInterpolator interpolator )
     {
         super( interpolator.target.copyRandomAccess() );
 
@@ -118,12 +118,12 @@ public class RealPointNLinearInterpolator extends Floor<RandomAccess< RealPoint 
     }
 
     @Override
-    public ResampledTransformFieldSource.RealPointNLinearInterpolator copy() {
-        return new ResampledTransformFieldSource.RealPointNLinearInterpolator( this );
+    public RealPointNLinearInterpolator copy() {
+        return new RealPointNLinearInterpolator( this );
     }
 
     @Override
-    public ResampledTransformFieldSource.RealPointNLinearInterpolator copyRealRandomAccess() {
+    public RealPointNLinearInterpolator copyRealRandomAccess() {
         return copy();
     }
 
@@ -172,4 +172,5 @@ public class RealPointNLinearInterpolator extends Floor<RandomAccess< RealPoint 
         tmp.mul( weights[ code ] );
         accumulator.move( tmp );
     }
+
 }
