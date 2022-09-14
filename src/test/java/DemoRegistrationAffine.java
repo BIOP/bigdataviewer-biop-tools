@@ -3,6 +3,7 @@ import bdv.util.BdvHandle;
 import bdv.util.BdvOptions;
 import bdv.util.BdvStackSource;
 import bdv.viewer.SourceAndConverter;
+import ch.epfl.biop.bdv.img.imageplus.ImagePlusToSpimData;
 import ch.epfl.biop.bdv.select.SelectedSourcesListener;
 import ch.epfl.biop.bdv.select.SourceSelectorBehaviour;
 import ch.epfl.biop.bdv.select.ToggleListener;
@@ -26,7 +27,6 @@ import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.util.Behaviours;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterAndTimeRange;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceTransformHelper;
-import spimdata.imageplus.SpimDataFromImagePlusGetter;
 
 import java.util.Collection;
 import java.util.List;
@@ -145,7 +145,7 @@ public class DemoRegistrationAffine {
 
 
         ImagePlus impRGB = IJ.openImage("src/test/resources/blobsrgb.tif");
-        AbstractSpimData sdblob = (new SpimDataFromImagePlusGetter()).apply(impRGB);
+        AbstractSpimData sdblob = ImagePlusToSpimData.getSpimData(impRGB);
         AffineTransform3D at3D = new AffineTransform3D();
         at3D.rotate(2,15);
         List<BdvStackSource<?>> bssL = BdvFunctions.show(sdblob, BdvOptions.options().addTo(bdvh));

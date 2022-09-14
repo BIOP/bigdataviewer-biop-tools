@@ -1,6 +1,7 @@
 package ch.epfl.biop.sourceandconverter.exporter;
 
 import bdv.viewer.SourceAndConverter;
+import ch.epfl.biop.bdv.img.imageplus.ImagePlusHelper;
 import ij.CompositeImage;
 import ij.IJ;
 import ij.ImagePlus;
@@ -18,7 +19,6 @@ import org.scijava.task.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
-import spimdata.imageplus.ImagePlusHelper;
 
 import java.awt.*;
 import java.text.DecimalFormat;

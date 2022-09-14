@@ -1,5 +1,4 @@
 import net.imagej.ImageJ;
-import spimdata.imageplus.ImagePlusHelper;
 
 public class TestEllipticHIVE {
 

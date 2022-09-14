@@ -29,7 +29,6 @@ import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
 import sc.fiji.bdvpg.sourceandconverter.importer.EmptySourceAndConverterCreator;
 import sc.fiji.persist.ScijavaGsonHelper;
-import spimdata.imageplus.ImagePlusHelper;
 
 import java.text.DecimalFormat;
 import java.util.Arrays;
