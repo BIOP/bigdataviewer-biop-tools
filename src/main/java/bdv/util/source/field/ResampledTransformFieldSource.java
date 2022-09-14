@@ -4,20 +4,16 @@ import bdv.viewer.Interpolation;
 import bdv.viewer.Source;
 import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.imglib2.Cursor;
-import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.RealInterval;
 import net.imglib2.RealPoint;
-import net.imglib2.RealRandomAccess;
 import net.imglib2.RealRandomAccessible;
 import net.imglib2.Sampler;
 import net.imglib2.converter.Converters;
 import net.imglib2.converter.readwrite.SamplerConverter;
 import net.imglib2.converter.readwrite.WriteConvertedRandomAccessibleInterval;
-import net.imglib2.interpolation.InterpolatorFactory;
 import net.imglib2.position.FunctionRandomAccessible;
-import net.imglib2.position.transform.Floor;
+import net.imglib2.position.FunctionRealRandomAccessible;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.realtransform.RealTransform;
 import net.imglib2.realtransform.RealViews;
@@ -35,7 +31,7 @@ public class ResampledTransformFieldSource implements ITransformFieldSource {
     final RealTransform origin;
     final Source<?> resamplingModel;
     final String name;
-    final RealPointInterpolatorFactory interpolator = new RealPointInterpolatorFactory();
+    final RealPoint3DInterpolatorFactory interpolator = new RealPoint3DInterpolatorFactory();
 
     /**
      * Hashmap to cache RAIs (mipmaps and timepoints)
@@ -62,12 +58,12 @@ public class ResampledTransformFieldSource implements ITransformFieldSource {
 
     @Override
     public RealTransform getTransform() {
-        return origin.getTransform();
+        return origin;
     }
 
     @Override
     public boolean isPresent(int t) {
-        return origin.isPresent(t);
+        return resamplingModel.isPresent(t);
     }
 
     public RandomAccessibleInterval<RealPoint> buildSource(int t, int level) {
@@ -83,14 +79,21 @@ public class ResampledTransformFieldSource implements ITransformFieldSource {
         long sy = resamplingModel.getSource(t, level).dimension(1) - 1;
         long sz = resamplingModel.getSource(t, level).dimension(2) - 1;
 
+        RealTransform transformCopy = origin.copy();
+        /*return new FunctionRealRandomAccessible<>(sourceDimensions, (position, value) -> {
+            transformCopy.apply(position, value);
+        }, this::getType);*/
+
         // Get field of origin source
-        final RealRandomAccessible<RealPoint> ipimg = origin.getInterpolatedSource(t,0, null);
+        final RealRandomAccessible<RealPoint> ipimg =
+                new FunctionRealRandomAccessible<>(3, (position, value) -> {
+            transformCopy.apply(position, value);
+        }, this::getType);
+
+                //origin.getInterpolatedSource(t,0, null);
 
         // Gets randomAccessible... ( with appropriate transform )
         at = at.inverse();
-        AffineTransform3D atOrigin = new AffineTransform3D();
-        origin.getSourceTransform(t, 0, atOrigin);
-        at.concatenate(atOrigin);
         RandomAccessible<RealPoint> ra = RealViews.affine(ipimg, at); // Gets the view
 
         // ... interval
@@ -149,7 +152,7 @@ public class ResampledTransformFieldSource implements ITransformFieldSource {
 
     @Override
     public RealPoint getType() {
-        return origin.getType();
+        return new RealPoint(3);
     }
 
     @Override

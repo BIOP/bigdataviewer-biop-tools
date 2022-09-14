@@ -1,5 +1,7 @@
 import bdv.tools.brightness.ConverterSetup;
 import bdv.util.BdvHandle;
+import bdv.util.RealTransformHelper;
+import bdv.util.source.field.ResampledTransformFieldSource;
 import bdv.util.source.field.ResampledTransformFromSourceFieldSource;
 import bdv.util.EmptySource;
 import bdv.util.SourcedRealTransform;
@@ -99,7 +101,7 @@ public class DemoCachedTransform {
 
         // Makes a source from a transform:
 
-        ITransformFieldSource source = new TransformFieldSource(bwl.getBigWarp().getBwTransform().getTransformation(0), "BigWarp Transformation");
+        //ITransformFieldSource source = new TransformFieldSource(bwl.getBigWarp().getBwTransform().getTransformation(0), "BigWarp Transformation");
 
         EmptySource.EmptySourceParams params = new EmptySource.EmptySourceParams();
         params.name = "Model Source";
@@ -111,12 +113,14 @@ public class DemoCachedTransform {
 
         EmptySource model = new EmptySource(params);
 
-        ITransformFieldSource cached_transform = new ResampledTransformFromSourceFieldSource(source, model, "Cached transform");
-
-
-        RealTransform transform = new SourcedRealTransform(cached_transform);
+        //ITransformFieldSource cached_transform = new ResampledTransformFromSourceFieldSource(source, model, "Cached transform");
+        //RealTransform transform = new SourcedRealTransform(cached_transform);
 
         //BoundedRealTransform brt = new BoundedRealTransform(bwl.getBigWarp().getBwTransform().getTransformation(0), new FinalRealInterval(new double[]{20,20,20}, new double[]{150,150,150}));
+
+        //ResampledTransformFieldSource tra
+
+        RealTransform transform = RealTransformHelper.resampleTransform(bwl.getBigWarp().getBwTransform().getTransformation(0), model);
 
         SourceAndConverter tr = new SourceRealTransformer(null,transform).apply(sacFixed);
         SourceAndConverterServices.getBdvDisplayService()

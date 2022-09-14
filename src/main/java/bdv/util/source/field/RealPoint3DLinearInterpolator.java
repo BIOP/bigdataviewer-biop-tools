@@ -6,9 +6,9 @@ import net.imglib2.RealPoint;
 import net.imglib2.RealRandomAccess;
 import net.imglib2.position.transform.Floor;
 
-public class RealPointNLinearInterpolator extends Floor<RandomAccess< RealPoint >> implements RealRandomAccess< RealPoint > {
+public class RealPoint3DLinearInterpolator extends Floor<RandomAccess< RealPoint >> implements RealRandomAccess< RealPoint > {
 
-    protected int code;
+    //protected int code;
 
     final protected double[] weights;
 
@@ -16,12 +16,12 @@ public class RealPointNLinearInterpolator extends Floor<RandomAccess< RealPoint 
 
     final protected ExtendedRealPoint tmp;
 
-    protected RealPointNLinearInterpolator( final RealPointNLinearInterpolator interpolator )
+    protected RealPoint3DLinearInterpolator(final RealPoint3DLinearInterpolator interpolator )
     {
         super( interpolator.target.copyRandomAccess() );
 
         weights = interpolator.weights.clone();
-        code = interpolator.code;
+        //code = interpolator.code;
         accumulator = new ExtendedRealPoint(3);
         tmp = new ExtendedRealPoint(3);
 
@@ -32,16 +32,16 @@ public class RealPointNLinearInterpolator extends Floor<RandomAccess< RealPoint 
         }
     }
 
-    protected RealPointNLinearInterpolator(final RandomAccessible<RealPoint> randomAccessible, final RealPoint type )
+    protected RealPoint3DLinearInterpolator(final RandomAccessible<RealPoint> randomAccessible, final RealPoint type )
     {
         super( randomAccessible.randomAccess() );
-        weights = new double[ 1 << n ];
-        code = 0;
+        weights = new double[ 8 ];//1 << n ];
+        //code = 0;
         accumulator = new ExtendedRealPoint(3); // Assertions
         tmp = new ExtendedRealPoint(3); // Assertions
     }
 
-    protected RealPointNLinearInterpolator( final RandomAccessible< RealPoint > randomAccessible )
+    protected RealPoint3DLinearInterpolator(final RandomAccessible< RealPoint > randomAccessible )
     {
         this( randomAccessible, randomAccessible.randomAccess().get() );
     }
@@ -84,7 +84,7 @@ public class RealPointNLinearInterpolator extends Floor<RandomAccess< RealPoint 
      */
     protected void fillWeights()
     {
-        weights[ 0 ] = 1.0d;
+        /*weights[ 0 ] = 1.0d;
 
         for ( int d = n - 1; d >= 0; --d )
         {
@@ -100,12 +100,27 @@ public class RealPointNLinearInterpolator extends Floor<RandomAccess< RealPoint 
                 weights[ baseIndex ] *= wInv;
                 baseIndex += baseIndexIncrement;
             }
-        }
+        }*/
+        final double w0 = position[ 0 ] - target.getLongPosition( 0 );
+        final double w0Inv = 1.0d - w0;
+        final double w1 = position[ 1 ] - target.getLongPosition( 1 );
+        final double w1Inv = 1.0d - w1;
+        final double w2 = position[ 2 ] - target.getLongPosition( 2 );
+        final double w2Inv = 1.0d - w2;
+
+        weights[ 0 ] = w0Inv * w1Inv * w2Inv;
+        weights[ 1 ] = w0 * w1Inv * w2Inv;
+        weights[ 2 ] = w0Inv * w1 * w2Inv;
+        weights[ 3 ] = w0 * w1 * w2Inv;
+        weights[ 4 ] = w0Inv * w1Inv * w2;
+        weights[ 5 ] = w0 * w1Inv * w2;
+        weights[ 6 ] = w0Inv * w1 * w2;
+        weights[ 7 ] = w0 * w1 * w2;
     }
 
     @Override
     public RealPoint get() {
-        fillWeights();
+        /*fillWeights();
 
         accumulator.setPosition( target.get() );
         accumulator.mul( weights[ 0 ] );
@@ -114,20 +129,57 @@ public class RealPointNLinearInterpolator extends Floor<RandomAccess< RealPoint 
         graycodeFwdRecursive( n - 1 );
         target.bck( n - 1 );
 
+        return accumulator;*/
+
+        fillWeights();
+
+        accumulator.setPosition( target.get() );
+        accumulator.mul( weights[ 0 ] );
+        target.fwd( 0 );
+        tmp.setPosition( target.get() );
+        tmp.mul( weights[ 1 ] );
+        accumulator.move( tmp );
+        target.fwd( 1 );
+        tmp.setPosition( target.get() );
+        tmp.mul( weights[ 3 ] );
+        accumulator.move( tmp );
+        target.bck( 0 );
+        tmp.setPosition( target.get() );
+        tmp.mul( weights[ 2 ] );
+        accumulator.move( tmp );
+        target.fwd( 2 );
+        tmp.setPosition( target.get() );
+        tmp.mul( weights[ 6 ] );
+        accumulator.move( tmp );
+        target.fwd( 0 );
+        tmp.setPosition( target.get() );
+        tmp.mul( weights[ 7 ] );
+        accumulator.move( tmp );
+        target.bck( 1 );
+        tmp.setPosition( target.get() );
+        tmp.mul( weights[ 5 ] );
+        accumulator.move( tmp );
+        target.bck( 0 );
+        tmp.setPosition( target.get() );
+        tmp.mul( weights[ 4 ] );
+        accumulator.move( tmp );
+        target.bck( 2 );
+
         return accumulator;
+
     }
 
     @Override
-    public RealPointNLinearInterpolator copy() {
-        return new RealPointNLinearInterpolator( this );
+    public RealPoint3DLinearInterpolator copy() {
+        return new RealPoint3DLinearInterpolator( this );
     }
 
     @Override
-    public RealPointNLinearInterpolator copyRealRandomAccess() {
+    public RealPoint3DLinearInterpolator copyRealRandomAccess() {
         return copy();
     }
 
-    final private void graycodeFwdRecursive( final int dimension )
+    /*final private void graycodeFwdRecursive( final int dimension )
     {
         if ( dimension == 0 )
         {
@@ -143,9 +195,9 @@ public class RealPointNLinearInterpolator extends Floor<RandomAccess< RealPoint 
             accumulate();
             graycodeBckRecursive( dimension - 1 );
         }
-    }
+    }*/
 
-    final private void graycodeBckRecursive( final int dimension )
+    /*final private void graycodeBckRecursive( final int dimension )
     {
         if ( dimension == 0 )
         {
@@ -161,16 +213,16 @@ public class RealPointNLinearInterpolator extends Floor<RandomAccess< RealPoint 
             accumulate();
             graycodeBckRecursive( dimension - 1 );
         }
-    }
+    }*/
 
     /**
      * multiply current target value with current weight and add to accumulator.
      */
-    final private void accumulate()
+    /*final private void accumulate()
     {
         tmp.setPosition( target.get() );
         tmp.mul( weights[ code ] );
         accumulator.move( tmp );
-    }
+    }*/
 
 }

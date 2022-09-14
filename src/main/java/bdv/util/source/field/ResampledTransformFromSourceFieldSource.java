@@ -28,7 +28,7 @@ public class ResampledTransformFromSourceFieldSource implements ITransformFieldS
     final ITransformFieldSource origin;
     final Source<?> resamplingModel;
     final String name;
-    final RealPointInterpolatorFactory interpolator = new RealPointInterpolatorFactory();
+    final RealPoint3DInterpolatorFactory interpolator = new RealPoint3DInterpolatorFactory();
 
     /**
      * Hashmap to cache RAIs (mipmaps and timepoints)
