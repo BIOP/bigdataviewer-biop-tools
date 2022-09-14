@@ -76,4 +76,9 @@ public class TransformFieldSource implements ITransformFieldSource {
     public int numTargetDimensions() {
         return transform.numTargetDimensions();
     }
+
+    @Override
+    public RealTransform getTransform() {
+        return transform;
+    }
 }

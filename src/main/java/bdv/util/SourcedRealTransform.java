@@ -51,4 +51,8 @@ public class SourcedRealTransform implements RealTransform {
     public RealTransform copy() {
         return new SourcedRealTransform(source);
     }
+
+    public RealTransform getTransform() {
+        return source.getTransform();
+    }
 }

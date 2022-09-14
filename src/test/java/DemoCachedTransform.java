@@ -1,10 +1,7 @@
 import bdv.tools.brightness.ConverterSetup;
 import bdv.util.BdvHandle;
-import bdv.util.DefaultInterpolators;
-import bdv.util.source.field.ResampledTransformFieldSource;
-import bdv.util.BoundedRealTransform;
+import bdv.util.source.field.ResampledTransformFromSourceFieldSource;
 import bdv.util.EmptySource;
-import bdv.util.ResampledSource;
 import bdv.util.SourcedRealTransform;
 import bdv.util.source.field.ITransformFieldSource;
 import bdv.util.source.field.TransformFieldSource;
@@ -12,7 +9,6 @@ import bdv.viewer.SourceAndConverter;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;
-import net.imglib2.FinalRealInterval;
 import net.imglib2.realtransform.RealTransform;
 import net.imglib2.type.numeric.ARGBType;
 import sc.fiji.bdvpg.bdv.navigate.ViewerTransformAdjuster;
@@ -115,7 +111,7 @@ public class DemoCachedTransform {
 
         EmptySource model = new EmptySource(params);
 
-        ITransformFieldSource cached_transform = new ResampledTransformFieldSource(source, model, "Cached transform");
+        ITransformFieldSource cached_transform = new ResampledTransformFromSourceFieldSource(source, model, "Cached transform");
 
 
         RealTransform transform = new SourcedRealTransform(cached_transform);
