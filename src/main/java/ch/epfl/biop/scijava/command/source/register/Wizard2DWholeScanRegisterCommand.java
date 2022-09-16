@@ -208,11 +208,11 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
         showImages();
         iniView = bdvh.getViewerPanel().state().getViewerTransform();
 
-        addCardPanelCommons();
+        SwingUtilities.invokeLater(() -> addCardPanelCommons());
 
         if (manualRigidRegistration) {
             setUserMessage(" 0 - Manual Rigid Registration ");
-            addManualRigidRegistration();
+            SwingUtilities.invokeLater(() -> addManualRigidRegistration());
             while (manualRegistrationStopped == false) {
                 try {
                     Thread.sleep(300);
@@ -220,7 +220,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
                     e.printStackTrace();
                 }
             }
-            removeCardPanelRigidRegistration();
+            SwingUtilities.invokeLater(() -> removeCardPanelRigidRegistration());
         }
 
         try {
@@ -407,47 +407,49 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
     boolean isBigWarpFinished = false;
 
     private void waitForBigWarp(BigWarp bw) throws InterruptedException {
+        SwingUtilities.invokeLater(() -> {
+            bw.getViewerFrameP().addWindowListener(new java.awt.event.WindowAdapter() {
+                @Override
+                public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                    isBigWarpFinished = true;
+                }
+            });
+            bw.getViewerFrameQ().addWindowListener(new java.awt.event.WindowAdapter() {
+                @Override
+                public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                    isBigWarpFinished = true;
+                }
+            });
 
-        bw.getViewerFrameP().addWindowListener(new java.awt.event.WindowAdapter() {
-            @Override
-            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-                isBigWarpFinished = true;
-            }
+            JButton confirmP = new JButton("Click to finish");
+            confirmP.addActionListener((e) -> isBigWarpFinished = true);
+
+            JPanel cardpanelP = box(false,
+                    new JLabel("BigWarp registration"),
+                    confirmP
+            );
+
+            bw.getViewerFrameP().getSplitPanel().setCollapsed(false);
+            bw.getViewerFrameP().getCardPanel().setCardExpanded(DEFAULT_SOURCEGROUPS_CARD, false);
+            bw.getViewerFrameP().getCardPanel().setCardExpanded(DEFAULT_VIEWERMODES_CARD, false);
+            //bw.getViewerFrameP().getCardPanel().setCardExpanded(DEFAULT_SOURCES_CARD, true);
+            SwingUtilities.invokeLater(() -> bw.getViewerFrameP().getCardPanel().addCard("BigWarp Registration", cardpanelP, true));
+
+            JButton confirmQ = new JButton("Click to finish");
+            confirmQ.addActionListener((e) -> isBigWarpFinished = true);
+
+            JPanel cardpanelQ = box(false,
+                    new JLabel("BigWarp registration"),
+                    confirmQ
+            );
+
+            bw.getViewerFrameQ().getSplitPanel().setCollapsed(false);
+            bw.getViewerFrameQ().getCardPanel().setCardExpanded(DEFAULT_SOURCEGROUPS_CARD, false);
+            bw.getViewerFrameQ().getCardPanel().setCardExpanded(DEFAULT_VIEWERMODES_CARD, false);
+            //bw.getViewerFrameQ().getCardPanel().setCardExpanded(DEFAULT_SOURCES_CARD, true);
+            SwingUtilities.invokeLater(() -> bw.getViewerFrameQ().getCardPanel().addCard("BigWarp Registration", cardpanelQ, true));
+
         });
-        bw.getViewerFrameQ().addWindowListener(new java.awt.event.WindowAdapter() {
-            @Override
-            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-                isBigWarpFinished = true;
-            }
-        });
-
-        JButton confirmP = new JButton("Click to finish");
-        confirmP.addActionListener((e) -> isBigWarpFinished = true);
-
-        JPanel cardpanelP = box(false,
-                new JLabel("BigWarp registration"),
-                confirmP
-                );
-
-        bw.getViewerFrameP().getSplitPanel().setCollapsed(false);
-        bw.getViewerFrameP().getCardPanel().setCardExpanded(DEFAULT_SOURCEGROUPS_CARD, false);
-        bw.getViewerFrameP().getCardPanel().setCardExpanded(DEFAULT_VIEWERMODES_CARD, false);
-        //bw.getViewerFrameP().getCardPanel().setCardExpanded(DEFAULT_SOURCES_CARD, true);
-        bw.getViewerFrameP().getCardPanel().addCard("BigWarp Registration", cardpanelP, true);
-
-        JButton confirmQ = new JButton("Click to finish");
-        confirmQ.addActionListener((e) -> isBigWarpFinished = true);
-
-        JPanel cardpanelQ = box(false,
-                new JLabel("BigWarp registration"),
-                confirmQ
-        );
-
-        bw.getViewerFrameQ().getSplitPanel().setCollapsed(false);
-        bw.getViewerFrameQ().getCardPanel().setCardExpanded(DEFAULT_SOURCEGROUPS_CARD, false);
-        bw.getViewerFrameQ().getCardPanel().setCardExpanded(DEFAULT_VIEWERMODES_CARD, false);
-        //bw.getViewerFrameQ().getCardPanel().setCardExpanded(DEFAULT_SOURCES_CARD, true);
-        bw.getViewerFrameQ().getCardPanel().addCard("BigWarp Registration", cardpanelQ, true);
 
         while (!isBigWarpFinished) {
             Thread.sleep(100); // Wait for user.. dirty but working.
@@ -519,7 +521,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
                 box(true, toggleMoving, toggleFixed),
                 box(true, autoScaleFixed, autoScaleMoving));
 
-        bdvh.getCardPanel().addCard("WSI Registration Wizard", panel, true);
+        bdvh.getCardPanel().addCard("WSI Registration Wizard", panel, true); // No swing invoke later because it's already the case
     }
 
     private void addManualRigidRegistration() {
@@ -565,7 +567,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
         bdvh.getCardPanel().setCardExpanded(DEFAULT_SOURCEGROUPS_CARD, false);
         bdvh.getCardPanel().setCardExpanded(DEFAULT_VIEWERMODES_CARD, false);
         bdvh.getCardPanel().setCardExpanded(DEFAULT_SOURCES_CARD, true);
-        bdvh.getCardPanel().addCard("Manual rigid registration", cardpanel, true);
+        bdvh.getCardPanel().addCard("Manual rigid registration", cardpanel, true); // No swing utilities invoke later
     }
 
     private void removeCardPanelRigidRegistration() {
@@ -612,7 +614,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
         });
 
         JPanel addGridCard = box(false, addGridLabel, box(true, gridSpacingLabel, gridSpacing), addPoints);
-        bdvh.getCardPanel().addCard("Place landmark grid", addGridCard, true);
+        SwingUtilities.invokeLater(() -> bdvh.getCardPanel().addCard("Place landmark grid", addGridCard, true));
 
         landmarks = (List<RealPoint>) cs
                 .run(GetUserPointsCommand.class, true,
