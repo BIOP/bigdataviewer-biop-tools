@@ -71,8 +71,6 @@ public class ResampledTransformFieldSource implements ITransformFieldSource {
         AffineTransform3D at = new AffineTransform3D();
         resamplingModel.getSourceTransform(t, level, at);
 
-        // int mipmap = getModelToOriginMipMapLevel(level);
-
         // Get bounds of model source RAI
         // TODO check if -1 is necessary
         long sx = resamplingModel.getSource(t, level).dimension(0) - 1;
@@ -80,17 +78,12 @@ public class ResampledTransformFieldSource implements ITransformFieldSource {
         long sz = resamplingModel.getSource(t, level).dimension(2) - 1;
 
         RealTransform transformCopy = origin.copy();
-        /*return new FunctionRealRandomAccessible<>(sourceDimensions, (position, value) -> {
-            transformCopy.apply(position, value);
-        }, this::getType);*/
 
         // Get field of origin source
         final RealRandomAccessible<RealPoint> ipimg =
                 new FunctionRealRandomAccessible<>(3, (position, value) -> {
             transformCopy.apply(position, value);
         }, this::getType);
-
-                //origin.getInterpolatedSource(t,0, null);
 
         // Gets randomAccessible... ( with appropriate transform )
         at = at.inverse();
@@ -126,8 +119,6 @@ public class ResampledTransformFieldSource implements ITransformFieldSource {
                     nonCached, blockSize, this, t, level));
         }
         return cachedRAIs.get(t).get(level);
-
-        //return buildSource(t, level);
     }
 
     @Override
@@ -142,12 +133,7 @@ public class ResampledTransformFieldSource implements ITransformFieldSource {
 
     @Override
     public void getSourceTransform(int t, int level, AffineTransform3D transform) {
-        //transform.identity();
         resamplingModel.getSourceTransform(t, level, transform);
-        /*AffineTransform3D transform_orig = new AffineTransform3D();
-        resamplingModel.getSourceTransform(t, level, transform_orig);
-        transform.set(transform_orig.inverse());*/
-
     }
 
     @Override

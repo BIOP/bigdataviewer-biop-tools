@@ -1,12 +1,7 @@
 import bdv.tools.brightness.ConverterSetup;
 import bdv.util.BdvHandle;
 import bdv.util.RealTransformHelper;
-import bdv.util.source.field.ResampledTransformFieldSource;
-import bdv.util.source.field.ResampledTransformFromSourceFieldSource;
 import bdv.util.EmptySource;
-import bdv.util.SourcedRealTransform;
-import bdv.util.source.field.ITransformFieldSource;
-import bdv.util.source.field.TransformFieldSource;
 import bdv.viewer.SourceAndConverter;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imagej.ImageJ;
