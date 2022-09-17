@@ -1,5 +1,6 @@
 package ch.epfl.biop.scijava.command.source.register;
 
+import bdv.util.EmptySource;
 import bdv.util.QuPathBdvHelper;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.bdv.img.legacy.qupath.entity.QuPathEntryEntity;
@@ -57,6 +58,31 @@ public class WarpyExportRegisteredImageCommand implements Command {
             int fixed_series_index = fixedEntity.getId();
             Map<SourceAndConverter, RealTransform> sourceToTransformation =new HashMap<>();
 
+            double downsampleXYTransformField = 100;
+            double downsampleZTransformField = 1;
+            EmptySource.EmptySourceParams params = new EmptySource.EmptySourceParams();
+            // Assert all fixed sources have the same size
+            long nPixX = fixed_source[0].getSpimSource().getSource(0,0).max(0)+1;
+            long nPixY = fixed_source[0].getSpimSource().getSource(0,0).max(1)+1;
+            long nPixZ = fixed_source[0].getSpimSource().getSource(0,0).max(2)+1;
+            params.nx = (long) (nPixX/downsampleXYTransformField);
+            params.ny = (long) (nPixY/downsampleXYTransformField);
+            params.nz = (long) (nPixZ/downsampleZTransformField);
+            System.out.println("nx = "+params.nx);
+            System.out.println("ny = "+params.ny);
+            System.out.println("nz = "+params.nz);
+            AffineTransform3D transform = new AffineTransform3D();
+            fixed_source[0].getSpimSource().getSourceTransform(0,0,transform);
+            params.at3D = transform.copy();
+            double posX = params.at3D.get(0,3);
+            double posY = params.at3D.get(1,3);
+            double posZ = params.at3D.get(2,3);
+            params.at3D.translate(-posX, -posY, -posZ);
+            params.at3D.scale(downsampleXYTransformField, downsampleXYTransformField, downsampleZTransformField);
+            params.at3D.translate(posX, posY, posZ);
+
+            EmptySource model = new EmptySource(params);
+
             for (SourceAndConverter source: moving_source) {
                 File moving_entry_folder = QuPathBdvHelper.getDataEntryFolder(source);
                 QuPathEntryEntity movingEntity = QuPathBdvHelper.getQuPathEntityFromSource(source);
@@ -70,7 +96,9 @@ public class WarpyExportRegisteredImageCommand implements Command {
                 JsonReader reader = new JsonReader(new FileReader(result));
                 InvertibleRealTransformSequence irts = ScijavaGsonHelper.getGson(scijavaCtx).fromJson(reader, RealTransform.class);
                 RealTransform transformation = RealTransformHelper.getTransformSequence(irts).get(1);
-                sourceToTransformation.put(source, transformation);
+
+                RealTransform transformation2 = bdv.util.RealTransformHelper.resampleTransform(transformation, model);
+                sourceToTransformation.put(source, transformation2);
             }
 
             List<SourceAndConverter> movingSacs = Arrays.stream(moving_source).collect(Collectors.toList());
