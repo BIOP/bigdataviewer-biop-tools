@@ -11,6 +11,7 @@ import org.scijava.Context;
 import org.scijava.ItemVisibility;
 import org.scijava.command.Command;
 import org.scijava.command.CommandService;
+import org.scijava.log.LogService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
@@ -109,7 +110,6 @@ public class WarpyExportRegisteredImageCommand implements Command {
                     ).get();
 
             IJ.log("Export warpy registered image done.");
-
         } catch (Exception e) {
             e.printStackTrace();
         }
