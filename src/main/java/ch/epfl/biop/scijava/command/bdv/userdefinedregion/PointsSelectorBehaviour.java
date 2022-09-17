@@ -17,6 +17,7 @@ import org.scijava.ui.behaviour.DragBehaviour;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.util.Behaviours;
 import org.scijava.ui.behaviour.util.TriggerBehaviourBindings;
+import sc.fiji.bdvpg.bdv.BdvHandleHelper;
 
 import javax.swing.*;
 import java.awt.event.MouseEvent;
@@ -198,7 +199,8 @@ public class PointsSelectorBehaviour implements GraphicalHandleListener {
         bdvh.getCardPanel().setCardExpanded(DEFAULT_SOURCEGROUPS_CARD, false);
         bdvh.getCardPanel().setCardExpanded(DEFAULT_VIEWERMODES_CARD, false);
         bdvh.getCardPanel().setCardExpanded(DEFAULT_SOURCES_CARD, false);
-        bdvh.getCardPanel().addCard(userCardKey, pane, true);
+        //bdvh.getCardPanel().addCard(userCardKey, pane, true);
+        BdvHandleHelper.addCard(bdvh, userCardKey, pane, true);
 
         bdvh.getViewerPanel().getDisplay().addHandler(pointsOverlay);
     }

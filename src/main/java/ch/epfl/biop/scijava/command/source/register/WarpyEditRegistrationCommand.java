@@ -216,7 +216,7 @@ public class WarpyEditRegistrationCommand implements Command {
         bw.getViewerFrameP().getCardPanel().setCardExpanded(DEFAULT_SOURCEGROUPS_CARD, false);
         bw.getViewerFrameP().getCardPanel().setCardExpanded(DEFAULT_VIEWERMODES_CARD, false);
         //bw.getViewerFrameP().getCardPanel().setCardExpanded(DEFAULT_SOURCES_CARD, true);
-        bw.getViewerFrameP().getCardPanel().addCard("Warpy transformation edition", cardpanelP, true);
+        SwingUtilities.invokeLater(() -> bw.getViewerFrameP().getCardPanel().addCard("Warpy transformation edition", cardpanelP, true));
 
         JButton confirmQ = new JButton("Save and close");
         confirmQ.addActionListener((e) -> {
@@ -239,7 +239,7 @@ public class WarpyEditRegistrationCommand implements Command {
         bw.getViewerFrameQ().getCardPanel().setCardExpanded(DEFAULT_SOURCEGROUPS_CARD, false);
         bw.getViewerFrameQ().getCardPanel().setCardExpanded(DEFAULT_VIEWERMODES_CARD, false);
         //bw.getViewerFrameQ().getCardPanel().setCardExpanded(DEFAULT_SOURCES_CARD, true);
-        bw.getViewerFrameQ().getCardPanel().addCard("Warpy transformation edition", cardpanelQ, true);
+        SwingUtilities.invokeLater(() -> bw.getViewerFrameQ().getCardPanel().addCard("Warpy transformation edition", cardpanelQ, true));
 
         while (!isBigWarpFinished) {
             Thread.sleep(100); // Wait for user.. dirty but ok.
