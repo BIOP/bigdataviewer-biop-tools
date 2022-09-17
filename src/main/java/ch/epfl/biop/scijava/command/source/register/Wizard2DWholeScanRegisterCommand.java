@@ -208,11 +208,11 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
         showImages();
         iniView = bdvh.getViewerPanel().state().getViewerTransform();
 
-        SwingUtilities.invokeLater(() -> addCardPanelCommons());
+        addCardPanelCommons();
 
         if (manualRigidRegistration) {
             setUserMessage(" 0 - Manual Rigid Registration ");
-            SwingUtilities.invokeLater(() -> addManualRigidRegistration());
+            addManualRigidRegistration();
             while (manualRegistrationStopped == false) {
                 try {
                     Thread.sleep(300);
@@ -220,7 +220,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
                     e.printStackTrace();
                 }
             }
-            SwingUtilities.invokeLater(() -> removeCardPanelRigidRegistration());
+            removeCardPanelRigidRegistration();
         }
 
         try {
@@ -521,7 +521,8 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
                 box(true, toggleMoving, toggleFixed),
                 box(true, autoScaleFixed, autoScaleMoving));
 
-        bdvh.getCardPanel().addCard("WSI Registration Wizard", panel, true); // No swing invoke later because it's already the case
+        //bdvh.getCardPanel().adCard("WSI Registration Wizard", panel, true); // No swing invoke later because it's already the case
+        BdvHandleHelper.addCard(bdvh,"WSI Registration Wizard", panel, true);
     }
 
     private void addManualRigidRegistration() {
@@ -567,7 +568,8 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
         bdvh.getCardPanel().setCardExpanded(DEFAULT_SOURCEGROUPS_CARD, false);
         bdvh.getCardPanel().setCardExpanded(DEFAULT_VIEWERMODES_CARD, false);
         bdvh.getCardPanel().setCardExpanded(DEFAULT_SOURCES_CARD, true);
-        bdvh.getCardPanel().addCard("Manual rigid registration", cardpanel, true); // No swing utilities invoke later
+        //bdvh.getCardPanel().adCard("Manual rigid registration", cardpanel, true); // No swing utilities invoke later
+        BdvHandleHelper.addCard(bdvh, "Manual rigid registration", cardpanel, true);
     }
 
     private void removeCardPanelRigidRegistration() {
@@ -614,7 +616,8 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
         });
 
         JPanel addGridCard = box(false, addGridLabel, box(true, gridSpacingLabel, gridSpacing), addPoints);
-        SwingUtilities.invokeLater(() -> bdvh.getCardPanel().addCard("Place landmark grid", addGridCard, true));
+        //SwingUtilities.invokeLater(() -> bdvh.getCardPanel().adCard("Place landmark grid", addGridCard, true));
+        BdvHandleHelper.addCard(bdvh, "Place landmark grid", addGridCard, true);
 
         landmarks = (List<RealPoint>) cs
                 .run(GetUserPointsCommand.class, true,

@@ -12,6 +12,7 @@ import bdv.viewer.SourceAndConverter;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.real.FloatType;
+import sc.fiji.bdvpg.bdv.BdvHandleHelper;
 
 import javax.swing.*;
 import java.awt.*;
@@ -174,7 +175,8 @@ public class FancyDemoLayerAlphaSource {
         });
         panel.add(swapLayers);
 
-        bdvh.getCardPanel().addCard("Layer controls", panel, true);
+        //bdvh.getCardPanel().adCard("Layer controls", panel, true);
+        BdvHandleHelper.addCard(bdvh, "Layer controls", panel, true);
 
         /*System.out.println(BdvProbeFPS.getStdMsPerFrame(bdvh)+" ms per frame");
         System.out.println(BdvProbeFPS.getStdMsPerFrame(bdvh)+" ms per frame");
