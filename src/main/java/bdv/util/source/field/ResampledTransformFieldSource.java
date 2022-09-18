@@ -15,6 +15,7 @@ import net.imglib2.algorithm.lazy.Caches;
 import net.imglib2.cache.Cache;
 import net.imglib2.cache.img.CachedCellImg;
 import net.imglib2.cache.img.LoadedCellCacheLoader;
+import net.imglib2.cache.ref.BoundedSoftRefLoaderCache;
 import net.imglib2.converter.Converters;
 import net.imglib2.converter.readwrite.SamplerConverter;
 import net.imglib2.converter.readwrite.WriteConvertedRandomAccessibleInterval;
@@ -152,7 +153,9 @@ public class ResampledTransformFieldSource implements ITransformFieldSource<Nati
             if (nonCached.dimension(2) < 64) blockSize[2] = (int) nonCached
                     .dimension(2);
 
-            cachedRAIs.get(t).put(level, wrapAsVolatileCachedCellImg(
+            //cachedRAIs.get(t).put(level, wrapAsVolatileCachedCellImg(
+            //        nonCached, blockSize, this, t, level));
+            cachedRAIs.get(t).put(level, compute(
                     nonCached, blockSize, this, t, level));
         }
         return cachedRAIs.get(t).get(level);
@@ -193,7 +196,6 @@ public class ResampledTransformFieldSource implements ITransformFieldSource<Nati
         return resamplingModel.getNumMipmapLevels();
     }
 
-
     public static RandomAccessibleInterval<NativeRealPoint3D>
     wrapAsVolatileCachedCellImg(final RandomAccessibleInterval<NativeRealPoint3D> source,
                                 final int[] blockSize, Object objectSource, int timepoint, int level)
@@ -206,14 +208,44 @@ public class ResampledTransformFieldSource implements ITransformFieldSource<Nati
                 new Caches.RandomAccessibleLoader<>(Views.zeroMin(source));
 
         final CachedCellImg<NativeRealPoint3D, ?> img;
-        final Cache<Long, Cell<?>> cache = new GlobalLoaderCache(objectSource,
-                timepoint, level).withLoader(LoadedCellCacheLoader.get(grid, loader, new NativeRealPoint3D(),
+        final Cache<Long, Cell<NativeRealPoint3D>> cache =
+                new GlobalLoaderCache(objectSource, timepoint, level)
+                          .withLoader(LoadedCellCacheLoader.get(grid, loader, new NativeRealPoint3D(),
                 AccessFlags.setOf(DIRTY)));
 
         img = new CachedCellImg(grid, new NativeRealPoint3D(), cache, ArrayDataAccessFactory.get(
                 FLOAT, AccessFlags.setOf(DIRTY)));
 
         return img;
+    }
+
+    public RandomAccessibleInterval<NativeRealPoint3D>
+    compute(final RandomAccessibleInterval<NativeRealPoint3D> source,
+                                final int[] blockSize, Object objectSource, int timepoint, int level)
+    {
+
+        Cursor<NativeRealPoint3D> cursor = Views.flatIterable(source).localizingCursor();
+        final float[][][][] backingArray = new float[(int)source.dimension(0)][(int)source.dimension(1)][(int)source.dimension(2)][3];
+        float[] location = new float[3];
+
+        AffineTransform3D transform3D = new AffineTransform3D();
+        getSourceTransform(0,0,transform3D);
+        while(cursor.hasNext()) {
+            cursor.fwd();
+            cursor.get().localize(location);
+            int xp = cursor.getIntPosition(0);
+            int yp = cursor.getIntPosition(1);
+            int zp = cursor.getIntPosition(2);
+            backingArray[xp][yp][zp][0] = location[0];
+            backingArray[xp][yp][zp][1] = location[1];
+            backingArray[xp][yp][zp][2] = location[2];
+        }
+        FunctionRandomAccessible<NativeRealPoint3D> rai = new FunctionRandomAccessible<>(3,(loc, point) -> {
+            float[] coordinates = backingArray[loc.getIntPosition(0)] [loc.getIntPosition(1)][loc.getIntPosition(2)];
+            point.setPosition(coordinates);
+        }, () -> new NativeRealPoint3D());
+
+        return Views.interval(rai, source);
     }
 
 }

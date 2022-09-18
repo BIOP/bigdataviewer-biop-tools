@@ -4,6 +4,7 @@ import net.imglib2.AbstractEuclideanSpace;
 import net.imglib2.Localizable;
 import net.imglib2.RealLocalizable;
 import net.imglib2.RealPositionable;
+import net.imglib2.Volatile;
 import net.imglib2.img.NativeImg;
 import net.imglib2.img.basictypeaccess.FloatAccess;
 import net.imglib2.img.basictypeaccess.array.FloatArray;
@@ -12,7 +13,8 @@ import net.imglib2.type.NativeType;
 import net.imglib2.type.NativeTypeFactory;
 import net.imglib2.util.Fraction;
 
-public class NativeRealPoint3D extends AbstractEuclideanSpace implements RealPositionable, RealLocalizable, NativeType<NativeRealPoint3D> {
+public class NativeRealPoint3D //extends AbstractEuclideanSpace
+        implements RealPositionable, RealLocalizable, NativeType<NativeRealPoint3D> {//}, Volatile<NativeRealPoint3D> {
 
     private static final NativeTypeFactory<NativeRealPoint3D, FloatAccess> typeFactory = NativeTypeFactory.FLOAT( NativeRealPoint3D::new );
 
@@ -24,20 +26,17 @@ public class NativeRealPoint3D extends AbstractEuclideanSpace implements RealPos
     private final Index i;
 
     public NativeRealPoint3D() {
-        super(3);
         i = new Index();
         img = null;
-        dataAccess = new FloatArray(n);
+        dataAccess = new FloatArray(3);
     }
 
     public NativeRealPoint3D(NativeImg<?,? extends FloatAccess> a) {
-        super(3);
         i = new Index();
         img = a;
     }
 
     public NativeRealPoint3D(NativeRealPoint3D nativeRealPoint) {
-        super(3);
         this.set(nativeRealPoint);
         i = new Index();
         img = null;
@@ -101,7 +100,7 @@ public class NativeRealPoint3D extends AbstractEuclideanSpace implements RealPos
 
     @Override
     public boolean valueEquals(NativeRealPoint3D nativeRealPoint) {
-        for (int d = 0; d < n; d++) {
+        for (int d = 0; d < 3; d++) {
             if (getDoublePosition(d) != nativeRealPoint.getDoublePosition(d)) {
                 return false;
             }
@@ -298,5 +297,10 @@ public class NativeRealPoint3D extends AbstractEuclideanSpace implements RealPos
     @Override
     public void setPosition(long position, int d) {
         dataAccess.setValue((i.get() << 2)+d, position);
+    }
+
+    @Override
+    public int numDimensions() {
+        return 3;
     }
 }
