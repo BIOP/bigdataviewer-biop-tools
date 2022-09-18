@@ -11,7 +11,7 @@
 
 	<groupId>ch.epfl.biop</groupId>
 	<artifactId>bigdataviewer-biop-tools</artifactId>
-	<version>0.5.2-SNAPSHOT</version>
+	<version>0.5.2-SNAPSHOT-cache</version>
 
 	<name>Biop Bigdataviewer Tools and Plugins </name>
 	<description>Big data viewer tools BIOP - EPFL</description>
@@ -100,7 +100,7 @@
 		<!-- bigdataviewer dependencies -->
 		<bigvolumeviewer.version>0.2.0</bigvolumeviewer.version>
 		<!-- bdv playground related dependencies -->
-		<bigdataviewer-playground.version>0.6.1</bigdataviewer-playground.version>
+		<bigdataviewer-playground.version>0.6.2-SNAPSHOT</bigdataviewer-playground.version>
 		<bigdataviewer-image-loaders.version>0.3.3</bigdataviewer-image-loaders.version>
 		<bigdataviewer-playground-display.version>0.3.0</bigdataviewer-playground-display.version>
 		<bigdataviewer-spimdata-extras.version>0.3.1</bigdataviewer-spimdata-extras.version>
@@ -110,7 +110,7 @@
 		<!-- biop dependencies -->
 		<ijl-utilities-wrappers.version>0.7.0</ijl-utilities-wrappers.version>
 		<Operetta_Importer.version>0.1.22</Operetta_Importer.version>
-		<ijp-kheops.version>0.3.1</ijp-kheops.version>
+		<ijp-kheops.version>0.3.2-SNAPSHOT-time</ijp-kheops.version>
 
 		<!-- maths -->
 		<leastsquares.version>1.0.0</leastsquares.version>

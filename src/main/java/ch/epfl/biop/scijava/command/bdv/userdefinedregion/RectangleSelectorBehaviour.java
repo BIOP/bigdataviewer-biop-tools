@@ -12,6 +12,7 @@ import org.scijava.ui.behaviour.ClickBehaviour;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.util.Behaviours;
 import org.scijava.ui.behaviour.util.TriggerBehaviourBindings;
+import sc.fiji.bdvpg.bdv.BdvHandleHelper;
 
 import javax.swing.*;
 import java.awt.*;
@@ -199,7 +200,8 @@ public class RectangleSelectorBehaviour {
         bdvh.getCardPanel().setCardExpanded(DEFAULT_SOURCEGROUPS_CARD, false);
         bdvh.getCardPanel().setCardExpanded(DEFAULT_VIEWERMODES_CARD, false);
         bdvh.getCardPanel().setCardExpanded(DEFAULT_SOURCES_CARD, false);
-        bdvh.getCardPanel().addCard(userCardKey, pane, true);
+        //bdvh.getCardPanel().adCard(userCardKey, pane, true);
+        BdvHandleHelper.addCard(bdvh, userCardKey, pane, true);
     }
 
     public void addBehaviour(Behaviour behaviour, String behaviourName, String[] triggers) {

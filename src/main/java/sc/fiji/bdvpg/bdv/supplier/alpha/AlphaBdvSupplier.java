@@ -133,7 +133,7 @@ public class AlphaBdvSupplier implements IBdvSupplier {
             buildLayers();
             buildMap();
             viewer.state().changeListeners().add(this);
-            panel.addCard("Group Opacity", sliders, true);
+            SwingUtilities.invokeLater(() -> panel.addCard("Group Opacity", sliders, true));
         }
 
         public void buildLayers() {
