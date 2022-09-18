@@ -6,18 +6,18 @@ import net.imglib2.RealPoint;
 import net.imglib2.RealRandomAccess;
 import net.imglib2.position.transform.Floor;
 
-public class RealPoint3DLinearInterpolator extends Floor<RandomAccess< RealPoint >> implements RealRandomAccess< RealPoint > {
+public class RealPoint3DLinearInterpolator extends Floor<RandomAccess< NativeRealPoint >> implements RealRandomAccess< NativeRealPoint > {
 
-    final protected ExtendedRealPoint accumulator;
+    final protected NativeRealPoint accumulator;
 
-    final protected ExtendedRealPoint tmp;
+    final protected NativeRealPoint tmp;
 
     protected RealPoint3DLinearInterpolator(final RealPoint3DLinearInterpolator interpolator )
     {
         super( interpolator.target.copyRandomAccess() );
 
-        accumulator = new ExtendedRealPoint(3);
-        tmp = new ExtendedRealPoint(3);
+        accumulator = new NativeRealPoint(3);
+        tmp = new NativeRealPoint(3);
 
         for ( int d = 0; d < n; ++d )
         {
@@ -26,20 +26,20 @@ public class RealPoint3DLinearInterpolator extends Floor<RandomAccess< RealPoint
         }
     }
 
-    protected RealPoint3DLinearInterpolator(final RandomAccessible<RealPoint> randomAccessible, final RealPoint type )
+    protected RealPoint3DLinearInterpolator(final RandomAccessible<NativeRealPoint> randomAccessible, final NativeRealPoint type )
     {
         super( randomAccessible.randomAccess() );
-        accumulator = new ExtendedRealPoint(3);
-        tmp = new ExtendedRealPoint(3);
+        accumulator = new NativeRealPoint(3);
+        tmp = new NativeRealPoint(3);
     }
 
-    protected RealPoint3DLinearInterpolator(final RandomAccessible< RealPoint > randomAccessible )
+    protected RealPoint3DLinearInterpolator(final RandomAccessible< NativeRealPoint > randomAccessible )
     {
         this( randomAccessible, randomAccessible.randomAccess().get() );
     }
 
     @Override
-    public RealPoint get() {
+    public NativeRealPoint get() {
 
         final double w0 = position[ 0 ] - target.getLongPosition( 0 );
         final double w0Inv = 1.0d - w0;

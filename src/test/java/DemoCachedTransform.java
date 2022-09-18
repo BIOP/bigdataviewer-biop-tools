@@ -2,6 +2,7 @@ import bdv.tools.brightness.ConverterSetup;
 import bdv.util.BdvHandle;
 import bdv.util.RealTransformHelper;
 import bdv.util.EmptySource;
+import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imagej.ImageJ;
@@ -106,7 +107,9 @@ public class DemoCachedTransform {
         params.at3D.scale(20,20,20);
         params.at3D.translate(-100,-100, -100);
 
-        EmptySource model = new EmptySource(params);
+        //EmptySource model = new EmptySource(params);
+
+        Source<?> model = sacFixed.getSpimSource();
 
         //ITransformFieldSource cached_transform = new ResampledTransformFromSourceFieldSource(source, model, "Cached transform");
         //RealTransform transform = new SourcedRealTransform(cached_transform);

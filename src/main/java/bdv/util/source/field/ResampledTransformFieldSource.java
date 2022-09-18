@@ -6,27 +6,55 @@ import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.imglib2.Cursor;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.RealLocalizable;
 import net.imglib2.RealPoint;
+import net.imglib2.RealPositionable;
 import net.imglib2.RealRandomAccessible;
 import net.imglib2.Sampler;
+import net.imglib2.algorithm.lazy.Caches;
+import net.imglib2.cache.Cache;
+import net.imglib2.cache.img.CachedCellImg;
+import net.imglib2.cache.img.LoadedCellCacheLoader;
 import net.imglib2.converter.Converters;
 import net.imglib2.converter.readwrite.SamplerConverter;
 import net.imglib2.converter.readwrite.WriteConvertedRandomAccessibleInterval;
+import net.imglib2.img.basictypeaccess.AccessFlags;
+import net.imglib2.img.basictypeaccess.ArrayDataAccessFactory;
+import net.imglib2.img.cell.Cell;
+import net.imglib2.img.cell.CellGrid;
 import net.imglib2.position.FunctionRandomAccessible;
 import net.imglib2.position.FunctionRealRandomAccessible;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.realtransform.RealTransform;
 import net.imglib2.realtransform.RealViews;
+import net.imglib2.type.NativeType;
+import net.imglib2.type.numeric.ARGBType;
+import net.imglib2.type.numeric.integer.GenericByteType;
+import net.imglib2.type.numeric.integer.GenericIntType;
+import net.imglib2.type.numeric.integer.GenericLongType;
+import net.imglib2.type.numeric.integer.GenericShortType;
+import net.imglib2.type.numeric.real.DoubleType;
 import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.util.Intervals;
+import net.imglib2.util.Util;
 import net.imglib2.view.ExtendedRandomAccessibleInterval;
 import net.imglib2.view.Views;
 import net.imglib2.view.composite.Composite;
 import net.imglib2.view.composite.CompositeIntervalView;
 import net.imglib2.view.composite.GenericComposite;
+import sc.fiji.bdvpg.cache.GlobalLoaderCache;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ResampledTransformFieldSource implements ITransformFieldSource {
+import static net.imglib2.img.basictypeaccess.AccessFlags.VOLATILE;
+import static net.imglib2.type.PrimitiveType.BYTE;
+import static net.imglib2.type.PrimitiveType.DOUBLE;
+import static net.imglib2.type.PrimitiveType.FLOAT;
+import static net.imglib2.type.PrimitiveType.INT;
+import static net.imglib2.type.PrimitiveType.LONG;
+import static net.imglib2.type.PrimitiveType.SHORT;
+
+public class ResampledTransformFieldSource implements ITransformFieldSource<NativeRealPoint> {
 
     final RealTransform origin;
     final Source<?> resamplingModel;
@@ -36,7 +64,7 @@ public class ResampledTransformFieldSource implements ITransformFieldSource {
     /**
      * Hashmap to cache RAIs (mipmaps and timepoints)
      */
-    final transient ConcurrentHashMap<Integer, ConcurrentHashMap<Integer, RandomAccessibleInterval<RealPoint>>> cachedRAIs =
+    final transient ConcurrentHashMap<Integer, ConcurrentHashMap<Integer, RandomAccessibleInterval<NativeRealPoint>>> cachedRAIs =
             new ConcurrentHashMap<>();
 
     public ResampledTransformFieldSource(RealTransform origin, Source resamplingModel, String name) throws UnsupportedOperationException {
@@ -66,7 +94,7 @@ public class ResampledTransformFieldSource implements ITransformFieldSource {
         return resamplingModel.isPresent(t);
     }
 
-    public RandomAccessibleInterval<RealPoint> buildSource(int t, int level) {
+    public RandomAccessibleInterval<NativeRealPoint> buildSource(int t, int level) {
         // Get current model source transformation
         AffineTransform3D at = new AffineTransform3D();
         resamplingModel.getSourceTransform(t, level, at);
@@ -80,17 +108,17 @@ public class ResampledTransformFieldSource implements ITransformFieldSource {
         RealTransform transformCopy = origin.copy();
 
         // Get field of origin source
-        final RealRandomAccessible<RealPoint> ipimg =
+        final RealRandomAccessible<NativeRealPoint> ipimg =
                 new FunctionRealRandomAccessible<>(3, (position, value) -> {
             transformCopy.apply(position, value);
         }, this::getType);
 
         // Gets randomAccessible... ( with appropriate transform )
         at = at.inverse();
-        RandomAccessible<RealPoint> ra = RealViews.affine(ipimg, at); // Gets the view
+        RandomAccessible<NativeRealPoint> ra = RealViews.affine(ipimg, at); // Gets the view
 
         // ... interval
-        RandomAccessibleInterval<RealPoint> view =
+        RandomAccessibleInterval<NativeRealPoint> view =
                 Views.interval(ra, new long[] { 0, 0,
                 0 }, new long[] { sx, sy, sz }); // Sets the interval
 
@@ -98,13 +126,13 @@ public class ResampledTransformFieldSource implements ITransformFieldSource {
     }
 
     @Override
-    public RandomAccessibleInterval<RealPoint> getSource(int t, int level) {
+    public RandomAccessibleInterval<NativeRealPoint> getSource(int t, int level) {
         if (!cachedRAIs.containsKey(t)) {
             cachedRAIs.put(t, new ConcurrentHashMap<>());
         }
 
         if (!cachedRAIs.get(t).containsKey(level)) {
-            RandomAccessibleInterval<RealPoint> nonCached = buildSource(t, level);
+            RandomAccessibleInterval<NativeRealPoint> nonCached = buildSource(t, level);
 
             int[] blockSize = { 64, 64, 1 };
 
@@ -122,12 +150,12 @@ public class ResampledTransformFieldSource implements ITransformFieldSource {
     }
 
     @Override
-    public RealRandomAccessible<RealPoint> getInterpolatedSource(int t, int level, Interpolation method) {
-        ExtendedRandomAccessibleInterval<RealPoint, RandomAccessibleInterval<RealPoint>> eView =
+    public RealRandomAccessible<NativeRealPoint> getInterpolatedSource(int t, int level, Interpolation method) {
+        ExtendedRandomAccessibleInterval<NativeRealPoint, RandomAccessibleInterval<NativeRealPoint>> eView =
         Views.extendBorder(getSource(t, level));
         
         @SuppressWarnings("UnnecessaryLocalVariable")
-        RealRandomAccessible<RealPoint> realRandomAccessible = Views.interpolate(eView, interpolator);
+        RealRandomAccessible<NativeRealPoint> realRandomAccessible = Views.interpolate(eView, interpolator);
         return realRandomAccessible;
     }
 
@@ -137,8 +165,8 @@ public class ResampledTransformFieldSource implements ITransformFieldSource {
     }
 
     @Override
-    public RealPoint getType() {
-        return new RealPoint(3);
+    public NativeRealPoint getType() {
+        return new NativeRealPoint(3);
     }
 
     @Override
@@ -156,156 +184,29 @@ public class ResampledTransformFieldSource implements ITransformFieldSource {
         return resamplingModel.getNumMipmapLevels();
     }
 
-    public RandomAccessibleInterval<RealPoint>
-    wrapAsVolatileCachedCellImg(final RandomAccessibleInterval<RealPoint> source,
+
+    public static <T extends NativeType<T>> RandomAccessibleInterval<T>
+    wrapAsVolatileCachedCellImg(final RandomAccessibleInterval<T> source,
                                 final int[] blockSize, Object objectSource, int timepoint, int level)
     {
 
-        /*final int[] blockSize = new int[]{blockSize_points[0], blockSize_points[1], blockSize_points[2], 3};
-        RandomAccessibleInterval<FloatType> source = dimensionChannels(source_points);
-
         final long[] dimensions = Intervals.dimensionsAsLongArray(source);
-
         final CellGrid grid = new CellGrid(dimensions, blockSize);
 
-        final Caches.RandomAccessibleLoader<FloatType> loader = new Caches.RandomAccessibleLoader<>(Views.zeroMin(source));
+        final Caches.RandomAccessibleLoader<T> loader =
+                new Caches.RandomAccessibleLoader<>(Views.zeroMin(source));
 
-        final FloatType type = new FloatType();
+        final T type = Util.getTypeFromInterval(source);
 
+        final CachedCellImg<T, ?> img;
         final Cache<Long, Cell<?>> cache = new GlobalLoaderCache(objectSource,
                 timepoint, level).withLoader(LoadedCellCacheLoader.get(grid, loader, type,
                 AccessFlags.setOf(VOLATILE)));
 
-        final CachedCellImg<FloatType, ?> img = new CachedCellImg(grid, type, cache, ArrayDataAccessFactory.get(
-                FLOAT, AccessFlags.setOf(VOLATILE)));
+        img = new CachedCellImg(grid, type, cache, ArrayDataAccessFactory.get(
+                DOUBLE, AccessFlags.setOf(VOLATILE)));
 
-        return mergeDimensions(img);*/
-
-        int nElements = (int)(source.dimension(0)*source.dimension(1)*source.dimension(2)*3);
-
-        //float[] backingArray = new float[nElements];
-
-        Cursor<RealPoint> cursor = Views.flatIterable(source).localizingCursor();
-        int i = 0;
-        final float[][][][] backingArray = new float[(int)source.dimension(0)][(int)source.dimension(1)][(int)source.dimension(2)][3];
-        float[] location = new float[3];
-
-        AffineTransform3D transform3D = new AffineTransform3D();
-        getSourceTransform(0,0,transform3D);
-        while(cursor.hasNext()) {
-            cursor.fwd();
-            cursor.get().localize(location);
-            int xp = cursor.getIntPosition(0);
-            int yp = cursor.getIntPosition(1);
-            int zp = cursor.getIntPosition(2);
-            backingArray[xp][yp][zp][0] = location[0];
-            backingArray[xp][yp][zp][1] = location[1];
-            backingArray[xp][yp][zp][2] = location[2];
-        }
-        FunctionRandomAccessible<RealPoint> rai = new FunctionRandomAccessible<>(3,(loc, point) -> {
-            float[] coordinates = backingArray[loc.getIntPosition(0)] [loc.getIntPosition(1)][loc.getIntPosition(2)];
-            point.setPosition(coordinates);
-        }, () -> new RealPoint(3));
-
-        return Views.interval(rai, source);
+        return img;
     }
-
-    /*public static RandomAccessibleInterval<RealPoint>
-    wrapAsVolatileCachedCellImg(final RandomAccessibleInterval<RealPoint> source_points,
-                                final int[] blockSize_points, Object objectSource, int timepoint, int level)
-    {
-
-        final int[] blockSize = new int[]{blockSize_points[0], blockSize_points[1], blockSize_points[2], 3};
-        RandomAccessibleInterval<FloatType> source = dimensionChannels(source_points);
-
-        final long[] dimensions = Intervals.dimensionsAsLongArray(source);
-
-        final CellGrid grid = new CellGrid(dimensions, blockSize);
-        
-        final Caches.RandomAccessibleLoader<FloatType> loader = new Caches.RandomAccessibleLoader<>(Views.zeroMin(source));
-
-        final FloatType type = new FloatType();
-        
-        final Cache<Long, Cell<?>> cache = new GlobalLoaderCache(objectSource,
-                timepoint, level).withLoader(LoadedCellCacheLoader.get(grid, loader, type,
-                AccessFlags.setOf(VOLATILE)));
-
-        final CachedCellImg<FloatType, ?> img = new CachedCellImg(grid, type, cache, ArrayDataAccessFactory.get(
-                FLOAT, AccessFlags.setOf(VOLATILE)));
-        
-        return mergeDimensions(img);
-    }*/
-
-    static class RealPointSampleConverter implements SamplerConverter< RealPoint, FloatType>
-    {
-
-        final private int dimension;
-
-        public RealPointSampleConverter( final int dimension )
-        {
-            this.dimension = dimension;
-        }
-        
-        @Override
-        public FloatType convert(Sampler<? extends RealPoint> sampler) {
-            return new FloatType(sampler.get().getFloatPosition(dimension));
-        }
-    }
-
-    final static public WriteConvertedRandomAccessibleInterval< RealPoint, FloatType > dimensionChannel(
-            final RandomAccessibleInterval< RealPoint > source,
-            final int dimension )
-    {
-        return Converters.convert(
-                source,
-                new RealPointSampleConverter( dimension ) );
-    }
-
-    final static public RandomAccessibleInterval< FloatType > dimensionChannels( final RandomAccessibleInterval< RealPoint > source )
-    {
-        return Views.stack(
-                dimensionChannel( source, 0 ),
-                dimensionChannel( source, 1 ),
-                dimensionChannel( source, 2 ) );
-    }
-
-    final static public RandomAccessibleInterval< RealPoint > mergeDimensions( final RandomAccessibleInterval< FloatType > source ) {
-        CompositeIntervalView<FloatType, ? extends GenericComposite<FloatType>> collapsed = Views.collapse(source);
-        /*System.out.println("25 25 25 ");
-        System.out.println(source.getAt(25,25,25,0));
-        System.out.println(collapsed.getAt(25,25,25).get(0));
-        System.out.println(source.getAt(25,25,25,1));
-        System.out.println(collapsed.getAt(25,25,25).get(1));
-        System.out.println(source.getAt(25,25,25,2));
-        System.out.println(collapsed.getAt(25,25,25).get(2));
-
-        System.out.println("26 26 26 ");
-        System.out.println(source.getAt(26,27,26,0));
-        System.out.println(collapsed.getAt(26,27,26).get(0));
-        System.out.println(source.getAt(26,27,26,1));
-        System.out.println(collapsed.getAt(26,27,26).get(1));
-        System.out.println(source.getAt(26,27,26,2));
-        System.out.println(collapsed.getAt(26,27,26).get(2));*/
-        return Converters.convert( collapsed, (SamplerConverter) new CompositeRealPointSamplerConverter() );
-    }
-
-    static class CompositeRealPointSamplerConverter implements SamplerConverter< Composite< FloatType >, RealPoint >
-    {
-        @Override
-        public RealPoint convert(Sampler<? extends Composite<FloatType>> sampler) {
-            /*RealPoint pt = new RealPoint(3);
-            pt.setPosition(Math.random()*150.0,0);
-            pt.setPosition(Math.random()*150.0,1);
-            pt.setPosition(Math.random()*150.0,2);*/
-            Composite<FloatType> v = sampler.get();
-            RealPoint pt = new RealPoint(v.get(0).get(),v.get(1).get(),v.get(2).get());
-            /*if (Math.random()<0.00001) {
-                System.out.println(pt);
-            }*/
-            return pt;
-        }
-    }
-
-
 
 }

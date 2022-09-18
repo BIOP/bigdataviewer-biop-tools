@@ -2,7 +2,6 @@ package bdv.util;
 
 import bdv.util.source.field.ITransformFieldSource;
 import bdv.util.source.field.ResampledTransformFieldSource;
-import bdv.util.source.field.TransformFieldSource;
 import bdv.viewer.Source;
 import jitk.spline.ThinPlateR2LogRSplineKernelTransform;
 import net.imglib2.realtransform.*;
