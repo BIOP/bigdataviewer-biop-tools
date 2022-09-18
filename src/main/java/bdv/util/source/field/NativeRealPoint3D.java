@@ -170,8 +170,27 @@ public class NativeRealPoint3D extends AbstractEuclideanSpace implements RealPos
 
     @Override
     public void setPosition(RealLocalizable position) {
-        set((NativeRealPoint3D) position);
-        //setPosition(positionAsDoubleArray());
+        setPosition(positionAsDoubleArray());
+    }
+
+    @Override
+    public void localize( final double[] position )
+    {
+        int offset = i.get() << 2;
+        position[ 0 ] = dataAccess.getValue(offset+0);
+        position[ 1 ] = dataAccess.getValue(offset+1);
+        position[ 2 ] = dataAccess.getValue(offset+2);
+    }
+
+    @Override
+    public double[] positionAsDoubleArray()
+    {
+        int offset = i.get() << 2;
+        return new double[] {
+                dataAccess.getValue(offset+0),
+                dataAccess.getValue(offset+1),
+                dataAccess.getValue(offset+2)
+        };
     }
 
     public void setPosition(float[] position) {

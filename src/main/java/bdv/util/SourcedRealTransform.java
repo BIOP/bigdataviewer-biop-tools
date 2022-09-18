@@ -17,7 +17,7 @@ import net.imglib2.realtransform.RealViews;
 public class SourcedRealTransform implements RealTransform {
 
     final ITransformFieldSource source;
-    final RealRandomAccessible<RealPoint> realRandomAccess;
+    final RealRandomAccessible<RealLocalizable> realRandomAccess;
     final AffineTransform3D transform3D = new AffineTransform3D();
 
     public SourcedRealTransform(ITransformFieldSource source) {
@@ -44,7 +44,7 @@ public class SourcedRealTransform implements RealTransform {
 
     @Override
     public void apply(RealLocalizable realLocalizable, RealPositionable realPositionable) {
-        realPositionable.setPosition(realRandomAccess.getAt(realLocalizable));
+        realPositionable.setPosition(realRandomAccess.getAt(realLocalizable).positionAsDoubleArray());
     }
 
     @Override

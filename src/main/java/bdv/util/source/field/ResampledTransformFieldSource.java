@@ -46,6 +46,7 @@ import sc.fiji.bdvpg.cache.GlobalLoaderCache;
 
 import java.util.concurrent.ConcurrentHashMap;
 
+import static net.imglib2.img.basictypeaccess.AccessFlags.DIRTY;
 import static net.imglib2.img.basictypeaccess.AccessFlags.VOLATILE;
 import static net.imglib2.type.PrimitiveType.BYTE;
 import static net.imglib2.type.PrimitiveType.DOUBLE;
@@ -109,7 +110,17 @@ public class ResampledTransformFieldSource implements ITransformFieldSource<Nati
 
         // Get field of origin source
         final RealRandomAccessible<NativeRealPoint3D> ipimg =
-                new FunctionRealRandomAccessible<>(3, transformCopy::apply, this::getType);
+                new FunctionRealRandomAccessible<>(3,
+                        /*(l,p) -> {
+                            try {
+                                Thread.sleep(1);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                            transformCopy.apply(l,p);
+                        },*/
+                        transformCopy::apply,
+                        this::getType);
 
         // Gets randomAccessible... ( with appropriate transform )
         at = at.inverse();
@@ -197,10 +208,10 @@ public class ResampledTransformFieldSource implements ITransformFieldSource<Nati
         final CachedCellImg<NativeRealPoint3D, ?> img;
         final Cache<Long, Cell<?>> cache = new GlobalLoaderCache(objectSource,
                 timepoint, level).withLoader(LoadedCellCacheLoader.get(grid, loader, new NativeRealPoint3D(),
-                AccessFlags.setOf(VOLATILE)));
+                AccessFlags.setOf(DIRTY)));
 
         img = new CachedCellImg(grid, new NativeRealPoint3D(), cache, ArrayDataAccessFactory.get(
-                FLOAT, AccessFlags.setOf(VOLATILE)));
+                FLOAT, AccessFlags.setOf(DIRTY)));
 
         return img;
     }
