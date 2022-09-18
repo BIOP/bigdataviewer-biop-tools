@@ -1,12 +1,16 @@
 package ch.epfl.biop.scijava.command.source.register;
 
+import bdv.util.EmptySource;
 import bdv.util.QuPathBdvHelper;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.bdv.img.legacy.qupath.entity.QuPathEntryEntity;
 import ch.epfl.biop.kheops.command.KheopsExportSourcesBuildPyramidCommand;
 import com.google.gson.stream.JsonReader;
 import ij.IJ;
-import net.imglib2.realtransform.*;
+import net.imglib2.realtransform.AffineTransform3D;
+import net.imglib2.realtransform.InvertibleRealTransformSequence;
+import net.imglib2.realtransform.RealTransform;
+import net.imglib2.realtransform.RealTransformHelper;
 import org.scijava.Context;
 import org.scijava.ItemVisibility;
 import org.scijava.command.Command;
@@ -36,6 +40,12 @@ public class WarpyExportRegisteredImageCommand implements Command {
     @Parameter(visibility = ItemVisibility.MESSAGE, persist = false, style = "message")
     String message = "<html><h1>QuPath registration exporter</h1>Please select a moving and a fixed source<br></html>";
 
+    @Parameter(label = "Pre-compute transformation before export (faster for n landmarks ~> 40)")
+    boolean pre_compute_transform;
+
+    @Parameter(label = "Transformation pre-computation downsampling", style = "slider", min = "10", max = "200")
+    int pre_compute_downsample_xy = 10;
+
     @Parameter(label = "Fixed source", callback = "updateMessage", style ="sorted")
     SourceAndConverter[] fixed_source;
 
@@ -57,7 +67,33 @@ public class WarpyExportRegisteredImageCommand implements Command {
             QuPathEntryEntity fixedEntity = QuPathBdvHelper.getQuPathEntityFromSource(fixed_source[0]);
             int fixed_series_index = fixedEntity.getId();
             Map<SourceAndConverter, RealTransform> sourceToTransformation =new HashMap<>();
-
+            double downsampleXYTransformField = pre_compute_downsample_xy;
+            double downsampleZTransformField = 1;
+            EmptySource model = null;
+            if (pre_compute_transform) {
+                EmptySource.EmptySourceParams params = new EmptySource.EmptySourceParams();
+                // Assert all fixed sources have the same size
+                long nPixX = fixed_source[0].getSpimSource().getSource(0, 0).max(0) + 1;
+                long nPixY = fixed_source[0].getSpimSource().getSource(0, 0).max(1) + 1;
+                long nPixZ = fixed_source[0].getSpimSource().getSource(0, 0).max(2) + 1;
+                params.nx = (long) (nPixX / downsampleXYTransformField);
+                params.ny = (long) (nPixY / downsampleXYTransformField);
+                params.nz = (long) (nPixZ / downsampleZTransformField);
+                AffineTransform3D transform = new AffineTransform3D();
+                fixed_source[0].getSpimSource().getSourceTransform(0, 0, transform);
+                params.at3D = transform.copy();
+                double posX = params.at3D.get(0, 3);
+                double posY = params.at3D.get(1, 3);
+                double posZ = params.at3D.get(2, 3);
+                params.at3D.translate(-posX, -posY, -posZ);
+                params.at3D.scale(downsampleXYTransformField, downsampleXYTransformField, downsampleZTransformField);
+                params.at3D.translate(posX, posY, posZ);
+                model = new EmptySource(params);
+            }
+            if (pre_compute_transform) {
+                IJ.log("Computing deformation fields, please wait...");
+            }
+            Map<File, RealTransform> alreadyOpenedTransforms = new HashMap<>();
             for (SourceAndConverter source: moving_source) {
                 File moving_entry_folder = QuPathBdvHelper.getDataEntryFolder(source);
                 QuPathEntryEntity movingEntity = QuPathBdvHelper.getQuPathEntityFromSource(source);
@@ -68,10 +104,22 @@ public class WarpyExportRegisteredImageCommand implements Command {
                     IJ.error("Registration file "+result.getAbsolutePath()+" not found");
                     return;
                 }
-                JsonReader reader = new JsonReader(new FileReader(result));
-                InvertibleRealTransformSequence irts = ScijavaGsonHelper.getGson(scijavaCtx).fromJson(reader, RealTransform.class);
-                RealTransform transformation = RealTransformHelper.getTransformSequence(irts).get(1);
-                sourceToTransformation.put(source, transformation);
+                // Avoids computing two times the same transformation
+                if (alreadyOpenedTransforms.containsKey(result)) {
+                    sourceToTransformation.put(source, alreadyOpenedTransforms.get(result).copy());
+                } else {
+                    JsonReader reader = new JsonReader(new FileReader(result));
+                    InvertibleRealTransformSequence irts = ScijavaGsonHelper.getGson(scijavaCtx).fromJson(reader, RealTransform.class);
+                    RealTransform transformation = RealTransformHelper.getTransformSequence(irts).get(1);
+                    if (pre_compute_transform) {
+                        transformation = bdv.util.RealTransformHelper.resampleTransform(transformation, model);
+                    }
+                    sourceToTransformation.put(source, transformation);
+                    alreadyOpenedTransforms.put(result, transformation);
+                }
+            }
+            if (pre_compute_transform) {
+                IJ.log("Computation done!");
             }
 
             List<SourceAndConverter> movingSacs = Arrays.stream(moving_source).collect(Collectors.toList());
@@ -80,16 +128,32 @@ public class WarpyExportRegisteredImageCommand implements Command {
 
             List<SourceAndConverter> transformedSources = new ArrayList<>();
 
+            Class<?> pixelType;
+            pixelType = movingSacs.get(0).getSpimSource().getType().getClass();
             for (SourceAndConverter source: movingSacs) {
+                if (!source.getSpimSource().getType().getClass().equals(pixelType)) {
+                    IJ.log("ERROR - combining images with different pixel types is not supported: ");
+                    IJ.log(movingSacs.get(0).getSpimSource().getName()+" pixel type = "+pixelType.getSimpleName());
+                    IJ.log(source.getSpimSource().getName()+" pixel type = "+source.getSpimSource().getType().getClass().getSimpleName());
+                    IJ.log("You may try to re-open your QuPath project with the option 'split RGB channel'");
+                    return;
+                }
                 transformedSources.add(new SourceRealTransformer(sourceToTransformation.get(source).copy()).apply(source));
             }
-
             List<SourceAndConverter> exportedSources = new ArrayList<>();
 
             if (includeFixedSources) {
                 exportedSources.addAll(fixedSacs);
+                for (SourceAndConverter source: fixedSacs) {
+                    if (!source.getSpimSource().getType().getClass().equals(pixelType)) {
+                        IJ.log("ERROR - combining images with different pixel types is not supported: ");
+                        IJ.log(movingSacs.get(0).getSpimSource().getName()+" pixel type = "+pixelType.getSimpleName());
+                        IJ.log(source.getSpimSource().getName()+" pixel type = "+source.getSpimSource().getType().getClass().getSimpleName());
+                        IJ.log("You may try to re-open your QuPath project with the option 'split RGB channel'");
+                        return;
+                    }
+                }
             }
-
             for (SourceAndConverter source: transformedSources) {
                 exportedSources.add(
                         new SourceResampler(source,
@@ -98,7 +162,6 @@ public class WarpyExportRegisteredImageCommand implements Command {
                                 false, false,
                                 interpolate, 0).get());
             }
-
             scijavaCtx.getService(CommandService.class)
                     .run(KheopsExportSourcesBuildPyramidCommand.class, true,
                             "sacs",  exportedSources.toArray(new SourceAndConverter[0]),
