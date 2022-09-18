@@ -2,13 +2,19 @@ package ch.epfl.biop.scijava.command.bdv;
 
 import bdv.util.BdvHandle;
 import bdv.viewer.SourceAndConverter;
+import ch.epfl.biop.bdv.img.imageplus.ImagePlusHelper;
 import ch.epfl.biop.sourceandconverter.exporter.ImagePlusSampler;
+import ij.IJ;
 import ij.ImagePlus;
 import net.imglib2.RealPoint;
 import net.imglib2.realtransform.AffineTransform3D;
+import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.RealType;
+import net.imglib2.type.numeric.integer.UnsignedByteType;
+import net.imglib2.type.numeric.integer.UnsignedShortType;
+import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.type.volatiles.VolatileARGBType;
 import org.scijava.ItemIO;
 import org.scijava.ItemVisibility;
@@ -119,6 +125,22 @@ public class BasicBdvViewToImagePlusExportCommand<T extends RealType<T>> impleme
         }
 
         List<SourceAndConverter<?>> sourceList = bdv_h.getViewerPanel().state().getSources();
+
+        sourceList = sourceList.stream().filter(source -> {
+            if (source.getSpimSource() == null) {
+                IJ.log("Null source excluded");
+                return false;
+            }
+            if ((source.getSpimSource().getType() instanceof UnsignedShortType)
+                ||(source.getSpimSource().getType() instanceof UnsignedByteType)
+                ||(source.getSpimSource().getType() instanceof FloatType)
+                ||(source.getSpimSource().getType() instanceof ARGBType)) {
+                return true;
+            } else {
+                IJ.log("Unsupported export for source "+source.getSpimSource().getName());
+                return false;
+            }
+        }).collect(Collectors.toList());
 
         matchXYBDVFrame();
 
