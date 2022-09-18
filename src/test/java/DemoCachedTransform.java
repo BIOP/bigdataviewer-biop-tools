@@ -107,9 +107,9 @@ public class DemoCachedTransform {
         params.at3D.scale(20,20,20);
         params.at3D.translate(-100,-100, -100);
 
-        //EmptySource model = new EmptySource(params);
+        EmptySource model = new EmptySource(params);
 
-        Source<?> model = sacFixed.getSpimSource();
+        //Source<?> model = sacFixed.getSpimSource();
 
         //ITransformFieldSource cached_transform = new ResampledTransformFromSourceFieldSource(source, model, "Cached transform");
         //RealTransform transform = new SourcedRealTransform(cached_transform);

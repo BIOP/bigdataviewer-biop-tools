@@ -109,9 +109,7 @@ public class ResampledTransformFieldSource implements ITransformFieldSource<Nati
 
         // Get field of origin source
         final RealRandomAccessible<NativeRealPoint3D> ipimg =
-                new FunctionRealRandomAccessible<>(3, (position, value) -> {
-            transformCopy.apply(position, value);
-        }, this::getType);
+                new FunctionRealRandomAccessible<>(3, transformCopy::apply, this::getType);
 
         // Gets randomAccessible... ( with appropriate transform )
         at = at.inverse();
@@ -134,7 +132,7 @@ public class ResampledTransformFieldSource implements ITransformFieldSource<Nati
         if (!cachedRAIs.get(t).containsKey(level)) {
             RandomAccessibleInterval<NativeRealPoint3D> nonCached = buildSource(t, level);
 
-            int[] blockSize = { 64, 64, 1 };
+            int[] blockSize = { 64, 64, 64 };
 
             if (nonCached.dimension(0) < 64) blockSize[0] = (int) nonCached
                     .dimension(0);
@@ -185,25 +183,23 @@ public class ResampledTransformFieldSource implements ITransformFieldSource<Nati
     }
 
 
-    public static <T extends NativeType<T>> RandomAccessibleInterval<T>
-    wrapAsVolatileCachedCellImg(final RandomAccessibleInterval<T> source,
+    public static RandomAccessibleInterval<NativeRealPoint3D>
+    wrapAsVolatileCachedCellImg(final RandomAccessibleInterval<NativeRealPoint3D> source,
                                 final int[] blockSize, Object objectSource, int timepoint, int level)
     {
 
         final long[] dimensions = Intervals.dimensionsAsLongArray(source);
         final CellGrid grid = new CellGrid(dimensions, blockSize);
 
-        final Caches.RandomAccessibleLoader<T> loader =
+        final Caches.RandomAccessibleLoader<NativeRealPoint3D> loader =
                 new Caches.RandomAccessibleLoader<>(Views.zeroMin(source));
 
-        final T type = Util.getTypeFromInterval(source);
-
-        final CachedCellImg<T, ?> img;
+        final CachedCellImg<NativeRealPoint3D, ?> img;
         final Cache<Long, Cell<?>> cache = new GlobalLoaderCache(objectSource,
-                timepoint, level).withLoader(LoadedCellCacheLoader.get(grid, loader, type,
+                timepoint, level).withLoader(LoadedCellCacheLoader.get(grid, loader, new NativeRealPoint3D(),
                 AccessFlags.setOf(VOLATILE)));
 
-        img = new CachedCellImg(grid, type, cache, ArrayDataAccessFactory.get(
+        img = new CachedCellImg(grid, new NativeRealPoint3D(), cache, ArrayDataAccessFactory.get(
                 FLOAT, AccessFlags.setOf(VOLATILE)));
 
         return img;
