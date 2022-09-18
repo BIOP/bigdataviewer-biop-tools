@@ -54,7 +54,7 @@ import static net.imglib2.type.PrimitiveType.INT;
 import static net.imglib2.type.PrimitiveType.LONG;
 import static net.imglib2.type.PrimitiveType.SHORT;
 
-public class ResampledTransformFieldSource implements ITransformFieldSource<NativeRealPoint> {
+public class ResampledTransformFieldSource implements ITransformFieldSource<NativeRealPoint3D> {
 
     final RealTransform origin;
     final Source<?> resamplingModel;
@@ -64,7 +64,7 @@ public class ResampledTransformFieldSource implements ITransformFieldSource<Nati
     /**
      * Hashmap to cache RAIs (mipmaps and timepoints)
      */
-    final transient ConcurrentHashMap<Integer, ConcurrentHashMap<Integer, RandomAccessibleInterval<NativeRealPoint>>> cachedRAIs =
+    final transient ConcurrentHashMap<Integer, ConcurrentHashMap<Integer, RandomAccessibleInterval<NativeRealPoint3D>>> cachedRAIs =
             new ConcurrentHashMap<>();
 
     public ResampledTransformFieldSource(RealTransform origin, Source resamplingModel, String name) throws UnsupportedOperationException {
@@ -94,7 +94,7 @@ public class ResampledTransformFieldSource implements ITransformFieldSource<Nati
         return resamplingModel.isPresent(t);
     }
 
-    public RandomAccessibleInterval<NativeRealPoint> buildSource(int t, int level) {
+    public RandomAccessibleInterval<NativeRealPoint3D> buildSource(int t, int level) {
         // Get current model source transformation
         AffineTransform3D at = new AffineTransform3D();
         resamplingModel.getSourceTransform(t, level, at);
@@ -108,17 +108,17 @@ public class ResampledTransformFieldSource implements ITransformFieldSource<Nati
         RealTransform transformCopy = origin.copy();
 
         // Get field of origin source
-        final RealRandomAccessible<NativeRealPoint> ipimg =
+        final RealRandomAccessible<NativeRealPoint3D> ipimg =
                 new FunctionRealRandomAccessible<>(3, (position, value) -> {
             transformCopy.apply(position, value);
         }, this::getType);
 
         // Gets randomAccessible... ( with appropriate transform )
         at = at.inverse();
-        RandomAccessible<NativeRealPoint> ra = RealViews.affine(ipimg, at); // Gets the view
+        RandomAccessible<NativeRealPoint3D> ra = RealViews.affine(ipimg, at); // Gets the view
 
         // ... interval
-        RandomAccessibleInterval<NativeRealPoint> view =
+        RandomAccessibleInterval<NativeRealPoint3D> view =
                 Views.interval(ra, new long[] { 0, 0,
                 0 }, new long[] { sx, sy, sz }); // Sets the interval
 
@@ -126,13 +126,13 @@ public class ResampledTransformFieldSource implements ITransformFieldSource<Nati
     }
 
     @Override
-    public RandomAccessibleInterval<NativeRealPoint> getSource(int t, int level) {
+    public RandomAccessibleInterval<NativeRealPoint3D> getSource(int t, int level) {
         if (!cachedRAIs.containsKey(t)) {
             cachedRAIs.put(t, new ConcurrentHashMap<>());
         }
 
         if (!cachedRAIs.get(t).containsKey(level)) {
-            RandomAccessibleInterval<NativeRealPoint> nonCached = buildSource(t, level);
+            RandomAccessibleInterval<NativeRealPoint3D> nonCached = buildSource(t, level);
 
             int[] blockSize = { 64, 64, 1 };
 
@@ -150,12 +150,12 @@ public class ResampledTransformFieldSource implements ITransformFieldSource<Nati
     }
 
     @Override
-    public RealRandomAccessible<NativeRealPoint> getInterpolatedSource(int t, int level, Interpolation method) {
-        ExtendedRandomAccessibleInterval<NativeRealPoint, RandomAccessibleInterval<NativeRealPoint>> eView =
+    public RealRandomAccessible<NativeRealPoint3D> getInterpolatedSource(int t, int level, Interpolation method) {
+        ExtendedRandomAccessibleInterval<NativeRealPoint3D, RandomAccessibleInterval<NativeRealPoint3D>> eView =
         Views.extendBorder(getSource(t, level));
         
         @SuppressWarnings("UnnecessaryLocalVariable")
-        RealRandomAccessible<NativeRealPoint> realRandomAccessible = Views.interpolate(eView, interpolator);
+        RealRandomAccessible<NativeRealPoint3D> realRandomAccessible = Views.interpolate(eView, interpolator);
         return realRandomAccessible;
     }
 
@@ -165,8 +165,8 @@ public class ResampledTransformFieldSource implements ITransformFieldSource<Nati
     }
 
     @Override
-    public NativeRealPoint getType() {
-        return new NativeRealPoint(3);
+    public NativeRealPoint3D getType() {
+        return new NativeRealPoint3D();
     }
 
     @Override
@@ -204,7 +204,7 @@ public class ResampledTransformFieldSource implements ITransformFieldSource<Nati
                 AccessFlags.setOf(VOLATILE)));
 
         img = new CachedCellImg(grid, type, cache, ArrayDataAccessFactory.get(
-                DOUBLE, AccessFlags.setOf(VOLATILE)));
+                FLOAT, AccessFlags.setOf(VOLATILE)));
 
         return img;
     }

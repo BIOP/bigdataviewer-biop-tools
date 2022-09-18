@@ -6,7 +6,9 @@ import net.imglib2.RealLocalizable;
 import net.imglib2.RealPositionable;
 import net.imglib2.img.NativeImg;
 import net.imglib2.img.basictypeaccess.DoubleAccess;
+import net.imglib2.img.basictypeaccess.FloatAccess;
 import net.imglib2.img.basictypeaccess.array.DoubleArray;
+import net.imglib2.img.basictypeaccess.array.FloatArray;
 import net.imglib2.type.Index;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.NativeTypeFactory;
@@ -14,12 +16,12 @@ import net.imglib2.util.Fraction;
 
 public class NativeRealPoint extends AbstractEuclideanSpace implements RealPositionable, RealLocalizable, NativeType<NativeRealPoint> {
 
-    final NativeTypeFactory<NativeRealPoint, DoubleAccess> typeFactory;
+    final NativeTypeFactory<NativeRealPoint, FloatAccess> typeFactory;
 
-    final protected NativeImg< ?, ? extends DoubleAccess> img;
+    final protected NativeImg< ?, ? extends FloatAccess> img;
 
     // the DataAccess that holds the information
-    protected DoubleAccess dataAccess;
+    protected FloatAccess dataAccess;
 
     private final Index i;
 
@@ -30,15 +32,15 @@ public class NativeRealPoint extends AbstractEuclideanSpace implements RealPosit
         super(n);
         i = new Index();
         img = null;
-        dataAccess = new DoubleArray(n);
-        typeFactory = NativeTypeFactory.DOUBLE( (a) -> new NativeRealPoint(n, a) );
+        dataAccess = new FloatArray(n);
+        typeFactory = NativeTypeFactory.FLOAT( (a) -> new NativeRealPoint(n, a) );
     }
 
-    public NativeRealPoint(int n, NativeImg<?,? extends DoubleAccess> a) {
+    public NativeRealPoint(int n, NativeImg<?,? extends FloatAccess> a) {
         super(n);
         i = new Index();
         img = a;
-        typeFactory = NativeTypeFactory.DOUBLE( (access) -> new NativeRealPoint(n, access) );
+        typeFactory = NativeTypeFactory.FLOAT( (access) -> new NativeRealPoint(n, access) );
     }
 
     public NativeRealPoint(NativeRealPoint nativeRealPoint) {
@@ -46,13 +48,17 @@ public class NativeRealPoint extends AbstractEuclideanSpace implements RealPosit
         this.set(nativeRealPoint);
         i = new Index();
         img = null;
-        dataAccess = new DoubleArray(n);
-        typeFactory = NativeTypeFactory.DOUBLE( (a) -> new NativeRealPoint(n, a) );
+        dataAccess = new FloatArray(n);
+        typeFactory = NativeTypeFactory.FLOAT( (a) -> new NativeRealPoint(n, a) );
     }
-
 
     @Override
     public double getDoublePosition(int d) {
+        return dataAccess.getValue( i.get() * n + d );
+    }
+
+    @Override
+    public float getFloatPosition(int d) {
         return dataAccess.getValue( i.get() * n + d );
     }
 
@@ -95,7 +101,7 @@ public class NativeRealPoint extends AbstractEuclideanSpace implements RealPosit
     public void set(NativeRealPoint c) {
         int offset = i.get()*n;
         for (int d = 0; d < n; d++) {
-            dataAccess.setValue(offset+d, c.getDoublePosition(d));
+            dataAccess.setValue(offset+d, c.getFloatPosition(d));
         }
     }
 
@@ -113,10 +119,10 @@ public class NativeRealPoint extends AbstractEuclideanSpace implements RealPosit
         set(nativeRealPoint);
     }
 
-    public void mul(double alpha) {
+    public void mul(float alpha) {
         int offset = i.get()*n;
         for (int d = 0; d < n; d++) {
-            dataAccess.setValue(offset+d, alpha * getDoublePosition(d));
+            dataAccess.setValue(offset+d, alpha * getFloatPosition(d));
         }
     }
 
@@ -124,19 +130,19 @@ public class NativeRealPoint extends AbstractEuclideanSpace implements RealPosit
 
     @Override
     public void move(float distance, int d) {
-        dataAccess.setValue(i.get()*n+d, distance + getDoublePosition(d));
+        dataAccess.setValue(i.get()*n+d, distance + getFloatPosition(d));
     }
 
     @Override
     public void move(double distance, int d) {
-        dataAccess.setValue(i.get()*n+d, distance + getDoublePosition(d));
+        dataAccess.setValue(i.get()*n+d, (float) distance + getFloatPosition(d));
     }
 
     @Override
     public void move(RealLocalizable distance) {
         int offset = i.get()*n;
         for (int d = 0; d < n; d++) {
-            dataAccess.setValue(offset+d, distance.getDoublePosition(d) + getDoublePosition(d));
+            dataAccess.setValue(offset+d, distance.getFloatPosition(d) + getFloatPosition(d));
         }
     }
 
@@ -144,7 +150,7 @@ public class NativeRealPoint extends AbstractEuclideanSpace implements RealPosit
     public void move(float[] distance) {
         int offset = i.get()*n;
         for (int d = 0; d < n; d++) {
-            dataAccess.setValue(offset+d, distance[d] + getDoublePosition(d));
+            dataAccess.setValue(offset+d, distance[d] + getFloatPosition(d));
         }
     }
 
@@ -152,7 +158,7 @@ public class NativeRealPoint extends AbstractEuclideanSpace implements RealPosit
     public void move(double[] distance) {
         int offset = i.get()*n;
         for (int d = 0; d < n; d++) {
-            dataAccess.setValue(offset+d, distance[d] + getDoublePosition(d));
+            dataAccess.setValue(offset+d, (float) distance[d] + getFloatPosition(d));
         }
     }
 
@@ -172,7 +178,7 @@ public class NativeRealPoint extends AbstractEuclideanSpace implements RealPosit
     public void setPosition(double[] position) {
         int offset = i.get()*n;
         for (int d = 0; d < n; d++) {
-            dataAccess.setValue(offset+d, position[d]);
+            dataAccess.setValue(offset+d, (float) position[d]);
         }
     }
 
@@ -183,41 +189,41 @@ public class NativeRealPoint extends AbstractEuclideanSpace implements RealPosit
 
     @Override
     public void setPosition(double position, int d) {
-        dataAccess.setValue(i.get()*n+d, position);
+        dataAccess.setValue(i.get()*n+d, (float) position);
     }
 
     public void move(NativeRealPoint point) {
         int offset = i.get()*n;
         for (int d = 0; d < n; d++) {
-            dataAccess.setValue(offset+d, point.getDoublePosition(d) + getDoublePosition(d));
+            dataAccess.setValue(offset+d, point.getFloatPosition(d) + getFloatPosition(d));
         }
     }
 
     @Override
     public void fwd(int d) {
-        dataAccess.setValue(i.get()*n+d, getDoublePosition(d) + 1);
+        dataAccess.setValue(i.get()*n+d, getFloatPosition(d) + 1);
     }
 
     @Override
     public void bck(int d) {
-        dataAccess.setValue(i.get()*n+d, getDoublePosition(d) - 1);
+        dataAccess.setValue(i.get()*n+d, getFloatPosition(d) - 1);
     }
 
     @Override
     public void move(int distance, int d) {
-        dataAccess.setValue(i.get()*n+d, distance + getDoublePosition(d));
+        dataAccess.setValue(i.get()*n+d, distance + getFloatPosition(d));
     }
 
     @Override
     public void move(long distance, int d) {
-        dataAccess.setValue(i.get()*n+d, distance + getDoublePosition(d));
+        dataAccess.setValue(i.get()*n+d, distance + getFloatPosition(d));
     }
 
     @Override
     public void move(Localizable distance) {
         int offset = i.get()*n;
         for (int d = 0; d < n; d++) {
-            dataAccess.setValue(offset+d, distance.getLongPosition(d) + getDoublePosition(d));
+            dataAccess.setValue(offset+d, distance.getLongPosition(d) + getFloatPosition(d));
         }
     }
 
@@ -225,7 +231,7 @@ public class NativeRealPoint extends AbstractEuclideanSpace implements RealPosit
     public void move(int[] distance) {
         int offset = i.get()*n;
         for (int d = 0; d < n; d++) {
-            dataAccess.setValue(offset+d, distance[d] + getDoublePosition(d));
+            dataAccess.setValue(offset+d, distance[d] + getFloatPosition(d));
         }
     }
 
@@ -233,7 +239,7 @@ public class NativeRealPoint extends AbstractEuclideanSpace implements RealPosit
     public void move(long[] distance) {
         int offset = i.get()*n;
         for (int d = 0; d < n; d++) {
-            dataAccess.setValue(offset+d, distance[d] + getDoublePosition(d));
+            dataAccess.setValue(offset+d, distance[d] + getFloatPosition(d));
         }
     }
 
