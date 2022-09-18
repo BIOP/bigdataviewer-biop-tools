@@ -4,57 +4,33 @@ import bdv.viewer.Interpolation;
 import bdv.viewer.Source;
 import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.imglib2.Cursor;
+import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.RealLocalizable;
-import net.imglib2.RealPoint;
-import net.imglib2.RealPositionable;
 import net.imglib2.RealRandomAccessible;
-import net.imglib2.Sampler;
 import net.imglib2.algorithm.lazy.Caches;
+import net.imglib2.algorithm.util.Grids;
 import net.imglib2.cache.Cache;
 import net.imglib2.cache.img.CachedCellImg;
 import net.imglib2.cache.img.LoadedCellCacheLoader;
-import net.imglib2.cache.ref.BoundedSoftRefLoaderCache;
-import net.imglib2.converter.Converters;
-import net.imglib2.converter.readwrite.SamplerConverter;
-import net.imglib2.converter.readwrite.WriteConvertedRandomAccessibleInterval;
+import net.imglib2.img.array.ArrayImgFactory;
 import net.imglib2.img.basictypeaccess.AccessFlags;
 import net.imglib2.img.basictypeaccess.ArrayDataAccessFactory;
 import net.imglib2.img.cell.Cell;
 import net.imglib2.img.cell.CellGrid;
-import net.imglib2.position.FunctionRandomAccessible;
 import net.imglib2.position.FunctionRealRandomAccessible;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.realtransform.RealTransform;
 import net.imglib2.realtransform.RealViews;
-import net.imglib2.type.NativeType;
-import net.imglib2.type.numeric.ARGBType;
-import net.imglib2.type.numeric.integer.GenericByteType;
-import net.imglib2.type.numeric.integer.GenericIntType;
-import net.imglib2.type.numeric.integer.GenericLongType;
-import net.imglib2.type.numeric.integer.GenericShortType;
-import net.imglib2.type.numeric.real.DoubleType;
-import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Intervals;
-import net.imglib2.util.Util;
 import net.imglib2.view.ExtendedRandomAccessibleInterval;
 import net.imglib2.view.Views;
-import net.imglib2.view.composite.Composite;
-import net.imglib2.view.composite.CompositeIntervalView;
-import net.imglib2.view.composite.GenericComposite;
 import sc.fiji.bdvpg.cache.GlobalLoaderCache;
 
 import java.util.concurrent.ConcurrentHashMap;
 
 import static net.imglib2.img.basictypeaccess.AccessFlags.DIRTY;
-import static net.imglib2.img.basictypeaccess.AccessFlags.VOLATILE;
-import static net.imglib2.type.PrimitiveType.BYTE;
-import static net.imglib2.type.PrimitiveType.DOUBLE;
 import static net.imglib2.type.PrimitiveType.FLOAT;
-import static net.imglib2.type.PrimitiveType.INT;
-import static net.imglib2.type.PrimitiveType.LONG;
-import static net.imglib2.type.PrimitiveType.SHORT;
 
 public class ResampledTransformFieldSource implements ITransformFieldSource<NativeRealPoint3D> {
 
@@ -62,6 +38,8 @@ public class ResampledTransformFieldSource implements ITransformFieldSource<Nati
     final Source<?> resamplingModel;
     final String name;
     final RealPoint3DInterpolatorFactory interpolator = new RealPoint3DInterpolatorFactory();
+
+    final ThreadLocal<RealTransform> localTransform = new ThreadLocal<>();
 
     /**
      * Hashmap to cache RAIs (mipmaps and timepoints)
@@ -107,21 +85,15 @@ public class ResampledTransformFieldSource implements ITransformFieldSource<Nati
         long sy = resamplingModel.getSource(t, level).dimension(1) - 1;
         long sz = resamplingModel.getSource(t, level).dimension(2) - 1;
 
-        RealTransform transformCopy = origin.copy();
-
         // Get field of origin source
         final RealRandomAccessible<NativeRealPoint3D> ipimg =
                 new FunctionRealRandomAccessible<>(3,
-                        /*(l,p) -> {
-                            try {
-                                Thread.sleep(1);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
+                        (location, value) -> {
+                            if (localTransform.get()==null) {
+                                localTransform.set(origin.copy());
                             }
-                            transformCopy.apply(l,p);
-                        },*/
-                        transformCopy::apply,
-                        this::getType);
+                            localTransform.get().apply(location, value);
+                        }, this::getType);
 
         // Gets randomAccessible... ( with appropriate transform )
         at = at.inverse();
@@ -144,17 +116,15 @@ public class ResampledTransformFieldSource implements ITransformFieldSource<Nati
         if (!cachedRAIs.get(t).containsKey(level)) {
             RandomAccessibleInterval<NativeRealPoint3D> nonCached = buildSource(t, level);
 
-            int[] blockSize = { 64, 64, 64 };
+            int[] blockSize = { 128, 128, 32 };
 
-            if (nonCached.dimension(0) < 64) blockSize[0] = (int) nonCached
+            if (nonCached.dimension(0) < 128) blockSize[0] = (int) nonCached
                     .dimension(0);
-            if (nonCached.dimension(1) < 64) blockSize[1] = (int) nonCached
+            if (nonCached.dimension(1) < 128) blockSize[1] = (int) nonCached
                     .dimension(1);
-            if (nonCached.dimension(2) < 64) blockSize[2] = (int) nonCached
+            if (nonCached.dimension(2) < 32) blockSize[2] = (int) nonCached
                     .dimension(2);
 
-            //cachedRAIs.get(t).put(level, wrapAsVolatileCachedCellImg(
-            //        nonCached, blockSize, this, t, level));
             cachedRAIs.get(t).put(level, compute(
                     nonCached, blockSize, this, t, level));
         }
@@ -196,7 +166,8 @@ public class ResampledTransformFieldSource implements ITransformFieldSource<Nati
         return resamplingModel.getNumMipmapLevels();
     }
 
-    public static RandomAccessibleInterval<NativeRealPoint3D>
+    // ABYSMAL PERFORMANCE
+    /*public static RandomAccessibleInterval<NativeRealPoint3D>
     wrapAsVolatileCachedCellImg(final RandomAccessibleInterval<NativeRealPoint3D> source,
                                 final int[] blockSize, Object objectSource, int timepoint, int level)
     {
@@ -217,35 +188,36 @@ public class ResampledTransformFieldSource implements ITransformFieldSource<Nati
                 FLOAT, AccessFlags.setOf(DIRTY)));
 
         return img;
-    }
+    }*/
 
     public RandomAccessibleInterval<NativeRealPoint3D>
     compute(final RandomAccessibleInterval<NativeRealPoint3D> source,
                                 final int[] blockSize, Object objectSource, int timepoint, int level)
     {
 
-        Cursor<NativeRealPoint3D> cursor = Views.flatIterable(source).localizingCursor();
-        final float[][][][] backingArray = new float[(int)source.dimension(0)][(int)source.dimension(1)][(int)source.dimension(2)][3];
-        float[] location = new float[3];
+        final RandomAccessibleInterval< NativeRealPoint3D > deformationField = new ArrayImgFactory( new NativeRealPoint3D() ).create( source );
+         Grids.collectAllContainedIntervals(source.dimensionsAsLongArray(), blockSize)
+                .parallelStream()
+                .forEach( blockinterval -> {
+                            Cursor<NativeRealPoint3D> targetCursor = Views.interval(deformationField,blockinterval).localizingCursor();
 
-        AffineTransform3D transform3D = new AffineTransform3D();
-        getSourceTransform(0,0,transform3D);
-        while(cursor.hasNext()) {
-            cursor.fwd();
-            cursor.get().localize(location);
-            int xp = cursor.getIntPosition(0);
-            int yp = cursor.getIntPosition(1);
-            int zp = cursor.getIntPosition(2);
-            backingArray[xp][yp][zp][0] = location[0];
-            backingArray[xp][yp][zp][1] = location[1];
-            backingArray[xp][yp][zp][2] = location[2];
-        }
-        FunctionRandomAccessible<NativeRealPoint3D> rai = new FunctionRandomAccessible<>(3,(loc, point) -> {
-            float[] coordinates = backingArray[loc.getIntPosition(0)] [loc.getIntPosition(1)][loc.getIntPosition(2)];
-            point.setPosition(coordinates);
-        }, () -> new NativeRealPoint3D());
+                            RandomAccess< NativeRealPoint3D > sourceRandomAccess = source.randomAccess();
 
-        return Views.interval(rai, source);
+                            // iterate over the input cursor
+                            while ( targetCursor.hasNext())
+                            {
+                                // move input cursor forward
+                                targetCursor.fwd();
+
+                                // set the output cursor to the position of the input cursor
+                                sourceRandomAccess.setPosition( targetCursor );
+
+                                // set the value of this pixel of the output image, every Type supports T.set( T type )
+                                targetCursor.get().set( sourceRandomAccess.get() );
+                            }
+                        }
+                    );
+        return deformationField;
     }
 
 }

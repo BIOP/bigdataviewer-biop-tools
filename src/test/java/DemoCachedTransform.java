@@ -101,10 +101,10 @@ public class DemoCachedTransform {
 
         EmptySource.EmptySourceParams params = new EmptySource.EmptySourceParams();
         params.name = "Model Source";
-        params.nx = 25;
-        params.ny = 25;
-        params.nz = 25;
-        params.at3D.scale(20,20,20);
+        params.nx = 25*5;
+        params.ny = 25*5;
+        params.nz = 25*5;
+        params.at3D.scale(20/5,20/5,20/5);
         params.at3D.translate(-100,-100, -100);
 
         EmptySource model = new EmptySource(params);
@@ -124,10 +124,10 @@ public class DemoCachedTransform {
         SourceAndConverterServices.getBdvDisplayService()
                 .show(bdvHandle, tr);
 
-        SourceAndConverter resampled = new SourceResampler(fixedSources.get(0), SourceAndConverterHelper.createSourceAndConverter(model), "Model Size", false, false, false, 0).get();
+        /*SourceAndConverter resampled = new SourceResampler(fixedSources.get(0), SourceAndConverterHelper.createSourceAndConverter(model), "Model Size", false, false, false, 0).get();
 
         SourceAndConverterServices.getBdvDisplayService()
-                .show(bdvHandle, resampled);
+                .show(bdvHandle, resampled);*/
 
     }
 }
