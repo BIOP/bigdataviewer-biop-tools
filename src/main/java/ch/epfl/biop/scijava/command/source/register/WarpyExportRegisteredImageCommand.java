@@ -15,7 +15,6 @@ import org.scijava.Context;
 import org.scijava.ItemVisibility;
 import org.scijava.command.Command;
 import org.scijava.command.CommandService;
-import org.scijava.log.LogService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
@@ -33,12 +32,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static ch.epfl.biop.scijava.command.source.register.WarpyEditRegistrationCommand.removeZOffsets;
+
 @Plugin(type = BdvPlaygroundActionCommand.class,
         menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>QuPath - Export Warpy Registered Image")
 public class WarpyExportRegisteredImageCommand implements Command {
 
     @Parameter(visibility = ItemVisibility.MESSAGE, persist = false, style = "message")
     String message = "<html><h1>QuPath registration exporter</h1>Please select a moving and a fixed source<br></html>";
+
+    @Parameter(label = "Remove Z offsets")
+    boolean remove_z_offsets = true;
 
     @Parameter(label = "Pre-compute transformation before export (faster for n landmarks ~> 40)")
     boolean pre_compute_transform;
@@ -47,10 +51,10 @@ public class WarpyExportRegisteredImageCommand implements Command {
     int pre_compute_downsample_xy = 10;
 
     @Parameter(label = "Fixed source", callback = "updateMessage", style ="sorted")
-    SourceAndConverter[] fixed_source;
+    SourceAndConverter<?>[] fixed_sources;
 
     @Parameter(label = "Moving sources", callback = "updateMessage", style ="sorted")
-    SourceAndConverter[] moving_source;
+    SourceAndConverter<?>[] moving_sources;
 
     @Parameter(label = "Include fixed sources in exported image")
     boolean includeFixedSources;
@@ -64,7 +68,9 @@ public class WarpyExportRegisteredImageCommand implements Command {
     @Override
     public void run() {
         try {
-            QuPathEntryEntity fixedEntity = QuPathBdvHelper.getQuPathEntityFromSource(fixed_source[0]);
+            if (remove_z_offsets) fixed_sources = removeZOffsets(fixed_sources);
+            if (remove_z_offsets) moving_sources = removeZOffsets(moving_sources);
+            QuPathEntryEntity fixedEntity = QuPathBdvHelper.getQuPathEntityFromDerivedSource(fixed_sources[0]);
             int fixed_series_index = fixedEntity.getId();
             Map<SourceAndConverter, RealTransform> sourceToTransformation =new HashMap<>();
             double downsampleXYTransformField = pre_compute_downsample_xy;
@@ -73,14 +79,14 @@ public class WarpyExportRegisteredImageCommand implements Command {
             if (pre_compute_transform) {
                 EmptySource.EmptySourceParams params = new EmptySource.EmptySourceParams();
                 // Assert all fixed sources have the same size
-                long nPixX = fixed_source[0].getSpimSource().getSource(0, 0).max(0) + 1;
-                long nPixY = fixed_source[0].getSpimSource().getSource(0, 0).max(1) + 1;
-                long nPixZ = fixed_source[0].getSpimSource().getSource(0, 0).max(2) + 1;
+                long nPixX = fixed_sources[0].getSpimSource().getSource(0, 0).max(0) + 1;
+                long nPixY = fixed_sources[0].getSpimSource().getSource(0, 0).max(1) + 1;
+                long nPixZ = fixed_sources[0].getSpimSource().getSource(0, 0).max(2) + 1;
                 params.nx = (long) (nPixX / downsampleXYTransformField);
                 params.ny = (long) (nPixY / downsampleXYTransformField);
                 params.nz = (long) (nPixZ / downsampleZTransformField);
                 AffineTransform3D transform = new AffineTransform3D();
-                fixed_source[0].getSpimSource().getSourceTransform(0, 0, transform);
+                fixed_sources[0].getSpimSource().getSourceTransform(0, 0, transform);
                 params.at3D = transform.copy();
                 double posX = params.at3D.get(0, 3);
                 double posY = params.at3D.get(1, 3);
@@ -94,9 +100,9 @@ public class WarpyExportRegisteredImageCommand implements Command {
                 IJ.log("Computing deformation fields, please wait...");
             }
             Map<File, RealTransform> alreadyOpenedTransforms = new HashMap<>();
-            for (SourceAndConverter source: moving_source) {
+            for (SourceAndConverter source: moving_sources) {
                 File moving_entry_folder = QuPathBdvHelper.getDataEntryFolder(source);
-                QuPathEntryEntity movingEntity = QuPathBdvHelper.getQuPathEntityFromSource(source);
+                QuPathEntryEntity movingEntity = QuPathBdvHelper.getQuPathEntityFromDerivedSource(source);
                 int moving_series_index = movingEntity.getId();
                 String movingToFixedLandmarkName = "transform_"+moving_series_index+"_"+fixed_series_index+".json";
                 File result = new File(moving_entry_folder.getAbsolutePath(), movingToFixedLandmarkName);
@@ -122,9 +128,11 @@ public class WarpyExportRegisteredImageCommand implements Command {
                 IJ.log("Computation done!");
             }
 
-            List<SourceAndConverter> movingSacs = Arrays.stream(moving_source).collect(Collectors.toList());
 
-            List<SourceAndConverter> fixedSacs = Arrays.stream(fixed_source).collect(Collectors.toList());
+            List<SourceAndConverter> movingSacs = Arrays.stream(moving_sources).collect(Collectors.toList());
+
+
+            List<SourceAndConverter> fixedSacs = Arrays.stream(fixed_sources).collect(Collectors.toList());
 
             List<SourceAndConverter> transformedSources = new ArrayList<>();
 
@@ -183,16 +191,16 @@ public class WarpyExportRegisteredImageCommand implements Command {
 
         String message = "<html><h1>Warpy registration exporter</h1>";
 
-        if ((fixed_source==null)||(fixed_source.length==0)) {
+        if ((fixed_sources ==null)||(fixed_sources.length==0)) {
             message+="Please select a fixed source <br>";
         } else {
-            if (!QuPathBdvHelper.isSourceDirectlyLinkedToQuPath(fixed_source[0])) {
+            if (!QuPathBdvHelper.isSourceDirectlyLinkedToQuPath(fixed_sources[0])) {
                 message+="The fixed source is not originating from a QuPath project! <br>";
             } else {
-                if ((moving_source == null)||(moving_source.length==0)) {
+                if ((moving_sources == null)||(moving_sources.length==0)) {
                     message += "Please select at least one moving source <br>";
                 } else {
-                    for (SourceAndConverter testSource:moving_source) {
+                    for (SourceAndConverter testSource: moving_sources) {
                         if (!QuPathBdvHelper.isSourceDirectlyLinkedToQuPath(testSource)) {
                             message += testSource.getSpimSource().getName()+" is not originating from a QuPath project! <br>";
                             message+="</html>";
@@ -201,7 +209,7 @@ public class WarpyExportRegisteredImageCommand implements Command {
                         } else {
                             try {
                                 String qupathProjectMoving = QuPathBdvHelper.getQuPathProjectFile(testSource).getAbsolutePath();
-                                String qupathProjectFixed = QuPathBdvHelper.getQuPathProjectFile(fixed_source[0]).getAbsolutePath();
+                                String qupathProjectFixed = QuPathBdvHelper.getQuPathProjectFile(fixed_sources[0]).getAbsolutePath();
                                 if (!qupathProjectMoving.equals(qupathProjectFixed)) {
                                     message += "Error : the moving source ("+testSource.getSpimSource().getName()+") and the fixed source are not from the same qupath project";
                                     message+="</html>";
@@ -210,11 +218,11 @@ public class WarpyExportRegisteredImageCommand implements Command {
                                 } else {
                                     // - Are they different entries ?
                                     File moving_entry_folder = QuPathBdvHelper.getDataEntryFolder(testSource);
-                                    File fixed_entry_folder = QuPathBdvHelper.getDataEntryFolder(fixed_source[0]);
+                                    File fixed_entry_folder = QuPathBdvHelper.getDataEntryFolder(fixed_sources[0]);
                                     if (moving_entry_folder.getAbsolutePath().equals(fixed_entry_folder.getAbsolutePath())) {
                                         message += "Error : moving and fixed source should belong to different qupath entries. <br>";
                                         message += "<ul>";
-                                        message += "<li>Fixed: " + fixed_source[0].getSpimSource().getName() + "</li>";
+                                        message += "<li>Fixed: " + fixed_sources[0].getSpimSource().getName() + "</li>";
                                         message += "<li>Moving: " + testSource.getSpimSource().getName() + "</li>";
                                         message += "<ul>";
                                         message+="</html>";
