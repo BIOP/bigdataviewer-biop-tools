@@ -108,8 +108,8 @@
 		<elastix_registration_server.version>0.1.4</elastix_registration_server.version>
 
 		<!-- biop dependencies -->
-		<ijl-utilities-wrappers.version>0.7.0</ijl-utilities-wrappers.version>
-		<Operetta_Importer.version>0.1.22</Operetta_Importer.version>
+		<ijl-utilities-wrappers.version>0.7.2</ijl-utilities-wrappers.version>
+		<Operetta_Importer.version>0.1.23</Operetta_Importer.version>
 		<ijp-kheops.version>0.3.2</ijp-kheops.version>
 
 		<!-- maths -->
