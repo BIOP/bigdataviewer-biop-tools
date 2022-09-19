@@ -10,8 +10,8 @@ import net.imglib2.realtransform.RealTransform;
 import net.imglib2.realtransform.RealViews;
 
 /**
- * This RealTransform class takes a Source<RealPoint> and turns it into a RealTransform object
- * This allows to use caching, resampling and interpolation to speed up computation of complex
+ * This RealTransform class takes a Source of RealLocalizable and turns it into a RealTransform object
+ * This (potentially) allows to use caching, resampling and interpolation to speed up computation of complex
  * transformations.
  */
 public class SourcedRealTransform implements RealTransform {
