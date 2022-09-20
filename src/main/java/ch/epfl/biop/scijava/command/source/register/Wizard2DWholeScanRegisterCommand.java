@@ -182,28 +182,23 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
             AffineTransform3D at3D = new AffineTransform3D();
             moving.getSpimSource().getSourceTransform(0,0,at3D);
             centeringTransform.translate(0,0,-at3D.get(2,3)); // Removes z offset
-            System.out.println("moving("+moving.getSpimSource().getName()+"):"+(-at3D.get(2,3)));
 
             fixed.getSpimSource().getSourceTransform(0,0,at3D);
             preTransformFixed.translate(0,0,-at3D.get(2,3)); // Removes z offset
-            System.out.println("fixed("+fixed.getSpimSource().getName()+"):"+(-at3D.get(2,3)));
+        }
+
+        if (centerMovingImage) {
+            RealPoint centerMoving = SourceAndConverterHelper.getSourceAndConverterCenterPoint(moving);
+            RealPoint centerFixed = SourceAndConverterHelper.getSourceAndConverterCenterPoint(fixed);
+            centeringTransform.translate(
+                    centerFixed.getDoublePosition(0)-centerMoving.getDoublePosition(0),
+                    centerFixed.getDoublePosition(1)-centerMoving.getDoublePosition(1),
+                    0 // Use removeZOffset for that!
+                    );
         }
 
         SourceAndConverter newFixed = SourceTransformHelper.createNewTransformedSourceAndConverter(preTransformFixed, new SourceAndConverterAndTimeRange(fixed,0));
         SourceAndConverter newMoving = SourceTransformHelper.createNewTransformedSourceAndConverter(centeringTransform, new SourceAndConverterAndTimeRange(moving,0));
-
-        if (centerMovingImage) {
-            RealPoint centerMoving = SourceAndConverterHelper.getSourceAndConverterCenterPoint(newMoving);//moving);
-            RealPoint centerFixed = SourceAndConverterHelper.getSourceAndConverterCenterPoint(newFixed);//fixed);
-            System.out.println("center fixed = "+centerFixed);
-            System.out.println("center moving = "+centerMoving);
-            centeringTransform.translate(
-                    centerFixed.getDoublePosition(0)-centerMoving.getDoublePosition(0),
-                    centerFixed.getDoublePosition(1)-centerMoving.getDoublePosition(1),
-                    centerFixed.getDoublePosition(2)-centerMoving.getDoublePosition(2)
-                    );
-        }
-
 
         SourceAndConverterServices.getBdvDisplayService().remove(bdvh, new SourceAndConverter[]{fixed, moving});
         moving = newMoving;
