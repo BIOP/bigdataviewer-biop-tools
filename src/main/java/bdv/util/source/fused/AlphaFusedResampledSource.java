@@ -115,7 +115,7 @@ public class AlphaFusedResampledSource< T extends NumericType<T> & NativeType<T>
 
     private String name;
 
-    final int cacheX, cacheY, cacheZ, cacheBound;
+    final int cacheX, cacheY, cacheZ;
 
     final String blendingMode;
 
@@ -144,7 +144,6 @@ public class AlphaFusedResampledSource< T extends NumericType<T> & NativeType<T>
      * @param cacheX block size along X ( dimension 0 )
      * @param cacheY block size along Y ( dimension 1 )
      * @param cacheZ block size along Z ( dimension 2 )
-     * @param cacheBound if negative, the cache blocks are not freed unless RAM is missing, otherwise drops blocks above this threshold
      * @param defaultMipMapLevel if reuse mipmap is false, this is the mipmap level which is taken for the fusion
      */
     public AlphaFusedResampledSource(Collection<Source<T>> origins,
@@ -157,8 +156,7 @@ public class AlphaFusedResampledSource< T extends NumericType<T> & NativeType<T>
                                      int defaultMipMapLevel,
                                      int cacheX,
                                      int cacheY,
-                                     int cacheZ,
-                                     int cacheBound) {
+                                     int cacheZ) {
         final T t = origins.stream().findAny().get().getType().createVariable();
         this.pixelCreator = t::createVariable;
         this.blendingMode = blendingMode;
@@ -176,7 +174,6 @@ public class AlphaFusedResampledSource< T extends NumericType<T> & NativeType<T>
         this.cacheX = cacheX;
         this.cacheY = cacheY;
         this.cacheZ = cacheZ;
-        this.cacheBound = cacheBound;
     }
 
     Map<Source<T>,Map<Integer, Integer>> mipmapModelToOrigin = new HashMap<>();
@@ -296,16 +293,6 @@ public class AlphaFusedResampledSource< T extends NumericType<T> & NativeType<T>
                 if (cache) {
                     final AlphaFused3DRandomAccessible<T> nonCached = buildSource(t, level);
                     int[] blockSize = {cacheX, cacheY, cacheZ};
-                    ReadOnlyCachedCellImgOptions cacheOptions;
-                    if (cacheBound>0) {
-                        cacheOptions = ReadOnlyCachedCellImgOptions
-                                .options().cacheType(CacheOptions.CacheType.BOUNDED).maxCacheSize(cacheBound)
-                                .cellDimensions(blockSize);
-                    } else {
-                        cacheOptions = ReadOnlyCachedCellImgOptions
-                                .options().cacheType(CacheOptions.CacheType.SOFTREF)
-                                .cellDimensions(blockSize);
-                    }
 
                     List<IAlphaSource> iteratedAlphaSources = new ArrayList<>();
 

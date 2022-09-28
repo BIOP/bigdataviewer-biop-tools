@@ -99,7 +99,7 @@ public class SourceFuserAndResampler<T extends NumericType<T>> implements Runnab
                         reuseMipMaps,
                         cache,
                         interpolationMap,
-                        defaultMipMapLevel,cacheX,cacheY,cacheZ, cacheBounds);
+                        defaultMipMapLevel,cacheX,cacheY,cacheZ);
 
         SourceAndConverter sac;
 
@@ -126,7 +126,7 @@ public class SourceFuserAndResampler<T extends NumericType<T>> implements Runnab
                         reuseMipMaps,
                         false,
                         interpolationMap,
-                        defaultMipMapLevel,cacheX,cacheY,cacheZ, cacheBounds);
+                        defaultMipMapLevel,cacheX,cacheY,cacheZ);
             }
             vsac = new SourceAndConverter(vsrcRsampled,
                     SourceAndConverterHelper.cloneConverter(sacExample.asVolatile().getConverter(), sacExample.asVolatile()));
