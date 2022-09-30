@@ -2,7 +2,7 @@ package ch.epfl.biop.sourceandconverter;
 
 import bdv.util.VolatileSource;
 import bdv.util.source.fused.AlphaFusedResampledSource;
-import bdv.util.volatiles.SharedQueue;
+import bdv.cache.SharedQueue;
 import bdv.viewer.Interpolation;
 import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
