@@ -4,6 +4,8 @@ import ch.epfl.biop.sourceandconverter.register.Elastix2DAffineRegister;
 import ch.epfl.biop.wrappers.elastix.RegParamAffine_Fast;
 import ch.epfl.biop.wrappers.elastix.RegisterHelper;
 import ch.epfl.biop.wrappers.elastix.RegistrationParameters;
+import org.scijava.Context;
+import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,9 +28,12 @@ public class Elastix2DAffineRegisterCommand extends AbstractElastix2DRegistratio
 
     private static Logger logger = LoggerFactory.getLogger(Elastix2DAffineRegisterCommand.class);
 
+    @Parameter
+    Context ctx;
+
     @Override
     public void run() {
-
+        ElastixHelper.checkOrSetLocal(ctx);
         RegisterHelper rh = new RegisterHelper();
         if (verbose) {
             rh.verbose();

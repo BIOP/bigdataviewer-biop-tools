@@ -8,7 +8,6 @@ import ch.epfl.biop.bdv.select.SelectedSourcesListener;
 import ch.epfl.biop.bdv.select.SourceSelectorBehaviour;
 import ch.epfl.biop.bdv.select.ToggleListener;
 import ch.epfl.biop.scijava.command.source.register.Elastix2DAffineRegisterCommand;
-import ch.epfl.biop.scijava.command.source.register.Elastix2DAffineRegisterServerCommand;
 import ij.IJ;
 import ij.ImagePlus;
 import mpicbg.spim.data.SpimData;
@@ -201,49 +200,9 @@ public class DemoRegistrationAffine {
             }
         };
 
-        ClickBehaviour registerRemote = (x,y) -> {
-            if ((movingSource==null)||(fixedSource==null)) {
-                bdvh.getViewerPanel().showMessage("Please define a fixed and a moving source");
-            } else {
-                // Go for the registration - on a selected rectangle
-                Future<CommandModule> task = ij.context()
-                        .getService(CommandService.class)
-                        .run(Elastix2DAffineRegisterServerCommand.class, true,
-                                "sacs_fixed", new SourceAndConverter[]{fixedSource},
-                                "tpFixed", 0,
-                                "levelFixedSource", 0,
-                                "sacs_moving", new SourceAndConverter[]{movingSource},
-                                "tpMoving", 0,
-                                "levelMovingSource", 0,
-                                "pxSizeInCurrentUnit", 1,
-                                "interpolate", false,
-                                "showImagePlusRegistrationResult", false,// true,
-                                "px",-50,
-                                "py",-10,
-                                "pz",0,
-                                "sx",250,
-                                "sy",250,
-                                //"serverURL","" // Local
-                                "serverURL", "http://localhost:8090",//"http://15.188.34.238:8090", //http://localhost:8090"
-                                "taskInfo", ""
-                        );
-
-                Thread t = new Thread(() -> {
-                    try {
-                        AffineTransform3D at3d = (AffineTransform3D) task.get().getOutput("at3D");
-                        SourceTransformHelper.mutate(at3d, new SourceAndConverterAndTimeRange(movingSource,0));
-                        bdvh.getViewerPanel().requestRepaint();
-                    } catch (Exception e) {
-
-                    }
-                });
-                t.start();
-            }
-        };
 
         editor.behaviour(delete, "remove-sources-from-bdv", new String[]{"DELETE"});
         editor.behaviour(registerLocal, "register-sources-local", new String[]{"R"});
-        editor.behaviour(registerRemote, "register-sources-remote", new String[]{"S"});
 
         // One way to chain the behaviour : install and uninstall on source selector toggling:
         // The delete key will act only when the source selection mode is on

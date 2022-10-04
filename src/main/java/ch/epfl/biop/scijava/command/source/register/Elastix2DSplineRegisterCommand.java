@@ -2,6 +2,7 @@ package ch.epfl.biop.scijava.command.source.register;
 
 import ch.epfl.biop.sourceandconverter.register.Elastix2DSplineRegister;
 import net.imglib2.realtransform.RealTransform;
+import org.scijava.Context;
 import org.scijava.ItemIO;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
@@ -20,9 +21,12 @@ public class Elastix2DSplineRegisterCommand extends AbstractElastix2DRegistratio
     @Parameter(type = ItemIO.OUTPUT)
     RealTransform rt_inverse;
 
+    @Parameter
+    Context ctx;
+
     @Override
     public void run() {
-
+        ElastixHelper.checkOrSetLocal(ctx);
         Elastix2DSplineRegister reg = new Elastix2DSplineRegister(
                 sacs_fixed,levelFixedSource,tpFixed,
                 sacs_moving,levelMovingSource,tpMoving,
