@@ -112,6 +112,9 @@
 		<Operetta_Importer.version>0.1.23</Operetta_Importer.version>
 		<ijp-kheops.version>0.3.4</ijp-kheops.version>
 
+		<!-- mastodon -->
+		<mastodon.version>1.0.0-beta-24</mastodon.version>
+
 		<!-- maths -->
 		<leastsquares.version>1.0.0</leastsquares.version>
 
@@ -253,6 +256,13 @@
 			<groupId>ch.epfl.biop</groupId>
 			<artifactId>elastix_registration_server</artifactId>
 			<version>${elastix_registration_server.version}</version>
+		</dependency>
+
+		<!-- mastodon -->
+		<dependency>
+			<groupId>org.mastodon</groupId>
+			<artifactId>mastodon</artifactId>
+			<version>${mastodon.version}</version>
 		</dependency>
 
 		<!-- test dependencies -->
