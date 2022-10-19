@@ -265,6 +265,12 @@
 			<version>${mastodon.version}</version>
 		</dependency>
 
+		<!-- trackmate -->
+        <dependency>
+			<groupId>sc.fiji</groupId>
+			<artifactId>TrackMate</artifactId>
+        </dependency>
+
 		<!-- test dependencies -->
 
 		<dependency>
