@@ -55,13 +55,13 @@ public class ExportToImagePlusCommand implements BdvPlaygroundActionCommand {
     Boolean monitor = false;
 
     @Parameter( label = "Acquire channels in parallel (Normal only)", required = false)
-    Boolean parallelC = false;
+    Boolean parallel_c = false;
 
     @Parameter( label = "Acquire slices in parallel (Normal only)", required = false)
-    Boolean parallelZ = false;
+    Boolean parallel_z = false;
 
     @Parameter( label = "Acquire timepoints in parallel (Normal only)", required = false)
-    Boolean parallelT = false;
+    Boolean parallel_t = false;
 
     @Parameter(type = ItemIO.OUTPUT)
     public ImagePlus imp_out;
@@ -76,6 +76,7 @@ public class ExportToImagePlusCommand implements BdvPlaygroundActionCommand {
     public void run() {
 
         List<SourceAndConverter<?>> sources = sorter.apply(Arrays.asList(sacs));
+
 
         int maxTimeFrames = SourceAndConverterHelper.getMaxTimepoint(sacs);
 
@@ -98,7 +99,7 @@ public class ExportToImagePlusCommand implements BdvPlaygroundActionCommand {
 
         if (monitor) task = taskService.createTask(name+" export");
 
-        imp_out = computeImage(sources, task, range, name, level, parallelC, parallelZ, parallelT, export_mode);
+        imp_out = computeImage(sources, task, range, name, level, parallel_c, parallel_z, parallel_t, export_mode);
 
     }
 

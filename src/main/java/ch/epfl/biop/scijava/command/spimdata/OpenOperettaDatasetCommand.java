@@ -14,6 +14,7 @@ import net.imglib2.RealPoint;
 import net.imglib2.realtransform.AffineTransform3D;
 import ome.xml.model.Well;
 import org.apache.commons.io.FileUtils;
+import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.command.CommandService;
 import org.scijava.plugin.Parameter;
@@ -36,7 +37,10 @@ import javax.swing.tree.TreePath;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.text.DecimalFormat;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -74,13 +78,16 @@ public class OpenOperettaDatasetCommand implements Command {
     SourceAndConverterBdvDisplayService sourceDisplayService;
 
     @Parameter
-    double minDisplayValue = 0;
+    double min_display_value = 0;
 
     @Parameter
-    double maxDisplayValue = 20000;
+    double max_display_value = 20000;
 
     @Parameter
     boolean show = true;
+
+    @Parameter(type = ItemIO.OUTPUT)
+    String dataset_name;
 
     @Override
     public void run() {
@@ -156,6 +163,7 @@ public class OpenOperettaDatasetCommand implements Command {
         opm.getAvailableFieldIds().forEach(System.out::println);
         opm.getAvailableFieldsString().forEach(System.out::println);
 
+
         try {
             // Block size : reading one full plane at a time
 
@@ -171,6 +179,7 @@ public class OpenOperettaDatasetCommand implements Command {
                     "usebioformatscacheblocksize", false,
                     "cachesizex", stack_width,
                     "cachesizey", stack_height,
+                    "numberofblockskeptinmemory", -1,
                     "refframesizeinunitlocation",1,
                     "refframesizeinunitvoxsize",1,
                     "cachesizez", 1,
@@ -178,20 +187,21 @@ public class OpenOperettaDatasetCommand implements Command {
 
             IJ.log("Done! Dataset opened.");
 
-            sourceService.setSpimDataName(asd, opm.getPlateName());
+            dataset_name = opm.getPlateName();
+            sourceService.setSpimDataName(asd, dataset_name);
 
-            Map<Well, SourceFilterNode> wellFilters = new HashMap<>();
-            Map<Integer, SourceFilterNode> fieldsFilters = new HashMap<>();
+            Map<Well, SourceFilterNode> wellFilters = new LinkedHashMap<>();
+            Map<Integer, SourceFilterNode> fieldsFilters = new LinkedHashMap<>();
 
             DefaultTreeModel model = sourceService.getUI().getTreeModel();
 
             opm.getAvailableWells().forEach(w -> {
                 int row = w.getRow().getValue() + 1;
                 int col = w.getColumn().getValue() + 1;
-                String name =  "R" + row + "-C" + col;
-                int idx = opm.getAvailableWells().indexOf(w)+1;
+                String name = getWellName(row, col);// "R" + row + "-C" + col;
+                //int idx = opm.getAvailableWells().indexOf(w)+1;
                 SourceFilterNode sfn = new SourceFilterNode(model,name,
-                        (source) -> source.getSpimSource().getName().startsWith("Well "+idx+","),false);
+                        (source) -> source.getSpimSource().getName().startsWith("Well "+name+","),false);
                 wellFilters.put(w, sfn);
             });
 
@@ -227,9 +237,9 @@ public class OpenOperettaDatasetCommand implements Command {
 
             // Don't forget to clone the nodes...
             wellFilters.values().forEach(wf -> {
-                SourceFilterNode node = (SourceFilterNode) wf.clone();
                 try {
                     SwingUtilities.invokeAndWait(() -> {
+                        SourceFilterNode node = (SourceFilterNode) wf.clone();
                         sourceService.getUI().addNode(wellsNode,node);
                         fieldsFilters.values().forEach(ff -> {
                             SourceFilterNode ffc =(SourceFilterNode) ff.clone();
@@ -246,9 +256,9 @@ public class OpenOperettaDatasetCommand implements Command {
 
             // Don't forget to clone the nodes...
             fieldsFilters.values().forEach(ff -> {
-                SourceFilterNode node = (SourceFilterNode) ff.clone();
                 try {
                     SwingUtilities.invokeAndWait(() -> {
+                        SourceFilterNode node = (SourceFilterNode) ff.clone();
                         sourceService.getUI().addNode(fieldsNode,node);
                         wellFilters.values().forEach(wf -> {
                             SourceFilterNode wfc =(SourceFilterNode)wf.clone();
@@ -283,7 +293,7 @@ public class OpenOperettaDatasetCommand implements Command {
             Well w0 = opm.getAvailableWells().get(0);
             int row0 = w0.getRow().getValue() + 1;
             int col0 = w0.getColumn().getValue() + 1;
-            String wellName0 =  "R" + row0 + "-C" + col0;
+            String wellName0 =  getWellName(row0, col0); // "R" + row0 + "-C" + col0;
             TreePath pathFirstWell = sourceService.getUI().getTreePathFromString(opm.getPlateName()+">Wells>"+wellName0);
 
             for (SourceAndConverter source : sourceService.getUI().getSourceAndConvertersFromTreePath(pathFirstWell)) {
@@ -327,11 +337,12 @@ public class OpenOperettaDatasetCommand implements Command {
             for (Well w : opm.getAvailableWells()) {
                 int row = w.getRow().getValue() + 1;
                 int col = w.getColumn().getValue() + 1;
-                String wellName =  "R" + row + "-C" + col;
+                String wellName =  getWellName(row, col);//"R" + row + "-C" + col;
+
                 TreePath p = sourceService.getUI().getTreePathFromString(opm.getPlateName()+">Wells>"+wellName);
 
                 List<SourceAndConverter<?>> sources = sourceService.getUI().getSourceAndConvertersFromTreePath(p);
-                sources.stream().forEach(source -> new BrightnessAdjuster(source,minDisplayValue,maxDisplayValue).run());
+                sources.stream().forEach(source -> new BrightnessAdjuster(source, min_display_value, max_display_value).run());
                 List<SourceAndConverterAndTimeRange> sourceAndTime = sources.stream().map(source ->
                     new SourceAndConverterAndTimeRange(source,0,opm.getRange().getRangeT().size())
                 ).collect(Collectors.toList());
@@ -351,24 +362,20 @@ public class OpenOperettaDatasetCommand implements Command {
             IJ.log("Done.");
 
             if (show) {
+                BdvHandle bdvh = sourceDisplayService.getNewBdv();
                 SourceAndConverter[] sources = sourceService.getSourceAndConverterFromSpimdata(asd).toArray(new SourceAndConverter[0]);
-                sourceDisplayService.show(sources);
-                BdvHandle bdvh = sourceDisplayService.getActiveBdv();
-                new ViewerTransformAdjuster(bdvh, sources[0]).run();
+                sourceDisplayService.show(bdvh, sources);
 
-                // Source Group : channels
-                // bdvh.getViewerPanel().state().setDisplayMode(DisplayMode.FUSEDGROUP);
-
+                new ViewerTransformAdjuster(bdvh, sources).run();
                 bdvh.getViewerPanel().state().getGroups();
-
                 List<SourceGroup> groups = bdvh.getViewerPanel().state().getGroups();
 
                 int maxChannels = Math.min(10, opm.getRange().getRangeC().size());
 
                 for (int iCh = 0; iCh<maxChannels; iCh++) {
                     SourceGroup group = groups.get(iCh);
-                    TreePath p = sourceService.getUI().getTreePathFromString(opm.getPlateName()+">Channel>"+iCh);
-                    List<SourceAndConverter<?>> sourcesInChannel = sourceService.getUI().getSourceAndConvertersFromTreePath(p);
+                    List<SourceAndConverter<?>> sourcesInChannel =
+                            Arrays.asList(sourceService.getUI().getRoot().child(opm.getPlateName()).child("Channel").child(iCh).sources());//.getSourceAndConvertersFromTreePath(p);
                     List<SourceAndConverter<?>> sourcesCast = sourcesInChannel.stream().map(sac -> (SourceAndConverter<?>) sac).collect(Collectors.toList());
                     bdvh.getViewerPanel().state().addSourcesToGroup(sourcesCast, group);
                     bdvh.getViewerPanel().state().setGroupName(group, "Channel "+iCh);
@@ -383,5 +390,15 @@ public class OpenOperettaDatasetCommand implements Command {
             e.printStackTrace();
         }
 
+    }
+
+    //String input = "abc".toLowerCase();
+    final static String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    final static DecimalFormat df = new DecimalFormat("00");
+
+    public static String getWellName(int row, int col) {
+        //System.out.println("R"+row+" - C"+col);
+        //System.out.println("rendered to "+alphabet.substring(row-1, row)+df.format(col));
+        return alphabet.substring(row-1, row)+df.format(col);
     }
 }
