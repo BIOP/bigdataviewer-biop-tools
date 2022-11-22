@@ -62,16 +62,16 @@ public class ExportToMultipleImagePlusCommand implements BdvPlaygroundActionComm
     private Boolean parallel = false;
 
     @Parameter( label = "Acquire channels in parallel (Normal only)", required = false)
-    Boolean parallelC = false;
+    Boolean parallel_c = false;
 
     @Parameter( label = "Acquire slices in parallel (Normal only)", required = false)
-    Boolean parallelZ = false;
+    Boolean parallel_z = false;
 
     @Parameter( label = "Acquire timepoints in parallel (Normal only)", required = false)
-    Boolean parallelT = false;
+    Boolean parallel_t = false;
 
     @Parameter(label = "Split by dataset entities, comma separated (channel, fileseries)")
-    String entitiesSplit = "";
+    String entities_split = "";
 
     Map<String, Class<? extends Entity>> entityClasses = new HashMap<>();
 
@@ -95,7 +95,7 @@ public class ExportToMultipleImagePlusCommand implements BdvPlaygroundActionComm
 
         List<Class<? extends Entity>> entSplit = new ArrayList<>();
 
-        for (String entity : entitiesSplit.split(",")) {
+        for (String entity : entities_split.split(",")) {
             String ent = entity.trim().toUpperCase();
             if ((!entityClasses.containsKey(ent))&&(ent!=null)&&(ent.trim()!="")){
                 System.err.println("Unrecognized entity class "+ent);
@@ -166,7 +166,7 @@ public class ExportToMultipleImagePlusCommand implements BdvPlaygroundActionComm
                         .get(sources.size(), maxZSlices, maxTimeFrames);
 
                 temporaryImageArray[sortedSacs.indexOf(sacKey)] =
-                        ExportToImagePlusCommand.computeImage(sources, task, range, name, level, parallelC, parallelZ, parallelT, export_mode);
+                        ExportToImagePlusCommand.computeImage(sources, task, range, name, level, parallel_c, parallel_z, parallel_t, export_mode);
 
             } catch (Exception e) {
                 logger.error("Invalid range "+e.getMessage());

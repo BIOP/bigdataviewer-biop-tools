@@ -20,44 +20,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
 
-import java.awt.*;
-import java.text.DecimalFormat;
-import java.time.Duration;
-import java.time.Instant;
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 public class ImagePlusGetter {
 
     private static final Logger logger = LoggerFactory.getLogger(ImagePlusGetter.class);
-
-    /*
-     * Value used in {@link ImagePlusGetter#getImagePlus(String, List, int, CZTRange, boolean)}
-     * in order to limit the amount of parallelization when acquiring an image
-     */
-    //public static int limitParallelJobs = 16;
-
-    /* Helper method that determines the number of lines present in IJ log
-     */
-    public static int countLines(String str) {
-        if(str == null || str.isEmpty())
-        {
-            return 0;
-        }
-        int lines = 1;
-        int pos = 0;
-        while ((pos = str.indexOf("\n", pos) + 1) != 0) {
-            lines++;
-        }
-        return lines-1;
-    }
-
-    // To avoid updating multiple times in parallel the IJ log window, still unsufficient to avoid little errors in the display
-    public static final Object IJLogLock = new Object();
 
     /**
      * Method which returns a virtual {@link ImagePlus} out of a list
@@ -316,90 +287,6 @@ public class ImagePlusGetter {
         int maxTimeFrames = SourceAndConverterHelper.getMaxTimepoint(sources.get(0));
         int maxZSlices = (int) sources.get(0).getSpimSource().getSource(t,resolutionLevel).dimension(2);
         return new CZTRange.Builder().get(sources.size(),maxZSlices, maxTimeFrames);
-    }
-
-    /**
-     * Simple class which monitors an amount of bytes processed (read / write / analyzed...)
-     * and outputs a message every time it is updated. This monitor updates itself every
-     * time step fixed in ms.
-     *
-     * A new thread is created for every monitor. The thread is stopped when the task is complete.
-     * as fixed by the boolean supplier.
-     *
-     * TODO : fix busy waiting
-     */
-    public static class BytesMonitor {
-        final Supplier<Long> bytesRead;
-        final Supplier<Boolean> complete;
-        final int timeMs;
-        final long totalBytes;
-        final String taskName;
-        final Consumer<String> monitorLogger;
-        final boolean isVirtual;
-
-        public BytesMonitor(String taskName,
-                            Consumer<String> logger,
-                            Supplier<Long> bytesRead,
-                            Supplier<Boolean> complete,
-                            long totalBytes,
-                            int timeMs,
-                            boolean isVirtual) {
-            this.isVirtual = isVirtual;
-            this.taskName = taskName;
-            this.bytesRead = bytesRead;
-            this.complete = complete;
-            this.monitorLogger = logger;
-            this.totalBytes = totalBytes;
-            this.timeMs = Math.max(timeMs, 10);
-            new Thread(this::run).start();
-        }
-
-        public void run() {
-            DecimalFormat df = new DecimalFormat("#0.0");
-            double previousBytesRead = 0;
-            Instant jobStart = Instant.now();
-            double totalTime = 0;
-            double totalMb = totalBytes / (1024.0*1024);
-            while (!complete.get()) {
-                try {
-                    Thread.sleep(timeMs);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                totalTime = Duration.between(jobStart, Instant.now()).getSeconds();//counterStep*timeMs/1000.0;
-                long currentBytesRead = bytesRead.get();
-                if (currentBytesRead>previousBytesRead) {
-                    previousBytesRead = currentBytesRead;
-                    double currentRatio = (double) currentBytesRead / (double) totalBytes;
-                    double estimatedJobTimeInS = totalTime/currentRatio;
-                    double mbPerS = (double) currentBytesRead / (double) (1024*1024) / totalTime;
-                    int numberOfEquals = (int) (20*currentRatio);
-                    StringBuilder bar = new StringBuilder();
-                    for (int i=0;i<numberOfEquals;i++) {
-                        bar.append("=");
-                    }
-                    for(int i=numberOfEquals;i<20;i++) {
-                        bar.append("  ");
-                    }
-                    if (isVirtual) {
-                        monitorLogger.accept(taskName+": ["+bar+"] "+(int) (currentRatio*100)+"% Loaded ( "+df.format((double)currentBytesRead/(double)(1024*1024))+"/ "+df.format(totalMb)+" Mb)");
-                    } else if (estimatedJobTimeInS>10) {
-                        monitorLogger.accept(taskName+": ["+bar+"] "+(int) (currentRatio*100)+"% Loaded ["+(int)(totalTime)+" s - Remaining = "+(int)(estimatedJobTimeInS - totalTime)+" s] ("+df.format(mbPerS)+" Mb / s)");
-                    } else {
-                        monitorLogger.accept(taskName+": ["+bar+"] "+(int) (currentRatio*100)+"% Loaded ["+(int)(totalTime)+" s] ("+df.format(mbPerS)+" Mb / s)");
-                    }
-                }
-                if ((currentBytesRead == 0)&&(totalTime>10)&&(!isVirtual)) {
-                    monitorLogger.accept(taskName+": No progress in 10 seconds.");
-                }
-            }
-            if (isVirtual) {
-                monitorLogger.accept(taskName + ": [====================] (" + df.format(totalMb) + " Mb)");
-            } else {
-                monitorLogger.accept(taskName + ": [====================] Completed in ~ " + (int) (totalTime) + " s] (" + df.format(totalMb) + " Mb)");
-            }
-            logger.debug("Exit monitor thread of task "+taskName);
-        }
     }
 
     public static <T extends NumericType<T> & NativeType<T>> List<SourceAndConverter<T>> sanitizeList(List<SourceAndConverter<?>> sources) {
