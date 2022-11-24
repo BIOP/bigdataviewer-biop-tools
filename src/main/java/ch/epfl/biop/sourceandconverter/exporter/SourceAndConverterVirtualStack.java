@@ -1,6 +1,7 @@
 package ch.epfl.biop.sourceandconverter.exporter;
 
 import bdv.viewer.SourceAndConverter;
+import ch.epfl.biop.bdv.gui.card.CardHelper;
 import ij.ImagePlus;
 import ij.VirtualStack;
 import ij.process.ByteProcessor;
