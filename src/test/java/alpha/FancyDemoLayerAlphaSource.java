@@ -165,7 +165,7 @@ public class FancyDemoLayerAlphaSource {
 
         JButton swapLayers = new JButton("Swap layers");
         swapLayers.addActionListener(l -> {
-            sourceToLayer.keySet().stream().forEach((sac) -> {
+            sourceToLayer.keySet().forEach((sac) -> {
                 int id = sourceToLayer.get(sac).getId();
                 if ((id==1)||(id==2)) {
                     sourceToLayer.put(sac, layers.get(1 - (id - 1) + 1));

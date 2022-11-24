@@ -103,7 +103,7 @@ public class WeightedVoronoiSourceGetter implements Runnable, Supplier<SourceAnd
             // Image copied to avoid computing it on the fly
             // https://github.com/imglib/imglib2-algorithm/blob/47cd6ed5c97cca4b316c92d4d3260086a335544d/src/main/java/net/imglib2/algorithm/util/Grids.java#L221 used for parallel copy
 
-            Grids.collectAllContainedIntervals(imgTestSize, new int[]{64, 64, 64}).stream().forEach(blockinterval -> {
+            Grids.collectAllContainedIntervals(imgTestSize, new int[]{64, 64, 64}).forEach(blockinterval -> {
                 copy(labelImage, Views.interval(labelImageCopy, blockinterval));
             });
 

@@ -209,12 +209,12 @@ public class Rot3DReSampleCommand<T extends NumericType<T> & NativeType<T>> impl
 
         List<SourceAndConverter<T>> reoriented_sources = sacs.stream().map(source -> sampler.apply((SourceAndConverter<T>) source)).collect(Collectors.toList());
 
-        Map<SourceAndConverter<T>, ConverterSetup> mapCS = new HashMap<>();
+        /*Map<SourceAndConverter<T>, ConverterSetup> mapCS = new HashMap<>();
         reoriented_sources.forEach(sac -> mapCS.put(sac,
                     SourceAndConverterServices
                         .getSourceAndConverterService()
                         .getConverterSetup(sac)
-                ));
+                ));*/
 
         Map<SourceAndConverter<T>, Integer> mapMipmap = new HashMap<>();
         reoriented_sources.forEach(sac -> mapMipmap.put(sac, 0)); // Only one resolution exists

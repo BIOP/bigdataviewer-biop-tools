@@ -144,12 +144,12 @@ public class  ReorderedImageLoader<T extends AbstractViewerSetupImgLoader & Mult
             BasicSetupImgLoader setupImgLoader = originImageLoader.getSetupImgLoader(originViewId.getViewSetupId());
 
             if (!(setupImgLoader instanceof AbstractViewerSetupImgLoader)) {
-                logger.error("Origin setup loader is not of instance AbstractViewerSetupImgLoader, reoredering is not supported");
+                logger.error("Origin setup loader is not of instance AbstractViewerSetupImgLoader, reordering is not supported");
                 throw new UnsupportedOperationException("Unsupported setup loader class "+setupImgLoader.getClass());
             }
 
             if (!(setupImgLoader instanceof MultiResolutionSetupImgLoader)) {
-                logger.error("Origin setup loader is not of instance MultiResolutionSetupImgLoader, reoredering is not supported");
+                logger.error("Origin setup loader is not of instance MultiResolutionSetupImgLoader, reordering is not supported");
                 throw new UnsupportedOperationException("Unsupported setup loader class "+setupImgLoader.getClass());
             }
 

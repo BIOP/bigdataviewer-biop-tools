@@ -35,14 +35,12 @@ public class AffineTransformCreatorCommand implements Command {
         // Test if the String is written using AffineTransform3D toString() method
         String[] testIfParenthesis = stringMatrix.split("[\\(\\)]+");// right of left parenthesis
 
-        if (testIfParenthesis!=null) {
-            for (String str : testIfParenthesis) {
-                System.out.println(str);
-            }
+        for (String str : testIfParenthesis) {
+            System.out.println(str);
+        }
 
-            if (testIfParenthesis.length > 1) {
-                inputString = testIfParenthesis[1] + ",0,0,0,1";
-            }
+        if (testIfParenthesis.length > 1) {
+            inputString = testIfParenthesis[1] + ",0,0,0,1";
         }
 
         String[] strNumber = inputString.split(",");

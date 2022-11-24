@@ -155,7 +155,7 @@ public class ExportEllipticProjection implements Command {
         SourceAndConverter<?> model = createModelSource();
 
         boolean cacheImage = false;
-        boolean virtual = false;
+        boolean virtual;
         switch (export_mode) {
             case "Normal":
                 virtual = false;
@@ -304,7 +304,7 @@ public class ExportEllipticProjection implements Command {
             validateMessage+="<font color=\"red\">"+e.getMessage()+"</font><br></html>";
             return;
         }
-        long nBytesPerPlane = imageWidth*imageHeight*2; // let's assume 16 bits
+        long nBytesPerPlane = (long) imageWidth *imageHeight*2; // let's assume 16 bits
         int nc = range.getRangeC().size();
         int nz = range.getRangeZ().size();
         int nt = range.getRangeT().size();

@@ -24,7 +24,7 @@ public class Elliptic3DTransformerCommand implements BdvPlaygroundActionCommand 
     public void run() {
 
         Elliptic3DTransformer et = new Elliptic3DTransformer(null, e3Dt);
-        Arrays.asList(sacs_in).stream().map(et::apply).collect(Collectors.toList());
+        Arrays.stream(sacs_in).map(et::apply);//.collect(Collectors.toList());
 
     }
 }

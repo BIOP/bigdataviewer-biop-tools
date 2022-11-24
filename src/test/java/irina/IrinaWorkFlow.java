@@ -132,8 +132,8 @@ public class IrinaWorkFlow {
 
         SourceAndConverter uncroppedModel = physicalToPixel.apply(sources.get(0));
 
-        long nPx = uncroppedModel.getSpimSource().getSource(0,0).max(0)-2*cropX;
-        long nPy = uncroppedModel.getSpimSource().getSource(0,0).max(1)-2*cropY;
+        long nPx = uncroppedModel.getSpimSource().getSource(0,0).max(0)- 2L *cropX;
+        long nPy = uncroppedModel.getSpimSource().getSource(0,0).max(1)- 2L *cropY;
         long nPz = uncroppedModel.getSpimSource().getSource(0,0).max(2)+1; // Humpf
         AffineTransform3D location = new AffineTransform3D();
         location.translate(cropX, cropY, 0);

@@ -337,7 +337,7 @@ public class PointsSelectorBehaviour implements GraphicalHandleListener {
         ptToGraphicalHandle.values().forEach(gh -> gh.mouseMoved(e));
     }
 
-    public class DefaultCircularHandle extends CircleGraphicalHandle {
+    public static class DefaultCircularHandle extends CircleGraphicalHandle {
 
         public DefaultCircularHandle(Supplier<RealPoint> globalCoord,
                                      final ViewerState vState,

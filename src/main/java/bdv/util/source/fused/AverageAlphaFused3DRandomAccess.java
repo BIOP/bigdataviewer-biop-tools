@@ -18,6 +18,7 @@ public class AverageAlphaFused3DRandomAccess<T extends NumericType<T>> implement
     final protected T pixel;
     final FloatType alpha;
 
+    @SuppressWarnings("CopyConstructorMissesField") // That's the point!
     public AverageAlphaFused3DRandomAccess(AverageAlphaFused3DRandomAccess<T> randomAccess) {
         this.nRandomAccesses = randomAccess.nRandomAccesses;
         ra_origins = new RandomAccess[nRandomAccesses];

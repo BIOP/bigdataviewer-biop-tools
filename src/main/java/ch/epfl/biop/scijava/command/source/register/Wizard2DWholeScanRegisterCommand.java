@@ -658,7 +658,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
 
     RealInterval getBoundingBox() {
         SourceAndConverter[] sources = new SourceAndConverter[]{moving, fixed};
-        List<RealInterval> intervalList = Arrays.asList(sources).stream().map((sourceAndConverter) -> {
+        List<RealInterval> intervalList = Arrays.stream(sources).map((sourceAndConverter) -> {
             Interval interval = sourceAndConverter.getSpimSource().getSource(0, 0);
             AffineTransform3D sourceTransform = new AffineTransform3D();
             sourceAndConverter.getSpimSource().getSourceTransform(0, 0, sourceTransform);

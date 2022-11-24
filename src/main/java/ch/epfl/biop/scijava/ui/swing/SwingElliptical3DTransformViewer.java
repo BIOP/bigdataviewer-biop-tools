@@ -90,8 +90,7 @@ public class SwingElliptical3DTransformViewer extends
         return panel;
     }
 
-
-    class DoubleValueSwingSetLog {
+    static class DoubleValueSwingSetLog {
         JSlider sliderLog;
         JTextField valueTF;
         JLabel labelName;

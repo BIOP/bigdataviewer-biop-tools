@@ -97,7 +97,7 @@ public class ExportToMultipleImagePlusCommand implements BdvPlaygroundActionComm
 
         for (String entity : entities_split.split(",")) {
             String ent = entity.trim().toUpperCase();
-            if ((!entityClasses.containsKey(ent))&&(ent!=null)&&(ent.trim()!="")){
+            if ((!entityClasses.containsKey(ent))&&(!ent.trim().equals(""))){
                 System.err.println("Unrecognized entity class "+ent);
             } else {
                 System.out.println("Splitting by "+ent);
@@ -173,9 +173,7 @@ public class ExportToMultipleImagePlusCommand implements BdvPlaygroundActionComm
             }
         });
 
-        for(ImagePlus imp: temporaryImageArray) {
-            imps_out.add(imp);
-        }
+        imps_out.addAll(Arrays.asList(temporaryImageArray));
 
         sacs = null; // free mem ?
     }

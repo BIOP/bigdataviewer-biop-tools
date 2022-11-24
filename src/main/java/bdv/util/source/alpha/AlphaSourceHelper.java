@@ -4,6 +4,7 @@ import bdv.img.WarpedSource;
 import bdv.tools.transformation.TransformedSource;
 import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
+import com.amazonaws.services.kms.model.UnsupportedOperationException;
 import net.imglib2.type.numeric.real.FloatType;
 import sc.fiji.bdvpg.services.ISourceAndConverterService;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
@@ -29,8 +30,7 @@ public class AlphaSourceHelper {
     public static synchronized SourceAndConverter<FloatType> getOrBuildAlphaSource(Source source) {
 
         if (source instanceof IAlphaSource) {
-            System.err.println("Warning : you can't make an alpha source out of an alpha source "+source.getName());
-            return null;
+            throw new UnsupportedOperationException("Error : you can't make an alpha source out of an alpha source "+source.getName());
         }
         ISourceAndConverterService sacService = SourceAndConverterServices.getSourceAndConverterService();
 

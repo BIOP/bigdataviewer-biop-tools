@@ -211,7 +211,7 @@ public class SliceSourceCommand implements BdvPlaygroundActionCommand {
     public static java.util.List<SourceAndConverter<?>> sortDefault(Collection<SourceAndConverter<?>> sacs) {
         List<SourceAndConverter<?>> sortedList = new ArrayList<>(sacs.size());
         sortedList.addAll(sacs);
-        Set<AbstractSpimData> spimData = new HashSet<>();
+        /*Set<AbstractSpimData> spimData = new HashSet<>();
         // Gets all SpimdataInfo
         sacs.forEach(sac -> {
             if (SourceAndConverterServices
@@ -222,7 +222,7 @@ public class SliceSourceCommand implements BdvPlaygroundActionCommand {
                         .getMetadata(sac, SourceAndConverterService.SPIM_DATA_INFO)));
                 spimData.add(sdi.asd);
             }
-        });
+        });*/
 
         Comparator<SourceAndConverter> sacComparator = (s1, s2) -> {
             // Those who do not belong to spimdata are last:

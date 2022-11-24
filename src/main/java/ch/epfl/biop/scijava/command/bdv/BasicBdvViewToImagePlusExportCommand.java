@@ -147,7 +147,7 @@ public class BasicBdvViewToImagePlusExportCommand<T extends RealType<T>> impleme
         SourceAndConverter<?> model = createModelSource();
 
         boolean cacheImage = false;
-        boolean virtual = false;
+        boolean virtual;
         switch (export_mode) {
             case "Normal":
                 virtual = false;
@@ -165,7 +165,6 @@ public class BasicBdvViewToImagePlusExportCommand<T extends RealType<T>> impleme
 
         boolean cacheImageFinal = cacheImage;
         boolean virtualFinal = virtual;
-
 
         images = new ArrayList<>();
 
@@ -195,7 +194,9 @@ public class BasicBdvViewToImagePlusExportCommand<T extends RealType<T>> impleme
                                         .sources(new SourceAndConverter[] {source})
                                         .get());
                         } catch (Exception e) {
-                            task.cancel(e.getMessage());
+                            if (task!=null) {
+                                task.cancel(e.getMessage());
+                            }
                             e.printStackTrace();
                         }
                         }

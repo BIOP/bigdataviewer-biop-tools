@@ -342,7 +342,7 @@ public class OpenOperettaDatasetCommand implements Command {
                 TreePath p = sourceService.getUI().getTreePathFromString(opm.getPlateName()+">Wells>"+wellName);
 
                 List<SourceAndConverter<?>> sources = sourceService.getUI().getSourceAndConvertersFromTreePath(p);
-                sources.stream().forEach(source -> new BrightnessAdjuster(source, min_display_value, max_display_value).run());
+                sources.forEach(source -> new BrightnessAdjuster(source, min_display_value, max_display_value).run());
                 List<SourceAndConverterAndTimeRange> sourceAndTime = sources.stream().map(source ->
                     new SourceAndConverterAndTimeRange(source,0,opm.getRange().getRangeT().size())
                 ).collect(Collectors.toList());

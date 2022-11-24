@@ -142,7 +142,7 @@ public class BdvViewToImagePlusExportCommand implements BdvPlaygroundActionComma
         SourceAndConverter<?> model = createModelSource();
 
         boolean cacheImage = false;
-        boolean virtual = false;
+        boolean virtual;
         switch (export_mode) {
             case "Normal":
                 virtual = false;

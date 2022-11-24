@@ -28,7 +28,7 @@ public class AlphaSerializableBdvOptions {
     /**
      * See do above. I'm writing this because CI does not pass if there are too many warnings
      */
-    public long targetRenderNanos = 30 * 1000000l;
+    public long targetRenderNanos = 30 * 1000000L;
 
     /**
      * See do above. I'm writing this because CI does not pass if there are too many warnings

@@ -245,7 +245,7 @@ public class RectangleSelectorOverlay extends BdvOverlay {
         viewer.requestRepaint(); // Overlay repaint
     }
 
-    public class SelectedOverlayStyle implements SourceSelectorOverlay.OverlayStyle {
+    public static class SelectedOverlayStyle implements SourceSelectorOverlay.OverlayStyle {
         Color backColor = new Color(0xF8E7A3);
 
         Color frontColor = new Color(0xC7F718);

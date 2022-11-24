@@ -28,7 +28,7 @@ public class SourcesRealTransformCommand implements BdvPlaygroundActionCommand {
     public void run() {
         SourceRealTransformer srt = new SourceRealTransformer(null, rt);
         sources_out =
-                Arrays.asList(sources_in).stream()
+                Arrays.stream(sources_in)
                 .map(srt::apply)
                 .collect(Collectors.toList())
                 .toArray(new SourceAndConverter[sources_in.length]);

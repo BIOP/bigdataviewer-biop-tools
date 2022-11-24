@@ -136,7 +136,7 @@ public class SourceHelper {
             int downscaleXY, int downscaleZ,
             String model_name) {
 
-        List<RealInterval> intervalList = Arrays.asList(sources).stream()
+        List<RealInterval> intervalList = Arrays.stream(sources)
                 .filter(sourceAndConverter -> sourceAndConverter.getSpimSource()!=null)
                 .filter(sourceAndConverter -> sourceAndConverter.getSpimSource().isPresent(timepoint))
                 .map(sourceAndConverter -> {
@@ -167,7 +167,6 @@ public class SourceHelper {
 
                     return new FinalRealInterval(new double[] {minX, minY, minZ}, new double[] {maxX, maxY, maxZ});
                 })
-                .filter(object -> object!=null)
                 .collect(Collectors.toList());
 
         RealInterval maxInterval = intervalList.stream()

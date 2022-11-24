@@ -62,7 +62,7 @@ public class DatasetHelper {
                 FileUtils.copyURLToFile(url, file_out, 10000, 10000);
                 System.out.println("Downloading and caching of "+url+" completed successfully ");
                 if (FilenameUtils.getExtension(file_out.getAbsolutePath()).equals(".vsi")) {
-                    // We need to download all the subfolders
+                    // We need to download all the subfolders TODO
                 }
                 return file_out;
             }

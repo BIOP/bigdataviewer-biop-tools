@@ -32,7 +32,7 @@ public class SourcesAffineTransformCommand implements BdvPlaygroundActionCommand
     @Override
     public void run() {
 
-        Arrays.asList(sources_in).stream().forEach(sac -> {
+        Arrays.stream(sources_in).forEach(sac -> {
             switch (mode) {
                 case "Mutate":
                     SourceTransformHelper.mutate(at3D, new SourceAndConverterAndTimeRange(sac, timePointBegin, timePointEnd));

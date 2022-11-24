@@ -27,8 +27,8 @@ public class BoxSelectorCommand implements Command {
 
     @Parameter(style = "format:0.#####E0")
     double xmin_ini = 1.2, xmax_ini = 0.8,
-           ymin_ini = -2.0*Math.PI, ymax_ini = +2.0*Math.PI,
-           zmin_ini = -4.0*Math.PI, zmax_ini = +4.0*Math.PI;
+           ymin_ini = -2.0*Math.PI, ymax_ini = 2.0*Math.PI,
+           zmin_ini = -4.0*Math.PI, zmax_ini = 4.0*Math.PI;
 
     @Parameter(type = ItemIO.OUTPUT)
     RealInterval interval;

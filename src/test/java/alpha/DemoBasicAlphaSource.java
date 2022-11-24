@@ -12,7 +12,7 @@ import net.imglib2.type.numeric.real.FloatType;
 import java.util.List;
 
 /**
- * Need to understand / solve {@link WeirdIssueAccumulatorIgnored} first ...
+ * Need to understand / solve no accumularor with single source first ...
  */
 
 public class DemoBasicAlphaSource {
