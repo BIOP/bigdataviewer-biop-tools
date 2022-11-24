@@ -1,6 +1,5 @@
-import ch.epfl.biop.bdv.img.legacy.bioformats.command.BioformatsBigdataviewerBridgeDatasetCommand;
 
-import ch.epfl.biop.bdv.img.legacy.qupath.command.QuPathProjectToBDVDatasetLegacyCommand;
+import ch.epfl.biop.bdv.img.qupath.command.CreateBdvDatasetQuPathCommand;
 import loci.common.DebugTools;
 import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;
@@ -15,9 +14,7 @@ public class DemoOpenQuPathProject {
         final ImageJ ij = new ImageJ();
         ij.ui().showUI();
         DebugTools.enableLogging("INFO");
-        ij.command().run(QuPathProjectToBDVDatasetLegacyCommand.class, true,
-                BioformatsBigdataviewerBridgeDatasetCommand.getDefaultParameters()
-        ).get();
+        ij.command().run(CreateBdvDatasetQuPathCommand.class, true).get();
 
     }
 }

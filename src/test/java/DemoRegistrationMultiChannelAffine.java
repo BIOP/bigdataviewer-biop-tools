@@ -1,32 +1,22 @@
 import bdv.util.BdvHandle;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.bdv.img.legacy.bioformats.BioFormatsBdvOpener;
-import ch.epfl.biop.bdv.img.legacy.bioformats.BioFormatsToSpimData;
-import ch.epfl.biop.bdv.img.legacy.bioformats.command.BioformatsBigdataviewerBridgeDatasetCommand;
+import ch.epfl.biop.bdv.img.OpenersToSpimData;
+import ch.epfl.biop.bdv.img.opener.OpenerSettings;
 import ch.epfl.biop.scijava.command.source.register.Elastix2DAffineRegisterCommand;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imagej.ImageJ;
-import net.imagej.patcher.LegacyInjector;
-import ome.units.UNITS;
-import ome.units.quantity.Length;
-import org.scijava.command.CommandModule;
 import org.scijava.command.CommandService;
+import sc.fiji.bdvpg.bdv.navigate.ViewerTransformAdjuster;
 import sc.fiji.bdvpg.scijava.services.SourceAndConverterBdvDisplayService;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
 
 import java.util.List;
-import java.util.concurrent.Future;
-
 
 public class DemoRegistrationMultiChannelAffine {
 
-    static {
-        LegacyInjector.preinit();
-    }
+    static SourceAndConverter<?> fixedSource;
 
-    static SourceAndConverter fixedSource;
-
-    static SourceAndConverter movingSource;
+    static SourceAndConverter<?> movingSource;
 
     static final ImageJ ij = new ImageJ();
 
@@ -34,26 +24,20 @@ public class DemoRegistrationMultiChannelAffine {
 
         ij.ui().showUI();
 
-        BioFormatsBdvOpener opener =
-                new BioformatsBigdataviewerBridgeDatasetCommand()
-                        .getOpener("src/test/resources/multichanreg/Atlas.tif");
+        OpenerSettings atlasSettings = OpenerSettings.BioFormats()
+                .location("src/test/resources/multichanreg/Atlas.tif")
+                .millimeter().setSerie(0);
 
-        AbstractSpimData atlasDataset = BioFormatsToSpimData.getSpimData(
-                opener
-                        .voxSizeReferenceFrameLength(new Length(1, UNITS.MILLIMETER))
-                        .positionReferenceFrameLength(new Length(1,UNITS.METER)));
+        AbstractSpimData<?> atlasDataset = OpenersToSpimData.getSpimData(atlasSettings);
 
         SourceAndConverterServices.getSourceAndConverterService().register(atlasDataset);
         List<SourceAndConverter<?>> atlasSources = SourceAndConverterServices.getSourceAndConverterService().getSourceAndConverterFromSpimdata(atlasDataset);
 
-        opener =
-                new BioformatsBigdataviewerBridgeDatasetCommand()
-                        .getOpener("src/test/resources/multichanreg/Slice.tif");
+        OpenerSettings sliceSettings = OpenerSettings.BioFormats()
+                .location("src/test/resources/multichanreg/Slice.tif")
+                .millimeter().setSerie(0);
 
-        AbstractSpimData sliceDataset = BioFormatsToSpimData.getSpimData(
-                opener
-                        .voxSizeReferenceFrameLength(new Length(1, UNITS.MILLIMETER))
-                        .positionReferenceFrameLength(new Length(1,UNITS.METER)));
+        AbstractSpimData<?> sliceDataset = OpenersToSpimData.getSpimData(sliceSettings);
 
         SourceAndConverterServices.getSourceAndConverterService().register(sliceDataset);
         List<SourceAndConverter<?>> sliceSources = SourceAndConverterServices.getSourceAndConverterService().getSourceAndConverterFromSpimdata(sliceDataset);
@@ -63,27 +47,29 @@ public class DemoRegistrationMultiChannelAffine {
         displayService.show(bdvh, atlasSources.toArray(new SourceAndConverter[0]));
         displayService.show(bdvh, sliceSources.toArray(new SourceAndConverter[0]));
 
+        new ViewerTransformAdjuster(bdvh, atlasSources.toArray(new SourceAndConverter[0])).run();
+
         fixedSource = atlasSources.get(0);
         movingSource = sliceSources.get(0);
 
-        Future<CommandModule> task = ij.context()
-                .getService(CommandService.class)
-                .run(Elastix2DAffineRegisterCommand.class, true,
-                        "sacs_fixed", atlasSources.toArray(new SourceAndConverter[0]),//new SourceAndConverter[]{fixedSource},//atlasSources.toArray(new SourceAndConverter[0]),//new SourceAndConverter[]{fixedSource},
-                        "tpFixed", 0,
-                        "levelFixedSource", 0,
-                        "sacs_moving", sliceSources.toArray(new SourceAndConverter[0]),//new SourceAndConverter[]{movingSource},
-                        "tpMoving", 0,
-                        "levelMovingSource", 0,
-                        "pxSizeInCurrentUnit", 0.02,
-                        "interpolate", false,
-                        "showImagePlusRegistrationResult", true,
-                        "px", 0,
-                        "py", 0,
-                        "pz", 0,
-                        "sx", 12,
-                        "sy", 9
-                );
+        ij.context()
+            .getService(CommandService.class)
+            .run(Elastix2DAffineRegisterCommand.class, true,
+                    "sacs_fixed", atlasSources.toArray(new SourceAndConverter[0]),
+                    "tpFixed", 0,
+                    "levelFixedSource", 0,
+                    "sacs_moving", sliceSources.toArray(new SourceAndConverter[0]),
+                    "tpMoving", 0,
+                    "levelMovingSource", 0,
+                    "pxSizeInCurrentUnit", 0.02,
+                    "interpolate", false,
+                    "showImagePlusRegistrationResult", true,
+                    "px", 0,
+                    "py", 0,
+                    "pz", 0,
+                    "sx", 12,
+                    "sy", 9
+            );
     }
 
 }
