@@ -37,11 +37,14 @@ public class QuPathBdvHelper {
     }
 
     /**
+     * Deprecated : Use getQuPathEntry instead
+     *
      * Returns the QuPathEntity from a source directly linked to a dataset generated
      * from a qupath project. Returns null is there's not any
      * @param source source which should be linked to q QuPath dataset
      * @return its corresponding {@link QuPathEntryEntity}
      */
+    @Deprecated
     public static QuPathEntryEntity getQuPathEntityFromSource(SourceAndConverter source) {
 
         if (SourceAndConverterServices.getSourceAndConverterService()

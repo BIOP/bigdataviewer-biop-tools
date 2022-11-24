@@ -63,7 +63,7 @@ public class SourceAndConverterVirtualStack<T extends NumericType<T> & NativeTyp
     final AtomicLong bytesCounter;
     final boolean cache;
     final int totalPlanes;
-    private final int nChannels, nZSlices, nFrames;
+    //private final int nChannels, nZSlices, nFrames;
     final Task task;
     private final long totalBytes;
 
@@ -120,9 +120,9 @@ public class SourceAndConverterVirtualStack<T extends NumericType<T> & NativeTyp
         totalPlanes = (int) range.getTotalPlanes();
         totalBytes = (long) totalPlanes * nBytesPerProcessor;
 
-        nChannels = range.getRangeC().size();
+        /*nChannels = range.getRangeC().size();
         nFrames = range.getRangeT().size();
-        nZSlices = range.getRangeZ().size();
+        nZSlices = range.getRangeZ().size();*/
 
         /*if ((int) raiModel.dimension(2)!=nZSlices) {
             logger.error("Mismatch! nSlices = "+nZSlices+" rai Z dimension = "+raiModel.dimension(2));

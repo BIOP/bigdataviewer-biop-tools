@@ -1,8 +1,11 @@
 package ch.epfl.biop.scijava.command.source;
 
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.bdv.img.legacy.bioformats.entity.FileIndex;
-import ch.epfl.biop.bdv.img.legacy.bioformats.entity.SeriesNumber;
+import ch.epfl.biop.bdv.img.bioformats.entity.FileName;
+import ch.epfl.biop.bdv.img.bioformats.entity.SeriesIndex;
+import ch.epfl.biop.bdv.img.entity.ImageName;
+import ch.epfl.biop.bdv.img.omero.entity.OmeroHostId;
+import ch.epfl.biop.bdv.img.opener.OpenerHelper;
 import ch.epfl.biop.scijava.command.bdv.OverviewerCommand;
 import ch.epfl.biop.sourceandconverter.exporter.CZTRange;
 import ij.ImagePlus;
@@ -53,13 +56,13 @@ public class ExportToMultipleImagePlusCommand implements BdvPlaygroundActionComm
     String range_frames = "";
 
     @Parameter( label = "Export mode", choices = {"Normal", "Virtual", "Virtual no-cache"}, required = false )
-    private String export_mode = "Non virtual";
+    String export_mode = "Non virtual";
 
     @Parameter( label = "Monitor loaded data")
-    private Boolean monitor = false;
+    Boolean monitor = false;
 
     @Parameter( label = "Open images in parallel")
-    private Boolean parallel = false;
+    Boolean parallel = false;
 
     @Parameter( label = "Acquire channels in parallel (Normal only)", required = false)
     Boolean parallel_c = false;
@@ -70,10 +73,10 @@ public class ExportToMultipleImagePlusCommand implements BdvPlaygroundActionComm
     @Parameter( label = "Acquire timepoints in parallel (Normal only)", required = false)
     Boolean parallel_t = false;
 
-    @Parameter(label = "Split by dataset entities, comma separated (channel, fileseries)")
+    @Parameter(label = "Split by dataset entities, comma separated (channel, imagename)")
     String entities_split = "";
 
-    Map<String, Class<? extends Entity>> entityClasses = new HashMap<>();
+    Map<String, Class<? extends Entity>> entityClasses = OpenerHelper.getEntities();;
 
     @Parameter(type = ItemIO.OUTPUT)
     public List<ImagePlus> imps_out = new ArrayList<>();
@@ -86,12 +89,6 @@ public class ExportToMultipleImagePlusCommand implements BdvPlaygroundActionComm
 
     @Override
     public void run() {
-
-        entityClasses.put("TILE", Tile.class);
-        entityClasses.put("ILLUMINATION", Illumination.class);
-        entityClasses.put("ANGLE", Angle.class);
-        entityClasses.put("FILE", FileIndex.class);
-        entityClasses.put("SERIES", SeriesNumber.class);
 
         List<Class<? extends Entity>> entSplit = new ArrayList<>();
 

@@ -31,6 +31,6 @@ public class CardHelper {
 
     public static class CardState {
         boolean iniSplitPanelState;
-        Map<String, Boolean> iniCardState = new HashMap<>();
+        final Map<String, Boolean> iniCardState = new HashMap<>();
     }
 }

@@ -126,7 +126,7 @@ public class SwingElliptical3DTransformViewer extends
                     valueOld=d;
                 } catch (Exception exception) {
                     valueTF.setText(Double.toString(valueOld));
-                };
+                }
             });
 
             labelName = new JLabel();

@@ -88,10 +88,10 @@ public class BasicBdvViewToImagePlusExportCommand<T extends RealType<T>> impleme
     String range = "You can use commas or colons to separate ranges. eg. '0:10' or '0,2,4,6' ";
 
     @Parameter( label = "Selected Timepoints. Leave blank for all", required = false )
-    private String selected_timepoints_str = "";
+    String selected_timepoints_str = "";
 
     @Parameter( label = "Export mode", choices = {"Normal", "Virtual", "Virtual no-cache"}, required = false )
-    private String export_mode = "Non virtual";
+    String export_mode = "Non virtual";
 
     @Parameter( label = "Acquire channels in parallel (Normal only)", required = false)
     Boolean parallelC = false;

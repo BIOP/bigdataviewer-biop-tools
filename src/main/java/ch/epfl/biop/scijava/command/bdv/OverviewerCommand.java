@@ -3,8 +3,13 @@ package ch.epfl.biop.scijava.command.bdv;
 import bdv.tools.brightness.ConverterSetup;
 import bdv.util.BdvHandle;
 import bdv.viewer.SourceAndConverter;
+import ch.epfl.biop.bdv.img.bioformats.entity.FileName;
+import ch.epfl.biop.bdv.img.bioformats.entity.SeriesIndex;
+import ch.epfl.biop.bdv.img.entity.ImageName;
 import ch.epfl.biop.bdv.img.legacy.bioformats.entity.FileIndex;
 import ch.epfl.biop.bdv.img.legacy.bioformats.entity.SeriesNumber;
+import ch.epfl.biop.bdv.img.omero.entity.OmeroHostId;
+import ch.epfl.biop.bdv.img.opener.OpenerHelper;
 import ch.epfl.biop.scijava.command.source.ExportToMultipleImagePlusCommand;
 import ch.epfl.biop.bdv.select.SourceSelectorBehaviour;
 import ch.epfl.biop.bdv.select.ToggleListener;
@@ -67,7 +72,7 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
     @Parameter(label = "Split by dataset entites, comma separated (channel, fileseries)")
     String entitiesSplit = "";
 
-    Map<String, Class<? extends Entity>> entityClasses = new HashMap<>();
+    Map<String, Class<? extends Entity>> entityClasses = OpenerHelper.getEntities();
 
     // sourceList;
 
@@ -82,12 +87,6 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
     @Override
     public void run() {
 
-        entityClasses.put("CHANNEL", Channel.class);
-        entityClasses.put("TILE", Tile.class);
-        entityClasses.put("ILLUMINATION", Illumination.class);
-        entityClasses.put("ANGLE", Angle.class);
-        entityClasses.put("FILE", FileIndex.class);
-        entityClasses.put("SERIES", SeriesNumber.class);
 
         List<Class<? extends Entity>> entSplit = new ArrayList<>();
 

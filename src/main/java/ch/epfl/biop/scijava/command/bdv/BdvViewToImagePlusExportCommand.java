@@ -104,10 +104,10 @@ public class BdvViewToImagePlusExportCommand implements BdvPlaygroundActionComma
      * Interpolate
      */
     @Parameter(label = "Interpolate")
-    public boolean interpolate = true;
+    boolean interpolate = true;
 
     @Parameter( label = "Export mode", choices = {"Normal", "Virtual", "Virtual no-cache"}, required = false )
-    private String export_mode = "Non virtual";
+    String export_mode = "Non virtual";
 
     @Parameter( label = "Acquire channels in parallel (Normal only)", required = false)
     Boolean parallelC = false;

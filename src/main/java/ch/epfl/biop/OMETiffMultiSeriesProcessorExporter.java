@@ -151,7 +151,7 @@ public class OMETiffMultiSeriesProcessorExporter {
                         // Restores bit depth
                         if (image.getBitDepth() != initialBitDepth) {
                             ImageConverter ic = new ImageConverter(image);
-                            ic.setDoScaling(false);
+                            ImageConverter.setDoScaling(false);
                             switch (initialBitDepth) {
                                 case 8:
                                     ic.convertToGray8();

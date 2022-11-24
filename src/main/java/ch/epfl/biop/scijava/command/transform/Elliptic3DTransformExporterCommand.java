@@ -50,7 +50,7 @@ public class Elliptic3DTransformExporterCommand implements BdvPlaygroundActionCo
     {
         if ( ! file.toString().endsWith( ".json" ) )
         {
-            this.file.renameTo( new File( this.file.toString() + ".json" ) );
+            this.file.renameTo( new File( this.file + ".json" ) );
         }
     }
 }

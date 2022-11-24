@@ -27,7 +27,7 @@ public class Elliptic3DTransformImporterCommand implements BdvPlaygroundActionCo
     File file;
 
     @Parameter(type = ItemIO.OUTPUT)
-    private Elliptical3DTransform e3Dt;
+    Elliptical3DTransform e3Dt;
 
     @Override
     public void run() {

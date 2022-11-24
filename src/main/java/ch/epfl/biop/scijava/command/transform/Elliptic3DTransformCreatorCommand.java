@@ -17,7 +17,7 @@ public class Elliptic3DTransformCreatorCommand implements BdvPlaygroundActionCom
             centerX, centerY, centerZ; // ellipse center
 
     @Parameter(type = ItemIO.OUTPUT)
-    private Elliptical3DTransform e3Dt;
+    Elliptical3DTransform e3Dt;
 
     @Parameter
     CommandService cs;

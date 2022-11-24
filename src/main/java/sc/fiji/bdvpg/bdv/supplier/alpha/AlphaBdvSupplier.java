@@ -57,7 +57,7 @@ public class AlphaBdvSupplier implements IBdvSupplier {
      * Sources Metadata (how to retrieve and when to create alpha sources) backed by a
      * {@link sc.fiji.bdvpg.scijava.services.SourceAndConverterService}
      */
-    public static LayerAlphaProjectorFactory.SourcesMetadata sourcesMetadata = new LayerAlphaProjectorFactory.SourcesMetadata() {
+    final public static LayerAlphaProjectorFactory.SourcesMetadata sourcesMetadata = new LayerAlphaProjectorFactory.SourcesMetadata() {
         @Override
         public boolean isAlphaSource(SourceAndConverter<?> sac) {
             return sac.getSpimSource() instanceof IAlphaSource;
@@ -113,12 +113,12 @@ public class AlphaBdvSupplier implements IBdvSupplier {
 
         final ViewerPanel viewer;
 
-        Map<SourceAndConverter<?>, SourceGroup> sourceToGroup = new ConcurrentHashMap<>();
-        Map<SourceGroup, SourceGroupLayer> groupToLayer = new ConcurrentHashMap<>();
+        final Map<SourceAndConverter<?>, SourceGroup> sourceToGroup = new ConcurrentHashMap<>();
+        final Map<SourceGroup, SourceGroupLayer> groupToLayer = new ConcurrentHashMap<>();
 
-        JPanel sliders;
+        final JPanel sliders;
 
-        JLabel[] sliderLabels;
+        final JLabel[] sliderLabels;
 
         public GroupLayerMetadata(ViewerPanel viewer, CardPanel panel) {
             this.viewer = viewer;

@@ -1,5 +1,6 @@
 import bdv.util.BdvHandle;
 import bdv.viewer.SourceAndConverter;
+import ch.epfl.biop.bdv.img.bioformats.command.CreateBdvDatasetBioFormatsCommand;
 import ch.epfl.biop.bdv.img.legacy.bioformats.command.BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand;
 import loci.common.DebugTools;
 import mpicbg.spim.data.generic.AbstractSpimData;
@@ -25,11 +26,11 @@ public class WholeSlideAlignement {
         DatasetHelper.getSampleVSIDataset();
         File f = new File (DatasetHelper.getSampleVSIDataset());
 
-        AbstractSpimData asd = (AbstractSpimData) ij.command().run(BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand.class,true,
+        AbstractSpimData asd = (AbstractSpimData) ij.command().run(CreateBdvDatasetBioFormatsCommand.class,true,
                 "files", new File[]{f},
-                       "splitRGBChannels", false,
+                       "splitrgbchannels", false,
                        "unit",  "MILLIMETER"
-                ).get().getOutput("spimData");
+                ).get().getOutput("spimdata");
 
         SourceAndConverter[] sources = SourceAndConverterServices
                 .getSourceAndConverterService()

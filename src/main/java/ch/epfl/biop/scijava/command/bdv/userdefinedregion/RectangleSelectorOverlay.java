@@ -57,9 +57,6 @@ public class RectangleSelectorOverlay extends BdvOverlay {
 
     RealPoint ptStartGlobal, ptEndGlobal;
 
-    private int canvasWidth;
-
-    private int canvasHeight;
 
     final RectangleSelectorBehaviour rsb;
 
@@ -219,12 +216,6 @@ public class RectangleSelectorOverlay extends BdvOverlay {
             g.drawLine((int) corners[5].getX(),(int)  corners[5].getY(), (int) corners[0].getX(),(int)  corners[0].getY());
         }
 
-    }
-
-    @Override
-    public void setCanvasSize( final int width, final int height ) {
-        this.canvasWidth = width;
-        this.canvasHeight = height;
     }
 
     boolean lastRectangleDrawn = false;

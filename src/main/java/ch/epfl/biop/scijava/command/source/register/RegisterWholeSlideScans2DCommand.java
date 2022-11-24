@@ -3,6 +3,7 @@ package ch.epfl.biop.scijava.command.source.register;
 import bdv.util.BigWarpHelper;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.bdv.img.legacy.bioformats.command.BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand;
+import ch.epfl.biop.bdv.img.qupath.command.CreateBdvDatasetQuPathCommand;
 import ij.IJ;
 import net.imagej.ImageJ;
 import net.imglib2.RealPoint;
@@ -202,7 +203,7 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
 
         CommandService cs = ij.command();
 
-        cs.run(BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand.class,true,
+        cs.run(CreateBdvDatasetQuPathCommand.class,true,
                 "unit","MILLIMETER",
                 "splitRGBChannels",false).get();
 
