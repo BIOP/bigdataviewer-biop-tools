@@ -38,7 +38,7 @@ public class BasicAlphaProjectorFactory implements AccumulateProjectorFactory<AR
                 final int numThreads,
                 final ExecutorService executorService )
         {
-            super( sourceProjectors, sources, target, numThreads, executorService );
+            super( sourceProjectors, sources, target );
         }
 
         @Override

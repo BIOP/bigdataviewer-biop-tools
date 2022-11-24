@@ -49,7 +49,7 @@ public class AlphaProjectorFactory implements AccumulateProjectorFactory<ARGBTyp
                 final ExecutorService executorService
                 )
         {
-            super( sourceProjectors, sourceScreenImages, target, numThreads, executorService );
+            super( sourceProjectors, sourceScreenImages, target );
             sources_alpha_index = new int[sources.size()];
             is_alpha = new boolean[sources.size()];
             has_alpha = new boolean[sources.size()];

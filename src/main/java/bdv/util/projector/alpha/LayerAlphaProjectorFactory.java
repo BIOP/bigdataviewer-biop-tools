@@ -168,7 +168,7 @@ public class LayerAlphaProjectorFactory implements AccumulateProjectorFactory<AR
                 final ExecutorService executorService
                 )
         {
-            super( sourceProjectors, sourceScreenImages, target, numThreads, executorService );
+            super( sourceProjectors, sourceScreenImages, target );
             source_linked_alpha_source_index = new int[sources.size()];
             source_is_alpha = new boolean[sources.size()];
             source_has_alpha = new boolean[sources.size()];

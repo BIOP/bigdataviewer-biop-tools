@@ -32,7 +32,7 @@ import java.util.function.Function;
 public class EasyExportEllipticProjection implements Command {
 
     @Parameter(label = "Select the elliptic transformed sources", callback = "validateMessage")
-    SourceAndConverter[] sacs;
+    SourceAndConverter<?>[] sacs;
 
     @Parameter(type = ItemIO.OUTPUT)
     public ImagePlus imp_out;
@@ -47,7 +47,7 @@ public class EasyExportEllipticProjection implements Command {
     public void run() {
         try {
 
-            List<SourceAndConverter> sources = sorter.apply(Arrays.asList(sacs));
+            List<SourceAndConverter<?>> sources = sorter.apply(Arrays.asList(sacs));
 
             BdvHandle bdvh = displayService.getNewBdv();
             displayService.show(bdvh, sources.toArray(new SourceAndConverter[0]));
@@ -114,6 +114,6 @@ public class EasyExportEllipticProjection implements Command {
         }
     }
 
-    public Function<Collection<SourceAndConverter>, List<SourceAndConverter>> sorter = sacslist -> SourceAndConverterHelper.sortDefaultNoGeneric(sacslist);
+    public Function<Collection<SourceAndConverter<?>>, List<SourceAndConverter<?>>> sorter = sacslist -> SourceAndConverterHelper.sortDefaultGeneric(sacslist);
 
 }

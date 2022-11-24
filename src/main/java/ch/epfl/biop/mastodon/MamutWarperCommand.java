@@ -15,7 +15,6 @@ import ij.gui.OvalRoi;
 import ij.plugin.frame.RoiManager;
 import net.imglib2.RealPoint;
 import net.imglib2.realtransform.AffineTransform3D;
-import org.checkerframework.checker.units.qual.A;
 import org.mastodon.graph.Edge;
 import org.mastodon.mamut.MamutAppModel;
 import org.mastodon.mamut.model.Model;

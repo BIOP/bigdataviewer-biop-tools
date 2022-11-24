@@ -51,7 +51,7 @@ public class ExportEllipticProjection implements Command {
     String exportSourcesMessage = "<html><h2>Exported Elliptic Transformed Source</h2></html>";
 
     @Parameter(label = "Select the elliptic transformed sources", callback = "validateMessage")
-    SourceAndConverter[] sacs;
+    SourceAndConverter<?>[] sacs;
 
     @Parameter(label = "Resolution level (0 = highest)")
     public int level;
@@ -144,7 +144,7 @@ public class ExportEllipticProjection implements Command {
     public void run() {
         validateMessage();
 
-        List<SourceAndConverter> sources = sorter.apply(Arrays.asList(sacs));
+        List<SourceAndConverter<?>> sources = sorter.apply(Arrays.asList(sacs));
 
         // At least one source
         if ((sacs==null)||(sacs.length==0)) {
@@ -333,7 +333,7 @@ public class ExportEllipticProjection implements Command {
         }
     }
 
-    public Function<Collection<SourceAndConverter>, List<SourceAndConverter>> sorter = sacslist -> SourceAndConverterHelper.sortDefaultNoGeneric(sacslist);
+    public Function<Collection<SourceAndConverter<?>>, List<SourceAndConverter<?>>> sorter = sacslist -> SourceAndConverterHelper.sortDefaultGeneric(sacslist);
 
     private SourceAndConverter<?> createModelSource() {
         // Origin is in fact the point 0,0,0 of the image

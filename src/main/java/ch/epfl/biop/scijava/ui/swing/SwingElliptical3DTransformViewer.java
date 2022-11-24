@@ -104,7 +104,7 @@ public class SwingElliptical3DTransformViewer extends
         public DoubleValueSwingSetLog(String name, Double v, Consumer<Double> valueChanged) {
             vChanged = valueChanged;
             sliderLog = new JSlider();
-            valueOld = new Double(0);
+            valueOld = (double) 0;
             valueOld = v;
             sliderLog.setMinimum(-100); // -100 -> /10
             sliderLog.setMaximum(100);  // +100 -> *10

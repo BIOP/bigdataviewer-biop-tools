@@ -37,7 +37,7 @@ import bdv.ViewerImgLoader;
 import bdv.ViewerSetupImgLoader;
 import bdv.cache.CacheControl;
 import bdv.img.cache.VolatileGlobalCellCache;
-import bdv.util.volatiles.SharedQueue;
+import bdv.cache.SharedQueue;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import mpicbg.spim.data.generic.sequence.AbstractSequenceDescription;
 import mpicbg.spim.data.generic.sequence.BasicImgLoader;
