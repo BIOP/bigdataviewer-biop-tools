@@ -4,6 +4,8 @@ import bdv.util.BigWarpHelper;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.ImagePlusToOMETiff;
 import ch.epfl.biop.OMETiffMultiSeriesProcessorExporter;
+import ch.epfl.biop.bdv.img.bioformats.command.CreateBdvDatasetBioFormatsCommand;
+import ch.epfl.biop.bdv.img.bioformats.entity.FileName;
 import ch.epfl.biop.bdv.img.legacy.bioformats.command.BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand;
 import ch.epfl.biop.bdv.img.legacy.bioformats.entity.FileIndex;
 import ch.epfl.biop.kheops.KheopsHelper;
@@ -173,7 +175,7 @@ public class IrinaWorkFlow {
     public static void saveToXmlBdvDataset(Context ctx, List<String> filePaths, String filePath) throws ExecutionException, InterruptedException {
         String datasetName = filePath;
         File[] files = filePaths.stream().map(path -> new File(path)).toArray(File[]::new);
-        AbstractSpimData spimdata = (AbstractSpimData) ctx.getService(CommandService.class).run(BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand.class,true,
+        AbstractSpimData spimdata = (AbstractSpimData) ctx.getService(CommandService.class).run(CreateBdvDatasetBioFormatsCommand.class,true,
                 "datasetname", datasetName,
                 "unit","MICROMETER",
                 "files", files,
@@ -223,7 +225,7 @@ public class IrinaWorkFlow {
         List<String> pathsOutput = new ArrayList<>();
         try {
             String datasetName = parentPath.getAbsolutePath();
-            AbstractSpimData spimdata = (AbstractSpimData) ctx.getService(CommandService.class).run(BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand.class,true,
+            AbstractSpimData spimdata = (AbstractSpimData) ctx.getService(CommandService.class).run(CreateBdvDatasetBioFormatsCommand.class,true,
                     "datasetname", datasetName,
                     "unit","MICROMETER",
                     "files", files,
@@ -235,7 +237,7 @@ public class IrinaWorkFlow {
                     sac_service.getUI()
                             .getRoot()
                             .child(datasetName)
-                            .child(FileIndex.class.getSimpleName());
+                            .child(FileName.class.getSimpleName());
 
             spimdata.setBasePath(parentPath);
 

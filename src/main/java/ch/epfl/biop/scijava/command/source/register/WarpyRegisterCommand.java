@@ -52,20 +52,20 @@ public class WarpyRegisterCommand implements Command {
 
             // Several checks before we even start the registration
             //  - Is there an associated qupath project ?
-            if (!QuPathBdvHelper.isSourceDirectlyLinkedToQuPath(fixed_source)) {
+            if (!QuPathBdvHelper.isSourceLinkedToQuPath(fixed_source)) {
                 logger.error("Error : the fixed source is not associated to a QuPath project");
                 IJ.error("Error : the fixed source is not associated to a QuPath project");
                 return;
             }
-            if (!QuPathBdvHelper.isSourceDirectlyLinkedToQuPath(moving_source)) {
+            if (!QuPathBdvHelper.isSourceLinkedToQuPath(moving_source)) {
                 logger.error("Error : the moving source is not associated to a QuPath project");
                 IJ.error("Error : the moving source is not associated to a QuPath project");
                 return;
             }
 
             // - Is it the same project ?
-            String qupathProjectMoving = QuPathBdvHelper.getQuPathProjectFile(moving_source).getAbsolutePath();
-            String qupathProjectFixed = QuPathBdvHelper.getQuPathProjectFile(fixed_source).getAbsolutePath();
+            String qupathProjectMoving = QuPathBdvHelper.getProjectFile(moving_source).getAbsolutePath();
+            String qupathProjectFixed = QuPathBdvHelper.getProjectFile(fixed_source).getAbsolutePath();
 
             if (!qupathProjectMoving.equals(qupathProjectFixed)) {
                 logger.error("Error : the moving source and the fixed source are not from the same qupath project");
@@ -134,13 +134,15 @@ public class WarpyRegisterCommand implements Command {
 
             String jsonMovingToFixed = ScijavaGsonHelper.getGson(scijavaCtx).toJson(transformSequence, RealTransform.class);
 
-            QuPathEntryEntity movingEntity = QuPathBdvHelper.getQuPathEntityFromSource(moving_source);
-            QuPathEntryEntity fixedEntity = QuPathBdvHelper.getQuPathEntityFromSource(fixed_source);
+            //QuPathEntryEntity movingEntity = QuPathBdvHelper.getQuPathEntityFromSource(moving_source);
+            //QuPathEntryEntity fixedEntity = QuPathBdvHelper.getQuPathEntityFromSource(fixed_source);
 
-            int moving_series_index = movingEntity.getId();
-            int fixed_series_index = fixedEntity.getId();
+            //int moving_series_index = movingEntity.getId();
+            //int fixed_series_index = fixedEntity.getId();
+            int moving_series_entry_id = QuPathBdvHelper.getEntryId(moving_source);
+            int fixed_series_entry_id = QuPathBdvHelper.getEntryId(fixed_source);
 
-            String movingToFixedLandmarkName = "transform_"+moving_series_index+"_"+fixed_series_index+".json";
+            String movingToFixedLandmarkName = "transform_"+moving_series_entry_id+"_"+fixed_series_entry_id+".json";
 
             File result = new File(moving_entry_folder.getAbsolutePath(), movingToFixedLandmarkName);
             FileUtils.writeStringToFile(result, jsonMovingToFixed, Charset.defaultCharset());
@@ -161,18 +163,18 @@ public class WarpyRegisterCommand implements Command {
         if (fixed_source==null) {
             message+="Please select a fixed source <br>";
         } else {
-            if (!QuPathBdvHelper.isSourceDirectlyLinkedToQuPath(fixed_source)) {
+            if (!QuPathBdvHelper.isSourceLinkedToQuPath(fixed_source)) {
                 message+="The fixed source is not originating from a QuPath project! <br>";
             } else {
                 if (moving_source == null) {
                     message += "Please select a moving source <br>";
                 } else {
-                    if (!QuPathBdvHelper.isSourceDirectlyLinkedToQuPath(moving_source)) {
+                    if (!QuPathBdvHelper.isSourceLinkedToQuPath(moving_source)) {
                         message += "The moving source is not originating from a QuPath project! <br>";
                     } else {
                         try {
-                            String qupathProjectMoving = QuPathBdvHelper.getQuPathProjectFile(moving_source).getAbsolutePath();
-                            String qupathProjectFixed = QuPathBdvHelper.getQuPathProjectFile(fixed_source).getAbsolutePath();
+                            String qupathProjectMoving = QuPathBdvHelper.getProjectFile(moving_source).getAbsolutePath();
+                            String qupathProjectFixed = QuPathBdvHelper.getProjectFile(fixed_source).getAbsolutePath();
                             if (!qupathProjectMoving.equals(qupathProjectFixed)) {
                                 message+="Error : the moving source and the fixed source are not from the same qupath project";
                             } else {
@@ -195,11 +197,11 @@ public class WarpyRegisterCommand implements Command {
                                     message += "<li>Moving: "+moving_source.getSpimSource().getName()+"</li>";
                                     message+="</ul>";
 
-                                    QuPathEntryEntity movingEntity = QuPathBdvHelper.getQuPathEntityFromSource(moving_source);
-                                    QuPathEntryEntity fixedEntity = QuPathBdvHelper.getQuPathEntityFromSource(fixed_source);
+                                    //QuPathEntryEntity movingEntity = QuPathBdvHelper.getQuPathEntityFromSource(moving_source);
+                                    //QuPathEntryEntity fixedEntity = QuPathBdvHelper.getQuPathEntityFromSource(fixed_source);
 
-                                    int moving_series_index = movingEntity.getId();
-                                    int fixed_series_index = fixedEntity.getId();
+                                    int moving_series_index = QuPathBdvHelper.getEntryId(moving_source);//movingEntity.getId();
+                                    int fixed_series_index = QuPathBdvHelper.getEntryId(fixed_source);//fixedEntity.getId();
 
                                     String movingToFixedLandmarkName = "transform_"+moving_series_index+"_"+fixed_series_index+".json";
 

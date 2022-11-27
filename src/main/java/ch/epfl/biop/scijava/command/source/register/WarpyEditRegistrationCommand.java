@@ -69,11 +69,11 @@ public class WarpyEditRegistrationCommand implements Command {
             File moving_entry_folder = QuPathBdvHelper.getDataEntryFolder(moving_sources[0]);
             File fixed_entry_folder = QuPathBdvHelper.getDataEntryFolder(fixed_sources[0]);
 
-            QuPathEntryEntity movingEntity = QuPathBdvHelper.getQuPathEntityFromSource(moving_sources[0]);
-            QuPathEntryEntity fixedEntity = QuPathBdvHelper.getQuPathEntityFromSource(fixed_sources[0]);
+            //QuPathEntryEntity movingEntity = QuPathBdvHelper.getQuPathEntityFromSource(moving_sources[0]);
+            //QuPathEntryEntity fixedEntity = QuPathBdvHelper.getQuPathEntityFromSource(fixed_sources[0]);
 
-            int moving_series_index = movingEntity.getId();
-            int fixed_series_index = fixedEntity.getId();
+            int moving_series_index = QuPathBdvHelper.getEntryId(moving_sources[0]);//movingEntity.getId();
+            int fixed_series_index = QuPathBdvHelper.getEntryId(fixed_sources[0]);//fixedEntity.getId();
 
             String movingToFixedLandmarkName = "transform_"+moving_series_index+"_"+fixed_series_index+".json";
 
@@ -285,18 +285,18 @@ public class WarpyEditRegistrationCommand implements Command {
         if (fixed_sources ==null) {
             message+="Please select a fixed source <br>";
         } else {
-            if (!QuPathBdvHelper.isSourceDirectlyLinkedToQuPath(fixed_sources[0])) {
+            if (!QuPathBdvHelper.isSourceLinkedToQuPath(fixed_sources[0])) {
                 message+="The fixed source is not originating from a QuPath project! <br>";
             } else {
                 if (moving_sources == null) {
                     message += "Please select a moving source <br>";
                 } else {
-                    if (!QuPathBdvHelper.isSourceDirectlyLinkedToQuPath(moving_sources[0])) {
+                    if (!QuPathBdvHelper.isSourceLinkedToQuPath(moving_sources[0])) {
                         message += "The moving source is not originating from a QuPath project! <br>";
                     } else {
                         try {
-                            String qupathProjectMoving = QuPathBdvHelper.getQuPathProjectFile(moving_sources[0]).getAbsolutePath();
-                            String qupathProjectFixed = QuPathBdvHelper.getQuPathProjectFile(fixed_sources[0]).getAbsolutePath();
+                            String qupathProjectMoving = QuPathBdvHelper.getProjectFile(moving_sources[0]).getAbsolutePath();
+                            String qupathProjectFixed = QuPathBdvHelper.getProjectFile(fixed_sources[0]).getAbsolutePath();
                             if (!qupathProjectMoving.equals(qupathProjectFixed)) {
                                 message+="Error : the moving source and the fixed source are not from the same qupath project";
                             } else {
@@ -319,11 +319,11 @@ public class WarpyEditRegistrationCommand implements Command {
                                     message += "<li>Moving: "+ moving_sources[0].getSpimSource().getName()+"</li>";
                                     message+="</ul>";
 
-                                    QuPathEntryEntity movingEntity = QuPathBdvHelper.getQuPathEntityFromSource(moving_sources[0]);
-                                    QuPathEntryEntity fixedEntity = QuPathBdvHelper.getQuPathEntityFromSource(fixed_sources[0]);
+                                    //QuPathEntryEntity movingEntity = QuPathBdvHelper.getQuPathEntityFromSource(moving_sources[0]);
+                                    //QuPathEntryEntity fixedEntity = QuPathBdvHelper.getQuPathEntityFromSource(fixed_sources[0]);
 
-                                    int moving_series_index = movingEntity.getId();
-                                    int fixed_series_index = fixedEntity.getId();
+                                    int moving_series_index = QuPathBdvHelper.getEntryId(moving_sources[0]);//movingEntity.getId();
+                                    int fixed_series_index = QuPathBdvHelper.getEntryId(fixed_sources[0]);//fixedEntity.getId();
 
                                     String movingToFixedLandmarkName = "transform_"+moving_series_index+"_"+fixed_series_index+".json";
 

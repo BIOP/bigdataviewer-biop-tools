@@ -29,7 +29,9 @@ import java.io.File;
  * Extra attributes like DisplaySettings break BigStitcher because the grouping is not correct...
  *
  */
-@Plugin(type = Command.class, menuPath = ScijavaBdvDefaults.RootMenu+"BDVDataset>Edit>Reorder BDV Dataset")
+@SuppressWarnings("deprecation")
+@Deprecated
+@Plugin(type = Command.class, menuPath = ScijavaBdvDefaults.RootMenu+"BDVDataset>Edit>(Legacy) Reorder BDV Dataset")
 public class ReorderDatasetCommand implements Command {
 
     @Parameter(label="Lif file to reorder", style = "open")

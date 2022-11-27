@@ -72,8 +72,10 @@ public class CircleGraphicalHandle extends GraphicalHandle{
         Integer[] pos = coords.get();
         double r = (double)(radius.get());
         if ((pos == null) || (pos[0] == null) || (pos[1] == null)) return false;
-        double d = (pos[0]-x)*(pos[0]-x)+(pos[1]-y)*(pos[1]-y);
-        return d<(r*r);
+        double dx = (double)pos[0]-(double)x;
+        double dy = (double)pos[1]-(double)y;
+        double d2 = dx*dx+dy*dy;
+        return d2<(r*r);
     }
 
     @Override

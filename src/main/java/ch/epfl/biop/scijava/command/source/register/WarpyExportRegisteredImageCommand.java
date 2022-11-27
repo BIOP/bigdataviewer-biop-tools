@@ -70,8 +70,8 @@ public class WarpyExportRegisteredImageCommand implements Command {
         try {
             if (remove_z_offsets) fixed_sources = removeZOffsets(fixed_sources);
             if (remove_z_offsets) moving_sources = removeZOffsets(moving_sources);
-            QuPathEntryEntity fixedEntity = QuPathBdvHelper.getQuPathEntityFromDerivedSource(fixed_sources[0]);
-            int fixed_series_index = fixedEntity.getId();
+            //QuPathEntryEntity fixedEntity = QuPathBdvHelper.getQuPathEntityFromDerivedSource(fixed_sources[0]);
+            int fixed_series_index = QuPathBdvHelper.getEntryId(fixed_sources[0]);//fixedEntity.getId();
             Map<SourceAndConverter, RealTransform> sourceToTransformation =new HashMap<>();
             double downsampleXYTransformField = pre_compute_downsample_xy;
             double downsampleZTransformField = 1;
@@ -102,8 +102,8 @@ public class WarpyExportRegisteredImageCommand implements Command {
             Map<File, RealTransform> alreadyOpenedTransforms = new HashMap<>();
             for (SourceAndConverter source: moving_sources) {
                 File moving_entry_folder = QuPathBdvHelper.getDataEntryFolder(source);
-                QuPathEntryEntity movingEntity = QuPathBdvHelper.getQuPathEntityFromDerivedSource(source);
-                int moving_series_index = movingEntity.getId();
+                //QuPathEntryEntity movingEntity = QuPathBdvHelper.getQuPathEntityFromDerivedSource(source);
+                int moving_series_index = QuPathBdvHelper.getEntryId(source);//movingEntity.getId();
                 String movingToFixedLandmarkName = "transform_"+moving_series_index+"_"+fixed_series_index+".json";
                 File result = new File(moving_entry_folder.getAbsolutePath(), movingToFixedLandmarkName);
                 if (!result.exists()) {
@@ -194,22 +194,22 @@ public class WarpyExportRegisteredImageCommand implements Command {
         if ((fixed_sources ==null)||(fixed_sources.length==0)) {
             message+="Please select a fixed source <br>";
         } else {
-            if (!QuPathBdvHelper.isSourceDirectlyLinkedToQuPath(fixed_sources[0])) {
+            if (!QuPathBdvHelper.isSourceLinkedToQuPath(fixed_sources[0])) {
                 message+="The fixed source is not originating from a QuPath project! <br>";
             } else {
                 if ((moving_sources == null)||(moving_sources.length==0)) {
                     message += "Please select at least one moving source <br>";
                 } else {
                     for (SourceAndConverter testSource: moving_sources) {
-                        if (!QuPathBdvHelper.isSourceDirectlyLinkedToQuPath(testSource)) {
+                        if (!QuPathBdvHelper.isSourceLinkedToQuPath(testSource)) {
                             message += testSource.getSpimSource().getName()+" is not originating from a QuPath project! <br>";
                             message+="</html>";
                             this.message = message;
                             return;
                         } else {
                             try {
-                                String qupathProjectMoving = QuPathBdvHelper.getQuPathProjectFile(testSource).getAbsolutePath();
-                                String qupathProjectFixed = QuPathBdvHelper.getQuPathProjectFile(fixed_sources[0]).getAbsolutePath();
+                                String qupathProjectMoving = QuPathBdvHelper.getProjectFile(testSource).getAbsolutePath();
+                                String qupathProjectFixed = QuPathBdvHelper.getProjectFile(fixed_sources[0]).getAbsolutePath();
                                 if (!qupathProjectMoving.equals(qupathProjectFixed)) {
                                     message += "Error : the moving source ("+testSource.getSpimSource().getName()+") and the fixed source are not from the same qupath project";
                                     message+="</html>";

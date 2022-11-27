@@ -4,7 +4,11 @@ import bdv.util.BdvHandle;
 import bdv.viewer.DisplayMode;
 import bdv.viewer.SourceAndConverter;
 import bdv.viewer.SourceGroup;
+import ch.epfl.biop.bdv.img.OpenersToSpimData;
+import ch.epfl.biop.bdv.img.bioformats.BioFormatsHelper;
+import ch.epfl.biop.bdv.img.bioformats.command.CreateBdvDatasetBioFormatsCommand;
 import ch.epfl.biop.bdv.img.legacy.bioformats.command.OpenFilesWithBigdataviewerBioformatsBridgeCommand;
+import ch.epfl.biop.bdv.img.opener.OpenerSettings;
 import ch.epfl.biop.operetta.OperettaManager;
 import ij.IJ;
 import loci.formats.FormatException;
@@ -14,6 +18,7 @@ import net.imglib2.RealPoint;
 import net.imglib2.realtransform.AffineTransform3D;
 import ome.xml.model.Well;
 import org.apache.commons.io.FileUtils;
+import org.scijava.Context;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.command.CommandService;
@@ -38,6 +43,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -69,7 +75,7 @@ public class OpenOperettaDatasetCommand implements Command {
     File folder;
 
     @Parameter
-    CommandService cs;
+    Context ctx;
 
     @Parameter
     SourceAndConverterService sourceService;
@@ -167,23 +173,23 @@ public class OpenOperettaDatasetCommand implements Command {
         try {
             // Block size : reading one full plane at a time
 
-            AbstractSpimData asd = (AbstractSpimData) cs.run(OpenFilesWithBigdataviewerBioformatsBridgeCommand.class, true,
-                "files", new File[]{f},
-                    "unit", unit,
-                "splitrgbchannels", false,
-                    "positioniscenter", false,
-                    "switchzandc", false,
-                    "flippositionx", false,
-                    "flippositiony", false,
-                    "flippositionz", false,
-                    "usebioformatscacheblocksize", false,
-                    "cachesizex", stack_width,
-                    "cachesizey", stack_height,
-                    "numberofblockskeptinmemory", -1,
-                    "refframesizeinunitlocation",1,
-                    "refframesizeinunitvoxsize",1,
-                    "cachesizez", 1,
-                    "datasetname", "Untitled").get().getOutput("spimdata");
+            List<OpenerSettings> openerSettings = new ArrayList<>();
+
+            int nSeries = BioFormatsHelper.getNSeries(f);
+            for (int i = 0; i < nSeries; i++) {
+                openerSettings.add(
+                        OpenerSettings.BioFormats()
+                                .location(f)
+                                .setSerie(i)
+                                .unit(unit)
+                                .splitRGBChannels(false)
+                                .cornerPositionConvention()
+                                .cornerPositionConvention()
+                                .cacheBlockSize(stack_width, stack_height, 1)
+                                .context(ctx));
+            }
+
+            AbstractSpimData asd = OpenersToSpimData.getSpimData(openerSettings);
 
             IJ.log("Done! Dataset opened.");
 
