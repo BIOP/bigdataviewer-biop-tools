@@ -13,11 +13,17 @@ import sc.fiji.bdvpg.scijava.services.ui.SourceFilterNode;
 
 public class FilterSourcesByNameCommand implements BdvPlaygroundActionCommand {
 
+        @Parameter(label = "Filter name")
+        String filter_name;
+
         @Parameter(label = "The source name should contain:")
-        String stringFilter;
+        String string_filter;
 
         @Parameter(label = "Match case")
-        boolean matchCase;
+        boolean match_case;
+
+        @Parameter(label = "Show sources")
+        boolean show_sources;
 
         @Parameter
         SourceAndConverterService sac_service;
@@ -25,15 +31,15 @@ public class FilterSourcesByNameCommand implements BdvPlaygroundActionCommand {
         @Override
         public void run() {
             SourceFilterNode sfn = new SourceFilterNode(sac_service.getUI().getTreeModel(),
-                    stringFilter,
+                    filter_name,
                     (sac) -> {
-                        if (matchCase) {
-                            return sac.getSpimSource().getName().contains(stringFilter);
+                        if (match_case) {
+                            return sac.getSpimSource().getName().contains(string_filter);
                         } else {
-                            return sac.getSpimSource().getName().toUpperCase().contains(stringFilter.toUpperCase());
+                            return sac.getSpimSource().getName().toUpperCase().contains(string_filter.toUpperCase());
                         }
                     },
-                    false);
+                    show_sources);
             sac_service.getUI().addNode(sfn);
         }
 }

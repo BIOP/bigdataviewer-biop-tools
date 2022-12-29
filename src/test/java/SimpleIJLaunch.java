@@ -5,9 +5,9 @@ import net.imagej.patcher.LegacyInjector;
 
 public class SimpleIJLaunch {
 
-    static {
+    /*static {
         LegacyInjector.preinit();
-    }
+    }*/
 
     static public void main(String... args) {
         // create the ImageJ application context with all available services

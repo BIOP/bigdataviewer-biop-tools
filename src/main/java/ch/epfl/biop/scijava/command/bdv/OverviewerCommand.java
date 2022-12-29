@@ -104,7 +104,7 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
 
         List<SourceAndConverter<?>> sourceList = sorter.apply(Arrays.asList(sacs));
 
-        Map<SacProperties, List<SourceAndConverter>> sacClasses = sourceList
+        Map<SacProperties, List<SourceAndConverter<?>>> sacClasses = sourceList
                 .stream()
                 .collect(Collectors.groupingBy(sac -> {
                     SacProperties props = new SacProperties(sac);
@@ -138,7 +138,7 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
 
             currentIndex++;
 
-            List<SourceAndConverter> sacs = sacClasses.get(sacPropsKey);// sacSortedPerLocation.get(location);
+            List<SourceAndConverter<?>> sacs = sorter.apply(sacClasses.get(sacPropsKey));// sacSortedPerLocation.get(location);
 
             long nPixX = sacs.get(0).getSpimSource().getSource(timepointBegin, 0).dimension(0);
 

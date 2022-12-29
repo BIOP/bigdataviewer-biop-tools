@@ -76,7 +76,7 @@ public class OMETiffMultiSeriesProcessorExporter {
 
         if (builder.removeZOffset) {
             for (SourceAndConverter source: allSources) {
-                RealPoint center = SourceAndConverterHelper.getSourceAndConverterCenterPoint(source);
+                RealPoint center = SourceAndConverterHelper.getSourceAndConverterCenterPoint(source,0);
                 AffineTransform3D zOffset = new AffineTransform3D();
                 zOffset.translate(0,0,center.getDoublePosition(2));
                 int maxTimePoint = SourceAndConverterHelper.getMaxTimepoint(source.getSpimSource());

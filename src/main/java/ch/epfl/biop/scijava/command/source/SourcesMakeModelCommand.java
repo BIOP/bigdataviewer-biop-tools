@@ -9,7 +9,7 @@ import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 
-@Plugin(type = Command.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Makes a model source spanning several sources")
+@Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Makes a model source spanning several sources")
 public class SourcesMakeModelCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(label = "Select Source(s)")

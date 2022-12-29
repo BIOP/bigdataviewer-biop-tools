@@ -227,7 +227,7 @@ public class CrazyMultireWarpedSourcesFusedDemo {
                 at3d.scale((0.5 + Math.random() / 3.0)*25, (0.5 + Math.random() / 2.0)*25, 1);
                 at3d.translate(200 * x, 200 * y, 0);
 
-                RealPoint ptC = SourceAndConverterHelper.getSourceAndConverterCenterPoint(sac);
+                RealPoint ptC = SourceAndConverterHelper.getSourceAndConverterCenterPoint(sac,0);
                 double r = 2.0;
                 double xc = ptC.getDoublePosition(0);
                 double yc = ptC.getDoublePosition(1);

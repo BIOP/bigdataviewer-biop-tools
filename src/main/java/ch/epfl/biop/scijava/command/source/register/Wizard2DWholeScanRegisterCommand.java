@@ -188,8 +188,8 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
         }
 
         if (centerMovingImage) {
-            RealPoint centerMoving = SourceAndConverterHelper.getSourceAndConverterCenterPoint(moving);
-            RealPoint centerFixed = SourceAndConverterHelper.getSourceAndConverterCenterPoint(fixed);
+            RealPoint centerMoving = SourceAndConverterHelper.getSourceAndConverterCenterPoint(moving,0);
+            RealPoint centerFixed = SourceAndConverterHelper.getSourceAndConverterCenterPoint(fixed,0);
             centeringTransform.translate(
                     centerFixed.getDoublePosition(0)-centerMoving.getDoublePosition(0),
                     centerFixed.getDoublePosition(1)-centerMoving.getDoublePosition(1),

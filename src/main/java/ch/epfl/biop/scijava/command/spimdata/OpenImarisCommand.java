@@ -11,7 +11,7 @@ import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 import java.io.File;
 import java.io.IOException;
 
-@Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"BDVDataset>Open [Imaris]")
+@Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"BDVDataset>Create BDV Dataset [Imaris]")
 public class OpenImarisCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(label = "Imaris File")

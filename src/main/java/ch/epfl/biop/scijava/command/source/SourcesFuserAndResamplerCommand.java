@@ -12,7 +12,7 @@ import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 import java.util.Arrays;
 import java.util.List;
 
-@Plugin(type = Command.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Fuse and Resample Sources Based on Model Source")
+@Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Fuse and Resample Sources Based on Model Source")
 public class SourcesFuserAndResamplerCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(label = "Select Source(s)")
