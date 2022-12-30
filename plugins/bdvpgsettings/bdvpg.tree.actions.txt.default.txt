@@ -61,7 +61,7 @@
   "Dataset>Create>Create BDV Dataset [QuPath]",
   "Dataset>Create>Create BDV Dataset [OMERO]",
   "Dataset>Create>Create BDV Dataset [Imaris]",
-  "Dataset>Create>Open [Operetta Dataset]",
+  "Dataset>Create>Create BDV Dataset [Operetta]",
   "Dataset>Create>Open sample dataset",
   "Dataset>Create>Make BDVDataset from current IJ1 image",
   "Dataset>Open>Open XML BDV Datasets",

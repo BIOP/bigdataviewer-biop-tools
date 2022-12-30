@@ -58,7 +58,7 @@ import java.util.stream.Collectors;
  */
 
 @Plugin(type = Command.class,
-        menuPath = ScijavaBdvDefaults.RootMenu+"BDVDataset>Open [Operetta Dataset]"
+        menuPath = ScijavaBdvDefaults.RootMenu+"BDVDataset>Create BDV Dataset [Operetta]"
 )
 public class OpenOperettaDatasetCommand implements Command {
 
@@ -190,10 +190,15 @@ public class OpenOperettaDatasetCommand implements Command {
             }
 
             AbstractSpimData asd = OpenersToSpimData.getSpimData(openerSettings);
+            sourceService.register(asd);
 
             IJ.log("Done! Dataset opened.");
 
             dataset_name = opm.getPlateName();
+            if (dataset_name==null) {
+                IJ.log("Error, could not find plate name!");
+                dataset_name = folder.getParentFile().getName();
+            }
             sourceService.setSpimDataName(asd, dataset_name);
 
             Map<Well, SourceFilterNode> wellFilters = new LinkedHashMap<>();
@@ -226,13 +231,13 @@ public class OpenOperettaDatasetCommand implements Command {
             sourceService.getUI().addNode(datasetNode,wellsNode);
             sourceService.getUI().addNode(datasetNode,fieldsNode);
 
-            tp = sourceService.getUI().getTreePathFromString(opm.getPlateName()+">SeriesNumber");
+            tp = sourceService.getUI().getTreePathFromString(opm.getPlateName()+">SeriesIndex");
             sourceService.getUI().removeNode((SourceFilterNode) tp.getLastPathComponent());
 
             tp = sourceService.getUI().getTreePathFromString(opm.getPlateName()+">Illumination");
             sourceService.getUI().removeNode((SourceFilterNode) tp.getLastPathComponent());
 
-            tp = sourceService.getUI().getTreePathFromString(opm.getPlateName()+">FileIndex");
+            tp = sourceService.getUI().getTreePathFromString(opm.getPlateName()+">FileName");
             sourceService.getUI().removeNode((SourceFilterNode) tp.getLastPathComponent());
 
             tp = sourceService.getUI().getTreePathFromString(opm.getPlateName()+">Displaysettings");
