@@ -20,7 +20,7 @@ public class QuPathBdvHelper {
     /**
      * @param source bdv source
      * @return the file of the data of this source
-     * @throws Exception if the file is not found
+     * @throws IllegalArgumentException if the qupath file is not found
      */
     public static File getDataEntryFolder(SourceAndConverter source) throws IllegalArgumentException {
         File quPathProject = QuPathBdvHelper.getProjectFile(source);
@@ -35,7 +35,7 @@ public class QuPathBdvHelper {
     /**
      * @param source_in bdv source
      * @return the file of the QuPath Project from this source
-     * @throws Exception if the file is not found
+     * @throws IllegalArgumentException if the qupath file is not found
      */
     public static File getProjectFile(SourceAndConverter source_in) throws IllegalArgumentException {
         SourceAndConverter<?> rootSource = SourceAndConverterInspector.getRootSourceAndConverter(source_in);
