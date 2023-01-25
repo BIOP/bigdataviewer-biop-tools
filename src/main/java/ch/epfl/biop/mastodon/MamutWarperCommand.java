@@ -2,6 +2,7 @@ package ch.epfl.biop.mastodon;
 
 import bdv.util.Elliptical3DTransform;
 import ch.epfl.biop.bdv.img.imageplus.ImagePlusHelper;
+import fiji.plugin.trackmate.Dimension;
 import fiji.plugin.trackmate.Logger;
 import fiji.plugin.trackmate.SelectionModel;
 import fiji.plugin.trackmate.Settings;
@@ -20,6 +21,7 @@ import org.mastodon.mamut.MamutAppModel;
 import org.mastodon.mamut.model.Model;
 import org.mastodon.mamut.model.Spot;
 import org.mastodon.mamut.plugin.MamutPluginAppModel;
+import org.mastodon.model.tag.TagSetStructure;
 import org.scijava.Context;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
@@ -28,14 +30,18 @@ import sc.fiji.persist.ScijavaGsonHelper;
 
 import java.io.File;
 import java.io.FileReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class MamutWarperCommand implements Command {
 
@@ -57,6 +63,9 @@ public class MamutWarperCommand implements Command {
 
     @Parameter
     RoiManager roiManager;
+
+    @Parameter(label="Create a combined tag, for instance 'A,Somite_6'")
+    String combine_create_tag = "";
 
     @Parameter(type = ItemIO.OUTPUT)
     fiji.plugin.trackmate.Model tm_model;
@@ -81,6 +90,17 @@ public class MamutWarperCommand implements Command {
 
         System.out.println("Projected matrix = "+proj_matrix);
 
+        String tag1 = null;
+        String tag2 = null;
+        if ((combine_create_tag!=null)&&(combine_create_tag!="")&&(combine_create_tag.split(",").length==2)) {
+            tag1 = combine_create_tag.split(",")[0].trim();
+            tag2 = combine_create_tag.split(",")[1].trim();
+            IJ.log("Creating combined tag "+tag1+" and "+tag2);
+        } else {
+            IJ.log("Do not create combined tags");
+        }
+
+
         try {
             roiManager.reset();
             Elliptical3DTransform e3Dt = ScijavaGsonHelper.getGson(context).fromJson(new FileReader(elliptical_transform_file), Elliptical3DTransform.class);//getEllipticalTransformFromImagePlus(image);
@@ -97,15 +117,52 @@ public class MamutWarperCommand implements Command {
             settings.addAllAnalyzers();
             tm_model.beginUpdate();
 
+
+
+            List<TagSetStructure.Tag> allTags = new ArrayList<>();
+            List<String> allTagsString = new ArrayList<>();
+            Map<Integer, List<TagSetStructure.Tag>> idToTags = new HashMap<>(); // Stores all the model 'easily'
+
             try {
                 lock.lock();
                 RealPoint spotLocation = new RealPoint(3);
 
+
                 Map<Integer, fiji.plugin.trackmate.Spot> mastodonToTM = new HashMap<>();
+
+                model.getTagSetModel().getTagSetStructure().getTagSets().forEach(ts -> {
+                    ts.getTags().forEach(tag -> {
+                        allTags.add(tag);
+                        allTagsString.add(tag.label());
+                    });
+                });
+
+                if (tag1!=null) {
+                    allTagsString.add(tag1+"_"+tag2);
+                }
+
+                declareFeatures(tm_model, allTagsString);
+
+
+                allTags.forEach(tag -> {
+                    model.getTagSetModel()
+                            .getVertexTags()
+                            .getTaggedWith(tag)
+                            .forEach(spot -> {
+                                int idx = spot.getInternalPoolIndex();
+                                if (!idToTags.containsKey(spot.getInternalPoolIndex())) {
+                                    idToTags.put(idx, new ArrayList<>());
+                                }
+                                idToTags.get(idx).add(tag);
+                            });
+                });
+
+
 
                 // sauve features
                 for (Spot spot : model.getGraph().vertices()) {
                     spot.localize(spotLocation);
+
                     int t = spot.getTimepoint();
 
                     e3Dt.inverse().apply(spotLocation, spotLocation); // Physical to r, theta, phi
@@ -123,6 +180,28 @@ public class MamutWarperCommand implements Command {
 
                     fiji.plugin.trackmate.Spot tm_spot = new fiji.plugin.trackmate.Spot(x * image.getCalibration().pixelHeight, y * image.getCalibration().pixelWidth, z * image.getCalibration().pixelDepth * 0, cell_size * image.getCalibration().pixelHeight, -1);
 
+                    allTags.forEach(tag -> tm_spot.putFeature(tag.label(), 0.0));
+
+                    if (idToTags.containsKey(spot.getInternalPoolIndex())) {
+                        idToTags.get(spot.getInternalPoolIndex())
+                                .forEach(tag -> {
+                                    tm_spot.putFeature(tag.label(), 1.0);
+                                });
+                    }
+
+                    if (tag1!=null) {
+                        if (idToTags.containsKey(spot.getInternalPoolIndex())) {
+                            List<TagSetStructure.Tag> tags = idToTags.get(spot.getInternalPoolIndex());
+                            Set<String> stringTags = tags.stream().map(tag -> tag.label()).collect(Collectors.toSet());
+                            if ((stringTags.contains(tag1))&&(stringTags.contains(tag2))) {
+                                tm_spot.putFeature(tag1+"_"+tag2, 1.0);
+                            } else {
+                                tm_spot.putFeature(tag1+"_"+tag2, 0.0);
+                            }
+                        } else {
+                            tm_spot.putFeature(tag1+"_"+tag2, 0.0);
+                        }
+                    }
 
                     tm_model.addSpotTo(tm_spot, t);
 
@@ -142,6 +221,8 @@ public class MamutWarperCommand implements Command {
                         IJ.log("Missing source or target");
                     }
                 }
+
+                tm_model.notifyFeaturesComputed();
 
                 // model.getFeatureModel().getFeatureSpecs() // features spec to add -> look at how this is  - declared and discovered manually
                 // restore features
@@ -176,6 +257,27 @@ public class MamutWarperCommand implements Command {
             e.printStackTrace();
         }
 
+    }
+
+    private static void declareFeatures(fiji.plugin.trackmate.Model tmModel, List<String> allTags) {
+        List<String> features = new ArrayList<>();
+        Map<String, String> featureNames = new HashMap<>();
+        Map<String, String> featureShortNames = new HashMap<>();
+        Map<String, Dimension> featureDimensions = new HashMap<>();
+        Map<String, Boolean> isIntFeature = new HashMap<>();
+
+        allTags.forEach(tag -> {
+            System.out.println("Declaring feature "+tag);
+            features.add(tag);
+            featureNames.put(tag, tag);
+            featureShortNames.put(tag, tag);
+            featureDimensions.put(tag, Dimension.NONE);
+            isIntFeature.put(tag, Boolean.TRUE);
+        });
+
+
+        tmModel.getFeatureModel()
+                .declareSpotFeatures(features, featureNames, featureShortNames, featureDimensions, isIntFeature);
     }
 
     private static Elliptical3DTransform getEllipticalTransformFromImagePlus(ImagePlus image) throws UnsupportedOperationException {
