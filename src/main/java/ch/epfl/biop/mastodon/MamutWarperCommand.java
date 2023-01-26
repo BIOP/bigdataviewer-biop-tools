@@ -95,7 +95,7 @@ public class MamutWarperCommand implements Command {
         if ((combine_create_tag!=null)&&(combine_create_tag!="")&&(combine_create_tag.split(",").length==2)) {
             tag1 = combine_create_tag.split(",")[0].trim();
             tag2 = combine_create_tag.split(",")[1].trim();
-            IJ.log("Creating combined tag "+tag1+" and "+tag2);
+            IJ.log("Creating combined tag tag_"+tag1+" and "+tag2);
         } else {
             IJ.log("Do not create combined tags");
         }
@@ -180,12 +180,12 @@ public class MamutWarperCommand implements Command {
 
                     fiji.plugin.trackmate.Spot tm_spot = new fiji.plugin.trackmate.Spot(x * image.getCalibration().pixelHeight, y * image.getCalibration().pixelWidth, z * image.getCalibration().pixelDepth * 0, cell_size * image.getCalibration().pixelHeight, -1);
 
-                    allTags.forEach(tag -> tm_spot.putFeature(tag.label(), 0.0));
+                    allTags.forEach(tag -> tm_spot.putFeature("tag_"+tag.label(), 0.0));
 
                     if (idToTags.containsKey(spot.getInternalPoolIndex())) {
                         idToTags.get(spot.getInternalPoolIndex())
                                 .forEach(tag -> {
-                                    tm_spot.putFeature(tag.label(), 1.0);
+                                    tm_spot.putFeature("tag_"+tag.label(), 1.0);
                                 });
                     }
 
@@ -194,12 +194,12 @@ public class MamutWarperCommand implements Command {
                             List<TagSetStructure.Tag> tags = idToTags.get(spot.getInternalPoolIndex());
                             Set<String> stringTags = tags.stream().map(tag -> tag.label()).collect(Collectors.toSet());
                             if ((stringTags.contains(tag1))&&(stringTags.contains(tag2))) {
-                                tm_spot.putFeature(tag1+"_"+tag2, 1.0);
+                                tm_spot.putFeature("tag_"+tag1+"_"+tag2, 1.0);
                             } else {
-                                tm_spot.putFeature(tag1+"_"+tag2, 0.0);
+                                tm_spot.putFeature("tag_"+tag1+"_"+tag2, 0.0);
                             }
                         } else {
-                            tm_spot.putFeature(tag1+"_"+tag2, 0.0);
+                            tm_spot.putFeature("tag_"+tag1+"_"+tag2, 0.0);
                         }
                     }
 
@@ -249,7 +249,7 @@ public class MamutWarperCommand implements Command {
 
 
             } catch (Exception e) {
-
+                e.printStackTrace();
             } finally {
                 lock.unlock();
             }
@@ -268,11 +268,11 @@ public class MamutWarperCommand implements Command {
 
         allTags.forEach(tag -> {
             System.out.println("Declaring feature "+tag);
-            features.add(tag);
-            featureNames.put(tag, tag);
-            featureShortNames.put(tag, tag);
-            featureDimensions.put(tag, Dimension.NONE);
-            isIntFeature.put(tag, Boolean.TRUE);
+            features.add("tag_"+tag);
+            featureNames.put("tag_"+tag, "tag_"+tag);
+            featureShortNames.put("tag_"+tag, "tag_"+tag);
+            featureDimensions.put("tag_"+tag, Dimension.NONE);
+            isIntFeature.put("tag_"+tag, Boolean.TRUE);
         });
 
 
