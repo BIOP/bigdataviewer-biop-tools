@@ -51,7 +51,6 @@
   "Sources>Create>Resample Source Based on Model Source",
   "Sources>Export>Export Sources to XML/HDF5 Spimdataset",
   "Sources>Export>Export Sources To ImageJ1",
-  "Sources>Export>Export Sources To OME Tiff",
   "Sources>Export>Export Sources To OME Tiff (build pyramid)",
   "Sources>Import>Make BDVDataset from current IJ1 image",
   "Sources>PopupLine",

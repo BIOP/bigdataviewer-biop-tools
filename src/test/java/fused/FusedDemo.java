@@ -95,11 +95,12 @@ public class FusedDemo {
             Instant start = Instant.now();
 
             OMETiffExporter.builder()
-                    .put(new SourceAndConverter[]{fused}) //
+                    .put(fused) //
                     .defineMetaData("test")
-                    .putMetadataFromSources(new SourceAndConverter[]{fused}, UNITS.MICROMETER)
+                    .putMetadataFromSources(fused, UNITS.MICROMETER)
                     .defineWriteOptions()
-                    .savePath("C:\\Users\\chiarutt\\test.ome.tiff")
+                    //.savePath("C:\\Users\\chiarutt\\test.ome.tiff")
+                    .savePath("C:\\Users\\nicol\\Desktop\\test.ome.tiff")
                     .tileSize(128,128)
                     .nThreads(4)
                     .create().export();
