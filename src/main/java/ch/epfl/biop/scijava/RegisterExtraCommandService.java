@@ -5,7 +5,6 @@ import ch.epfl.biop.bdv.img.bioformats.command.OpenSampleCommand;
 import ch.epfl.biop.bdv.img.omero.command.CreateBdvDatasetOMEROCommand;
 import ch.epfl.biop.bdv.img.qupath.command.CreateBdvDatasetQuPathCommand;
 import ch.epfl.biop.kheops.command.KheopsExportSourcesBuildPyramidCommand;
-import ch.epfl.biop.kheops.command.KheopsExportSourcesCommand;
 import org.scijava.Priority;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
@@ -33,7 +32,6 @@ public class RegisterExtraCommandService extends AbstractService implements
         sourceAndConverterService.registerScijavaCommand(CreateBdvDatasetBioFormatsCommand.class);
         sourceAndConverterService.registerScijavaCommand(CreateBdvDatasetOMEROCommand.class);
         sourceAndConverterService.registerScijavaCommand(CreateBdvDatasetQuPathCommand.class);
-        sourceAndConverterService.registerScijavaCommand(KheopsExportSourcesCommand.class);
         sourceAndConverterService.registerScijavaCommand(KheopsExportSourcesBuildPyramidCommand.class);
     }
 }

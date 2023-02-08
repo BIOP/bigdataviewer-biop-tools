@@ -9,6 +9,7 @@ import ij.IJ;
 import loci.common.DebugTools;
 import net.imagej.ImageJ;
 import net.imglib2.type.numeric.ARGBType;
+import ome.units.UNITS;
 import org.junit.After;
 import org.junit.Test;
 import sc.fiji.bdvpg.bdv.navigate.ViewerTransformAdjuster;
@@ -92,13 +93,17 @@ public class FusedDemo {
         try {
             DebugTools.setRootLevel("OFF");
             Instant start = Instant.now();
+
             OMETiffExporter.builder()
-                    .millimeter()
-                    //.savePath("C:\\Users\\nicol\\test.ome.tiff")
+                    .put(new SourceAndConverter[]{fused}) //
+                    .defineMetaData("test")
+                    .putMetadataFromSources(new SourceAndConverter[]{fused}, UNITS.MICROMETER)
+                    .defineWriteOptions()
                     .savePath("C:\\Users\\chiarutt\\test.ome.tiff")
                     .tileSize(128,128)
                     .nThreads(4)
-                    .create(fused).export();
+                    .create().export();
+
             Instant finish = Instant.now();
             IJ.log("Duration: "+ Duration.between(start, finish));
             IJ.log("File saved");

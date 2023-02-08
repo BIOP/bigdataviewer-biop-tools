@@ -122,7 +122,9 @@ public class IrinaWorkFlow {
 
     public static <T extends NumericType<T> & NativeType<T>> String correctDistortion(String exportPath, String filePath, String landmarkFileUnwarp, int cropX, int cropY, boolean interpolate) throws Exception {
 
-        List<SourceAndConverter> sources = KheopsHelper.getSourcesFromFile(filePath, 1024, 1024, 16, 1).idToSources.get(0);
+        List<SourceAndConverter> sources =
+            KheopsHelper.getSourcesFromFile(filePath, 1024, 1024, 16, 1, false, "CENTER", null).idToSources.get(0);
+                //KheopsHelper.getSourcesFromFile(filePath, 1024, 1024, 16, 1).idToSources.get(0);
 
         // Needs to uncalibrate before warping
         AffineTransform3D transform = new AffineTransform3D();

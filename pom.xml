@@ -110,7 +110,7 @@
 		<!-- biop dependencies -->
 		<ijl-utilities-wrappers.version>0.7.3</ijl-utilities-wrappers.version>
 		<Operetta_Importer.version>0.1.23</Operetta_Importer.version>
-		<ijp-kheops.version>0.3.4</ijp-kheops.version>
+		<ijp-kheops.version>0.3.6-SNAPSHOT</ijp-kheops.version>
 
 		<!-- mastodon -->
 		<mastodon.version>1.0.0-beta-24</mastodon.version>

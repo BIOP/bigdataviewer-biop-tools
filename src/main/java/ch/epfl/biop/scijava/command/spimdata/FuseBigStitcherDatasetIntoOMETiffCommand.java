@@ -5,7 +5,7 @@ import bdv.img.hdf5.Hdf5ImageLoader;
 import bdv.img.n5.N5ImageLoader;
 import bdv.util.source.fused.AlphaFusedResampledSource;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.kheops.ometiff.OMETiffPyramidizerExporter;
+import ch.epfl.biop.kheops.ometiff.OMETiffExporter;
 import ch.epfl.biop.sourceandconverter.SourceFuserAndResampler;
 import ch.epfl.biop.sourceandconverter.SourceHelper;
 import ch.epfl.biop.sourceandconverter.exporter.IntRangeParser;
@@ -18,6 +18,7 @@ import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.imglib2.cache.LoaderCache;
 import net.imglib2.cache.ref.BoundedSoftRefLoaderCache;
 import net.imglib2.realtransform.AffineTransform3D;
+import ome.units.UNITS;
 import org.apache.commons.io.FilenameUtils;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
@@ -207,14 +208,28 @@ public class FuseBigStitcherDatasetIntoOMETiffCommand implements Command {
 
             if ((split_channels==false)&&(split_slices==false)&&(split_frames==false)) {
 
-                getDefaultBuilder()
+                OMETiffExporter.OMETiffExporterBuilder.WriterOptions.WriterOptionsBuilder exporter = OMETiffExporter.builder()
+                        .put(fusedSources)
+                        .defineMetaData(xml_bigstitcher_file.getName())
+                        .putMetadataFromSources(fusedSources, UNITS.MICROMETER)
+                        .voxelPhysicalSizeMicrometer(vox_size_x_micrometer, vox_size_y_micrometer, vox_size_z_micrometer)
+                        .defineWriteOptions()
+                        .nThreads(nThreads)
                         .maxTilesInQueue(nThreads * 3)
                         .rangeC(range_channels)
                         .rangeZ(range_slices)
                         .rangeT(range_frames)
-                        .nThreads(nThreads)
-                        .savePath(output_path.getAbsolutePath())
-                        .create(fusedSources).export();
+                        .monitor(taskService)
+                        .downsample(2)
+                        .tileSize(1024, 1024)
+                        .nResolutionLevels(n_resolution_levels)
+                        .savePath(output_path.getAbsolutePath());
+
+                if (use_lzw_compression) exporter.lzw();
+
+                exporter.create().export();
+
+
             } else {
                 int nC = fusedSources.length;
                 int nZ = (int) fusedSources[0].getSpimSource().getSource(0,0).realMax(2);
@@ -368,17 +383,35 @@ public class FuseBigStitcherDatasetIntoOMETiffCommand implements Command {
 
     private void export( String select_channels, String select_slices, String select_frames,
                         int nThreads, SourceAndConverter[] fusedSources) throws Exception {
-        getDefaultBuilder()
+
+        OMETiffExporter.OMETiffExporterBuilder.WriterOptions.WriterOptionsBuilder exporter = OMETiffExporter.builder()
+                .put(fusedSources)
+                .defineMetaData(xml_bigstitcher_file.getName())
+                .putMetadataFromSources(fusedSources, UNITS.MICROMETER)
+                .voxelPhysicalSizeMicrometer(vox_size_x_micrometer, vox_size_y_micrometer, vox_size_z_micrometer)
+                .defineWriteOptions()
                 .nThreads(nThreads)
                 .maxTilesInQueue(nThreads * 3)
-                .rangeZ(select_slices)
                 .rangeC(select_channels)
+                .rangeZ(select_slices)
                 .rangeT(select_frames)
-                .savePath(getPath(select_channels, select_slices, select_frames))
-                .create(fusedSources).export();
+                .monitor(taskService)
+                .downsample(2)
+                .tileSize(1024, 1024)
+                .nResolutionLevels(n_resolution_levels)
+                .savePath(getPath(select_channels, select_slices, select_frames));
+
+        if (use_lzw_compression) exporter.lzw();
+
+        exporter.create().export();
+
+
     }
 
-    private OMETiffPyramidizerExporter.Builder getDefaultBuilder() {
+    /*private OMETiffPyramidizerExporter.Builder getDefaultBuilder() {
+
+        OMETiffExporter.builder().put()
+
         OMETiffPyramidizerExporter.Builder builder = OMETiffPyramidizerExporter.builder()
                 .micrometer()
                 .setPixelSize(vox_size_x_micrometer, vox_size_y_micrometer, vox_size_z_micrometer)
@@ -390,6 +423,6 @@ public class FuseBigStitcherDatasetIntoOMETiffCommand implements Command {
         if (use_lzw_compression) builder.lzw();
 
         return builder;
-    }
+    }*/
 
 }
