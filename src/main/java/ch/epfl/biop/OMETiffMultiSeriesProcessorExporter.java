@@ -188,7 +188,7 @@ public class OMETiffMultiSeriesProcessorExporter {
                     ImagePlus finalImage = image;
                     new Thread(() -> {
                         try {
-                            ImagePlusToOMETiff.writeToOMETiff(finalImage, new File(totalPath), builder.nResolutionLevels, builder.downscaleFactor, builder.compression);
+                            ImagePlusToOMETiff.writeToOMETiff(finalImage, new File(totalPath), builder.compression, taskService);
                             outputMap.put(finalImage.getTitle(), totalPath);
                         } catch (Exception e) {
                             e.printStackTrace();

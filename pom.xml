@@ -101,7 +101,7 @@
 		<bigvolumeviewer.version>0.2.0</bigvolumeviewer.version>
 		<!-- bdv playground related dependencies -->
 		<bigdataviewer-playground.version>0.6.6</bigdataviewer-playground.version>
-		<bigdataviewer-image-loaders.version>0.4.2</bigdataviewer-image-loaders.version>
+		<bigdataviewer-image-loaders.version>0.4.3</bigdataviewer-image-loaders.version>
 		<bigdataviewer-playground-display.version>0.3.2</bigdataviewer-playground-display.version>
 		<bigdataviewer-spimdata-extras.version>0.3.1</bigdataviewer-spimdata-extras.version>
 		<image-transform-converters.version>0.1.6</image-transform-converters.version>
@@ -109,8 +109,8 @@
 
 		<!-- biop dependencies -->
 		<ijl-utilities-wrappers.version>0.7.10</ijl-utilities-wrappers.version>
-		<Operetta_Importer.version>0.2.0</Operetta_Importer.version>
-		<ijp-kheops.version>0.3.6</ijp-kheops.version>
+		<Operetta_Importer.version>0.2.1</Operetta_Importer.version>
+		<ijp-kheops.version>0.3.7</ijp-kheops.version>
 
 		<!-- mastodon -->
 		<mastodon.version>1.0.0-beta-24</mastodon.version>

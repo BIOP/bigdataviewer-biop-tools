@@ -4,7 +4,7 @@ import bdv.util.EmptySource;
 import bdv.util.QuPathBdvHelper;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.bdv.img.legacy.qupath.entity.QuPathEntryEntity;
-import ch.epfl.biop.kheops.command.KheopsExportSourcesBuildPyramidCommand;
+import ch.epfl.biop.kheops.command.KheopsExportSourcesCommand;
 import com.google.gson.stream.JsonReader;
 import ij.IJ;
 import net.imglib2.realtransform.AffineTransform3D;
@@ -171,7 +171,7 @@ public class WarpyExportRegisteredImageCommand implements Command {
                                 interpolate, 0).get());
             }
             scijavaCtx.getService(CommandService.class)
-                    .run(KheopsExportSourcesBuildPyramidCommand.class, true,
+                    .run(KheopsExportSourcesCommand.class, true,
                             "sacs",  exportedSources.toArray(new SourceAndConverter[0]),
                             "range_channels", "",
                             "unit","millimeter",

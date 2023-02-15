@@ -169,7 +169,7 @@ public class IrinaWorkFlow {
 
         String totalPath = exportPath+File.separator+undistorted.getTitle();
 
-        ImagePlusToOMETiff.writeToOMETiff(undistorted, new File(totalPath), 4, 2, "LZW");
+        ImagePlusToOMETiff.writeToOMETiff(undistorted, new File(totalPath),  "LZW", null);
 
         return totalPath;
     }
