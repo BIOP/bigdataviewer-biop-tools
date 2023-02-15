@@ -25,7 +25,8 @@ public class DemoRegistrationMultiChannelAffine {
         ij.ui().showUI();
 
         OpenerSettings atlasSettings = OpenerSettings.BioFormats()
-                .location("src/test/resources/multichanreg/Atlas.tif")
+                .location("./src/test/resources/multichanreg/Atlas.tif")
+                //.location("C:\\Users\\chiarutt\\Dropbox\\BIOP\\bigdataviewer-biop-tools\\src\\test\\resources\\multichanreg\\Atlas.tif")
                 .millimeter().setSerie(0);
 
         AbstractSpimData<?> atlasDataset = OpenersToSpimData.getSpimData(atlasSettings);
@@ -34,7 +35,8 @@ public class DemoRegistrationMultiChannelAffine {
         List<SourceAndConverter<?>> atlasSources = SourceAndConverterServices.getSourceAndConverterService().getSourceAndConverterFromSpimdata(atlasDataset);
 
         OpenerSettings sliceSettings = OpenerSettings.BioFormats()
-                .location("src/test/resources/multichanreg/Slice.tif")
+                .location("./src/test/resources/multichanreg/Slice.tif")
+                //.location("C:\\Users\\chiarutt\\Dropbox\\BIOP\\bigdataviewer-biop-tools\\src\\test\\resources\\multichanreg\\Slice.tif")
                 .millimeter().setSerie(0);
 
         AbstractSpimData<?> sliceDataset = OpenersToSpimData.getSpimData(sliceSettings);
