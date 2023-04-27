@@ -102,7 +102,7 @@
 		<bigvolumeviewer.version>0.2.0</bigvolumeviewer.version>
 		<!-- bdv playground related dependencies -->
 		<bigdataviewer-playground.version>0.6.6</bigdataviewer-playground.version>
-		<bigdataviewer-image-loaders.version>0.4.4</bigdataviewer-image-loaders.version>
+		<bigdataviewer-image-loaders.version>0.4.7-SNAPSHOT</bigdataviewer-image-loaders.version>
 		<bigdataviewer-playground-display.version>0.3.3</bigdataviewer-playground-display.version>
 		<bigdataviewer-spimdata-extras.version>0.3.1</bigdataviewer-spimdata-extras.version>
 		<image-transform-converters.version>0.1.6</image-transform-converters.version>
@@ -279,6 +279,44 @@
 			<artifactId>junit</artifactId>
 			<scope>test</scope>
 		</dependency>
+
+		<!-- for lattice light sheet testing -->
+		<dependency>
+			<groupId>ome</groupId>
+			<artifactId>formats-api</artifactId>
+			<version>6.12.1-BIOP</version>
+			<exclusions>
+				<exclusion>
+					<!-- NB: Exclude problematic uber-JAR that bundles commons-io. -->
+					<groupId>ch.systems.cisd</groupId>
+					<artifactId>jhdf5</artifactId>
+				</exclusion>
+				<exclusion>
+					<!-- NB: Exclude problematic xalan bundle -->
+					<groupId>xalan</groupId>
+					<artifactId>xalan</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>ome</groupId>
+			<artifactId>formats-gpl</artifactId>
+			<version>6.12.1-BIOP</version>
+			<exclusions>
+				<exclusion>
+					<!-- NB: Exclude problematic uber-JAR that bundles commons-io. -->
+					<groupId>ch.systems.cisd</groupId>
+					<artifactId>jhdf5</artifactId>
+				</exclusion>
+				<exclusion>
+					<!-- NB: Exclude problematic xalan bundle -->
+					<groupId>xalan</groupId>
+					<artifactId>xalan</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
 
 	</dependencies>
 
