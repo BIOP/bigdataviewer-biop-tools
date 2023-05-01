@@ -102,7 +102,7 @@
 		<bigvolumeviewer.version>0.2.0</bigvolumeviewer.version>
 		<!-- bdv playground related dependencies -->
 		<bigdataviewer-playground.version>0.6.6</bigdataviewer-playground.version>
-		<bigdataviewer-image-loaders.version>0.4.7-SNAPSHOT</bigdataviewer-image-loaders.version>
+		<bigdataviewer-image-loaders.version>0.4.9</bigdataviewer-image-loaders.version>
 		<bigdataviewer-playground-display.version>0.3.3</bigdataviewer-playground-display.version>
 		<bigdataviewer-spimdata-extras.version>0.3.1</bigdataviewer-spimdata-extras.version>
 		<image-transform-converters.version>0.1.6</image-transform-converters.version>
@@ -110,11 +110,11 @@
 
 		<!-- biop dependencies -->
 		<ijl-utilities-wrappers.version>0.7.10</ijl-utilities-wrappers.version>
-		<Operetta_Importer.version>0.2.1</Operetta_Importer.version>
+		<Operetta_Importer.version>0.2.6</Operetta_Importer.version>
 		<ijp-kheops.version>0.3.8</ijp-kheops.version>
 
 		<!-- mastodon -->
-		<mastodon.version>1.0.0-beta-24</mastodon.version>
+		<mastodon.version>1.0.0-beta-26</mastodon.version>
 
 		<!-- maths -->
 		<leastsquares.version>1.0.0</leastsquares.version>
@@ -284,7 +284,7 @@
 		<dependency>
 			<groupId>ome</groupId>
 			<artifactId>formats-api</artifactId>
-			<version>6.12.1-BIOP</version>
+			<!--<version>6.12.1-BIOP</version>-->
 			<exclusions>
 				<exclusion>
 					<!-- NB: Exclude problematic uber-JAR that bundles commons-io. -->
@@ -302,7 +302,25 @@
 		<dependency>
 			<groupId>ome</groupId>
 			<artifactId>formats-gpl</artifactId>
-			<version>6.12.1-BIOP</version>
+			<!--<version>6.12.1-BIOP</version>-->
+			<exclusions>
+				<exclusion>
+					<!-- NB: Exclude problematic uber-JAR that bundles commons-io. -->
+					<groupId>ch.systems.cisd</groupId>
+					<artifactId>jhdf5</artifactId>
+				</exclusion>
+				<exclusion>
+					<!-- NB: Exclude problematic xalan bundle -->
+					<groupId>xalan</groupId>
+					<artifactId>xalan</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>ome</groupId>
+			<artifactId>formats-bsd</artifactId>
+			<!--<version>6.12.1-BIOP</version>-->
 			<exclusions>
 				<exclusion>
 					<!-- NB: Exclude problematic uber-JAR that bundles commons-io. -->

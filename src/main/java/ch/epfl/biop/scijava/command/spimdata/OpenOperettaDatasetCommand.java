@@ -30,6 +30,7 @@ import sc.fiji.bdvpg.bdv.supplier.alpha.AlphaBdvSupplier;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.services.SourceAndConverterBdvDisplayService;
 import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
+import sc.fiji.bdvpg.scijava.services.ui.SourceAndConverterServiceUI;
 import sc.fiji.bdvpg.scijava.services.ui.SourceFilterNode;
 import sc.fiji.bdvpg.scijava.services.ui.SpimDataFilterNode;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterAndTimeRange;
@@ -385,11 +386,12 @@ public class OpenOperettaDatasetCommand implements Command {
 
                 for (int iCh = 0; iCh<maxChannels; iCh++) {
                     SourceGroup group = groups.get(iCh);
+                    SourceAndConverterServiceUI.Node chNode = sourceService.getUI().getRoot().child(opm.getPlateName()).child("Channel").child(iCh);
                     List<SourceAndConverter<?>> sourcesInChannel =
-                            Arrays.asList(sourceService.getUI().getRoot().child(opm.getPlateName()).child("Channel").child(iCh).sources());//.getSourceAndConvertersFromTreePath(p);
+                            Arrays.asList(chNode.sources());
                     List<SourceAndConverter<?>> sourcesCast = sourcesInChannel.stream().map(sac -> (SourceAndConverter<?>) sac).collect(Collectors.toList());
                     bdvh.getViewerPanel().state().addSourcesToGroup(sourcesCast, group);
-                    bdvh.getViewerPanel().state().setGroupName(group, "Channel "+iCh);
+                    bdvh.getViewerPanel().state().setGroupName(group, chNode.name());
                 }
 
                 bdvh.getViewerPanel().setNumTimepoints(opm.getRange().getRangeT().size());
