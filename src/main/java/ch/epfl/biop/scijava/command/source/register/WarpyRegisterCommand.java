@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
+import sc.fiji.bdvpg.scijava.converters.StringToSourceAndConverterArray;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
 import sc.fiji.persist.ScijavaGsonHelper;
 
@@ -32,10 +33,10 @@ public class WarpyRegisterCommand implements Command {
     String message = "<html><h1>QuPath registration wizard</h1>Please select a moving and a fixed source<br></html>";
 
     @Parameter(label = "Fixed source", callback = "updateMessage")
-    SourceAndConverter fixed_source;
+    SourceAndConverter[] fixed_sources;
 
     @Parameter(label = "Moving source", callback = "updateMessage")
-    SourceAndConverter moving_source;
+    SourceAndConverter[] moving_sources;
 
     @Parameter
     CommandService cs;
@@ -49,6 +50,14 @@ public class WarpyRegisterCommand implements Command {
     @Override
     public void run() {
         try {
+            if (fixed_sources.length>1) {
+                logger.warn("Only the first fixed source will be used.");
+            }
+            if (moving_sources.length>1) {
+                logger.warn("Only the first movingq source will be used.");
+            }
+            SourceAndConverter fixed_source = fixed_sources[0];
+            SourceAndConverter moving_source = moving_sources[0];
 
             // Several checks before we even start the registration
             //  - Is there an associated qupath project ?
@@ -159,6 +168,15 @@ public class WarpyRegisterCommand implements Command {
     public void updateMessage() {
 
         String message = "<html><h1>QuPath registration wizard</h1>";
+
+        if (fixed_sources.length>1) {
+            message+="Only the first fixed source will be used. <br>";
+        }
+        if (moving_sources.length>1) {
+            message+="Only the first moving source will be used. <br>";
+        }
+        SourceAndConverter fixed_source = fixed_sources[0];
+        SourceAndConverter moving_source = moving_sources[0];
 
         if (fixed_source==null) {
             message+="Please select a fixed source <br>";
