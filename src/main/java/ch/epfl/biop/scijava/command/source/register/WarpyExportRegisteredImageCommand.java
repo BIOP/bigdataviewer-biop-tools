@@ -174,10 +174,10 @@ public class WarpyExportRegisteredImageCommand implements Command {
                     .run(KheopsExportSourcesCommand.class, true,
                             "sacs",  exportedSources.toArray(new SourceAndConverter[0]),
                             "range_channels", "",
-                            "unit","millimeter",
+                            //"unit","MILLIMETER",
                             "override_voxel_size",false,
-                            "vox_size_xy",-1, //ignored
-                            "vox_size_z",-1//ignored
+                            "vox_size_xy_um",-1, //ignored
+                            "vox_size_z_um",-1//ignored
                     ).get();
 
             IJ.log("Export warpy registered image done.");

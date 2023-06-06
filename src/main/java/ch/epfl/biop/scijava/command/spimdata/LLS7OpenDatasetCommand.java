@@ -6,6 +6,7 @@ import ch.epfl.biop.bdv.img.bioformats.BioFormatsHelper;
 import ch.epfl.biop.bdv.img.opener.OpenerSettings;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imglib2.realtransform.AffineTransform3D;
+import org.apache.commons.io.FilenameUtils;
 import org.scijava.Context;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
@@ -22,16 +23,16 @@ import java.util.List;
 @Plugin(type = Command.class,
         menuPath = "Plugins>BigDataViewer-Playground>BDVDataset>Create BDV Dataset [Zeiss LLS7]",
         description = "Open and live deskew a zeiss Lattice Light Sheet dataset with  Bio-Formats (BioFormats) and BigDataViewer")
-public class OpenZeissLLS7Dataset implements
+public class LLS7OpenDatasetCommand implements
         Command
 {
 
-    @Parameter(label = "Name of this dataset")
-    public String datasetname = "dataset";
+    //@Parameter(label = "Name of this dataset")
+    //public String datasetname = "dataset";
 
-    @Parameter(required = false, label = "Physical units of the dataset",
-            choices = { "MILLIMETER", "MICROMETER", "NANOMETER" })
-    public String unit = "MILLIMETER";
+    //@Parameter(required = false, label = "Physical units of the dataset",
+    //        choices = { "MILLIMETER", "MICROMETER", "NANOMETER" })
+    public String unit = "MICROMETER";
 
     @Parameter(label = "CZI LLS7 file")
     File czi_file;
@@ -62,7 +63,7 @@ public class OpenZeissLLS7Dataset implements
             }
         AbstractSpimData<?> spimdata = OpenersToSpimData.getSpimData(openerSettings);
         sac_service.register(spimdata);
-        sac_service.setSpimDataName(spimdata, datasetname);
+        sac_service.setSpimDataName(spimdata, FilenameUtils.removeExtension(czi_file.getName()));
 
         //SpimDataPostprocessor
         List<SourceAndConverter<?>> sources = sac_service.getSourceAndConverterFromSpimdata(spimdata);
