@@ -1,13 +1,16 @@
 package ch.epfl.biop.scijava.command.spimdata;
 
-import ch.epfl.biop.bdv.img.legacy.bioformats.BioFormatsImageLoader;
+import ch.epfl.biop.bdv.img.bioformats.entity.SeriesIndex;
+import ch.epfl.biop.bdv.img.entity.ImageName;
 import ch.epfl.biop.bdv.img.legacy.bioformats.BioFormatsSetupLoader;
 import ch.epfl.biop.bdv.img.legacy.bioformats.entity.FileIndex;
+import ch.epfl.biop.bdv.img.legacy.bioformats.entity.SeriesNumber;
 import ij.IJ;
 import mpicbg.spim.data.SpimData;
 import mpicbg.spim.data.XmlIoSpimData;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import mpicbg.spim.data.generic.sequence.BasicImgLoader;
+import mpicbg.spim.data.sequence.MultiResolutionSetupImgLoader;
 import mpicbg.spim.data.sequence.VoxelDimensions;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
@@ -42,45 +45,28 @@ public class DatasetToBigStitcherDatasetCommand implements Command {
         }
 
         try {
-            /*BioFormatsBdvOpener opener = BioFormatsConvertFilesToSpimData.getDefaultOpener(file.getAbsolutePath()).micrometer();
-            IFormatReader reader = opener.getNewReader();
-            Length[] voxSizes = BioFormatsMetaDataHelper.getSeriesVoxelSizeAsLengths((IMetadata) reader.getMetadataStore(), 0);//.getSeriesRootTransform()
-            double pixSizeXYMicrometer = voxSizes[0].value(UNITS.MICROMETER).doubleValue();
-            double scalingForBigStitcher = 1 / pixSizeXYMicrometer;
-            reader.close();
-
-            AbstractSpimData<?> asd = BioFormatsConvertFilesToSpimData.getSpimData(
-                    opener
-                            .voxSizeReferenceFrameLength(new Length(1, UNITS.MICROMETER))
-                            .positionReferenceFrameLength(new Length(1, UNITS.MICROMETER)));
-            */
 
             AbstractSpimData<?> asd = new XmlIoSpimData().load(xmlin.getAbsolutePath());
 
             // We assume all pixel sizes are equal
             BasicImgLoader imageLoader =  asd.getSequenceDescription().getImgLoader();
             double scalingForBigStitcher = 1;
-            if (imageLoader instanceof BioFormatsImageLoader) {
-                BioFormatsImageLoader imgLoader = (BioFormatsImageLoader) imageLoader;
-                int nSetups = asd.getSequenceDescription().getViewSetupsOrdered().size();
-                if (viewsetupreference ==-1) {
-                    for (int i = 0; i < nSetups; i++) {
-                        BioFormatsSetupLoader setupLoader = imgLoader.getSetupImgLoader(i);
-                        VoxelDimensions voxelDimensions = setupLoader.getVoxelSize(0);
-                        voxelDimensions.dimension(0);
-                        IJ.log("VS["+i+"] = "+voxelDimensions);
-                    }
-                    viewsetupreference = 0;
+            int nSetups = asd.getSequenceDescription().getViewSetupsOrdered().size();
+            if (viewsetupreference ==-1) {
+                for (int i = 0; i < nSetups; i++) {
+                    MultiResolutionSetupImgLoader setupLoader = (MultiResolutionSetupImgLoader) imageLoader.getSetupImgLoader(i);
+                    BioFormatsSetupLoader l;
+                    VoxelDimensions voxelDimensions = setupLoader.getVoxelSize(0);
+                    voxelDimensions.dimension(0);
+                    IJ.log("VS["+i+"] = "+voxelDimensions);
                 }
-                BioFormatsSetupLoader setupLoader = imgLoader.getSetupImgLoader(viewsetupreference);
-                scalingForBigStitcher = 1./setupLoader.getVoxelSize(0).dimension(0);
-            } else {
-                IJ.error("This dataset does not use the followinf image loader: spimreconstruction.biop_bioformatsimageloader - cancelling command");
-                return;
+                viewsetupreference = 0;
             }
+            MultiResolutionSetupImgLoader setupLoader = (MultiResolutionSetupImgLoader) imageLoader.getSetupImgLoader(viewsetupreference);
+            scalingForBigStitcher = 1./setupLoader.getVoxelSize(0).dimension(0);
 
             // Remove display settings attributes because this causes issues with BigStitcher
-            SpimDataHelper.removeEntities(asd, Displaysettings.class, FileIndex.class);
+            SpimDataHelper.removeEntities(asd, Displaysettings.class, FileIndex.class, SeriesIndex.class, SeriesNumber.class, ImageName.class);
 
             // Scaling such as size of one pixel = 1
             SpimDataHelper.scale(asd, "BigStitcher Scaling", scalingForBigStitcher);
