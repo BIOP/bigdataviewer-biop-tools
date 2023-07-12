@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>35.0.0</version>
+		<version>36.0.0</version>
 		<relativePath />
 	</parent>
 
@@ -94,24 +94,24 @@
 		<license.copyrightOwners>N/A</license.copyrightOwners>
 		<package-name>ch.epfl.biop.bigdataviewerBiopTools</package-name>
 		<scijava.deleteOtherVersions>true</scijava.deleteOtherVersions>
-		<!-- <scijava.app.directory>C:\Users\chiarutt\Downloads\fiji-win64\Fiji.app</scijava.app.directory> -->
+		<!-- <scijava.app.directory>C:\Fiji.app</scijava.app.directory> -->
 		<license.excludes>**/resources/**</license.excludes>
 
 		<!-- general imagej dependencies -->
 		<!-- bigdataviewer dependencies -->
-		<bigvolumeviewer.version>0.2.0</bigvolumeviewer.version>
+		<bigvolumeviewer.version>0.3.1</bigvolumeviewer.version>
 		<!-- bdv playground related dependencies -->
-		<bigdataviewer-playground.version>0.7.0</bigdataviewer-playground.version>
-		<bigdataviewer-image-loaders.version>0.5.0</bigdataviewer-image-loaders.version>
-		<bigdataviewer-playground-display.version>0.3.4</bigdataviewer-playground-display.version>
-		<bigdataviewer-spimdata-extras.version>0.3.2</bigdataviewer-spimdata-extras.version>
+		<bigdataviewer-playground.version>0.8.0</bigdataviewer-playground.version>
+		<bigdataviewer-image-loaders.version>0.6.0</bigdataviewer-image-loaders.version>
+		<bigdataviewer-playground-display.version>0.4.0</bigdataviewer-playground-display.version>
+		<bigdataviewer-spimdata-extras.version>0.4.0</bigdataviewer-spimdata-extras.version>
 		<image-transform-converters.version>0.1.6</image-transform-converters.version>
 		<elastix_registration_server.version>0.1.4</elastix_registration_server.version>
 
 		<!-- biop dependencies -->
-		<ijl-utilities-wrappers.version>0.7.11</ijl-utilities-wrappers.version>
-		<Operetta_Importer.version>0.2.6</Operetta_Importer.version>
-		<ijp-kheops.version>0.3.8</ijp-kheops.version>
+		<ijl-utilities-wrappers.version>0.8.0</ijl-utilities-wrappers.version>
+		<Operetta_Importer.version>0.3.0</Operetta_Importer.version>
+		<ijp-kheops.version>0.4.0</ijp-kheops.version>
 
 		<!-- mastodon -->
 		<mastodon.version>1.0.0-beta-26</mastodon.version>
@@ -280,69 +280,11 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- for lattice light sheet testing -->
-		<dependency>
-			<groupId>ome</groupId>
-			<artifactId>formats-api</artifactId>
-			<!--version>6.12.0</version-->
-			<version>6.13.1-SNAPSHOT</version>
-			<exclusions>
-				<exclusion>
-					<!-- NB: Exclude problematic uber-JAR that bundles commons-io. -->
-					<groupId>ch.systems.cisd</groupId>
-					<artifactId>jhdf5</artifactId>
-				</exclusion>
-				<exclusion>
-					<!-- NB: Exclude problematic xalan bundle -->
-					<groupId>xalan</groupId>
-					<artifactId>xalan</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-
-		<dependency>
-			<groupId>ome</groupId>
-			<artifactId>formats-gpl</artifactId>
-			<!--version>6.12.0</version-->
-			<version>6.13.1-SNAPSHOT</version>
-			<exclusions>
-				<exclusion>
-					<!-- NB: Exclude problematic uber-JAR that bundles commons-io. -->
-					<groupId>ch.systems.cisd</groupId>
-					<artifactId>jhdf5</artifactId>
-				</exclusion>
-				<exclusion>
-					<!-- NB: Exclude problematic xalan bundle -->
-					<groupId>xalan</groupId>
-					<artifactId>xalan</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-
-		<dependency>
-			<groupId>ome</groupId>
-			<artifactId>formats-bsd</artifactId>
-			<!--version>6.12.0</version-->
-			<version>6.13.1-SNAPSHOT</version>
-			<exclusions>
-				<exclusion>
-					<!-- NB: Exclude problematic uber-JAR that bundles commons-io. -->
-					<groupId>ch.systems.cisd</groupId>
-					<artifactId>jhdf5</artifactId>
-				</exclusion>
-				<exclusion>
-					<!-- NB: Exclude problematic xalan bundle -->
-					<groupId>xalan</groupId>
-					<artifactId>xalan</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-
-		<!--dependency>
+		<!-- <dependency> Uncomment to enable fast lattice light sheet reader
 			<groupId>ch.epfl.biop</groupId>
 			<artifactId>quick-start-czi-reader</artifactId>
-			<version>0.1.0-SNAPSHOT</version>
-		</dependency-->
+			<version>0.1.5-SNAPSHOT</version>
+		</dependency> -->
 
 		<!-- https://mvnrepository.com/artifact/com.esotericsoftware/kryo -->
 		<!--<dependency>

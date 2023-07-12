@@ -5,6 +5,8 @@ import bdv.tools.boundingbox.TransformedRealBoxSelectionDialog;
 import bdv.util.BdvFunctions;
 import bdv.util.BdvHandle;
 import bdv.viewer.SourceAndConverter;
+import ch.epfl.biop.bdv.img.bioformats.BioFormatsHelper;
+import ch.epfl.biop.bdv.img.bioformats.BioFormatsOpener;
 import ch.epfl.biop.sourceandconverter.SourceHelper;
 import net.imglib2.RealInterval;
 import net.imglib2.realtransform.AffineTransform3D;
@@ -50,8 +52,8 @@ public class LLS7CropCommand implements Command {
 
     //@Parameter
     double box_size_x = 150/4.0;
-    double box_size_y = 50/4.0;
-    double box_size_z = 150/4.0;
+    double box_size_y = 150/4.0;
+    double box_size_z = 50/4.0;
 
     @Parameter(type = ItemIO.OUTPUT)
     RealInterval interval;

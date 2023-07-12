@@ -10,8 +10,11 @@ import mpicbg.spim.data.SpimData;
 import mpicbg.spim.data.XmlIoSpimData;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import mpicbg.spim.data.generic.sequence.BasicImgLoader;
+import mpicbg.spim.data.registration.ViewTransformAffine;
 import mpicbg.spim.data.sequence.MultiResolutionSetupImgLoader;
 import mpicbg.spim.data.sequence.VoxelDimensions;
+import net.imglib2.realtransform.AffineTransform3D;
+import org.scijava.ItemVisibility;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
@@ -28,7 +31,7 @@ import java.io.File;
 @Plugin(type = Command.class, menuPath = ScijavaBdvDefaults.RootMenu+"BDVDataset>Edit>Make BDVDataset BigStitcher Compatible")
 public class DatasetToBigStitcherDatasetCommand implements Command {
 
-    @Parameter(label="Xml Bdv Dataset input", style = "open")
+    @Parameter(label="Xml Bdv Dataset input", style = "open", visibility = ItemVisibility.MESSAGE)
     File xmlin;
 
     @Parameter(label="View setup reference for rescaling, -1 to list all voxel dimensions and pick the first", persist = false)
@@ -70,7 +73,6 @@ public class DatasetToBigStitcherDatasetCommand implements Command {
 
             // Scaling such as size of one pixel = 1
             SpimDataHelper.scale(asd, "BigStitcher Scaling", scalingForBigStitcher);
-
 
             asd.setBasePath(new File(xmlout.getAbsolutePath()).getParentFile()); //TODO TOFIX
             new XmlIoSpimData().save((SpimData) asd, xmlout.getAbsolutePath());
