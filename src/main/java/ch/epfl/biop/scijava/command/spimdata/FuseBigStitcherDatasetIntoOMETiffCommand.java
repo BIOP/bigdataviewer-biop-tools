@@ -27,17 +27,19 @@ import org.scijava.task.Task;
 import org.scijava.task.TaskService;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
-import sc.fiji.bdvpg.scijava.services.ui.SourceAndConverterServiceUI;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
 import sc.fiji.bdvpg.spimdata.importer.SpimDataFromXmlImporter;
 
 import java.io.File;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static sc.fiji.bdvpg.services.ISourceAndConverterService.SPIM_DATA_INFO;
 
 @Plugin(type = Command.class, menuPath = ScijavaBdvDefaults.RootMenu+"BDVDataset>Fuse a BigStitcher dataset to OME-Tiff")
 public class FuseBigStitcherDatasetIntoOMETiffCommand implements Command {
@@ -153,14 +155,13 @@ public class FuseBigStitcherDatasetIntoOMETiffCommand implements Command {
             e.printStackTrace();
         }
 
-        SourceAndConverterServiceUI.Node node = sac_service.getUI().getRoot().child(xml_bigstitcher_file.getName());
-
-        List<SourceAndConverterServiceUI.Node> channelNodes = node.child(Channel.class.getSimpleName()).children();
+        List<SourceAndConverter<?>> allSources = sac_service.getSourceAndConverterFromSpimdata(asd);
 
         // Gets Z-ratio from the first source
 
         AffineTransform3D transform = new AffineTransform3D();
-        channelNodes.get(0).sources()[0].getSpimSource().getSourceTransform(0,0,transform);
+        allSources.get(0).getSpimSource().getSourceTransform(0,0,transform);
+        //channelNodes.get(0).sources()[0].getSpimSource().getSourceTransform(0,0,transform);
         IJ.log("Transform of first source = "+transform);
         // The sample can be rotated. Here we try to get the max value of the line for each voxel
         double voxSX = Math.max(Math.max(Math.abs(transform.get(0,0)), Math.abs(transform.get(0,1))), Math.abs(transform.get(0,2)));
@@ -183,19 +184,33 @@ public class FuseBigStitcherDatasetIntoOMETiffCommand implements Command {
         vox_size_z_micrometer = voxelDimensions.dimension(2);
 
         // Create a model source
-        SourceAndConverter model = SourceHelper.getModelFusedMultiSources(channelNodes.get(0).sources(),
-                0, SourceAndConverterHelper.getMaxTimepoint(channelNodes.get(0).sources()),
+        SourceAndConverter model = SourceHelper.getModelFusedMultiSources(/*channelNodes.get(0).sources()*/allSources.toArray(new SourceAndConverter[0]),
+                0, SourceAndConverterHelper.getMaxTimepoint(/*channelNodes.get(0).sources()*/allSources.toArray(new SourceAndConverter[0])),
                 1, z_ratio,
                 1,
                 1,1,"Model");
 
-        int nChannels = channelNodes.size();
-        SourceAndConverter[] fusedSources = new SourceAndConverter[nChannels];
 
-        for (int iChannel=0; iChannel<nChannels; iChannel++) {
+        Map<Integer, List<SourceAndConverter<?>>> channelToSources = new HashMap<>();
+
+        allSources.forEach(source -> {
+            SourceAndConverterService.SpimDataInfo sdi = (SourceAndConverterService.SpimDataInfo) sac_service.getMetadata(source, SPIM_DATA_INFO);
+            // source
+            int channelId = ((BasicViewSetup)asd.getSequenceDescription().getViewSetups().get(sdi.setupId)).getAttribute(Channel.class).getId();
+            if (!channelToSources.containsKey(channelId)) {
+                channelToSources.put(channelId, new ArrayList<>());
+            }
+            channelToSources.get(channelId).add(source);
+        });
+
+        //int nChannels =
+        int[] channels = channelToSources.keySet().stream().sorted().mapToInt(Integer::intValue).toArray();
+        SourceAndConverter[] fusedSources = new SourceAndConverter[channels.length];
+
+        for (int iChannel=0; iChannel<channels.length; iChannel++) {
             // Fuse and resample
             fusedSources[iChannel] =
-                    new SourceFuserAndResampler(Arrays.asList(channelNodes.get(iChannel).sources()),
+                    new SourceFuserAndResampler(channelToSources.get(channels[iChannel]),
                             AlphaFusedResampledSource.AVERAGE,
                             model,
                             xml_bigstitcher_file.getName()+"_Channel"+iChannel,
@@ -270,7 +285,7 @@ public class FuseBigStitcherDatasetIntoOMETiffCommand implements Command {
             e.printStackTrace();
         }
         // Cleanup
-        sac_service.remove(node.sources());
+        sac_service.remove(allSources.toArray(new SourceAndConverter[0]));
     }
 
     static class CZTSet {
