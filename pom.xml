@@ -283,7 +283,7 @@
 		<!-- <dependency> Uncomment to enable fast lattice light sheet reader
 			<groupId>ch.epfl.biop</groupId>
 			<artifactId>quick-start-czi-reader</artifactId>
-			<version>0.1.5-SNAPSHOT</version>
+			<version>0.2.0</version>
 		</dependency> -->
 
 		<!-- https://mvnrepository.com/artifact/com.esotericsoftware/kryo -->

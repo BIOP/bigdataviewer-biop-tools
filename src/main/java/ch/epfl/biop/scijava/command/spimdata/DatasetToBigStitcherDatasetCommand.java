@@ -31,7 +31,7 @@ import java.io.File;
 @Plugin(type = Command.class, menuPath = ScijavaBdvDefaults.RootMenu+"BDVDataset>Edit>Make BDVDataset BigStitcher Compatible")
 public class DatasetToBigStitcherDatasetCommand implements Command {
 
-    @Parameter(label="Xml Bdv Dataset input", style = "open", visibility = ItemVisibility.MESSAGE)
+    @Parameter(label="Xml Bdv Dataset input", style = "open")
     File xmlin;
 
     @Parameter(label="View setup reference for rescaling, -1 to list all voxel dimensions and pick the first", persist = false)
