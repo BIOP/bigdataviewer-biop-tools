@@ -99,11 +99,25 @@ public class OpenOperettaDatasetCommand implements Command {
     @Override
     public void run() {
         // A few checks and warning for big files
-        File f = new File(folder, "Index.idx.xml");
-        if (!f.exists()) {
-            IJ.log("Error, file "+f.getAbsolutePath()+" not found!");
+        XMLFILE file = null;
+        for (XMLFILE version : XMLFILE.values()) {
+            File candidate = new File(folder, version.getIndexFileName());
+            if (candidate.exists()) {
+                file = version;
+                break;
+            }
+        }
+        // A few checks and warning for big files
+        if (file == null) {
+            IJ.log("Error, no matching Index files found in " + folder.getAbsolutePath());
+            IJ.log("Implemented valid Index files:");
+            for (XMLFILE version : XMLFILE.values()) {
+                IJ.log("\t" + version.getIndexFileName() + " (" + version.getDescription() + ")");
+            }
             return;
         }
+
+        File f = new File(folder, file.getIndexFileName());
 
         int sizeInMb = (int) ((double) FileUtils.sizeOf(f)/(double)(1024*1024));
         IJ.log("- Opening Operetta dataset "+f.getAbsolutePath()+" (" + sizeInMb + " Mb)");
@@ -413,5 +427,28 @@ public class OpenOperettaDatasetCommand implements Command {
         //System.out.println("R"+row+" - C"+col);
         //System.out.println("rendered to "+alphabet.substring(row-1, row)+df.format(col));
         return alphabet.substring(row-1, row)+df.format(col);
+    }
+
+    private enum XMLFILE {
+        V5("Index.idx.xml", "PerkinElmer Harmony V5"),
+        V5FLEX("Index.flex.xml", "PerkinElmer Harmony V5 Flatfield data"),
+        V6("Index.xml", "PerkinElmer Harmony V6");
+
+        private final String description;
+        private final String indexFileName;
+
+        XMLFILE(String indexFileName, String description) {
+            this.indexFileName = indexFileName;
+            this.description = description;
+        }
+
+        private String getIndexFileName() {
+            return this.indexFileName;
+        }
+
+        public String getDescription() {
+            return this.description;
+        }
+
     }
 }
