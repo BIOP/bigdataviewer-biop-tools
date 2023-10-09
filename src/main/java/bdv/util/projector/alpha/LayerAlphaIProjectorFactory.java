@@ -40,12 +40,12 @@ import java.util.stream.IntStream;
  * @author Nicolas Chiaruttini, EPFL, 2021
  */
 
-public class LayerAlphaProjectorFactory implements ILayerAlphaProjectorFactory {
+public class LayerAlphaIProjectorFactory implements ILayerAlphaProjectorFactory {
 
     /**
      * Public constructor
      */
-    public LayerAlphaProjectorFactory() {
+    public LayerAlphaIProjectorFactory() {
 
     }
 
@@ -57,7 +57,7 @@ public class LayerAlphaProjectorFactory implements ILayerAlphaProjectorFactory {
      * @param sourcesMeta object which links its source to its layer
      * @param layerMeta object which links each layer to its alpha value
      */
-    public LayerAlphaProjectorFactory(SourcesMetadata sourcesMeta, LayerMetadata layerMeta) {
+    public LayerAlphaIProjectorFactory(SourcesMetadata sourcesMeta, LayerMetadata layerMeta) {
         this.setSourcesMeta(sourcesMeta);
         this.setLayerMeta(layerMeta);
     }
@@ -86,7 +86,7 @@ public class LayerAlphaProjectorFactory implements ILayerAlphaProjectorFactory {
             final int numThreads,
             final ExecutorService executorService )
     {
-        return new AccumulateProjectorARGBGeneric(sourcesMeta, layerMeta, sourceProjectors, sources, sourceScreenImages, targetScreenImage, numThreads, executorService );
+        return new LayerAlphaIProjectorFactory.AccumulateProjectorARGBGeneric(sourcesMeta, layerMeta, sourceProjectors, sources, sourceScreenImages, targetScreenImage, numThreads, executorService );
     }
 
     /**
@@ -115,7 +115,7 @@ public class LayerAlphaProjectorFactory implements ILayerAlphaProjectorFactory {
                 final RandomAccessibleInterval< ARGBType > target,
                 final int numThreads,
                 final ExecutorService executorService
-                )
+        )
         {
             super( sourceProjectors, sourceScreenImages, target );
             source_linked_alpha_source_index = new int[sources.size()];
@@ -190,7 +190,7 @@ public class LayerAlphaProjectorFactory implements ILayerAlphaProjectorFactory {
         @Override
         protected void accumulate(final Cursor< ? extends ARGBType >[] accesses, final ARGBType target )
         {
-            int aSum = 0, rSum = 0, gSum = 0, bSum = 0;
+            int aSum = 255, rSum = 255, gSum = 255, bSum = 255;
             int aLayer = 0, rLayer = 0, gLayer = 0, bLayer = 0;
 
             // Initialisation before the loop
@@ -267,10 +267,48 @@ public class LayerAlphaProjectorFactory implements ILayerAlphaProjectorFactory {
                 gSum = 255;
             if ( bSum > 255 )
                 bSum = 255;
+            double[] HSV = HSVFromRGB(255-rSum, 255-gSum, 255-bSum);
+            //HSV[0] = ((int)HSV[0] + 128) & 0xFF; //
+            HSV[0] = (HSV[0]+128)%256;
+            double[] RGB = RGBFromHSV(HSV[0], HSV[1], HSV[2]);
+
+            rSum = (byte)Math.round(RGB[0]);
+            gSum = (byte)Math.round(RGB[1]);
+            bSum = (byte)Math.round(RGB[2]);
 
 
             target.set( ARGBType.rgba( rSum, gSum, bSum, aSum ) );
         }
+    }
+
+
+    static private double[] HSVFromRGB(double r, double g, double b) {
+
+        double value = Math.max(r, Math.max(g, b));
+        double chroma = value - Math.min(r, Math.min(g, b));
+        double hue = 0;
+
+        if (chroma > 0) {
+            if (value == r) hue = 256 / 6 * (0 + g - b) / chroma;
+            if (value == g) hue = 256 / 6 * (2 + (b - r) / chroma);
+            if (value == b) hue = 256 / 6 * (4 + (r - g) / chroma);
+        }
+
+        hue = (hue + 256) % 256;
+
+        double saturation = 0;
+        if (value > 0) saturation = chroma / value * 256;
+
+        return new double[] {hue, saturation, value};
+    }
+
+    static private double[] RGBFromHSV(double h, double s, double v) {
+
+        double red = v - v * s / 256 * Math.max(0, Math.min((5+h/256*6)%6, Math.min(4-(5+h/256*6)%6, 1)));
+        double green = v - v * s / 256 * Math.max(0, Math.min((3+h/256*6)%6, Math.min(4-(3+h/256*6)%6, 1)));
+        double blue = v - v * s / 256 * Math.max(0, Math.min((1+h/256*6)%6, Math.min(4-(1+h/256*6)%6, 1)));
+
+        return new double[] {red, green, blue};
     }
 
 }

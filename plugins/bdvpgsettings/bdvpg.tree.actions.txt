@@ -75,5 +75,6 @@
   "BDV Playground\u003eState\u003eSave Bdv Playground State (experimental)",
   "BDV Playground\u003eOptions\u003eSet cache options",
   "BDV Playground\u003eOptions\u003eBDV - Set BDV window (default)",
-  "BDV Playground\u003eOptions\u003eBDV - Set BDV window (biop)"
+  "BDV Playground\u003eOptions\u003eBDV - Set BDV window (biop)",
+  "BDV Playground\u003eOptions\u003eBDV - Set BDV window (alpha)"
 ]

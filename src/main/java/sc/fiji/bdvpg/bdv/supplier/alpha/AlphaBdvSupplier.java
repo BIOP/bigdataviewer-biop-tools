@@ -2,7 +2,12 @@ package sc.fiji.bdvpg.bdv.supplier.alpha;
 
 import bdv.ui.CardPanel;
 import bdv.util.*;
+import bdv.util.projector.alpha.ILayerAlphaProjectorFactory;
+import bdv.util.projector.alpha.Layer;
+import bdv.util.projector.alpha.LayerAlphaIProjectorFactory;
 import bdv.util.projector.alpha.LayerAlphaProjectorFactory;
+import bdv.util.projector.alpha.LayerMetadata;
+import bdv.util.projector.alpha.SourcesMetadata;
 import bdv.util.source.alpha.AlphaSourceHelper;
 import bdv.util.source.alpha.IAlphaSource;
 import bdv.viewer.*;
@@ -57,7 +62,7 @@ public class AlphaBdvSupplier implements IBdvSupplier {
      * Sources Metadata (how to retrieve and when to create alpha sources) backed by a
      * {@link sc.fiji.bdvpg.scijava.services.SourceAndConverterService}
      */
-    final public static LayerAlphaProjectorFactory.SourcesMetadata sourcesMetadata = new LayerAlphaProjectorFactory.SourcesMetadata() {
+    final public static SourcesMetadata sourcesMetadata = new SourcesMetadata() {
         @Override
         public boolean isAlphaSource(SourceAndConverter<?> sac) {
             return sac.getSpimSource() instanceof IAlphaSource;
@@ -79,8 +84,15 @@ public class AlphaBdvSupplier implements IBdvSupplier {
         AccumulateProjectorFactory<ARGBType> projectorFactory = AccumulateProjectorARGB.factory;
 
         if (sOptions.useAlphaCompositing) {
-            projectorFactory = sOptions.accumulateProjectorFactory;
-            ((LayerAlphaProjectorFactory)projectorFactory).setSourcesMeta(sourcesMetadata);
+            if (sOptions.white_bg) {
+                projectorFactory = new LayerAlphaIProjectorFactory();
+                ((ILayerAlphaProjectorFactory)projectorFactory).setSourcesMeta(sourcesMetadata);
+            } else {
+                projectorFactory = new LayerAlphaProjectorFactory();
+                ((ILayerAlphaProjectorFactory)projectorFactory).setSourcesMeta(sourcesMetadata);
+            }
+            /*projectorFactory = new LayerAlphaProjectorFactory();
+            ((ILayerAlphaProjectorFactory)projectorFactory).setSourcesMeta(sourcesMetadata);*/
         }
 
         BdvOptions options = sOptions.getBdvOptions();
@@ -88,6 +100,7 @@ public class AlphaBdvSupplier implements IBdvSupplier {
         // create dummy image to instantiate the BDV
         ArrayImg<ByteType, ByteArray> dummyImg = ArrayImgs.bytes(2, 2, 2);
         options = options.sourceTransform( new AffineTransform3D() );
+        options.accumulateProjectorFactory(projectorFactory);
         BdvStackSource<ByteType> bss = BdvFunctions.show( dummyImg, "dummy", options );
         BdvHandle bdvh = bss.getBdvHandle();
 
@@ -99,7 +112,7 @@ public class AlphaBdvSupplier implements IBdvSupplier {
 
         if (sOptions.useAlphaCompositing) {
             bdvh.getViewerPanel().state().changeListeners().add(new AlphaSourcesSynchronizer(bdvh));
-            ((LayerAlphaProjectorFactory) projectorFactory).setLayerMeta(new GroupLayerMetadata(bdvh.getViewerPanel(), bdvh.getCardPanel()));
+            ((ILayerAlphaProjectorFactory) projectorFactory).setLayerMeta(new GroupLayerMetadata(bdvh.getViewerPanel(), bdvh.getCardPanel()));
         }
 
         BdvSupplierHelper.addSourcesDragAndDrop(bdvh);
@@ -109,7 +122,7 @@ public class AlphaBdvSupplier implements IBdvSupplier {
         return bdvh;
     }
 
-    public static class GroupLayerMetadata implements LayerAlphaProjectorFactory.LayerMetadata, ViewerStateChangeListener {
+    public static class GroupLayerMetadata implements LayerMetadata, ViewerStateChangeListener {
 
         final ViewerPanel viewer;
 
@@ -157,7 +170,7 @@ public class AlphaBdvSupplier implements IBdvSupplier {
         final SourceGroupLayer defaultLayer;
 
         @Override
-        public LayerAlphaProjectorFactory.Layer getLayer(SourceAndConverter<?> sac) {
+        public Layer getLayer(SourceAndConverter<?> sac) {
             if (sourceToGroup.containsKey(sac)) {
                 return groupToLayer.get(sourceToGroup.get(sac));
             } else {
@@ -192,7 +205,7 @@ public class AlphaBdvSupplier implements IBdvSupplier {
         }
     }
 
-    public static class SourceGroupLayer implements LayerAlphaProjectorFactory.Layer {
+    public static class SourceGroupLayer implements Layer {
 
         final ViewerPanel viewer;
         final SourceGroup group;
@@ -256,7 +269,7 @@ public class AlphaBdvSupplier implements IBdvSupplier {
         }
 
         @Override
-        public int compareTo(@NotNull LayerAlphaProjectorFactory.Layer o) {
+        public int compareTo(@NotNull Layer o) {
             return Integer.compare(id, ((SourceGroupLayer)o).id);
             //viewer.state().groupOrder().compare(group, ((SourceGroupLayer)o).getGroup()); DO NOT USE! CAUSES THREADS DEADLOCK!
         }

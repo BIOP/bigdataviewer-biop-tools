@@ -2,6 +2,7 @@ package sc.fiji.bdvpg.bdv.supplier.alpha;
 
 import bdv.util.AxisOrder;
 import bdv.util.BdvOptions;
+import bdv.util.projector.alpha.ILayerAlphaProjectorFactory;
 import bdv.util.projector.alpha.LayerAlphaProjectorFactory;
 import bdv.viewer.render.AccumulateProjectorFactory;
 import net.imglib2.type.numeric.ARGBType;
@@ -61,6 +62,11 @@ public class AlphaSerializableBdvOptions {
     public boolean interpolate = false;
 
     /**
+     * Extra arg for the playground
+     */
+    public boolean white_bg = false;
+
+    /**
      * See do above. I'm writing this because CI does not pass if there are too many warnings
      */
     public int numTimePoints = 1;
@@ -68,7 +74,7 @@ public class AlphaSerializableBdvOptions {
     /**
      * See do above. I'm writing this because CI does not pass if there are too many warnings
      */
-    public AccumulateProjectorFactory<ARGBType> accumulateProjectorFactory = new LayerAlphaProjectorFactory();
+    public ILayerAlphaProjectorFactory accumulateProjectorFactory;// = new LayerAlphaProjectorFactory();
 
     /**
      * See do above. I'm writing this because CI does not pass if there are too many warnings

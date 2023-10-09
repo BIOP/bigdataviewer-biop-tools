@@ -48,6 +48,9 @@ public class BdvSetAlphaViewerSettingsCommand implements BdvPlaygroundActionComm
     boolean interpolate = false;
 
     @Parameter
+    boolean white_background = false;
+
+    @Parameter
     int numtimepoints = 1;
 
     @Parameter
@@ -81,6 +84,7 @@ public class BdvSetAlphaViewerSettingsCommand implements BdvPlaygroundActionComm
             options.numTimePoints = numtimepoints;
             options.interpolate = interpolate;
             options.useAlphaCompositing = usealphalayer;
+            options.white_bg = white_background;
             IBdvSupplier bdvSupplier = new AlphaBdvSupplier(options);
             sacDisplayService.setDefaultBdvSupplier(bdvSupplier);
         }

@@ -2,6 +2,9 @@ package alpha;
 
 import bdv.spimdata.SpimDataMinimal;
 import bdv.util.*;
+import bdv.util.projector.alpha.Layer;
+import bdv.util.projector.alpha.LayerMetadata;
+import bdv.util.projector.alpha.SourcesMetadata;
 import bdv.util.source.alpha.AlphaSourceRAI;
 import org.jetbrains.annotations.NotNull;
 import bdv.util.projector.alpha.LayerAlphaProjectorFactory;
@@ -28,7 +31,7 @@ public class FancyDemoLayerAlphaSource {
     static Map<SourceAndConverter, SourceAndConverter> sourceToAlpha = new ConcurrentHashMap<>();
     static Map<SourceAndConverter, DefaultLayer> sourceToLayer = new ConcurrentHashMap<>();
 
-    public static class DefaultLayer implements LayerAlphaProjectorFactory.Layer {
+    public static class DefaultLayer implements Layer {
 
         float alpha;
         int id;
@@ -62,7 +65,7 @@ public class FancyDemoLayerAlphaSource {
         }
 
         @Override
-        public int compareTo(@NotNull LayerAlphaProjectorFactory.Layer o) {
+        public int compareTo(@NotNull Layer o) {
             return Integer.compare(this.getId(), ((DefaultLayer)o).getId());
         }
     }
@@ -78,7 +81,7 @@ public class FancyDemoLayerAlphaSource {
 
         BdvOptions options = BdvOptions.options();
         //options = options.accumulateProjectorFactory(new BlackProjectorFactory());
-        options = options.accumulateProjectorFactory(new LayerAlphaProjectorFactory(new LayerAlphaProjectorFactory.SourcesMetadata() {
+        options = options.accumulateProjectorFactory(new LayerAlphaProjectorFactory(new SourcesMetadata() {
             @Override
             public boolean isAlphaSource(SourceAndConverter sac) {
                 if (sourceToAlpha.containsValue(sac)) return true;
@@ -101,9 +104,9 @@ public class FancyDemoLayerAlphaSource {
                 return null;
             }
         },
-            new LayerAlphaProjectorFactory.LayerMetadata() {
+            new LayerMetadata() {
                 @Override
-                public LayerAlphaProjectorFactory.Layer getLayer(SourceAndConverter sac) {
+                public Layer getLayer(SourceAndConverter sac) {
                     if (sourceToLayer.containsKey(sac)) {
                         return sourceToLayer.get(sac);
                     } else {

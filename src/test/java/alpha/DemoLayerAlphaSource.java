@@ -2,7 +2,10 @@ package alpha;
 
 import bdv.spimdata.SpimDataMinimal;
 import bdv.util.*;
+import bdv.util.projector.alpha.Layer;
 import bdv.util.projector.alpha.LayerAlphaProjectorFactory;
+import bdv.util.projector.alpha.LayerMetadata;
+import bdv.util.projector.alpha.SourcesMetadata;
 import bdv.util.source.alpha.AlphaConverter;
 import bdv.util.source.alpha.AlphaSource;
 import bdv.util.source.alpha.AlphaSourceRAI;
@@ -22,9 +25,9 @@ public class DemoLayerAlphaSource {
     static BdvHandle bdvh;
 
     static Map<SourceAndConverter, SourceAndConverter> sourceToAlpha = new ConcurrentHashMap<>();
-    static Map<SourceAndConverter, LayerAlphaProjectorFactory.Layer> sourceToLayer = new ConcurrentHashMap<>();
+    static Map<SourceAndConverter, Layer> sourceToLayer = new ConcurrentHashMap<>();
 
-    public static class DefaultLayer implements LayerAlphaProjectorFactory.Layer {
+    public static class DefaultLayer implements Layer {
 
         float alpha;
         int id;
@@ -54,7 +57,7 @@ public class DemoLayerAlphaSource {
         }
 
         @Override
-        public int compareTo(@NotNull LayerAlphaProjectorFactory.Layer o) {
+        public int compareTo(@NotNull Layer o) {
             return Integer.compare(this.getId(), ((DemoLayerAlphaSource.DefaultLayer)o).getId());
         }
 
@@ -62,13 +65,13 @@ public class DemoLayerAlphaSource {
 
     public static void main(final String... args) {
 
-        List<LayerAlphaProjectorFactory.Layer> layers = new ArrayList<>();
+        List<Layer> layers = new ArrayList<>();
         layers.add(new DefaultLayer(1f, 0, true));
         layers.add(new DefaultLayer(0.5f, 1, false));
         layers.add(new DefaultLayer(0.8f, 2, false));
 
         BdvOptions options = BdvOptions.options();
-        options = options.accumulateProjectorFactory(new LayerAlphaProjectorFactory(new LayerAlphaProjectorFactory.SourcesMetadata() {
+        options = options.accumulateProjectorFactory(new LayerAlphaProjectorFactory(new SourcesMetadata() {
             @Override
             public boolean isAlphaSource(SourceAndConverter sac) {
                 if (sourceToAlpha.containsValue(sac)) return true;
@@ -91,9 +94,9 @@ public class DemoLayerAlphaSource {
                 return null;
             }
         },
-            new LayerAlphaProjectorFactory.LayerMetadata() {
+            new LayerMetadata() {
                 @Override
-                public LayerAlphaProjectorFactory.Layer getLayer(SourceAndConverter sac) {
+                public Layer getLayer(SourceAndConverter sac) {
                     if (sourceToLayer.containsKey(sac)) {
                         return sourceToLayer.get(sac);
                     } else {
