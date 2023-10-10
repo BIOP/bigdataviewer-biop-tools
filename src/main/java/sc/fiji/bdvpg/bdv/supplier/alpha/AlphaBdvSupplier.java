@@ -13,6 +13,7 @@ import bdv.util.source.alpha.IAlphaSource;
 import bdv.viewer.*;
 import bdv.viewer.render.AccumulateProjectorARGB;
 import bdv.viewer.render.AccumulateProjectorFactory;
+import ch.epfl.biop.bdv.select.SourceSelectorBehaviour;
 import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.basictypeaccess.array.ByteArray;
@@ -21,14 +22,21 @@ import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.integer.ByteType;
 import net.imglib2.type.numeric.real.FloatType;
 import org.jetbrains.annotations.NotNull;
+import sc.fiji.bdvpg.bdv.BdvHandleHelper;
+import sc.fiji.bdvpg.bdv.navigate.RayCastPositionerSliderAdder;
+import sc.fiji.bdvpg.bdv.navigate.SourceNavigatorSliderAdder;
+import sc.fiji.bdvpg.bdv.navigate.TimepointAdapterAdder;
+import sc.fiji.bdvpg.bdv.overlay.SourceNameOverlayAdder;
 import sc.fiji.bdvpg.bdv.supplier.BdvSupplierHelper;
 import sc.fiji.bdvpg.bdv.supplier.IBdvSupplier;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
 
 import javax.swing.*;
+import java.awt.Font;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import static bdv.util.source.alpha.AlphaSourceHelper.ALPHA_SOURCE_KEY;
@@ -116,8 +124,58 @@ public class AlphaBdvSupplier implements IBdvSupplier {
         }
 
         BdvSupplierHelper.addSourcesDragAndDrop(bdvh);
+        SourceSelectorBehaviour ssb = BdvSupplierHelper.addEditorMode(bdvh, "");
 
-        BdvSupplierHelper.addEditorMode(bdvh, "");
+
+        bdvh.getSplitPanel().setCollapsed(false);
+
+        JPanel editorModeToggle = new JPanel();
+        JButton editorToggle = new JButton("Editor Mode");
+        editorToggle.addActionListener((e) -> {
+            if (ssb.isEnabled()) {
+                ssb.disable();
+                editorToggle.setText("Editor Mode 'E'");
+            }
+            else {
+                ssb.enable();
+                editorToggle.setText("Navigation Mode 'E'");
+            }
+        });
+
+        editorModeToggle.add(editorToggle);
+
+        JButton nameToggle = new JButton("Display sources name");
+        AtomicBoolean nameOverlayEnabled = new AtomicBoolean();
+        nameOverlayEnabled.set(true);
+
+        SourceNameOverlayAdder nameOverlayAdder = new SourceNameOverlayAdder(bdvh, new Font(sOptions.font, Font.PLAIN, sOptions.fontSize));
+
+        nameToggle.addActionListener((e) -> {
+            if (nameOverlayEnabled.get()) {
+                nameOverlayEnabled.set(false);
+                nameToggle.setText("Display sources names");
+                nameOverlayAdder.removeFromBdv();
+
+            }
+            else {
+                nameOverlayEnabled.set(true);
+                nameToggle.setText("Hide sources name");
+                nameOverlayAdder.addToBdv();
+            }
+        });
+
+        editorModeToggle.add(nameToggle);
+
+        SwingUtilities.invokeLater(() -> {
+            nameOverlayAdder.run();
+            BdvHandleHelper.addCenterCross(bdvh);
+            new RayCastPositionerSliderAdder(bdvh).run();
+            new SourceNavigatorSliderAdder(bdvh).run();
+            new TimepointAdapterAdder(bdvh).run();
+        });
+        //SwingUtilities.invokeLater(() -> BdvHandleHelper.addCenterCross(bdvh));
+        //SwingUtilities.invokeLater(() -> new RayCastPositionerSliderAdder(bdvh).run());
+        BdvHandleHelper.addCard(bdvh, "Mode", editorModeToggle, true);
 
         return bdvh;
     }

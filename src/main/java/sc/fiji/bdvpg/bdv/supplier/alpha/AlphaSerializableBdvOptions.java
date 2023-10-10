@@ -81,6 +81,10 @@ public class AlphaSerializableBdvOptions {
      */
     boolean useAlphaCompositing = true;
 
+    public int fontSize = 18;
+
+    public String font = "Courier";
+
     // Not serialized
     //private TransformEventHandlerFactory transformEventHandlerFactory = TransformEventHandler3D::new;
     //private InputTriggerConfig inputTriggerConfig = null;
