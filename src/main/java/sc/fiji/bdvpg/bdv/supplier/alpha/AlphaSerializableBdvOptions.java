@@ -79,7 +79,7 @@ public class AlphaSerializableBdvOptions {
     /**
      * See do above. I'm writing this because CI does not pass if there are too many warnings
      */
-    boolean useAlphaCompositing = true;
+    public boolean useAlphaCompositing = true;
 
     public int fontSize = 18;
 
