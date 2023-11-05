@@ -100,8 +100,8 @@
 		<!-- general imagej dependencies -->
 		<!-- bdv playground related dependencies -->
 		<bigdataviewer-playground.version>0.8.0</bigdataviewer-playground.version>
-		<bigdataviewer-image-loaders.version>0.6.1</bigdataviewer-image-loaders.version>
 		<bigdataviewer-playground-display.version>0.4.0</bigdataviewer-playground-display.version>
+		<image-transform-converters.version>0.1.7</image-transform-converters.version>
 
 		<!-- biop dependencies -->
 		<ijl-utilities-wrappers.version>0.9.4</ijl-utilities-wrappers.version>
@@ -115,6 +115,9 @@
 		<leastsquares.version>1.0.0</leastsquares.version>
 
 		<releaseProfiles>sign,deploy-to-scijava</releaseProfiles>
+
+		<!-- test -->
+		<bigdataviewer-image-loaders.version>0.6.1</bigdataviewer-image-loaders.version>
 
 	</properties>
 
@@ -193,6 +196,12 @@
 			<version>${bigdataviewer-playground-display.version}</version>
 		</dependency>
 
+		<dependency>
+			<groupId>org.itc</groupId>
+			<artifactId>image-transform-converters</artifactId>
+			<version>${image-transform-converters.version}</version>
+		</dependency>
+
 		<!-- BIOP dependencies -->
 		<dependency>
 			<groupId>ch.epfl.biop</groupId>
@@ -204,12 +213,6 @@
 			<groupId>ch.epfl.biop</groupId>
 			<artifactId>ijl-utilities-wrappers</artifactId>
 			<version>${ijl-utilities-wrappers.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>ch.epfl.biop</groupId>
-			<artifactId>bigdataviewer-image-loaders</artifactId>
-			<version>${bigdataviewer-image-loaders.version}</version>
 		</dependency>
 
 		<dependency>
@@ -251,18 +254,19 @@
 			<scope>test</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>ch.epfl.biop</groupId>
+			<artifactId>bigdataviewer-image-loaders</artifactId>
+			<version>${bigdataviewer-image-loaders.version}</version>
+			<scope>test</scope>
+		</dependency>
+
 		<!-- <dependency> Uncomment to enable fast lattice light sheet reader
 			<groupId>ch.epfl.biop</groupId>
 			<artifactId>quick-start-czi-reader</artifactId>
 			<version>0.2.0</version>
+			<scope>test</scope>
 		</dependency> -->
-
-		<!-- https://mvnrepository.com/artifact/com.esotericsoftware/kryo -->
-		<!--<dependency>
-			<groupId>com.esotericsoftware</groupId>
-			<artifactId>kryo</artifactId>
-			<version>5.0.0</version>
-		</dependency>-->
 
 	</dependencies>
 
