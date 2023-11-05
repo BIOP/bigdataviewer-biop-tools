@@ -11,7 +11,7 @@
 
 	<groupId>ch.epfl.biop</groupId>
 	<artifactId>bigdataviewer-biop-tools</artifactId>
-	<version>0.7.3-SNAPSHOT</version>
+	<version>0.7.3</version>
 
 	<name>Biop Bigdataviewer Tools and Plugins </name>
 	<description>Big data viewer tools BIOP - EPFL</description>
@@ -76,7 +76,7 @@
 		<connection>scm:git:https://github.com/BIOP/bigdataviewer-biop-tools</connection>
 		<developerConnection>scm:git:git@github.com:BIOP/bigdataviewer-biop-tools</developerConnection>
 		<url>https://github.com/BIOP/bigdataviewer-biop-tools</url>
-    <tag>HEAD</tag>
+    <tag>bigdataviewer-biop-tools-0.7.3</tag>
   </scm>
 	
 	<issueManagement>
@@ -102,6 +102,7 @@
 		<bigdataviewer-playground.version>0.8.0</bigdataviewer-playground.version>
 		<bigdataviewer-playground-display.version>0.4.0</bigdataviewer-playground-display.version>
 		<image-transform-converters.version>0.1.7</image-transform-converters.version>
+		<bigdataviewer-image-loaders.version>0.6.1</bigdataviewer-image-loaders.version>
 
 		<!-- biop dependencies -->
 		<ijl-utilities-wrappers.version>0.9.4</ijl-utilities-wrappers.version>
@@ -117,7 +118,7 @@
 		<releaseProfiles>sign,deploy-to-scijava</releaseProfiles>
 
 		<!-- test -->
-		<bigdataviewer-image-loaders.version>0.6.1</bigdataviewer-image-loaders.version>
+
 
 	</properties>
 
@@ -221,6 +222,12 @@
 			<version>${ijp-kheops.version}</version>
 		</dependency>
 
+		<dependency>
+			<groupId>ch.epfl.biop</groupId>
+			<artifactId>bigdataviewer-image-loaders</artifactId>
+			<version>${bigdataviewer-image-loaders.version}</version>
+		</dependency>
+
 		<!-- maths -->
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -254,12 +261,7 @@
 			<scope>test</scope>
 		</dependency>
 
-		<dependency>
-			<groupId>ch.epfl.biop</groupId>
-			<artifactId>bigdataviewer-image-loaders</artifactId>
-			<version>${bigdataviewer-image-loaders.version}</version>
-			<scope>test</scope>
-		</dependency>
+
 
 		<!-- <dependency> Uncomment to enable fast lattice light sheet reader
 			<groupId>ch.epfl.biop</groupId>
