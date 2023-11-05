@@ -12,7 +12,6 @@ import ch.epfl.biop.sourceandconverter.exporter.ImagePlusGetter;
 import ch.epfl.biop.wrappers.elastix.DefaultElastixTask;
 import ch.epfl.biop.wrappers.elastix.*;
 import ch.epfl.biop.wrappers.transformix.DefaultTransformixTask;
-import ch.epfl.biop.wrappers.transformix.RemoteTransformixTask;
 import ch.epfl.biop.wrappers.transformix.TransformHelper;
 import ch.epfl.biop.wrappers.transformix.TransformixTask;
 import ij.IJ;
@@ -76,11 +75,6 @@ public class Elastix2DSplineRegister<FT extends NativeType<FT> & NumericType<FT>
     double background_offset_value_fixed = 0;
 
     String errorMessage = "";
-
-    public void setRegistrationServer(String serverURL) {
-        tt = () -> new RemoteTransformixTask(serverURL);
-        et = new RemoteElastixTask(serverURL);
-    }
 
     public Elastix2DSplineRegister(SourceAndConverter<FT>[] sacs_fixed,
                                    int levelMipmapFixed,
@@ -231,6 +225,7 @@ public class Elastix2DSplineRegister<FT extends NativeType<FT> & NumericType<FT>
 
         TransformHelper th = new TransformHelper();
         th.setTransformFile(rh);
+        //th.setDefaultOutputDir();
 
         ConvertibleRois rois = new ConvertibleRois();
         RealPointList rpl = new RealPointList(fixedImageGridPointsInFixedImageCoordinates);

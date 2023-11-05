@@ -98,18 +98,13 @@
 		<license.excludes>**/resources/**</license.excludes>
 
 		<!-- general imagej dependencies -->
-		<!-- bigdataviewer dependencies -->
-		<bigvolumeviewer.version>0.3.1</bigvolumeviewer.version>
 		<!-- bdv playground related dependencies -->
 		<bigdataviewer-playground.version>0.8.0</bigdataviewer-playground.version>
-		<bigdataviewer-image-loaders.version>0.6.0</bigdataviewer-image-loaders.version>
+		<bigdataviewer-image-loaders.version>0.6.1</bigdataviewer-image-loaders.version>
 		<bigdataviewer-playground-display.version>0.4.0</bigdataviewer-playground-display.version>
-		<bigdataviewer-spimdata-extras.version>0.4.0</bigdataviewer-spimdata-extras.version>
-		<image-transform-converters.version>0.1.6</image-transform-converters.version>
-		<elastix_registration_server.version>0.1.4</elastix_registration_server.version>
 
 		<!-- biop dependencies -->
-		<ijl-utilities-wrappers.version>0.9.3</ijl-utilities-wrappers.version>
+		<ijl-utilities-wrappers.version>0.9.4</ijl-utilities-wrappers.version>
 		<Operetta_Importer.version>0.3.0</Operetta_Importer.version>
 		<ijp-kheops.version>0.4.2</ijp-kheops.version>
 
@@ -184,12 +179,6 @@
 			<artifactId>bigwarp_fiji</artifactId>
 		</dependency>
 
-		<dependency>
-			<groupId>sc.fiji</groupId>
-			<artifactId>bigvolumeviewer</artifactId>
-			<version>${bigvolumeviewer.version}</version>
-		</dependency>
-
 		<!-- bdv playground related dependencies -->
 
 		<dependency>
@@ -199,21 +188,9 @@
 		</dependency>
 
 		<dependency>
-			<groupId>ch.epfl.biop</groupId>
-			<artifactId>bigdataviewer-spimdata-extras</artifactId>
-			<version>${bigdataviewer-spimdata-extras.version}</version>
-		</dependency>
-
-		<dependency>
 			<groupId>sc.fiji.bigdataviewer</groupId>
 			<artifactId>bigdataviewer-playground-display</artifactId>
 			<version>${bigdataviewer-playground-display.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.itc</groupId>
-			<artifactId>image-transform-converters</artifactId>
-			<version>${image-transform-converters.version}</version>
 		</dependency>
 
 		<!-- BIOP dependencies -->
@@ -251,12 +228,6 @@
 			<groupId>org.orangepalantir</groupId>
 			<artifactId>leastsquares</artifactId>
 			<version>${leastsquares.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>ch.epfl.biop</groupId>
-			<artifactId>elastix_registration_server</artifactId>
-			<version>${elastix_registration_server.version}</version>
 		</dependency>
 
 		<!-- mastodon -->

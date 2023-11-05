@@ -2,7 +2,9 @@ import bdv.util.BdvHandle;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.bdv.img.OpenersToSpimData;
 import ch.epfl.biop.bdv.img.opener.OpenerSettings;
+import ch.epfl.biop.java.utilities.roi.ConvertibleRois;
 import ch.epfl.biop.scijava.command.source.register.Elastix2DSplineRegisterCommand;
+import ch.epfl.biop.wrappers.transformix.DefaultTransformixTask;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imagej.ImageJ;
 import org.scijava.command.CommandService;
@@ -22,7 +24,8 @@ public class DemoRegistrationMultiChannelSpline {
     static final ImageJ ij = new ImageJ();
 
     static public void main(String... args) throws Exception {
-
+        ConvertibleRois cr;
+        DefaultTransformixTask dtt;
         ij.ui().showUI();
 
         OpenerSettings atlasSettings = OpenerSettings.BioFormats()
@@ -64,7 +67,7 @@ public class DemoRegistrationMultiChannelSpline {
                         "levelMovingSource", 0,
                         "pxSizeInCurrentUnit", 0.02,
                         "interpolate", false,
-                        "showImagePlusRegistrationResult", true,
+                        //"showImagePlusRegistrationResult", true,
                         "px", 0,
                         "py", 0,
                         "pz", 0,

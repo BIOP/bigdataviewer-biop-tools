@@ -8,9 +8,7 @@ import ch.epfl.biop.sourceandconverter.exporter.ImagePlusGetter;
 import ch.epfl.biop.wrappers.elastix.DefaultElastixTask;
 import ch.epfl.biop.wrappers.elastix.ElastixTask;
 import ch.epfl.biop.wrappers.elastix.RegisterHelper;
-import ch.epfl.biop.wrappers.elastix.RemoteElastixTask;
 import ch.epfl.biop.wrappers.transformix.DefaultTransformixTask;
-import ch.epfl.biop.wrappers.transformix.RemoteTransformixTask;
 import ch.epfl.biop.wrappers.transformix.TransformHelper;
 import ch.epfl.biop.wrappers.transformix.TransformixTask;
 import ij.IJ;
@@ -65,11 +63,6 @@ public class Elastix2DAffineRegister<FT extends NativeType<FT> & NumericType<FT>
     ElastixTask et = new DefaultElastixTask();
 
     String errorMessage = "";
-
-    public void setRegistrationServer(String serverURL) {
-        tt = () -> new RemoteTransformixTask(serverURL);
-        et = new RemoteElastixTask(serverURL);
-    }
 
     public Elastix2DAffineRegister(SourceAndConverter<FT>[] sacs_fixed,
                                    int levelMipmapFixed,
