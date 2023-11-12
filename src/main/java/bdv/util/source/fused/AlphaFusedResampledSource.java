@@ -15,11 +15,7 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.RealRandomAccessible;
 import net.imglib2.cache.Cache;
 import net.imglib2.cache.img.CachedCellImg;
-import net.imglib2.cache.img.DiskCachedCellImgOptions;
 import net.imglib2.cache.img.LoadedCellCacheLoader;
-import net.imglib2.cache.img.ReadOnlyCachedCellImgFactory;
-import net.imglib2.cache.img.ReadOnlyCachedCellImgOptions;
-import net.imglib2.cache.img.optional.CacheOptions;
 import net.imglib2.img.basictypeaccess.AccessFlags;
 import net.imglib2.img.basictypeaccess.ArrayDataAccessFactory;
 import net.imglib2.img.cell.Cell;
@@ -416,6 +412,7 @@ public class AlphaFusedResampledSource< T extends NumericType<T> & NativeType<T>
                 AffineTransform3D atOriginAlpha = new AffineTransform3D();
                 originsAlpha.get(origin).getSourceTransform(t, mipmapModelToOrigin.get(origin).get(level), atOriginAlpha);
                 at.concatenate(atOriginAlpha);
+
                 RandomAccessible<FloatType> ra_alpha = RealViews.affine(ipimg_alpha, at); // Gets the view
 
                 presentSources.add(ra);
