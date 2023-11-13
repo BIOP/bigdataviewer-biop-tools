@@ -11,7 +11,7 @@
 
 	<groupId>ch.epfl.biop</groupId>
 	<artifactId>bigdataviewer-biop-tools</artifactId>
-	<version>0.7.4-SNAPSHOT</version>
+	<version>0.7.5-SNAPSHOT</version>
 
 	<name>Biop Bigdataviewer Tools and Plugins </name>
 	<description>Big data viewer tools BIOP - EPFL</description>
