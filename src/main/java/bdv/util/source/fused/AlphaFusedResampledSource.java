@@ -24,7 +24,7 @@ import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.realtransform.RealViews;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.ARGBType;
-import net.imglib2.type.numeric.NumericType;
+import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.GenericByteType;
 import net.imglib2.type.numeric.integer.GenericIntType;
 import net.imglib2.type.numeric.integer.GenericLongType;
@@ -77,7 +77,7 @@ import static net.imglib2.type.PrimitiveType.SHORT;
  * @author Nicolas Chiaruttini, BIOP EPFL, 2022
  */
 
-public class AlphaFusedResampledSource< T extends NumericType<T> & NativeType<T>> implements Source<T> {
+public class AlphaFusedResampledSource< T extends RealType<T> & NativeType<T>> implements Source<T> {
 
     final public static String SUM = "SUM";
     final public static String AVERAGE = "AVERAGE";
@@ -406,14 +406,14 @@ public class AlphaFusedResampledSource< T extends NumericType<T> & NativeType<T>
                 origin.getSourceTransform(t, mipmapModelToOrigin.get(origin).get(level), atOrigin);
                 at.concatenate(atOrigin);
 
-                RandomAccessible<T> ra = RealViews.affine(ipimg, at.copy()); // Gets the view
+                RandomAccessible<T> ra = RealViews.simplify(RealViews.affine(ipimg, at.copy())); // Gets the view
 
                 at.set(at_ori);
                 AffineTransform3D atOriginAlpha = new AffineTransform3D();
                 originsAlpha.get(origin).getSourceTransform(t, mipmapModelToOrigin.get(origin).get(level), atOriginAlpha);
                 at.concatenate(atOriginAlpha);
 
-                RandomAccessible<FloatType> ra_alpha = RealViews.affine(ipimg_alpha, at); // Gets the view
+                RandomAccessible<FloatType> ra_alpha = RealViews.simplify(RealViews.affine(ipimg_alpha, at)); // Gets the view
 
                 presentSources.add(ra);
                 presentSourcesAlpha.add(ra_alpha);

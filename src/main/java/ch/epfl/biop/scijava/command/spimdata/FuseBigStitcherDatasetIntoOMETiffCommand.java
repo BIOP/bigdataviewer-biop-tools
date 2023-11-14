@@ -18,6 +18,7 @@ import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.imglib2.cache.LoaderCache;
 import net.imglib2.cache.ref.BoundedSoftRefLoaderCache;
 import net.imglib2.realtransform.AffineTransform3D;
+import ome.codecs.CompressionType;
 import ome.units.UNITS;
 import org.apache.commons.io.FilenameUtils;
 import org.scijava.command.Command;
@@ -240,7 +241,11 @@ public class FuseBigStitcherDatasetIntoOMETiffCommand implements Command {
                         .nResolutionLevels(n_resolution_levels)
                         .savePath(output_path.getAbsolutePath());
 
-                if (use_lzw_compression) exporter.lzw();
+                if (use_lzw_compression) {
+                    exporter.lzw();
+                } else {
+                    exporter.compression(CompressionType.UNCOMPRESSED.getCompression());
+                }
 
                 exporter.create().export();
 

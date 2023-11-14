@@ -3,7 +3,7 @@ package bdv.util.source.fused;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessible;
-import net.imglib2.type.numeric.NumericType;
+import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
 
 import java.util.function.Supplier;
@@ -11,7 +11,7 @@ import java.util.function.Supplier;
 import static bdv.util.source.fused.AlphaFusedResampledSource.AVERAGE;
 import static bdv.util.source.fused.AlphaFusedResampledSource.SUM;
 
-public class AlphaFused3DRandomAccessible<T extends NumericType<T>> implements RandomAccessible<T> {
+public class AlphaFused3DRandomAccessible<T extends RealType<T>> implements RandomAccessible<T> {
 
     final RandomAccessible<T>[] origins;
     final RandomAccessible<FloatType>[] origins_alpha;

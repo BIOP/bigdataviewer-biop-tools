@@ -2,12 +2,12 @@ package bdv.util.source.fused;
 
 import net.imglib2.Localizable;
 import net.imglib2.RandomAccess;
-import net.imglib2.type.numeric.NumericType;
+import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
 
 import java.util.function.Supplier;
 
-public class AverageAlphaFused3DRandomAccess<T extends NumericType<T>> implements SubSetFusedRandomAccess<T> {
+public class AverageAlphaFused3DRandomAccess<T extends RealType<T>> implements SubSetFusedRandomAccess<T> {
 
     long[] position = new long[3];
     final int nRandomAccesses;
@@ -16,7 +16,6 @@ public class AverageAlphaFused3DRandomAccess<T extends NumericType<T>> implement
     final Supplier<T> pixelSupplier;
 
     final protected T pixel;
-    final FloatType alpha;
 
     @SuppressWarnings("CopyConstructorMissesField") // That's the point!
     public AverageAlphaFused3DRandomAccess(AverageAlphaFused3DRandomAccess<T> randomAccess) {
@@ -25,7 +24,6 @@ public class AverageAlphaFused3DRandomAccess<T extends NumericType<T>> implement
         ra_origins_alpha = new RandomAccess[nRandomAccesses];
         this.pixelSupplier = randomAccess.pixelSupplier;
         pixel = pixelSupplier.get();
-        alpha = new FloatType();
 
         // necessary ?
         position[0] = randomAccess.getLongPosition(0);
@@ -47,7 +45,6 @@ public class AverageAlphaFused3DRandomAccess<T extends NumericType<T>> implement
         this.ra_origins_alpha = ra_origins_alpha;
         this.pixelSupplier = pixelSupplier;
         pixel = pixelSupplier.get();
-        alpha = new FloatType();
     }
 
     public AverageAlphaFused3DRandomAccess(AverageAlphaFused3DRandomAccess<T> randomAccess, boolean[] subset) {
@@ -63,7 +60,6 @@ public class AverageAlphaFused3DRandomAccess<T extends NumericType<T>> implement
         ra_origins_alpha = new RandomAccess[nRandomAccesses];
         this.pixelSupplier = randomAccess.pixelSupplier;
         pixel = pixelSupplier.get();
-        alpha = new FloatType();
 
         // necessary ?
         position[0] = randomAccess.getLongPosition(0);
@@ -161,14 +157,21 @@ public class AverageAlphaFused3DRandomAccess<T extends NumericType<T>> implement
         }
     }
 
-    @Override
+    @Override // the one to test!!
     public void setPosition(Localizable position) {
-        this.position[0]=position.getLongPosition(0);
-        this.position[1]=position.getLongPosition(1);
-        this.position[2]=position.getLongPosition(2);
-        for (int i=0; i<nRandomAccesses; i++) {
-            ra_origins[i].setPosition(position);
-            ra_origins_alpha[i].setPosition(position);
+        long pX = position.getLongPosition(0);
+        long pY = position.getLongPosition(1);
+        long pZ = position.getLongPosition(2);
+        if ((pX-this.position[0]==1)&&(pY==this.position[1])&&(pZ==this.position[2])) {
+            fwd(0);
+        } else {
+            this.position[0] = pX;
+            this.position[1] = pY;
+            this.position[2] = pZ;
+            for (int i = 0; i < nRandomAccesses; i++) {
+                ra_origins[i].setPosition(position);
+                ra_origins_alpha[i].setPosition(position);
+            }
         }
     }
 
@@ -219,17 +222,16 @@ public class AverageAlphaFused3DRandomAccess<T extends NumericType<T>> implement
 
     @Override
     public T get() {
-        pixel.setZero();
-        alpha.setZero();
         float sum_alpha = 0;
+        float value = 0;
         for (int i=0; i<nRandomAccesses; i++) {
             float alpha_v=ra_origins_alpha[i].get().get();
             if (alpha_v!=0) {
-                pixel.add(ra_origins[i].get());
+                value+=alpha_v*ra_origins[i].get().getRealFloat();
                 sum_alpha+=alpha_v;
             }
         }
-        pixel.mul(1./sum_alpha);
+        pixel.setReal(value/sum_alpha);
         return pixel;
     }
 

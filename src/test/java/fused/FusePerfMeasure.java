@@ -1,0 +1,60 @@
+package fused;
+
+import ch.epfl.biop.scijava.command.spimdata.CreateCZIDatasetCommand;
+import ch.epfl.biop.scijava.command.spimdata.FuseBigStitcherDatasetIntoOMETiffCommand;
+import loci.common.DebugTools;
+import net.imagej.ImageJ;
+import org.apache.commons.io.FilenameUtils;
+
+import java.io.File;
+import java.net.URLDecoder;
+import java.util.function.Function;
+
+import static fiji.util.TicToc.tic;
+import static fiji.util.TicToc.toc;
+
+public class FusePerfMeasure {
+    static ImageJ ij;
+    public static void main( String[] args ) throws Exception {
+
+        Function<String, String> decoder = (str) -> {
+            try {
+                return URLDecoder.decode(str, "UTF-8");
+            } catch(Exception e){
+                e.printStackTrace();
+                return str;
+            }
+        };
+        File cziTest = DatasetHelper.getDataset("https://zenodo.org/records/8303129/files/Demo%20LISH%204x8%2015pct%20647.czi", decoder);
+
+        DebugTools.enableLogging ("OFF");
+        ij = new ImageJ();
+        ij.ui().showUI();
+        // Get rid of xml dataset and bfmemo
+        File xmlOut = new File (FilenameUtils.removeExtension(cziTest.getAbsolutePath())+".xml");
+        System.out.println(xmlOut.getAbsolutePath());
+        if (xmlOut.exists()) xmlOut.delete();
+        File xmlOutBfMemo = new File (cziTest.getAbsolutePath()+".bfmemo");
+        if (xmlOutBfMemo.exists()) xmlOutBfMemo.delete();
+        System.out.println(xmlOutBfMemo);
+        ij.command().run(CreateCZIDatasetCommand.class, true, "czi_file", cziTest).get();
+
+        tic();
+        ij.command().run(FuseBigStitcherDatasetIntoOMETiffCommand.class,
+                true, "xml_bigstitcher_file", xmlOut,
+                "output_path_directory", xmlOut.getParent(),
+                "n_resolution_levels", 1,
+                "split_slices", false,
+                "split_channels", false,
+                "split_frames", false,
+                "override_z_ratio", false,
+                "range_channels", "",
+                "range_slices", "",
+                "range_frames", "",
+                "use_lzw_compression", false,
+                "z_ratio", 1.0, // ignored
+                "use_interpolation", false
+        ).get();
+        toc();
+    }
+}

@@ -2,19 +2,16 @@ package ch.epfl.biop.scijava.command.spimdata;
 
 import ch.epfl.biop.bdv.img.OpenersToSpimData;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsHelper;
-import ch.epfl.biop.bdv.img.legacy.bioformats.BioFormatsTools;
 import ch.epfl.biop.bdv.img.legacy.bioformats.entity.FileIndex;
 import ch.epfl.biop.bdv.img.opener.OpenerSettings;
 import ij.IJ;
-import loci.formats.meta.IMetadata;
 import mpicbg.spim.data.SpimData;
 import mpicbg.spim.data.SpimDataException;
 import mpicbg.spim.data.XmlIoSpimData;
 import mpicbg.spim.data.generic.AbstractSpimData;
-import ome.units.UNITS;
-import ome.units.quantity.Length;
 import org.apache.commons.io.FilenameUtils;
 import org.scijava.Context;
+import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
@@ -36,11 +33,14 @@ public class CreateCZIDatasetCommand implements Command {
     @Parameter
     Context ctx;
 
+    @Parameter(type = ItemIO.OUTPUT)
+    File xml_out;
+
     @Override
     public void run() {
 
-        File xmlout = new File(czi_file.getParent(), FilenameUtils.removeExtension(czi_file.getName())+".xml");
-        if (xmlout.exists()) {
+        xml_out = new File(czi_file.getParent(), FilenameUtils.removeExtension(czi_file.getName())+".xml");
+        if (xml_out.exists()) {
             IJ.error("The output file already exist! Skipping execution");
             return;
         }
@@ -68,19 +68,16 @@ public class CreateCZIDatasetCommand implements Command {
         // Remove display settings attributes because this causes issues with BigStitcher
         SpimDataHelper.removeEntities(asd, Displaysettings.class, FileIndex.class);
 
-
-
         double pixSizeXYMicrometer = asd.getViewRegistrations().getViewRegistration(0,0).getModel().get(0,0);
-        System.out.println("pixSize xy um = "+pixSizeXYMicrometer);
 
         double scalingForBigStitcher = 1 / pixSizeXYMicrometer;
 
         // Scaling such as size of one pixel = 1
         SpimDataHelper.scale(asd, "BigStitcher Scaling", scalingForBigStitcher);
 
-        asd.setBasePath(new File(xmlout.getAbsolutePath()).getParentFile());
+        asd.setBasePath(new File(xml_out.getAbsolutePath()).getParentFile());
         try {
-            new XmlIoSpimData().save((SpimData) asd, xmlout.getAbsolutePath());
+            new XmlIoSpimData().save((SpimData) asd, xml_out.getAbsolutePath());
         } catch (SpimDataException e) {
             e.printStackTrace();
             throw new RuntimeException(e);
