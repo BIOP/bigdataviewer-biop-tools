@@ -4,7 +4,13 @@ import ch.epfl.biop.scijava.command.spimdata.CreateCZIDatasetCommand;
 import ch.epfl.biop.scijava.command.spimdata.FuseBigStitcherDatasetIntoOMETiffCommand;
 import loci.common.DebugTools;
 import net.imagej.ImageJ;
+import net.imagej.patcher.LegacyInjector;
 import org.apache.commons.io.FilenameUtils;
+import org.scijava.Context;
+import org.scijava.command.CommandService;
+import org.scijava.convert.ConvertService;
+import org.scijava.task.TaskService;
+import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
 
 import java.io.File;
 import java.net.URLDecoder;
@@ -15,21 +21,25 @@ import static fiji.util.TicToc.toc;
 
 public class FusePerfMeasure {
     static ImageJ ij;
+
+    static {
+        LegacyInjector.preinit();
+    }
     public static void main( String[] args ) throws Exception {
 
-        Function<String, String> decoder = (str) -> {
-            try {
-                return URLDecoder.decode(str, "UTF-8");
-            } catch(Exception e){
-                e.printStackTrace();
-                return str;
-            }
-        };
-        File cziTest = DatasetHelper.getDataset("https://zenodo.org/records/8303129/files/Demo%20LISH%204x8%2015pct%20647.czi", decoder);
+        /*Context ctx = new Context(CommandService.class,
+                TaskService.class,
+                SourceAndConverterService.class,
+                ConvertService.class
+        );*/
 
-        DebugTools.enableLogging ("OFF");
         ij = new ImageJ();
         ij.ui().showUI();
+
+        File cziTest = DatasetHelper.getDataset("https://zenodo.org/records/8303129/files/Demo%20LISH%204x8%2015pct%20647.czi");
+
+        DebugTools.enableLogging ("OFF");
+
         // Get rid of xml dataset and bfmemo
         File xmlOut = new File (FilenameUtils.removeExtension(cziTest.getAbsolutePath())+".xml");
         System.out.println(xmlOut.getAbsolutePath());
@@ -37,10 +47,14 @@ public class FusePerfMeasure {
         File xmlOutBfMemo = new File (cziTest.getAbsolutePath()+".bfmemo");
         if (xmlOutBfMemo.exists()) xmlOutBfMemo.delete();
         System.out.println(xmlOutBfMemo);
-        ij.command().run(CreateCZIDatasetCommand.class, true, "czi_file", cziTest).get();
+        ij.command()
+        //ctx.getService(CommandService.class)
+                .run(CreateCZIDatasetCommand.class, true, "czi_file", cziTest).get();
 
         tic();
-        ij.command().run(FuseBigStitcherDatasetIntoOMETiffCommand.class,
+        ij.command()
+        //ctx.getService(CommandService.class)
+                .run(FuseBigStitcherDatasetIntoOMETiffCommand.class,
                 true, "xml_bigstitcher_file", xmlOut,
                 "output_path_directory", xmlOut.getParent(),
                 "n_resolution_levels", 1,

@@ -9,6 +9,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLDecoder;
 import java.util.function.Function;
 
 public class DatasetHelper {
@@ -34,6 +35,18 @@ public class DatasetHelper {
         }
     }
 
+    static Function<String, String> decoder = (str) -> {
+        try {
+            return URLDecoder.decode(str, "UTF-8");
+        } catch(Exception e){
+            e.printStackTrace();
+            return str;
+        }
+    };
+
+    public static File getDataset(String urlString) {
+        return getDataset(urlString, decoder);
+    }
 
     public static File getDataset(String urlString, Function<String, String> decoder) {
         URL url = null;
