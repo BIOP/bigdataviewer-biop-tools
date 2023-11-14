@@ -36,10 +36,17 @@ public class CreateCZIDatasetCommand implements Command {
     @Parameter(type = ItemIO.OUTPUT)
     File xml_out;
 
+    @Parameter(label = "Output directory", style = "directory", required = false, persist = false)
+    File output_folder = null;
+
     @Override
     public void run() {
 
-        xml_out = new File(czi_file.getParent(), FilenameUtils.removeExtension(czi_file.getName())+".xml");
+        if (output_folder == null) {
+            xml_out = new File(czi_file.getParent(), FilenameUtils.removeExtension(czi_file.getName()) + ".xml");
+        } else {
+            xml_out = new File(output_folder, FilenameUtils.removeExtension(czi_file.getName()) + ".xml");
+        }
         if (xml_out.exists()) {
             IJ.error("The output file already exist! Skipping execution");
             return;
