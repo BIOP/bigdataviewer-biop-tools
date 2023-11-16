@@ -14,28 +14,66 @@ import net.imglib2.view.ExtendedRandomAccessibleInterval;
 import net.imglib2.view.Views;
 
 /**
- * Alpha Source for a source which is backed by a RAI and an AffineTransform
- *
- * Typically, any source which is not Warped
- *
+ *  Alpha Source for a source which is backed by a RAI and an AffineTransform
+ *  This source has an alpha value which tends to zero on its surface
  */
 
-public class AlphaSourceRAI extends AlphaSource {
+public class AlphaSourceDistanceL1RAI extends AlphaSource { // TODO: check if extends AlphaSourceRAI wouldn't be better
 
-    public AlphaSourceRAI(Source<?> origin) {
+    public AlphaSourceDistanceL1RAI(Source<?> origin, float sizePixX, float sizePixY, float sizePixZ) {
         super(origin);
+        this.sizePixX = sizePixX;
+        this.sizePixY = sizePixY;
+        this.sizePixZ = sizePixZ;
     }
 
-    public AlphaSourceRAI(Source<?> origin, float alpha) {
-        super(origin, alpha);
-    }
+    final float sizePixX, sizePixY, sizePixZ;
 
     @Override
     public RandomAccessibleInterval<FloatType> getSource(int t, int level) {
-        final float finalAlpha = alpha;
-
-        final RandomAccessible< FloatType > randomAccessible =
-                new FunctionRandomAccessible<>( 3, () -> (loc, out) -> out.setReal( finalAlpha ), FloatType::new );
+        final long sX = origin.getSource(t,level).max(0);
+        final long sY = origin.getSource(t,level).max(1);
+        final long sZ = origin.getSource(t,level).max(2);
+        final RandomAccessible< FloatType > randomAccessible;
+        if (sZ==1) {
+            randomAccessible =
+                    new FunctionRandomAccessible<>( 3, () -> (loc, out) -> {
+                        long x = loc.getLongPosition(0);
+                        long y = loc.getLongPosition(1);
+                        float dx = sizePixX*(0.5f+Math.min(x,sX-x));
+                        float dy = sizePixY*(0.5f+Math.min(y,sY-y));
+                        out.set( Math.min(dx,dy) );
+                    }, FloatType::new );
+        } else if (sX==1) {
+            randomAccessible =
+                    new FunctionRandomAccessible<>( 3, () -> (loc, out) -> {
+                        long z = loc.getLongPosition(2);
+                        long y = loc.getLongPosition(1);
+                        float dz = sizePixX*(0.5f+Math.min(z,sZ-z));
+                        float dy = sizePixY*(0.5f+Math.min(y,sY-y));
+                        out.set( Math.min(dz,dy) );
+                    }, FloatType::new );
+        } else if (sY==1) {
+            randomAccessible =
+                    new FunctionRandomAccessible<>( 3, () -> (loc, out) -> {
+                        long z = loc.getLongPosition(2);
+                        long x = loc.getLongPosition(0);
+                        float dz = sizePixX*(0.5f+Math.min(z,sZ-z));
+                        float dx = sizePixY*(0.5f+Math.min(x,sX-x));
+                        out.set( Math.min(dz,dx) );
+                    }, FloatType::new );
+        } else {
+            randomAccessible =
+                new FunctionRandomAccessible<>( 3, () -> (loc, out) -> {
+                    long x = loc.getLongPosition(0);
+                    long y = loc.getLongPosition(1);
+                    long z = loc.getLongPosition(2);
+                    float dx = sizePixX*(0.5f+Math.min(x,sX-x));
+                    float dy = sizePixY*(0.5f+Math.min(y,sY-y));
+                    float dz = sizePixZ*(0.5f+Math.min(z,sZ-z));
+                    out.set( Math.min(Math.min(dx,dy),dz) );
+                }, FloatType::new );
+        }
 
         return Views.interval(randomAccessible, origin.getSource(t, level));
     }
@@ -44,8 +82,7 @@ public class AlphaSourceRAI extends AlphaSource {
     public RealRandomAccessible<FloatType> getInterpolatedSource(int t, int level, Interpolation method) {
         ExtendedRandomAccessibleInterval<FloatType, RandomAccessibleInterval< FloatType >>
                 eView = Views.extendZero(getSource( t, level ));
-        RealRandomAccessible< FloatType > realRandomAccessible = Views.interpolate( eView, interpolators.get(Interpolation.NEARESTNEIGHBOR) );
-        return realRandomAccessible;
+        return Views.interpolate( eView, interpolators.get(Interpolation.NEARESTNEIGHBOR) );
     }
 
     @Override

@@ -9,6 +9,7 @@ import net.imglib2.type.numeric.real.FloatType;
 import java.util.function.Supplier;
 
 import static bdv.util.source.fused.AlphaFusedResampledSource.AVERAGE;
+import static bdv.util.source.fused.AlphaFusedResampledSource.MAX;
 import static bdv.util.source.fused.AlphaFusedResampledSource.SUM;
 
 public class AlphaFused3DRandomAccessible<T extends RealType<T>> implements RandomAccessible<T> {
@@ -40,9 +41,14 @@ public class AlphaFused3DRandomAccessible<T extends RealType<T>> implements Rand
             case AVERAGE:
                 this.ra = new AverageAlphaFused3DRandomAccess<T>(origins_ra, origins_alpha_ra, pixelSupplier);
                 break;
+            case MAX:
+                this.ra = new MaxAlphaFused3DRandomAccess<T>(origins_ra, origins_alpha_ra, pixelSupplier);
+                break;
             case SUM:
-            default:
                 this.ra = new SumAlphaFused3DRandomAccess<T>(origins_ra, origins_alpha_ra, pixelSupplier);
+                break;
+            default:
+                throw new UnsupportedOperationException("Unsupported blending method: "+blendingMode);
         }
     }
 
@@ -54,7 +60,7 @@ public class AlphaFused3DRandomAccessible<T extends RealType<T>> implements Rand
     @Override
     public RandomAccess<T> randomAccess(Interval interval) {
         // Could be optimized to remove out of bounds sources - but this is not called
-        //System.out.println("COULD BE OPTIMIZED!!");
+        // System.out.println("COULD BE OPTIMIZED!!");
         return randomAccess();
     }
 

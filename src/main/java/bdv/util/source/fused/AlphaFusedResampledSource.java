@@ -81,6 +81,7 @@ public class AlphaFusedResampledSource< T extends RealType<T> & NativeType<T>> i
 
     final public static String SUM = "SUM";
     final public static String AVERAGE = "AVERAGE";
+    final public static String MAX = "MAX";
 
     protected static Logger logger = LoggerFactory.getLogger(AlphaFusedResampledSource.class);
 
@@ -136,7 +137,7 @@ public class AlphaFusedResampledSource< T extends RealType<T> & NativeType<T>> i
      *  the origin and model source is lost.
      *  TODO : check how the cache can be accessed / reset
      * @param originsInterpolation specifies whether the origin source should be interpolated of not in the resampling process
-     * @param blendingMode average or sum, see {@link AlphaFusedResampledSource#AVERAGE} and {@link AlphaFusedResampledSource#SUM}
+     * @param blendingMode average or sum or max, see {@link AlphaFusedResampledSource#AVERAGE} and {@link AlphaFusedResampledSource#SUM}
      * @param cacheX block size along X ( dimension 0 )
      * @param cacheY block size along Y ( dimension 1 )
      * @param cacheZ block size along Z ( dimension 2 )
@@ -311,19 +312,33 @@ public class AlphaFusedResampledSource< T extends RealType<T> & NativeType<T>> i
                                     .withLoader(
                                             LoadedCellCacheLoader.get(grid, cell -> {
                                                 boolean[] sourcesPresentInCell = new boolean[nSources];
-                                                boolean oneSourcePresent = false;
+                                                int nSourcesPresent = 0;
+                                                RandomAccess<T> uniqueSource = null;
                                                 for (int i=0;i<nSources;i++) {
                                                     IAlphaSource alpha = arrayAlphaSources[i];
                                                     if (!alpha.doBoundingBoxCulling()) {
                                                         sourcesPresentInCell[i] = true;
-                                                        oneSourcePresent = true;
                                                     } else {
                                                         sourcesPresentInCell[i] = alpha.intersectBox(affineTransform.copy(), cell, t);
-                                                        oneSourcePresent = oneSourcePresent || sourcesPresentInCell[i];
+                                                    }
+                                                    if (sourcesPresentInCell[i]) {
+                                                        nSourcesPresent++;
+                                                        if (nSourcesPresent==1) {
+                                                            uniqueSource = nonCached.origins[i].randomAccess();
+                                                        }
                                                     }
                                                 }
-                                                if (oneSourcePresent) {
+                                                if (nSourcesPresent>1) {
                                                     RandomAccess<T> nonCachedAccess = nonCached.randomAccess(sourcesPresentInCell);
+                                                    Cursor<T> out = Views.flatIterable(cell).cursor();
+                                                    T t_in;
+                                                    while (out.hasNext()) {
+                                                        t_in = out.next();
+                                                        nonCachedAccess.setPosition(out);
+                                                        t_in.set(nonCachedAccess.get());
+                                                    }
+                                                } else if (nSourcesPresent==1) { // No projection needed, and avg = sum = max
+                                                    RandomAccess<T> nonCachedAccess = uniqueSource;
                                                     Cursor<T> out = Views.flatIterable(cell).cursor();
                                                     T t_in;
                                                     while (out.hasNext()) {

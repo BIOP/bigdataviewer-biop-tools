@@ -49,7 +49,9 @@ public class FusePerfMeasure {
         System.out.println(xmlOutBfMemo);
         ij.command()
         //ctx.getService(CommandService.class)
-                .run(CreateCZIDatasetCommand.class, true, "czi_file", cziTest).get();
+                .run(CreateCZIDatasetCommand.class, true,
+                        "czi_file", cziTest,
+                        "output_folder", cziTest.getParent()).get();
 
         tic();
         ij.command()
@@ -67,7 +69,8 @@ public class FusePerfMeasure {
                 "range_frames", "",
                 "use_lzw_compression", false,
                 "z_ratio", 1.0, // ignored
-                "use_interpolation", false
+                "use_interpolation", false,
+                "fusion_method", "SMOOTH AVERAGE"
         ).get();
         toc();
     }

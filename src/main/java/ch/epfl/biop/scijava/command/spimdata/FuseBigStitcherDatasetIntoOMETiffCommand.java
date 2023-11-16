@@ -3,6 +3,9 @@ package ch.epfl.biop.scijava.command.spimdata;
 import bdv.img.cache.VolatileGlobalCellCache;
 import bdv.img.hdf5.Hdf5ImageLoader;
 import bdv.img.n5.N5ImageLoader;
+import bdv.util.source.alpha.AlphaSource;
+import bdv.util.source.alpha.AlphaSourceDistanceL1RAI;
+import bdv.util.source.alpha.AlphaSourceHelper;
 import bdv.util.source.fused.AlphaFusedResampledSource;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.kheops.ometiff.OMETiffExporter;
@@ -62,6 +65,9 @@ public class FuseBigStitcherDatasetIntoOMETiffCommand implements Command {
 
     @Parameter(label = "Number of resolution levels (scale factor = 2)", min = "1")
     int n_resolution_levels;
+
+    @Parameter(label = "Fusion method", choices = {"SMOOTH "+AlphaFusedResampledSource.AVERAGE, AlphaFusedResampledSource.MAX, AlphaFusedResampledSource.AVERAGE})
+    String fusion_method;
 
     @Parameter(label = "Use LZW compression")
     boolean use_lzw_compression;
@@ -185,12 +191,20 @@ public class FuseBigStitcherDatasetIntoOMETiffCommand implements Command {
         vox_size_z_micrometer = voxelDimensions.dimension(2);
 
         // Create a model source
-        SourceAndConverter model = SourceHelper.getModelFusedMultiSources(/*channelNodes.get(0).sources()*/allSources.toArray(new SourceAndConverter[0]),
-                0, SourceAndConverterHelper.getMaxTimepoint(/*channelNodes.get(0).sources()*/allSources.toArray(new SourceAndConverter[0])),
+        SourceAndConverter model = SourceHelper.getModelFusedMultiSources(allSources.toArray(new SourceAndConverter[0]),
+                0, SourceAndConverterHelper.getMaxTimepoint(allSources.toArray(new SourceAndConverter[0])),
                 1, z_ratio,
                 1,
                 1,1,"Model");
 
+        // For fusion with smooth edges:
+
+        if (fusion_method.equals("SMOOTH "+AlphaFusedResampledSource.AVERAGE)) {
+            for (SourceAndConverter<?> source: allSources) {
+                AlphaSource alpha = new AlphaSourceDistanceL1RAI(source.getSpimSource(), (float) vox_size_x_micrometer,(float) vox_size_y_micrometer, (float) vox_size_z_micrometer);
+                AlphaSourceHelper.setAlphaSource(source, alpha);
+            }
+        }
 
         Map<Integer, List<SourceAndConverter<?>>> channelToSources = new HashMap<>();
 
@@ -212,11 +226,11 @@ public class FuseBigStitcherDatasetIntoOMETiffCommand implements Command {
             // Fuse and resample
             fusedSources[iChannel] =
                     new SourceFuserAndResampler(channelToSources.get(channels[iChannel]),
-                            AlphaFusedResampledSource.AVERAGE,
+                            fusion_method.contains("AVERAGE") ? AlphaFusedResampledSource.AVERAGE: AlphaFusedResampledSource.MAX,
                             model,
                             xml_bigstitcher_file.getName()+"_Channel"+iChannel,
                             false, true,
-                            use_interpolation, 0, 1024, 1024, 1, nThreads*10, nThreads).get();
+                            use_interpolation, 0, 128, 128, 1, nThreads*10, nThreads).get();
         }
 
         // OME Tiff exporter
