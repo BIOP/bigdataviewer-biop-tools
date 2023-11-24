@@ -152,7 +152,7 @@ public class Elastix2DAffineRegister<FT extends NativeType<FT> & NumericType<FT>
         try {
             et = ElastixTransform.load(fTransform);
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println("Registration unsuccessful, you may have sent low information content images. ["+e.getMessage()+"]");
             return false;
         }
 

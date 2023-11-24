@@ -11,6 +11,8 @@ import org.scijava.ItemIO;
 import org.scijava.command.CommandService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import org.scijava.task.Task;
+import org.scijava.task.TaskService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
@@ -65,6 +67,12 @@ public class Elastix2DSparsePointsRegisterCommand extends SelectSourcesForRegist
     @Parameter(label = "Number of iterations for each scale (default 100)")
     int maxIterationNumberPerScale = 100;
 
+    @Parameter(required = false)
+    Task task;
+
+    @Parameter
+    TaskService taskService;
+
     @Parameter
     CommandService cs;
 
@@ -93,81 +101,103 @@ public class Elastix2DSparsePointsRegisterCommand extends SelectSourcesForRegist
             pts_Fixed.add(new RealPoint(Double.valueOf(coordsXY[i]),Double.valueOf(coordsXY[i+1]),zLocation));
         }
 
-        Stream<RealPoint> streamOfPts;
+        boolean innerTask = false;
 
-        if (parallel) {
-            streamOfPts = pts_Fixed.parallelStream();
-        } else {
-            streamOfPts = pts_Fixed.stream();
+        if (task==null) {
+            task = taskService.createTask("Registration "+sacs_moving[0].getSpimSource().getName()+" vs "+sacs_fixed[0].getSpimSource().getName());
+            task.setProgressMaximum(pts_Fixed.size());
+            innerTask = true;
         }
 
-        ConcurrentHashMap<RealPoint, RealPoint> correspondingPts = new ConcurrentHashMap<>();
-        counter.set(0);
-        streamOfPts.forEach(pt -> {
-            try {
-                AffineTransform3D at = (AffineTransform3D) cs.run(Elastix2DAffineRegisterCommand.class,true,
-                        "sacs_fixed", sacs_fixed,
-                        "tpFixed", tpFixed,
-                        "levelFixedSource", levelFixedSource,
-                        "sacs_moving", sacs_moving,
-                        "tpMoving", tpMoving,
-                        "levelMovingSource", levelMovingSource,
-                        "px", pt.getDoublePosition(0)-sx/2.0,
-                        "py", pt.getDoublePosition(1)-sy/2.0,
-                        "pz", pt.getDoublePosition(2),
-                        "sx",sx,
-                        "sy",sy,
-                        "pxSizeInCurrentUnit", pxSizeInCurrentUnit,
-                        "interpolate", interpolate,
-                        "showImagePlusRegistrationResult", showPoints,
-                        "automaticTransformInitialization", false,
-                        "maxIterationNumberPerScale", maxIterationNumberPerScale,
-                        "background_offset_value_moving", background_offset_value_moving,
-                        "background_offset_value_fixed", background_offset_value_fixed,
-                        "minPixSize", 32,
-                        "verbose", verbose
-                ).get().getOutput("at3D");
-                if (at!=null) {
-                    RealPoint ptCorr = new RealPoint(3);
-                    at.apply(pt, ptCorr);
-                    correspondingPts.put(pt,ptCorr);
+        try {
 
-                    String str = "xi ="+pt.getDoublePosition(0)+"\t xf ="+ptCorr.getDoublePosition(0)+"\n";
-                    str+="yi ="+pt.getDoublePosition(1)+"\t yf ="+ptCorr.getDoublePosition(1);
-                    log.accept("Registration point : "+str);
-                } else {
-                    correspondingPts.put(pt,pt); // No movement
-                    log.accept("Failed registration - maybe the image has low information content ?");
-                }
-                IJ.log("#Landmark:"+counter.addAndGet(1)+"/"+pts_Fixed.size());
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-            } catch (Exception e) {
-                logger.error("Error during registration");
-                e.printStackTrace();
+            Stream<RealPoint> streamOfPts;
+
+            if (parallel) {
+                streamOfPts = pts_Fixed.parallelStream();
+            } else {
+                streamOfPts = pts_Fixed.stream();
             }
-        });
 
-        // Returns the Thin Plate Spline transform
+            ConcurrentHashMap<RealPoint, RealPoint> correspondingPts = new ConcurrentHashMap<>();
+            counter.set(0);
+            streamOfPts.forEach(pt -> {
+                if (!task.isCanceled()) {
+                    try {
+                        AffineTransform3D at = (AffineTransform3D) cs.run(Elastix2DAffineRegisterCommand.class, true,
+                                "sacs_fixed", sacs_fixed,
+                                "tpFixed", tpFixed,
+                                "levelFixedSource", levelFixedSource,
+                                "sacs_moving", sacs_moving,
+                                "tpMoving", tpMoving,
+                                "levelMovingSource", levelMovingSource,
+                                "px", pt.getDoublePosition(0) - sx / 2.0,
+                                "py", pt.getDoublePosition(1) - sy / 2.0,
+                                "pz", pt.getDoublePosition(2),
+                                "sx", sx,
+                                "sy", sy,
+                                "pxSizeInCurrentUnit", pxSizeInCurrentUnit,
+                                "interpolate", interpolate,
+                                "showImagePlusRegistrationResult", showPoints,
+                                "automaticTransformInitialization", false,
+                                "maxIterationNumberPerScale", maxIterationNumberPerScale,
+                                "background_offset_value_moving", background_offset_value_moving,
+                                "background_offset_value_fixed", background_offset_value_fixed,
+                                "minPixSize", 32,
+                                "verbose", verbose
+                        ).get().getOutput("at3D");
+                        if (at != null) {
+                            RealPoint ptCorr = new RealPoint(3);
+                            at.apply(pt, ptCorr);
+                            correspondingPts.put(pt, ptCorr);
 
-        double[][] ptI = new double[2][pts_Fixed.size()];
-        double[][] ptF = new double[2][pts_Fixed.size()];
+                            String str = "xi =" + pt.getDoublePosition(0) + "\t xf =" + ptCorr.getDoublePosition(0) + "\n";
+                            str += "yi =" + pt.getDoublePosition(1) + "\t yf =" + ptCorr.getDoublePosition(1);
+                            log.accept("Registration point : " + str);
+                        } else {
+                            correspondingPts.put(pt, pt); // No movement
+                            log.accept("Failed registration - maybe the image has low information content ?");
+                        }
+                        IJ.log("#Landmark:" + counter.addAndGet(1) + "/" + pts_Fixed.size());
+                        synchronized (task) {
+                            task.setProgressValue(task.getProgressValue() + 1);
+                        }
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    } catch (ExecutionException e) {
+                        e.printStackTrace();
+                    } catch (Exception e) {
+                        logger.error("Error during registration");
+                        e.printStackTrace();
+                    }
+                }
+            });
 
-        for (int i = 0;i<pts_Fixed.size();i++) {
-            ptF[0][i] = pts_Fixed.get(i).getDoublePosition(0);
-            ptF[1][i] = pts_Fixed.get(i).getDoublePosition(1);
+            if (task.isCanceled()) return;
 
-            ptI[0][i] = correspondingPts.get(pts_Fixed.get(i)).getDoublePosition(0);
-            ptI[1][i] = correspondingPts.get(pts_Fixed.get(i)).getDoublePosition(1);
+            // Returns the Thin Plate Spline transform
+
+            double[][] ptI = new double[2][pts_Fixed.size()];
+            double[][] ptF = new double[2][pts_Fixed.size()];
+
+            for (int i = 0; i < pts_Fixed.size(); i++) {
+                ptF[0][i] = pts_Fixed.get(i).getDoublePosition(0);
+                ptF[1][i] = pts_Fixed.get(i).getDoublePosition(1);
+
+                ptI[0][i] = correspondingPts.get(pts_Fixed.get(i)).getDoublePosition(0);
+                ptI[1][i] = correspondingPts.get(pts_Fixed.get(i)).getDoublePosition(1);
+            }
+
+            tst = new Wrapped2DTransformAs3D(
+                    new WrappedIterativeInvertibleRealTransform<>(
+                            new ThinplateSplineTransform(ptI, ptF)
+                    )
+            );
+        } finally {
+            if (innerTask) {
+                task.finish();
+            }
         }
-
-        tst = new Wrapped2DTransformAs3D(
-                new WrappedIterativeInvertibleRealTransform<>(
-                        new ThinplateSplineTransform(ptI,ptF)
-                )
-        );
 
     }
 

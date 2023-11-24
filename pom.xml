@@ -76,8 +76,7 @@
 		<connection>scm:git:https://github.com/BIOP/bigdataviewer-biop-tools</connection>
 		<developerConnection>scm:git:git@github.com:BIOP/bigdataviewer-biop-tools</developerConnection>
 		<url>https://github.com/BIOP/bigdataviewer-biop-tools</url>
-    <tag>bigdataviewer-biop-tools-0.7.3</tag>
-  </scm>
+  	</scm>
 	
 	<issueManagement>
 		<system>GitHub Issues</system>
@@ -102,10 +101,10 @@
 		<bigdataviewer-playground.version>0.8.0</bigdataviewer-playground.version>
 		<bigdataviewer-playground-display.version>0.4.0</bigdataviewer-playground-display.version>
 		<image-transform-converters.version>0.1.7</image-transform-converters.version>
-		<bigdataviewer-image-loaders.version>0.6.2</bigdataviewer-image-loaders.version>
+		<bigdataviewer-image-loaders.version>0.6.3</bigdataviewer-image-loaders.version>
 
 		<!-- biop dependencies -->
-		<ijl-utilities-wrappers.version>0.9.4</ijl-utilities-wrappers.version>
+		<ijl-utilities-wrappers.version>0.9.5-SNAPSHOT</ijl-utilities-wrappers.version>
 		<Operetta_Importer.version>0.3.0</Operetta_Importer.version>
 		<ijp-kheops.version>0.4.2</ijp-kheops.version>
 
