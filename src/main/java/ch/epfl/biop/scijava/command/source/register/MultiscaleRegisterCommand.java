@@ -4,7 +4,6 @@ import bdv.util.BigWarpHelper;
 import bdv.viewer.Interpolation;
 import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
-import ij.IJ;
 import jitk.spline.ThinPlateR2LogRSplineKernelTransform;
 import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.imglib2.FinalRealInterval;
@@ -51,9 +50,9 @@ import java.util.stream.Collectors;
         headless = true, // User interface not required
         initializer = "updateInfo"
         )
-public class MultiscaleWarpyRegisterCommand implements BdvPlaygroundActionCommand{
+public class MultiscaleRegisterCommand implements BdvPlaygroundActionCommand{
 
-    private static Logger logger = LoggerFactory.getLogger(MultiscaleWarpyRegisterCommand.class);
+    private static Logger logger = LoggerFactory.getLogger(MultiscaleRegisterCommand.class);
 
     @Parameter(visibility = ItemVisibility.MESSAGE)
     String message = "<html><h2>Automated WSI registration using multiscale Warpy</h2><br/>"+
@@ -146,7 +145,6 @@ public class MultiscaleWarpyRegisterCommand implements BdvPlaygroundActionComman
 
         try {
             // General
-
             task = taskService.createTask("Warpy Reg. "+moving[0].getSpimSource().getName()+"  / "+fixed[0].getSpimSource().getName());
 
             // Let's take the bounding box
@@ -160,8 +158,11 @@ public class MultiscaleWarpyRegisterCommand implements BdvPlaygroundActionComman
             double bottomRightX = Math.max(corners.get(0).getDoublePosition(0),corners.get(1).getDoublePosition(0) );
             double bottomRightY = Math.max(corners.get(0).getDoublePosition(1),corners.get(1).getDoublePosition(1) );
 
-            // Now we want to do a registration for blocks that become smaller and smaller and cover the whole image
+            // Let's start with an affine registration with double the block size
 
+            // TODO
+
+            // Now we want to do a registration for blocks that become smaller and smaller and cover the whole image
             transformation = new RealTransformSequence();
 
             task.setStatusMessage("Registration started...");

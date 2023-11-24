@@ -131,7 +131,6 @@ public class WarpyExportRegisteredImageCommand implements Command {
 
             List<SourceAndConverter> movingSacs = Arrays.stream(moving_sources).collect(Collectors.toList());
 
-
             List<SourceAndConverter> fixedSacs = Arrays.stream(fixed_sources).collect(Collectors.toList());
 
             List<SourceAndConverter> transformedSources = new ArrayList<>();

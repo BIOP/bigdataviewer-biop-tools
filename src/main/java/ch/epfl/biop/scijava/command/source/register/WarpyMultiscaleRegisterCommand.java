@@ -26,19 +26,38 @@ import sc.fiji.persist.ScijavaGsonHelper;
 import java.io.File;
 import java.nio.charset.Charset;
 
-@Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>QuPath - Create Warpy Registration")
-public class WarpyRegisterCommand implements Command {
+@Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>QuPath - Create Warpy Multiscale Registration")
+public class WarpyMultiscaleRegisterCommand implements Command {
 
-    private static Logger logger = LoggerFactory.getLogger(WarpyRegisterCommand.class);
+    private static Logger logger = LoggerFactory.getLogger(WarpyMultiscaleRegisterCommand.class);
 
     @Parameter(visibility = ItemVisibility.MESSAGE, persist = false, style = "message")
-    String message = "<html><h1>QuPath registration wizard</h1>Please select a moving and a fixed source<br></html>";
+    String message = "<html><h1>QuPath Warpy multiscale registration</h1>Please select a list of moving and a list of fixed source<br></html>";
 
-    @Parameter(label = "Fixed source", callback = "updateMessage")
+    @Parameter(label = "Number of registration scales (# registration x2 per scale)", style = "slider", min = "2", max="8", callback = "updateInfo")
+    int n_scales = 4;
+
+    @Parameter(visibility = ItemVisibility.MESSAGE, required = false)
+    String infoRegistration = "";
+
+    @Parameter(label = "Fixed source", callback = "updateMessage", style = "sorted")
     SourceAndConverter<?>[] fixed_sources;
 
-    @Parameter(label = "Moving source", callback = "updateMessage")
+    @Parameter(label = "Moving source", callback = "updateMessage", style = "sorted")
     SourceAndConverter<?>[] moving_sources;
+
+
+    @Parameter(label = "Remove images z-offsets")
+    boolean remove_z_offset = true;
+
+    @Parameter(label = "Center moving image with fixed image")
+    boolean center_moving_image = true;
+
+    @Parameter(label = "Number of pixel for each block of image used for the registration (default 128)")
+    int pixels_per_block = 128;
+
+    @Parameter(label = "Number of iterations for each registration (default 100)")
+    int max_iteration_number_per_scale = 100;
 
     @Parameter
     CommandService cs;
@@ -46,37 +65,26 @@ public class WarpyRegisterCommand implements Command {
     @Parameter
     Context scijavaCtx;
 
-    @Parameter
-    boolean verbose = false;
-
     @Override
     public void run() {
         try {
-            if (fixed_sources.length>1) {
-                logger.warn("Only the first fixed source will be used.");
-            }
-            if (moving_sources.length>1) {
-                logger.warn("Only the first movingq source will be used.");
-            }
-            SourceAndConverter fixed_source = fixed_sources[0];
-            SourceAndConverter moving_source = moving_sources[0];
 
             // Several checks before we even start the registration
             //  - Is there an associated qupath project ?
-            if (!QuPathBdvHelper.isSourceLinkedToQuPath(fixed_source)) {
+            if (!QuPathBdvHelper.isSourceLinkedToQuPath(fixed_sources[0])) {
                 logger.error("Error : the fixed source is not associated to a QuPath project");
                 IJ.error("Error : the fixed source is not associated to a QuPath project");
                 return;
             }
-            if (!QuPathBdvHelper.isSourceLinkedToQuPath(moving_source)) {
+            if (!QuPathBdvHelper.isSourceLinkedToQuPath(moving_sources[0])) {
                 logger.error("Error : the moving source is not associated to a QuPath project");
                 IJ.error("Error : the moving source is not associated to a QuPath project");
                 return;
             }
 
             // - Is it the same project ?
-            String qupathProjectMoving = QuPathBdvHelper.getProjectFile(moving_source).getAbsolutePath();
-            String qupathProjectFixed = QuPathBdvHelper.getProjectFile(fixed_source).getAbsolutePath();
+            String qupathProjectMoving = QuPathBdvHelper.getProjectFile(moving_sources[0]).getAbsolutePath();
+            String qupathProjectFixed = QuPathBdvHelper.getProjectFile(fixed_sources[0]).getAbsolutePath();
 
             if (!qupathProjectMoving.equals(qupathProjectFixed)) {
                 logger.error("Error : the moving source and the fixed source are not from the same qupath project");
@@ -85,8 +93,8 @@ public class WarpyRegisterCommand implements Command {
             }
 
             // - Are they different entries ?
-            File moving_entry_folder = QuPathBdvHelper.getDataEntryFolder(moving_source);
-            File fixed_entry_folder = QuPathBdvHelper.getDataEntryFolder(fixed_source);
+            File moving_entry_folder = QuPathBdvHelper.getDataEntryFolder(moving_sources[0]);
+            File fixed_entry_folder = QuPathBdvHelper.getDataEntryFolder(fixed_sources[0]);
 
             if (moving_entry_folder.getAbsolutePath().equals(fixed_entry_folder.getAbsolutePath())) {
                 logger.error("Error : the moving source and the fixed source should belong to different qupath entries (you can't move two channels of the same image, unless you duplicate the images in QuPath)");
@@ -94,13 +102,18 @@ public class WarpyRegisterCommand implements Command {
                 return;
             }
 
-            CommandModule module = cs.run(Wizard2DWholeScanRegisterCommand.class, true,
-                    "fixed", fixed_source,
-                    "moving", moving_source,
-                    "verbose", verbose,
-                    "background_offset_value_moving", 0,
-                    "background_offset_value_fixed", 0,
-                    "sourcesToTransform", new SourceAndConverter[]{moving_source}
+
+            CommandModule module = cs.run(MultiscaleRegisterCommand.class, true,
+                    "fixed", fixed_sources,
+                    "moving", moving_sources,
+                    "sources_to_transform", moving_sources,
+                    "n_scales", n_scales,
+                    "remove_z_offset", remove_z_offset,
+                    "center_moving_image", center_moving_image,
+                    "pixels_per_block", pixels_per_block,
+                    "max_iteration_number_per_scale", max_iteration_number_per_scale,
+                    "show_details", false,
+                    "debug", false
             ).get();
 
             // Get transform
@@ -118,11 +131,11 @@ public class WarpyRegisterCommand implements Command {
 
             AffineTransform3D movingToPixel = new AffineTransform3D();
 
-            moving_source.getSpimSource().getSourceTransform(0,0,movingToPixel);
+            moving_sources[0].getSpimSource().getSourceTransform(0,0,movingToPixel);
 
             AffineTransform3D fixedToPixel = new AffineTransform3D();
 
-            fixed_source.getSpimSource().getSourceTransform(0,0,fixedToPixel);
+            fixed_sources[0].getSpimSource().getSourceTransform(0,0,fixedToPixel);
 
             if (rt instanceof InvertibleRealTransform) {
                 InvertibleRealTransformSequence irts = new InvertibleRealTransformSequence();
@@ -150,15 +163,15 @@ public class WarpyRegisterCommand implements Command {
 
             //int moving_series_index = movingEntity.getId();
             //int fixed_series_index = fixedEntity.getId();
-            int moving_series_entry_id = QuPathBdvHelper.getEntryId(moving_source);
-            int fixed_series_entry_id = QuPathBdvHelper.getEntryId(fixed_source);
+            int moving_series_entry_id = QuPathBdvHelper.getEntryId(moving_sources[0]);
+            int fixed_series_entry_id = QuPathBdvHelper.getEntryId(fixed_sources[0]);
 
             String movingToFixedLandmarkName = "transform_"+moving_series_entry_id+"_"+fixed_series_entry_id+".json";
 
             File result = new File(moving_entry_folder.getAbsolutePath(), movingToFixedLandmarkName);
             FileUtils.writeStringToFile(result, jsonMovingToFixed, Charset.defaultCharset());
 
-            IJ.log("Fixed: "+fixed_source.getSpimSource().getName()+" | Moving: "+moving_source.getSpimSource().getName());
+            IJ.log("Fixed: "+fixed_sources[0].getSpimSource().getName()+" | Moving: "+moving_sources[0].getSpimSource().getName());
             IJ.log("Transformation file successfully written to QuPath project: "+result);
 
         } catch (Exception e) {
@@ -169,16 +182,15 @@ public class WarpyRegisterCommand implements Command {
 
     public void updateMessage() {
 
-        String message = "<html><h1>QuPath registration wizard</h1>";
-
+        String message = "<html><h1>QuPath Warpy multiscale registration</h1>";
         if (fixed_sources == null) {
-            message += "Please select a moving source<br></html>";
+            message += "Please select one (or several) moving sources<br></html>";
             this.message = message;
             return;
         }
 
         if (moving_sources == null) {
-            message += "Please select a fixed source<br></html>";
+            message += "Please select one (or several) fixed sources<br></html>";
             this.message = message;
             return;
         }
@@ -272,5 +284,9 @@ public class WarpyRegisterCommand implements Command {
 
     }
 
+    void updateInfo() {
+        int nReg = 4*((int) (Math.pow(2, n_scales-1)-1));
+        infoRegistration = nReg+" registrations will be computed, resulting in "+(int) Math.pow(2, n_scales)+" control points";
+    }
 
 }
