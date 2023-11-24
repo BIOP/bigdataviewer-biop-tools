@@ -4,6 +4,7 @@ import bdv.util.BigWarpHelper;
 import bdv.viewer.Interpolation;
 import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
+import ij.IJ;
 import jitk.spline.ThinPlateR2LogRSplineKernelTransform;
 import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.imglib2.FinalRealInterval;
@@ -47,7 +48,8 @@ import java.util.stream.Collectors;
 // TODO test edge cases
 @Plugin(type = BdvPlaygroundActionCommand.class,
         menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Multiscale Registration (2D)",
-        headless = true // User interface not required
+        headless = true, // User interface not required
+        initializer = "updateInfo"
         )
 public class MultiscaleWarpyRegisterCommand implements BdvPlaygroundActionCommand{
 
@@ -57,6 +59,12 @@ public class MultiscaleWarpyRegisterCommand implements BdvPlaygroundActionComman
     String message = "<html><h2>Automated WSI registration using multiscale Warpy</h2><br/>"+
             "Automated registrations requires elastix.<br/>"+
             "</html>";
+
+    @Parameter(label = "Number of registration scales (# registration x2 per scale)", style = "slider", min = "2", max="8", callback = "updateInfo")
+    int n_scales = 4;
+
+    @Parameter(visibility = ItemVisibility.MESSAGE, required = false)
+    String infoRegistration = "";
 
     @Parameter(label = "Fixed reference sources", style = "sorted")
     SourceAndConverter<?>[] fixed;
@@ -70,16 +78,13 @@ public class MultiscaleWarpyRegisterCommand implements BdvPlaygroundActionComman
     @Parameter(label = "Remove images z-offsets")
     boolean remove_z_offset = true;
 
-    @Parameter(label = "0 - Center moving image with fixed image")
+    @Parameter(label = "Center moving image with fixed image")
     boolean center_moving_image = true;
 
     @Parameter(label = "Number of pixel for each block of image used for the registration (default 128)")
     int pixels_per_block = 128;
 
-    @Parameter(label = "Patch size for most precise registration in microns (default 500)", style = "format:0.0", persist = false)
-    double patch_size_um = 500;
-
-    @Parameter(label = "Number of iterations for each scale (default 100)")
+    @Parameter(label = "Number of iterations for each registration (default 100)")
     int max_iteration_number_per_scale = 100;
 
     @Parameter(label = "Show results of automated registrations (breaks parallelization)")
@@ -174,8 +179,9 @@ public class MultiscaleWarpyRegisterCommand implements BdvPlaygroundActionComman
 
             int nRegistrations = 0;
 
+            int iScale = 0;
             // Subdivide blocks until we reach the minimal block size
-            while (Math.max(sizeBlockXmm, sizeBlockYmm)>this.patch_size_um /1000.) {
+            while (iScale<n_scales) {
                 // Let's split in 2 according to the biggest dimension
                 if (sizeBlockXmm>sizeBlockYmm) sizeBlockXmm/=2.; else sizeBlockYmm/=2.;
 
@@ -194,6 +200,7 @@ public class MultiscaleWarpyRegisterCommand implements BdvPlaygroundActionComman
                     nScales++;
                     nRegistrations+= landmarksAtCurrentLevel.size();
                 }
+                iScale++;
             }
 
             task.setProgressMaximum(nRegistrations);
@@ -460,5 +467,10 @@ public class MultiscaleWarpyRegisterCommand implements BdvPlaygroundActionComman
         public int getNumMipmapLevels() {
             return origin.getNumMipmapLevels();
         }
+    }
+
+    void updateInfo() {
+        int nReg = 4*((int) (Math.pow(2, n_scales-1)-1));
+        infoRegistration = nReg+" registrations will be computed, resulting in "+(int) Math.pow(2, n_scales)+" control points";
     }
 }
