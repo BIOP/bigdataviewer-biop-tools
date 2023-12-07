@@ -14,12 +14,16 @@ import net.imglib2.cache.img.CachedCellImg;
 import net.imglib2.cache.img.DiskCachedCellImgFactory;
 import net.imglib2.cache.img.DiskCachedCellImgOptions;
 import net.imglib2.cache.img.LoadedCellCacheLoader;
+import net.imglib2.converter.Converter;
+import net.imglib2.display.ColorConverter;
+import net.imglib2.display.LinearRange;
 import net.imglib2.img.Img;
 import net.imglib2.img.basictypeaccess.AccessFlags;
 import net.imglib2.img.basictypeaccess.ArrayDataAccessFactory;
 import net.imglib2.img.cell.Cell;
 import net.imglib2.img.cell.CellGrid;
 import net.imglib2.type.PrimitiveType;
+import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.integer.GenericByteType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
@@ -35,7 +39,9 @@ public class SourceVoxelProcessor<I extends NumericType<I>,O extends NumericType
     final SourceAndConverter<I> source_in;
     final String name;
     final O pixel;
-    private int nThreads;
+    //final private int nThreads;
+
+    final private SharedQueue queue;
 
     public SourceVoxelProcessor(String name,
                                 SourceAndConverter<I> source_in,
@@ -46,7 +52,20 @@ public class SourceVoxelProcessor<I extends NumericType<I>,O extends NumericType
         this.source_in = source_in;
         this.name = name;
         this.pixel = pixel;
-        this.nThreads = nThreads;
+        //this.nThreads = nThreads;
+        this.queue = new SharedQueue(nThreads, source_in.getSpimSource().getNumMipmapLevels());
+    }
+
+    public SourceVoxelProcessor(String name,
+                                SourceAndConverter<I> source_in,
+                                VoxelProcessedSource.Processor processor,
+                                O pixel,
+                                SharedQueue queue) {
+        this.processor = processor;
+        this.source_in = source_in;
+        this.name = name;
+        this.pixel = pixel;
+        this.queue = queue;
     }
 
     @Override
@@ -68,12 +87,43 @@ public class SourceVoxelProcessor<I extends NumericType<I>,O extends NumericType
         SourceAndConverter<?> vsac;
         Source<?> vsrcRsampled;
 
-        vsrcRsampled = new VolatileSource<>(srcProcessed, new SharedQueue(nThreads));
+        vsrcRsampled = new VolatileSource<>(srcProcessed, queue);
+        Converter< ?, ARGBType> volatileConverter = BigDataViewer.createConverterToARGB((NumericType) vsrcRsampled.getType());
+        Converter< ?, ARGBType> converter = BigDataViewer.createConverterToARGB(srcProcessed.getType());
 
-        vsac = new SourceAndConverter(vsrcRsampled,
-                BigDataViewer.createConverterToARGB((NumericType)vsrcRsampled.getType()));
-        sac_out = new SourceAndConverter(srcProcessed,
-                BigDataViewer.createConverterToARGB(srcProcessed.getType()),vsac);
+        if ((sac.getConverter() instanceof ColorConverter)&&(volatileConverter instanceof ColorConverter)) {
+            ((ColorConverter) volatileConverter).setColor(
+                    ((ColorConverter) sac.getConverter()).getColor().copy()
+            );
+        }
+
+        if ((sac.getConverter() instanceof ColorConverter)&&(converter instanceof ColorConverter)) {
+            ((ColorConverter) converter).setColor(
+                    ((ColorConverter) sac.getConverter()).getColor().copy()
+            );
+        }
+
+        if ((sac.getConverter() instanceof LinearRange)&&(volatileConverter instanceof LinearRange)) {
+            ((LinearRange) volatileConverter).setMin(
+                    ((LinearRange) sac.getConverter()).getMin()
+            );
+            ((LinearRange) volatileConverter).setMax(
+                    ((LinearRange) sac.getConverter()).getMax()
+            );
+        }
+
+        if ((sac.getConverter() instanceof LinearRange)&&(converter instanceof LinearRange)) {
+            ((LinearRange) converter).setMin(
+                    ((LinearRange) sac.getConverter()).getMin()
+            );
+            ((LinearRange) converter).setMax(
+                    ((LinearRange) sac.getConverter()).getMax()
+            );
+        }
+
+
+        vsac = new SourceAndConverter(vsrcRsampled,volatileConverter);
+        sac_out = new SourceAndConverter(srcProcessed, converter,vsac);
 
         return sac_out;
     }

@@ -1,3 +1,5 @@
+package process;
+
 import bdv.util.BdvHandle;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.sourceandconverter.SourceVoxelProcessor;

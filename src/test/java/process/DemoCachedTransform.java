@@ -1,3 +1,5 @@
+package process;
+
 import bdv.tools.brightness.ConverterSetup;
 import bdv.util.BdvHandle;
 import bdv.util.RealTransformHelper;
