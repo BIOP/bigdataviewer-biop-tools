@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>36.0.0</version>
+		<version>37.0.0</version>
 		<relativePath />
 	</parent>
 
@@ -98,15 +98,15 @@
 
 		<!-- general imagej dependencies -->
 		<!-- bdv playground related dependencies -->
-		<bigdataviewer-playground.version>0.8.0</bigdataviewer-playground.version>
-		<bigdataviewer-playground-display.version>0.4.0</bigdataviewer-playground-display.version>
+		<bigdataviewer-playground.version>0.8.1</bigdataviewer-playground.version>
+		<bigdataviewer-playground-display.version>0.4.1</bigdataviewer-playground-display.version>
 		<image-transform-converters.version>0.1.7</image-transform-converters.version>
-		<bigdataviewer-image-loaders.version>0.6.3</bigdataviewer-image-loaders.version>
+		<bigdataviewer-image-loaders.version>0.6.4</bigdataviewer-image-loaders.version>
 
 		<!-- biop dependencies -->
-		<ijl-utilities-wrappers.version>0.9.5-SNAPSHOT</ijl-utilities-wrappers.version>
-		<Operetta_Importer.version>0.3.0</Operetta_Importer.version>
-		<ijp-kheops.version>0.4.2</ijp-kheops.version>
+		<ijl-utilities-wrappers.version>0.9.5</ijl-utilities-wrappers.version>
+		<Operetta_Importer.version>0.3.2</Operetta_Importer.version>
+		<ijp-kheops.version>0.4.4</ijp-kheops.version>
 
 		<!-- mastodon -->
 		<mastodon.version>1.0.0-beta-26</mastodon.version>
@@ -260,7 +260,7 @@
 			<scope>test</scope>
 		</dependency>
 
-		<dependency>
+		<!--<dependency>
 			<groupId>ch.epfl.biop</groupId>
 			<artifactId>quick-start-czi-reader</artifactId>
 			<version>0.2.1</version>
@@ -273,7 +273,7 @@
 		  <artifactId>BigStitcher</artifactId>
 		  <version>1.2.7</version>
 			<scope>test</scope>
-		</dependency>
+		</dependency> -->
 
 
 	</dependencies>
