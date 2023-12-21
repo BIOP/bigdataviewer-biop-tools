@@ -30,7 +30,7 @@ public class SourceFuserAndResampler<T extends NumericType<T>> implements Runnab
 
     boolean cache;
 
-    int cacheX, cacheY, cacheZ, cacheBounds;
+    int cacheX, cacheY, cacheZ;
 
     int defaultMipMapLevel;
 
@@ -62,7 +62,6 @@ public class SourceFuserAndResampler<T extends NumericType<T>> implements Runnab
         this.cacheX = cacheX;
         this.cacheY = cacheY;
         this.cacheZ = cacheZ;
-        this.cacheBounds = cacheBounds;
     }
 
     @Override
