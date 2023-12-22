@@ -103,10 +103,10 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
                 CommandModule cm = cs.run(Elastix2DAffineRegisterCommand.class, true,
                         "sacs_fixed", new SourceAndConverter[]{globalRefSource},
                         "tpFixed", 0,
-                        "levelFixedSource", SourceAndConverterHelper.bestLevel(globalRefSource, 0, 0.01),
+                        "levelFixedSource", SourceAndConverterHelper.bestLevel(globalRefSource, 0, coarsePixelSize_mm),
                         "sacs_moving", new SourceAndConverter[]{currentRefSource},
                         "tpMoving", 0,
-                        "levelMovingSource", SourceAndConverterHelper.bestLevel(currentRefSource, 0, 0.01),
+                        "levelMovingSource", SourceAndConverterHelper.bestLevel(currentRefSource, 0, coarsePixelSize_mm),
                         "px", topLeftX,
                         "py", topLeftY,
                         "pz", 0,
@@ -137,9 +137,9 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
                                 "sacs_fixed", new SourceAndConverter[]{globalRefSource},
                                 "sacs_moving", new SourceAndConverter[]{firstRegSrc},
                                 "tpFixed", 0,
-                                "levelFixedSource", SourceAndConverterHelper.bestLevel(globalRefSource, 0, 0.001), //TODO does this make sense ? Shouldn't it be self pixel precise size ?
+                                "levelFixedSource", SourceAndConverterHelper.bestLevel(globalRefSource, 0, precisePixelSize_mm), //TODO does this make sense ? Shouldn't it be self pixel precise size ?
                                 "tpMoving", 0,
-                                "levelMovingSource", SourceAndConverterHelper.bestLevel(firstRegSrc, 0, 0.001),
+                                "levelMovingSource", SourceAndConverterHelper.bestLevel(firstRegSrc, 0, precisePixelSize_mm),
                                 "ptListCoordinates", ptListCoordinates,
                                 "zLocation", 0,
                                 "sx", patchSize_mm, // 500 microns
