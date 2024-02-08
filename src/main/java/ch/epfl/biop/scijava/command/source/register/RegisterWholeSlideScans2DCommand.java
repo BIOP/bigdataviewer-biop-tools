@@ -183,7 +183,7 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
                 pts_Moving.add(pt_moving);
             }
 
-            tst = new Wrapped2DTransformAs3D(
+            tst = new InvertibleWrapped2DTransformAs3D(
                     new WrappedIterativeInvertibleRealTransform<>(
                             BigWarpHelper.getTransform(pts_Moving, pts_Fixed,true)
                     )

@@ -145,7 +145,7 @@ public class WarpyEditRegistrationCommand implements Command {
 
         ThinplateSplineTransform tst = (ThinplateSplineTransform)
                 ((WrappedIterativeInvertibleRealTransform)
-                        ((Wrapped2DTransformAs3D)transformation).getTransform())
+                        ((InvertibleWrapped2DTransformAs3D)transformation).getTransform())
                         .getTransform();
 
         // Launch BigWarp

@@ -55,13 +55,11 @@ public class Resample3DAlongAxis {
 
         // DO NOT WORK
          rais = new RandomAccessibleIntervalSource<UnsignedByteType>(
-                Views.expandZero(sac.getSpimSource().getSource(0,0)),
+                Views.expandZero(sac.getSpimSource().getSource(0,0),0,0,0), // even though we don't care about the size of the border, this helps set the dimension
                 new UnsignedByteType(),
                 m,
                 "RAIS"
         );
-
-
 
         RealPoint pt1 = new RealPoint(3);
         pt1.setPosition(new double[]{100,100,100});

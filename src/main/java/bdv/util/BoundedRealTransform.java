@@ -45,11 +45,34 @@ public class BoundedRealTransform implements InvertibleRealTransform {
 
     @Override
     public void apply(double[] source, double[] target) {
-        origin.apply(source,target);
+
+        boolean inBounds = true;
+        for (int d = 0; d < nDimSource; d++) {
+            if (source[d]<interval.realMin(d)) {
+                inBounds = false;
+                break;
+            }
+            if (source[d]>interval.realMax(d)) {
+                inBounds = false;
+                break;
+            }
+        }
+        if (inBounds) {
+            origin.apply(source, target);
+        } else {
+            for (int d = 0; d < nDimSource; d++) {
+              target[d] = source[d];
+            }
+            //realPositionable.setPosition(realLocalizable);
+        }
+
+
+        //origin.apply(source,target);
     }
 
     @Override
     public void apply(RealLocalizable realLocalizable, RealPositionable realPositionable) {
+        //realPositionable.setPosition(realLocalizable);
         boolean inBounds = true;
         for (int d = 0; d < nDimSource; d++) {
             if (realLocalizable.getFloatPosition(d)<interval.realMin(d)) {

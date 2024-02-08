@@ -3,9 +3,9 @@ package ch.epfl.biop.scijava.command.source.register;
 import ij.IJ;
 import net.imglib2.RealPoint;
 import net.imglib2.realtransform.AffineTransform3D;
+import net.imglib2.realtransform.InvertibleWrapped2DTransformAs3D;
 import net.imglib2.realtransform.RealTransform;
 import net.imglib2.realtransform.ThinplateSplineTransform;
-import net.imglib2.realtransform.Wrapped2DTransformAs3D;
 import net.imglib2.realtransform.inverse.WrappedIterativeInvertibleRealTransform;
 import org.scijava.ItemIO;
 import org.scijava.command.CommandService;
@@ -188,7 +188,7 @@ public class Elastix2DSparsePointsRegisterCommand extends SelectSourcesForRegist
                 ptI[1][i] = correspondingPts.get(pts_Fixed.get(i)).getDoublePosition(1);
             }
 
-            tst = new Wrapped2DTransformAs3D(
+            tst = new InvertibleWrapped2DTransformAs3D(
                     new WrappedIterativeInvertibleRealTransform<>(
                             new ThinplateSplineTransform(ptI, ptF)
                     )

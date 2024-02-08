@@ -19,12 +19,16 @@ public class RealTransformHelper {
 
     public static String BigWarpFileFromRealTransform(RealTransform rt) {
         try {
-            File file = File.createTempFile("temp", null);
+            File file = File.createTempFile("bigwarp-", "csv");
             //System.out.println(file.getAbsolutePath());
             file.deleteOnExit();
 
             if (rt instanceof Wrapped2DTransformAs3D) {
                 rt = ((Wrapped2DTransformAs3D)rt).transform;
+            }
+
+            if (rt instanceof InvertibleWrapped2DTransformAs3D) {
+                rt = ((InvertibleWrapped2DTransformAs3D)rt).transform;
             }
 
             if (rt instanceof WrappedIterativeInvertibleRealTransform) {
@@ -36,6 +40,10 @@ public class RealTransformHelper {
 
                 if (rt instanceof Wrapped2DTransformAs3D) {
                     rt = ((Wrapped2DTransformAs3D)rt).transform;
+                }
+
+                if (rt instanceof InvertibleWrapped2DTransformAs3D) {
+                    rt = ((InvertibleWrapped2DTransformAs3D)rt).transform;
                 }
 
                 if (rt instanceof WrappedIterativeInvertibleRealTransform) {

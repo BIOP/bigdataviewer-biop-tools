@@ -1,7 +1,8 @@
 package ch.epfl.biop.sourceandconverter.transform;
 
+import bdv.cache.SharedQueue;
+import bdv.util.WrapVolatileSource;
 import bdv.util.ZSlicedSource;
-import bdv.util.VolatileSource;
 import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
@@ -64,7 +65,7 @@ public class SourceMosaicZSlicer implements Runnable, Function<SourceAndConverte
             Source vsrcRsampled;
             if (cache) {
                 vsrcRsampled =
-                        new VolatileSource(srcRsampled)/*
+                        new WrapVolatileSource(srcRsampled)/*
                             src.asVolatile().getSpimSource(),
                             model.getSpimSource(),
                             reuseMipMaps,

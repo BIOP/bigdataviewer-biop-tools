@@ -10,9 +10,9 @@ import ch.epfl.biop.sourceandconverter.SourceFuserAndResampler;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imagej.ImageJ;
 import net.imglib2.realtransform.AffineTransform3D;
+import net.imglib2.realtransform.InvertibleWrapped2DTransformAs3D;
 import net.imglib2.realtransform.RealTransform;
 import net.imglib2.realtransform.ThinplateSplineTransform;
-import net.imglib2.realtransform.Wrapped2DTransformAs3D;
 import net.imglib2.realtransform.inverse.WrappedIterativeInvertibleRealTransform;
 import org.junit.After;
 import org.junit.Test;
@@ -126,7 +126,7 @@ public class ManyWarpedSourcesFusedDemo {
 
         RealTransform rt = new ThinplateSplineTransform(target, origin);
         WrappedIterativeInvertibleRealTransform invertibleRealTransform = new WrappedIterativeInvertibleRealTransform(rt);
-        Wrapped2DTransformAs3D rt3d = new Wrapped2DTransformAs3D(invertibleRealTransform);
+        InvertibleWrapped2DTransformAs3D rt3d = new InvertibleWrapped2DTransformAs3D(invertibleRealTransform);
 
         ArrayList<SourceAndConverter> sacs = new ArrayList<>();
         for (int x = 0; x < numberOfSourcesInOneAxis;x++) {

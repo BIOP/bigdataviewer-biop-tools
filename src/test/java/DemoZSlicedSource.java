@@ -28,9 +28,7 @@ import java.util.List;
 
 
 /**
- * NOT WORKING!! A Clone for affine transform or for the outofbounds stuff should be pu somewhere
- *
- * TO FIX (if the source is resampled, as in ABBA, that works however)
+ * NOT WORKING!! A Clone for affine transform or for the outofbounds stuff should be put somewhere
  *
  */
 public class DemoZSlicedSource {
@@ -62,12 +60,11 @@ public class DemoZSlicedSource {
 
         ExtendedRandomAccessibleInterval rai = SlicerViews.extendSlicer(nonResliced,2,0);
 
-        // TODO : Fix! This does not work!
         BdvFunctions.show(
         Views.interval(rai,
                 new FinalInterval(nonResliced.dimension(0)*nonResliced.dimension(2),
                         nonResliced.dimension(1),
-                        nonResliced.dimension(2))
+                        1)
                        ),
                 "Sliced"
                 );

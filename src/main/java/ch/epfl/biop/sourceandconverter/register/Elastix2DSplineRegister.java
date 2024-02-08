@@ -297,12 +297,12 @@ public class Elastix2DSplineRegister<FT extends NativeType<FT> & NumericType<FT>
                 new WrappedIterativeInvertibleRealTransform<>(new ThinplateSplineTransform( coordsFixed, coordsMoving ));
 
         realTransformOut =
-                new Wrapped2DTransformAs3D(invTransform);
+                new InvertibleWrapped2DTransformAs3D(invTransform);
 
         InvertibleRealTransform invTransformPatch =
                 new WrappedIterativeInvertibleRealTransform<>(new ThinplateSplineTransform( coordsMoving, coordsFixed ));
 
-        realTransformInverseOut = new Wrapped2DTransformAs3D(invTransformPatch);
+        realTransformInverseOut = new InvertibleWrapped2DTransformAs3D(invTransformPatch);
 
         return true; // success
 

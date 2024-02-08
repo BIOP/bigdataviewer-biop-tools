@@ -58,7 +58,7 @@ public class DemoBoundedTransform {
         BdvHandle bdvHandle = SourceAndConverterServices.getBdvDisplayService().getActiveBdv();
 
         // Show the sourceandconverter
-        SourceAndConverterServices.getBdvDisplayService().show(bdvHandle, sacFixed);
+        // SourceAndConverterServices.getBdvDisplayService().show(bdvHandle, sacFixed);
 
         SourceAndConverterServices.getSourceAndConverterService().getConverterSetup(sacMoving)
                 .setColor(new ARGBType(ARGBType.rgba(0, 255, 255,0)));
@@ -91,7 +91,7 @@ public class DemoBoundedTransform {
                     .register(sac);
         }
 
-        BoundedRealTransform brt = new BoundedRealTransform(bwl.getBigWarp().getBwTransform().getTransformation(0), new FinalRealInterval(new double[]{20,20,20}, new double[]{150,150,150}));
+        BoundedRealTransform brt = new BoundedRealTransform(bwl.getBigWarp().getBwTransform().getTransformation(0), new FinalRealInterval(new double[]{20,20,20}, new double[]{150,150,550}));
 
         SourceAndConverter tr = new SourceRealTransformer(null,brt).apply(sacFixed);
         SourceAndConverterServices.getBdvDisplayService()

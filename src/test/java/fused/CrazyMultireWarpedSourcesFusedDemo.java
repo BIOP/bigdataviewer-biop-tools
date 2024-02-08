@@ -11,9 +11,9 @@ import loci.common.DebugTools;
 import net.imagej.ImageJ;
 import net.imglib2.RealPoint;
 import net.imglib2.realtransform.AffineTransform3D;
+import net.imglib2.realtransform.InvertibleWrapped2DTransformAs3D;
 import net.imglib2.realtransform.RealTransform;
 import net.imglib2.realtransform.ThinplateSplineTransform;
-import net.imglib2.realtransform.Wrapped2DTransformAs3D;
 import net.imglib2.realtransform.inverse.WrappedIterativeInvertibleRealTransform;
 import org.junit.After;
 import org.junit.Test;
@@ -265,7 +265,7 @@ public class CrazyMultireWarpedSourcesFusedDemo {
 
                 RealTransform rt = new ThinplateSplineTransform(target, origin);
                 WrappedIterativeInvertibleRealTransform invertibleRealTransform = new WrappedIterativeInvertibleRealTransform(rt);
-                Wrapped2DTransformAs3D rt3d = new Wrapped2DTransformAs3D(invertibleRealTransform);
+                InvertibleWrapped2DTransformAs3D rt3d = new InvertibleWrapped2DTransformAs3D(invertibleRealTransform);
 
                 SourceAndConverter warped_sac = new SourceRealTransformer(sac, rt3d).get();
                 SourceAndConverterServices

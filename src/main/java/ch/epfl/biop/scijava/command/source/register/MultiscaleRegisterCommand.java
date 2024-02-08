@@ -15,11 +15,11 @@ import net.imglib2.RealRandomAccessible;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.realtransform.InvertibleRealTransform;
 import net.imglib2.realtransform.InvertibleRealTransformSequence;
+import net.imglib2.realtransform.InvertibleWrapped2DTransformAs3D;
 import net.imglib2.realtransform.RealTransform;
 import net.imglib2.realtransform.RealTransformSequence;
 import net.imglib2.realtransform.ThinPlateSplineTransformAdapter;
 import net.imglib2.realtransform.ThinplateSplineTransform;
-import net.imglib2.realtransform.Wrapped2DTransformAs3D;
 import net.imglib2.realtransform.inverse.WrappedIterativeInvertibleRealTransform;
 import org.scijava.ItemIO;
 import org.scijava.ItemVisibility;
@@ -234,7 +234,7 @@ public class MultiscaleRegisterCommand implements BdvPlaygroundActionCommand{
                         ptsTarget.add(dest);
                     }
 
-                    InvertibleRealTransform currentTransformation = new Wrapped2DTransformAs3D(
+                    InvertibleRealTransform currentTransformation = new InvertibleWrapped2DTransformAs3D(
                             new WrappedIterativeInvertibleRealTransform<>(
                                     BigWarpHelper.getTransform(ptsTarget, ptsSource,true)
                             )
@@ -272,7 +272,7 @@ public class MultiscaleRegisterCommand implements BdvPlaygroundActionCommand{
                                 "task", task
                         ).get().getOutput("tst");
 
-                transformSequence.add(((Wrapped2DTransformAs3D)currentLevelTransform).getTransform());
+                transformSequence.add(((InvertibleWrapped2DTransformAs3D)currentLevelTransform).getTransform());
 
                 // For debugging
 
@@ -289,7 +289,7 @@ public class MultiscaleRegisterCommand implements BdvPlaygroundActionCommand{
                         ptsTarget.add(dest);
                     }
 
-                    InvertibleRealTransform currentTransformation = new Wrapped2DTransformAs3D(
+                    InvertibleRealTransform currentTransformation = new InvertibleWrapped2DTransformAs3D(
                             new WrappedIterativeInvertibleRealTransform<>(
                                     BigWarpHelper.getTransform(ptsTarget, ptsSource,true)
                             )
@@ -323,7 +323,7 @@ public class MultiscaleRegisterCommand implements BdvPlaygroundActionCommand{
                     ptsTarget.add(dest);
                 }
 
-                transformation = new Wrapped2DTransformAs3D(
+                transformation = new InvertibleWrapped2DTransformAs3D(
                         new WrappedIterativeInvertibleRealTransform<>(
                                 BigWarpHelper.getTransform(ptsTarget, ptsSource, true)
                         )
@@ -349,7 +349,7 @@ public class MultiscaleRegisterCommand implements BdvPlaygroundActionCommand{
         // I know, it's complicated
         ThinplateSplineTransform tst = (ThinplateSplineTransform)
                 ((WrappedIterativeInvertibleRealTransform)
-                        ((Wrapped2DTransformAs3D)transformation).getTransform())
+                        ((InvertibleWrapped2DTransformAs3D)transformation).getTransform())
                         .getTransform();
         ThinPlateR2LogRSplineKernelTransform kernel = ThinPlateSplineTransformAdapter.getKernel(tst);
         double[][] pts_src = ThinPlateSplineTransformAdapter.getSrcPts(kernel);
@@ -370,7 +370,7 @@ public class MultiscaleRegisterCommand implements BdvPlaygroundActionCommand{
             movingPts.add(moving);
             fixedPts.add(fixed);
         }
-        transformation = new Wrapped2DTransformAs3D(
+        transformation = new InvertibleWrapped2DTransformAs3D(
                 new WrappedIterativeInvertibleRealTransform<>(BigWarpHelper.getTransform(movingPts, fixedPts, true))
         );
     }

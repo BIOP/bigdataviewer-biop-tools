@@ -48,7 +48,6 @@ public class AlphaDemoWarped {
 
         SourceAndConverter warpedSource = sources[2];
 
-
         IAlphaSource alpha = getAlphaSource(new FinalInterval(new long[]{200,250,10}), new AffineTransform3D());
 
         AlphaSourceHelper.setAlphaSource(warpedSource, alpha);

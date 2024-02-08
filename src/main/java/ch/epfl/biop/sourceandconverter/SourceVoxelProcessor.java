@@ -2,8 +2,8 @@ package ch.epfl.biop.sourceandconverter;
 
 import bdv.BigDataViewer;
 import bdv.cache.SharedQueue;
-import bdv.util.RAIHelper;
 import bdv.util.VolatileSource;
+import bdv.util.WrapVolatileSource;
 import bdv.util.source.process.VoxelProcessedSource;
 import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
@@ -11,13 +11,10 @@ import net.imglib2.Cursor;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.cache.Cache;
 import net.imglib2.cache.img.CachedCellImg;
-import net.imglib2.cache.img.DiskCachedCellImgFactory;
-import net.imglib2.cache.img.DiskCachedCellImgOptions;
 import net.imglib2.cache.img.LoadedCellCacheLoader;
 import net.imglib2.converter.Converter;
 import net.imglib2.display.ColorConverter;
 import net.imglib2.display.LinearRange;
-import net.imglib2.img.Img;
 import net.imglib2.img.basictypeaccess.AccessFlags;
 import net.imglib2.img.basictypeaccess.ArrayDataAccessFactory;
 import net.imglib2.img.cell.Cell;
@@ -25,7 +22,6 @@ import net.imglib2.img.cell.CellGrid;
 import net.imglib2.type.PrimitiveType;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.NumericType;
-import net.imglib2.type.numeric.integer.GenericByteType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.view.Views;
 import sc.fiji.bdvpg.cache.GlobalLoaderCache;
@@ -87,7 +83,7 @@ public class SourceVoxelProcessor<I extends NumericType<I>,O extends NumericType
         SourceAndConverter<?> vsac;
         Source<?> vsrcRsampled;
 
-        vsrcRsampled = new VolatileSource<>(srcProcessed, queue);
+        vsrcRsampled = new WrapVolatileSource<>(srcProcessed, queue);
         Converter< ?, ARGBType> volatileConverter = BigDataViewer.createConverterToARGB((NumericType) vsrcRsampled.getType());
         Converter< ?, ARGBType> converter = BigDataViewer.createConverterToARGB(srcProcessed.getType());
 

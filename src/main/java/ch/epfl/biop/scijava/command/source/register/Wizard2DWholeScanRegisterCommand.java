@@ -379,7 +379,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
         // I know, it's complicated
         ThinplateSplineTransform tst = (ThinplateSplineTransform)
                 ((WrappedIterativeInvertibleRealTransform)
-                        ((Wrapped2DTransformAs3D)transformation).getTransform())
+                        ((InvertibleWrapped2DTransformAs3D)transformation).getTransform())
                         .getTransform();
         ThinPlateR2LogRSplineKernelTransform kernel = ThinPlateSplineTransformAdapter.getKernel(tst);
         double[][] pts_src = ThinPlateSplineTransformAdapter.getSrcPts(kernel);
@@ -400,7 +400,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
             movingPts.add(moving);
             fixedPts.add(fixed);
         }
-        transformation = new Wrapped2DTransformAs3D(
+        transformation = new InvertibleWrapped2DTransformAs3D(
                 new WrappedIterativeInvertibleRealTransform<>(BigWarpHelper.getTransform(movingPts, fixedPts, true))
         );
     }

@@ -5,6 +5,7 @@ import ch.epfl.biop.scijava.command.source.register.SourcesRealTransformCommand;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;
+import net.imglib2.realtransform.RealTransform;
 import sc.fiji.bdvpg.scijava.command.source.BrightnessAdjusterCommand;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
 import sc.fiji.bdvpg.sourceandconverter.display.BrightnessAdjuster;
@@ -43,7 +44,7 @@ public class DemoEllipticalSource {
         new BrightnessAdjuster(sac,0,250).run();
 
         try {
-            ij.command().run(Elliptic3DTransformCreatorCommand.class, true,
+            RealTransform rt = (RealTransform) ij.command().run(Elliptic3DTransformCreatorCommand.class, true,
                     "radiusX",100,
                     "radiusY",100,
                     "radiusZ",100, // radii of axes 1 2 3 of ellipse
@@ -52,9 +53,10 @@ public class DemoEllipticalSource {
                     "rotationZ",0, // 3D rotation euler angles  - maybe not the best parametrization
                     "centerX",120,
                     "centerY",120,
-                    "centerZ",120).get();
+                    "centerZ",120).get().getOutput("e3Dt");
             SourceAndConverter transformed_source = ((SourceAndConverter[]) ij.command().run(SourcesRealTransformCommand.class, true,
-                    "sources_in", new SourceAndConverter[]{sac}).get().getOutput("sources_out"))[0];
+                    "sources_in", new SourceAndConverter[]{sac},
+                    "rt", rt).get().getOutput("sources_out"))[0];
             BdvHandle bdvh = SourceAndConverterServices
                     .getBdvDisplayService()
                     .getNewBdv();

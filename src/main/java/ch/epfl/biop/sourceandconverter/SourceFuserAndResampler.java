@@ -1,6 +1,7 @@
 package ch.epfl.biop.sourceandconverter;
 
 import bdv.util.VolatileSource;
+import bdv.util.WrapVolatileSource;
 import bdv.util.source.fused.AlphaFusedResampledSource;
 import bdv.cache.SharedQueue;
 import bdv.viewer.Interpolation;
@@ -106,7 +107,7 @@ public class SourceFuserAndResampler<T extends NumericType<T>> implements Runnab
             SourceAndConverter vsac;
             Source vsrcRsampled;
             if (cache) {
-                vsrcRsampled = new VolatileSource(srcRsampled, new SharedQueue(nThreads));
+                vsrcRsampled = new WrapVolatileSource(srcRsampled, new SharedQueue(nThreads));
             } else {
 
                 sources = new ArrayList<>();
