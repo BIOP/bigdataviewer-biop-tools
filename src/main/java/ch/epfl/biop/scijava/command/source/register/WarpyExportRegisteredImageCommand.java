@@ -3,7 +3,6 @@ package ch.epfl.biop.scijava.command.source.register;
 import bdv.util.EmptySource;
 import bdv.util.QuPathBdvHelper;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.bdv.img.legacy.qupath.entity.QuPathEntryEntity;
 import ch.epfl.biop.kheops.command.KheopsExportSourcesCommand;
 import com.google.gson.stream.JsonReader;
 import ij.IJ;
@@ -62,6 +61,9 @@ public class WarpyExportRegisteredImageCommand implements Command {
     @Parameter(label = "Interpolate pixels values")
     boolean interpolate;
 
+    @Parameter(label = "Up (v>1) or Downsample (v<1) the fused image", persist = false)
+    double upsample = 1.0;
+
     @Parameter
     Context scijavaCtx;
 
@@ -72,7 +74,7 @@ public class WarpyExportRegisteredImageCommand implements Command {
             if (remove_z_offsets) moving_sources = removeZOffsets(moving_sources);
             //QuPathEntryEntity fixedEntity = QuPathBdvHelper.getQuPathEntityFromDerivedSource(fixed_sources[0]);
             int fixed_series_index = QuPathBdvHelper.getEntryId(fixed_sources[0]);//fixedEntity.getId();
-            Map<SourceAndConverter, RealTransform> sourceToTransformation =new HashMap<>();
+            Map<SourceAndConverter<?>, RealTransform> sourceToTransformation =new HashMap<>();
             double downsampleXYTransformField = pre_compute_downsample_xy;
             double downsampleZTransformField = 1;
             EmptySource model = null;
@@ -92,7 +94,7 @@ public class WarpyExportRegisteredImageCommand implements Command {
                 double posY = params.at3D.get(1, 3);
                 double posZ = params.at3D.get(2, 3);
                 params.at3D.translate(-posX, -posY, -posZ);
-                params.at3D.scale(downsampleXYTransformField, downsampleXYTransformField, downsampleZTransformField);
+                params.at3D.scale(downsampleXYTransformField, downsampleXYTransformField, 1);
                 params.at3D.translate(posX, posY, posZ);
                 model = new EmptySource(params);
             }
@@ -100,7 +102,7 @@ public class WarpyExportRegisteredImageCommand implements Command {
                 IJ.log("Computing deformation fields, please wait...");
             }
             Map<File, RealTransform> alreadyOpenedTransforms = new HashMap<>();
-            for (SourceAndConverter source: moving_sources) {
+            for (SourceAndConverter<?> source: moving_sources) {
                 File moving_entry_folder = QuPathBdvHelper.getDataEntryFolder(source);
                 //QuPathEntryEntity movingEntity = QuPathBdvHelper.getQuPathEntityFromDerivedSource(source);
                 int moving_series_index = QuPathBdvHelper.getEntryId(source);//movingEntity.getId();
@@ -129,15 +131,15 @@ public class WarpyExportRegisteredImageCommand implements Command {
             }
 
 
-            List<SourceAndConverter> movingSacs = Arrays.stream(moving_sources).collect(Collectors.toList());
+            List<SourceAndConverter<?>> movingSacs = Arrays.stream(moving_sources).collect(Collectors.toList());
 
-            List<SourceAndConverter> fixedSacs = Arrays.stream(fixed_sources).collect(Collectors.toList());
+            List<SourceAndConverter<?>> fixedSacs = Arrays.stream(fixed_sources).collect(Collectors.toList());
 
-            List<SourceAndConverter> transformedSources = new ArrayList<>();
+            List<SourceAndConverter<?>> transformedSources = new ArrayList<>();
 
             Class<?> pixelType;
             pixelType = movingSacs.get(0).getSpimSource().getType().getClass();
-            for (SourceAndConverter source: movingSacs) {
+            for (SourceAndConverter<?> source: movingSacs) {
                 if (!source.getSpimSource().getType().getClass().equals(pixelType)) {
                     IJ.log("ERROR - combining images with different pixel types is not supported: ");
                     IJ.log(movingSacs.get(0).getSpimSource().getName()+" pixel type = "+pixelType.getSimpleName());
@@ -147,11 +149,32 @@ public class WarpyExportRegisteredImageCommand implements Command {
                 }
                 transformedSources.add(new SourceRealTransformer(sourceToTransformation.get(source).copy()).apply(source));
             }
-            List<SourceAndConverter> exportedSources = new ArrayList<>();
+            List<SourceAndConverter<?>> exportedSources = new ArrayList<>();
 
-            if (includeFixedSources) {
-                exportedSources.addAll(fixedSacs);
-                for (SourceAndConverter source: fixedSacs) {
+            SourceAndConverter<?> modelForResampling = fixedSacs.get(0);
+            if (upsample!=1) {
+                EmptySource.EmptySourceParams params = new EmptySource.EmptySourceParams();
+                // Assert all fixed sources have the same size
+                long nPixX = fixed_sources[0].getSpimSource().getSource(0, 0).max(0) + 1;
+                long nPixY = fixed_sources[0].getSpimSource().getSource(0, 0).max(1) + 1;
+                long nPixZ = fixed_sources[0].getSpimSource().getSource(0, 0).max(2) + 1;
+                params.nx = (long) (nPixX * upsample);
+                params.ny = (long) (nPixY * upsample);
+                params.nz = (nPixZ);
+                AffineTransform3D transform = new AffineTransform3D();
+                fixed_sources[0].getSpimSource().getSourceTransform(0, 0, transform);
+                params.at3D = transform.copy();
+                double posX = params.at3D.get(0, 3);
+                double posY = params.at3D.get(1, 3);
+                double posZ = params.at3D.get(2, 3);
+                params.at3D.translate(-posX, -posY, -posZ);
+                params.at3D.scale(1./upsample, 1./upsample, 1.);
+                params.at3D.translate(posX, posY, posZ);
+                modelForResampling = new SourceAndConverter<>(new EmptySource(params), null, null);
+            }
+
+            if (includeFixedSources)  {
+                for (SourceAndConverter<?> source: fixedSacs) {
                     if (!source.getSpimSource().getType().getClass().equals(pixelType)) {
                         IJ.log("ERROR - combining images with different pixel types is not supported: ");
                         IJ.log(movingSacs.get(0).getSpimSource().getName()+" pixel type = "+pixelType.getSimpleName());
@@ -160,11 +183,25 @@ public class WarpyExportRegisteredImageCommand implements Command {
                         return;
                     }
                 }
+                if (upsample==1) {
+                    exportedSources.addAll(fixedSacs);
+                } else {
+                    for (SourceAndConverter<?> source: fixedSacs) {
+                        exportedSources.add(
+                                new SourceResampler(source,
+                                        modelForResampling,
+                                        source.getSpimSource().getName()+"_Warpy",
+                                        false, false,
+                                        interpolate, 0).get());
+                    }
+                }
             }
-            for (SourceAndConverter source: transformedSources) {
+
+
+            for (SourceAndConverter<?> source: transformedSources) {
                 exportedSources.add(
                         new SourceResampler(source,
-                                fixedSacs.get(0),
+                                modelForResampling,
                                 source.getSpimSource().getName()+"_Warpy",
                                 false, false,
                                 interpolate, 0).get());
@@ -199,7 +236,7 @@ public class WarpyExportRegisteredImageCommand implements Command {
                 if ((moving_sources == null)||(moving_sources.length==0)) {
                     message += "Please select at least one moving source <br>";
                 } else {
-                    for (SourceAndConverter testSource: moving_sources) {
+                    for (SourceAndConverter<?> testSource: moving_sources) {
                         if (!QuPathBdvHelper.isSourceLinkedToQuPath(testSource)) {
                             message += testSource.getSpimSource().getName()+" is not originating from a QuPath project! <br>";
                             message+="</html>";
