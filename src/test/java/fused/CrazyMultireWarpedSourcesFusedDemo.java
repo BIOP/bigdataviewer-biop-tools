@@ -37,6 +37,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class CrazyMultireWarpedSourcesFusedDemo {
 
@@ -77,67 +78,24 @@ public class CrazyMultireWarpedSourcesFusedDemo {
             return;
         }
 
-
-        //final String filePath = "src/test/resources/mri-stack.xml";
-        //final String filePath = "C:/Users/nicol/Desktop/demoabba/_bdvdataset_0.xml";//"src/test/resources/Icons.xml";
-        //final String filePath = "D:/QuPathDemoABBA/abba/_bdvdataset_0.xml";//"src/test/resources/Icons.xml";
-        /*try {
-            List<OpenerSettings> openerSettings = new ArrayList<>();
-
-            openerSettings.add(OpenerSettings.BioFormats().location(folderVsi+"Slide_00.vsi"));
-            openerSettings.add(OpenerSettings.BioFormats().location(folderVsi+"Slide_01.vsi"));
-            openerSettings.add(OpenerSettings.BioFormats().location(folderVsi+"Slide_02.vsi"));
-            openerSettings.add(OpenerSettings.BioFormats().location(folderVsi+"Slide_03.vsi"));
-            openerSettings.add(OpenerSettings.BioFormats().location(folderVsi+"Slide_04.vsi"));
-            openerSettings.add(OpenerSettings.BioFormats().location(folderVsi+"Slide_05.vsi"));
-            openerSettings.add(OpenerSettings.BioFormats().location(folderVsi+"Slide_06.vsi"));
-            SourceAndConverterServices.getSourceAndConverterService().register(OpenersToSpimData.getSpimData(openerSettings));
-        } catch (IOException exception) {
-            exception.printStackTrace();
-        }*/
-
-
-        // Import SpimData
-        //SpimDataFromXmlImporter importer = new SpimDataFromXmlImporter(filePath);
-        //importer.run();
-        String filePath = datasetName;
-
-        TreePath tp =
-                ij.get(SourceAndConverterService.class)
-                        .getUI()
-                        .getTreePathFromString(filePath+">Channel>FL DAPI");
-
         List<SourceAndConverter<?>> sources =
-                ij.get(SourceAndConverterService.class).getUI().getSourceAndConvertersFromTreePath(tp);
+                ij.get(SourceAndConverterService.class).getUI()
+                  .getSourceAndConvertersFromPath(datasetName+">Channel>FL DAPI");
 
         List<SourceAndConverter<?>> sources_0 = new ArrayList<>();
 
         sources_0.addAll(demo(sources, nSourcesInX));
 
-        tp =
-                ij.get(SourceAndConverterService.class)
-                        .getUI()
-                        .getTreePathFromString(filePath+">Channel>FL FITC");
-
-        sources =
-                ij.get(SourceAndConverterService.class).getUI().getSourceAndConvertersFromTreePath(tp);
-
+        sources = ij.get(SourceAndConverterService.class).getUI()
+                    .getSourceAndConvertersFromPath(datasetName+">Channel>FL FITC");
 
         List<SourceAndConverter> sources_1 = new ArrayList<>();
-
         sources_1.addAll(demo(sources, nSourcesInX));
 
-        tp =
-                ij.get(SourceAndConverterService.class)
-                        .getUI()
-                        .getTreePathFromString(filePath+">Channel>FL CY3");
-
-        sources =
-                ij.get(SourceAndConverterService.class).getUI().getSourceAndConvertersFromTreePath(tp);
-
+        sources = ij.get(SourceAndConverterService.class).getUI()
+                    .getSourceAndConvertersFromPath(datasetName+">Channel>FL CY3");
 
         List<SourceAndConverter> sources_2 = new ArrayList<>();
-
         sources_2.addAll(demo(sources, nSourcesInX));
 
         double pxSize = 0.005;//*10;
@@ -161,6 +119,8 @@ public class CrazyMultireWarpedSourcesFusedDemo {
                         2,2,2,16).get();
 
         SourceAndConverterServices.getSourceAndConverterService().register(model);
+        BdvHandle bdvh = SourceAndConverterServices.getBdvDisplayService().getNewBdv();
+
 
         SourceAndConverter fused_0 = new SourceFuserAndResampler(sources_0,
                 AlphaFusedResampledSource.AVERAGE,
@@ -168,10 +128,8 @@ public class CrazyMultireWarpedSourcesFusedDemo {
                 true, true, false, 0,
                 256, 256, 1, -1,8).get();
 
-        BdvHandle bdvh = SourceAndConverterServices.getBdvDisplayService().getNewBdv();
 
-        SourceAndConverterServices
-                .getBdvDisplayService().show(bdvh, fused_0);
+        SourceAndConverterServices.getBdvDisplayService().show(bdvh, fused_0);
 
         new ViewerTransformAdjuster(bdvh, fused_0).run();
 
@@ -182,8 +140,7 @@ public class CrazyMultireWarpedSourcesFusedDemo {
                 256, 256, 1, -1, 8).get();
 
 
-        SourceAndConverterServices
-                .getBdvDisplayService().show(bdvh, fused_1);
+        SourceAndConverterServices.getBdvDisplayService().show(bdvh, fused_1);
 
         SourceAndConverter fused_2 = new SourceFuserAndResampler(sources_2,
                 AlphaFusedResampledSource.AVERAGE,
@@ -191,8 +148,7 @@ public class CrazyMultireWarpedSourcesFusedDemo {
                 true, true, false, 0,
                 256, 256, 1, -1,8).get();
 
-        SourceAndConverterServices
-                .getBdvDisplayService().show(bdvh, fused_2);
+        SourceAndConverterServices.getBdvDisplayService().show(bdvh, fused_2);
 
         /*try {
             DebugTools.setRootLevel("OFF");
@@ -256,10 +212,12 @@ public class CrazyMultireWarpedSourcesFusedDemo {
     public static List<SourceAndConverter<?>> demo(List<SourceAndConverter<?>> sources, int numberOfSourcesInOneAxis) {
 
         ArrayList<SourceAndConverter<?>> sacs = new ArrayList<>();
+        Random generator = new Random(200);
 
         int sourceIndex = 0;
         for (int x = 0; x < numberOfSourcesInOneAxis;x++) {
             for (int y = 0; y < numberOfSourcesInOneAxis; y++) {
+                // For each source
 
                 SourceAndConverter sac;
                 sac = sources.get(sourceIndex);
@@ -267,9 +225,9 @@ public class CrazyMultireWarpedSourcesFusedDemo {
 
                 AffineTransform3D at3d = new AffineTransform3D();
 
-                at3d.rotate(2, Math.random()*6.0);
-                at3d.scale((0.5 + Math.random() / 3.0)*25, (0.5 + Math.random() / 2.0)*25, 1);
-                at3d.translate(200 * x, 200 * y, 0);
+                at3d.rotate(2, generator.nextDouble()*6.0); // Rotate along Z
+                at3d.scale((0.5 + generator.nextDouble() / 3.0)*25, (0.5 + generator.nextDouble() / 2.0)*25, 1); // Random scaling
+                at3d.translate(200 * x, 200 * y, 0); // random translation
 
                 RealPoint ptC = SourceAndConverterHelper.getSourceAndConverterCenterPoint(sac,0);
                 double r = 2.0;
@@ -299,14 +257,14 @@ public class CrazyMultireWarpedSourcesFusedDemo {
                         origin[0][iPt] = xc+xg*r;
                         origin[1][iPt] = yc+yg*r;
 
-                        target[0][iPt] = xc+(xg*r+(Math.random()-0.5)*r)*0.8;
-                        target[1][iPt] = yc+(yg*r+(Math.random()-0.5)*r)*0.8;
+                        target[0][iPt] = xc+(xg*r+(generator.nextDouble()-0.5)*r)*0.8;
+                        target[1][iPt] = yc+(yg*r+(generator.nextDouble()-0.5)*r)*0.8;
 
                         iPt++;
                     }
                 }
 
-
+                // Random warping
                 RealTransform rt = new ThinplateSplineTransform(target, origin);
                 WrappedIterativeInvertibleRealTransform invertibleRealTransform = new WrappedIterativeInvertibleRealTransform(rt);
                 InvertibleWrapped2DTransformAs3D rt3d = new InvertibleWrapped2DTransformAs3D(invertibleRealTransform);
