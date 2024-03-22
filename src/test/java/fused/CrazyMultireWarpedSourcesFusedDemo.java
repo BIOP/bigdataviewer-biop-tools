@@ -4,6 +4,9 @@ import bdv.util.BdvHandle;
 import bdv.util.source.alpha.AlphaSourceHelper;
 import bdv.util.source.fused.AlphaFusedResampledSource;
 import bdv.viewer.SourceAndConverter;
+import ch.epfl.biop.bdv.img.OpenersToSpimData;
+import ch.epfl.biop.bdv.img.bioformats.command.CreateBdvDatasetBioFormatsCommand;
+import ch.epfl.biop.bdv.img.opener.OpenerSettings;
 import ch.epfl.biop.sourceandconverter.EmptyMultiResolutionSourceAndConverterCreator;
 import ch.epfl.biop.sourceandconverter.SourceFuserAndResampler;
 import ij.IJ;
@@ -29,6 +32,7 @@ import spimdata.SpimDataHelper;
 
 import javax.swing.tree.TreePath;
 import java.io.File;
+import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -48,20 +52,60 @@ public class CrazyMultireWarpedSourcesFusedDemo {
 
         //DebugTools.enableLogging ("INFO");
 
-        int nSourcesInX = 40;
+        int nSourcesInX = 10;
+        String folderVsi;
+        String datasetName = "brain_slices";
+        try {
+            folderVsi = DatasetHelper.dowloadBrainVSIDataset();
+
+
+            ij.command().run(CreateBdvDatasetBioFormatsCommand.class, true,
+                "files", new File[] {
+                            new File(folderVsi+"Slide_00.vsi"),
+                            new File(folderVsi+"Slide_01.vsi"),
+                            new File(folderVsi+"Slide_02.vsi"),
+                            new File(folderVsi+"Slide_03.vsi"),
+                            new File(folderVsi+"Slide_04.vsi"),
+                            new File(folderVsi+"Slide_05.vsi"),
+                            new File(folderVsi+"Slide_06.vsi")},
+                    "datasetname", datasetName,
+                    "unit", "MILLIMETER",
+                    "split_rgb_channels", false,
+                    "plane_origin_convention", "CENTER").get();
+        } catch (Exception exception) {
+            exception.printStackTrace();
+            return;
+        }
 
 
         //final String filePath = "src/test/resources/mri-stack.xml";
         //final String filePath = "C:/Users/nicol/Desktop/demoabba/_bdvdataset_0.xml";//"src/test/resources/Icons.xml";
-        final String filePath = "D:/QuPathDemoABBA/abba/_bdvdataset_0.xml";//"src/test/resources/Icons.xml";
+        //final String filePath = "D:/QuPathDemoABBA/abba/_bdvdataset_0.xml";//"src/test/resources/Icons.xml";
+        /*try {
+            List<OpenerSettings> openerSettings = new ArrayList<>();
+
+            openerSettings.add(OpenerSettings.BioFormats().location(folderVsi+"Slide_00.vsi"));
+            openerSettings.add(OpenerSettings.BioFormats().location(folderVsi+"Slide_01.vsi"));
+            openerSettings.add(OpenerSettings.BioFormats().location(folderVsi+"Slide_02.vsi"));
+            openerSettings.add(OpenerSettings.BioFormats().location(folderVsi+"Slide_03.vsi"));
+            openerSettings.add(OpenerSettings.BioFormats().location(folderVsi+"Slide_04.vsi"));
+            openerSettings.add(OpenerSettings.BioFormats().location(folderVsi+"Slide_05.vsi"));
+            openerSettings.add(OpenerSettings.BioFormats().location(folderVsi+"Slide_06.vsi"));
+            SourceAndConverterServices.getSourceAndConverterService().register(OpenersToSpimData.getSpimData(openerSettings));
+        } catch (IOException exception) {
+            exception.printStackTrace();
+        }*/
+
+
         // Import SpimData
-        SpimDataFromXmlImporter importer = new SpimDataFromXmlImporter(filePath);
-        importer.run();
+        //SpimDataFromXmlImporter importer = new SpimDataFromXmlImporter(filePath);
+        //importer.run();
+        String filePath = datasetName;
 
         TreePath tp =
                 ij.get(SourceAndConverterService.class)
                         .getUI()
-                        .getTreePathFromString(filePath+">Channel>1");
+                        .getTreePathFromString(filePath+">Channel>FL DAPI");
 
         List<SourceAndConverter<?>> sources =
                 ij.get(SourceAndConverterService.class).getUI().getSourceAndConvertersFromTreePath(tp);
@@ -73,7 +117,7 @@ public class CrazyMultireWarpedSourcesFusedDemo {
         tp =
                 ij.get(SourceAndConverterService.class)
                         .getUI()
-                        .getTreePathFromString(filePath+">Channel>2");
+                        .getTreePathFromString(filePath+">Channel>FL FITC");
 
         sources =
                 ij.get(SourceAndConverterService.class).getUI().getSourceAndConvertersFromTreePath(tp);
@@ -86,7 +130,7 @@ public class CrazyMultireWarpedSourcesFusedDemo {
         tp =
                 ij.get(SourceAndConverterService.class)
                         .getUI()
-                        .getTreePathFromString(filePath+">Channel>3");
+                        .getTreePathFromString(filePath+">Channel>FL CY3");
 
         sources =
                 ij.get(SourceAndConverterService.class).getUI().getSourceAndConvertersFromTreePath(tp);
