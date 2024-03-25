@@ -7,7 +7,7 @@ import net.imglib2.*;
 import net.imglib2.position.FunctionRandomAccessible;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.realtransform.RealTransformRealRandomAccessible;
-import net.imglib2.realtransform.RealViews;
+import net.imglib2.realtransform.RealTransformSequence;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.view.Views;
 
@@ -20,22 +20,22 @@ import net.imglib2.view.Views;
 
 public class AlphaSourceWarped extends AlphaSource {
 
-    final WarpedSource origin_warped;
+    final WarpedSource<?> origin_warped;
 
     IAlphaSource origin_alpha;
 
     public AlphaSourceWarped(Source<?> origin) {
         super(origin);
         assert origin instanceof WarpedSource;
-        origin_warped = (WarpedSource) origin;
+        origin_warped = (WarpedSource<?>) origin;
     }
 
     public AlphaSourceWarped(Source<?> origin, float alpha) {
         super(origin, alpha);
-        origin_warped = (WarpedSource) origin;
+        origin_warped = (WarpedSource<?>) origin;
     }
 
-    public IAlphaSource getAlpha() {
+    public IAlphaSource getOriginAlpha() {
         if (origin_alpha==null) {
             origin_alpha = (IAlphaSource) AlphaSourceHelper.getOrBuildAlphaSource(((WarpedSource<?>) origin).getWrappedSource()).getSpimSource();
         }
@@ -55,12 +55,19 @@ public class AlphaSourceWarped extends AlphaSource {
     @Override
     public RealRandomAccessible<FloatType> getInterpolatedSource(int t, int level, Interpolation method) {
         RealRandomAccessible<FloatType> sourceRealAccessible =
-                getAlpha().getInterpolatedSource(t, level, method);
-        if (origin_warped.isTransformed()) {
-            AffineTransform3D transform = new AffineTransform3D();
-            getAlpha().getSourceTransform(t, level, transform);
-            RealRandomAccessible<FloatType> srcRaTransformed = RealViews.affineReal(getAlpha().getInterpolatedSource(t, level, method), transform);
-            return (RealRandomAccessible)(origin_warped.getTransform() == null ? srcRaTransformed : new RealTransformRealRandomAccessible(srcRaTransformed, origin_warped.getTransform()));
+                getOriginAlpha().getInterpolatedSource(t, level, method);
+        if (origin_warped.isTransformed()) {final AffineTransform3D transform = new AffineTransform3D();
+            getOriginAlpha().getSourceTransform(t, level, transform);
+            final RealRandomAccessible<FloatType> srcRa = getOriginAlpha().getInterpolatedSource(t, level, method);
+            if (origin_warped.getTransform() == null)
+                return srcRa;
+            else {
+                final RealTransformSequence seq = new RealTransformSequence();
+                seq.add(transform);
+                seq.add(origin_warped.getTransform().copy()); // copy ? sure ?
+                seq.add(transform.inverse());
+                return new RealTransformRealRandomAccessible<>(srcRa, seq);
+            }
         } else {
             return sourceRealAccessible;
         }

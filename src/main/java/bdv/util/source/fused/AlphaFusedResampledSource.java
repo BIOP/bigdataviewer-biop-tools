@@ -56,16 +56,16 @@ import static net.imglib2.type.PrimitiveType.SHORT;
  * A {@link AlphaFusedResampledSource} is a {@link Source} which is computed on the fly
  * by resampling a collection of {@link Source} source at space and time coordinates
  * defined by a model {@link AlphaFusedResampledSource#resamplingModel} source
- *
+ * <br>
  * The returned resampled source is a source which is:
  * - the sampling of the fused origin source fields
  * at the points which are defined by the model source {@link AlphaFusedResampledSource#resamplingModel} source
- *
+ * <br>
  * Note:
  * - To be present at a certain timepoint, both the origin and the model source need to exist
  * - There is no duplication of data, unless {@link AlphaFusedResampledSource#cache} is true
  * - proper reuse of mipmaps for model and origin work in certain conditions: see constructor documentation
- *
+ * <br>
  * How multiple sources are blended ? They are blended by making a weighted average of their
  * {@link bdv.util.source.alpha.AlphaSource}, which means that each origin source needs to have
  * a linked AlphaSource.
@@ -110,7 +110,7 @@ public class AlphaFusedResampledSource< T extends RealType<T> & NativeType<T>> i
 
     boolean cache;
 
-    private String name;
+    private final String name;
 
     final int cacheX, cacheY, cacheZ;
 
@@ -246,7 +246,7 @@ public class AlphaFusedResampledSource< T extends RealType<T> & NativeType<T>> i
         if (!resamplingModel.isPresent(t)) return false;
 
         // If any of the origin source is present, then the resampled fused source is present
-        for (Source source: origins) {
+        for (Source<?> source: origins) {
             if (source.isPresent(t)) {
                 return true;
             }
@@ -328,6 +328,7 @@ public class AlphaFusedResampledSource< T extends RealType<T> & NativeType<T>> i
                                                         }
                                                     }
                                                 }
+                                                //System.out.println("nSources = "+nSourcesPresent);
                                                 if (nSourcesPresent>1) {
                                                     RandomAccess<T> nonCachedAccess = nonCached.randomAccess(sourcesPresentInCell);
                                                     Cursor<T> out = Views.flatIterable(cell).cursor();
@@ -428,7 +429,10 @@ public class AlphaFusedResampledSource< T extends RealType<T> & NativeType<T>> i
                 originsAlpha.get(origin).getSourceTransform(t, mipmapModelToOrigin.get(origin).get(level), atOriginAlpha);
                 at.concatenate(atOriginAlpha);
 
-                RandomAccessible<FloatType> ra_alpha = RealViews.simplify(RealViews.affine(ipimg_alpha, at)); // Gets the view
+                RandomAccessible<FloatType> ra_alpha =
+                        RealViews.simplify(
+                                RealViews.affine(ipimg_alpha, at)
+                        ); // Gets the view
 
                 presentSources.add(ra);
                 presentSourcesAlpha.add(ra_alpha);
