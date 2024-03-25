@@ -276,7 +276,7 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!--<dependency>
+		<dependency>
 			<groupId>ch.epfl.biop</groupId>
 			<artifactId>quick-start-czi-reader</artifactId>
 			<version>0.2.4</version>
@@ -284,7 +284,7 @@
 		</dependency>
 
 
-		<dependency>
+		<!--dependency>
 		  <groupId>net.preibisch</groupId>
 		  <artifactId>BigStitcher</artifactId>
 		  <version>1.2.7</version>

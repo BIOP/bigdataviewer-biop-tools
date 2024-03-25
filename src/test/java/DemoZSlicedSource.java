@@ -1,25 +1,14 @@
 import bdv.util.BdvFunctions;
 import bdv.util.BdvHandle;
-import bdv.util.BdvOptions;
-import bdv.util.BdvStackSource;
 import bdv.util.slicer.SlicerViews;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.sourceandconverter.transform.SourceMosaicZSlicer;
-import ij.IJ;
-import ij.ImagePlus;
-import mpicbg.spim.data.SpimData;
-import mpicbg.spim.data.XmlIoSpimData;
 import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;
 import net.imglib2.FinalInterval;
 import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.img.display.imagej.ImageJFunctions;
-import net.imglib2.realtransform.AffineTransform3D;
-import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.view.ExtendedRandomAccessibleInterval;
 import net.imglib2.view.Views;
 import sc.fiji.bdvpg.bdv.navigate.ViewerTransformAdjuster;
-import sc.fiji.bdvpg.services.ISourceAndConverterService;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
 import sc.fiji.bdvpg.sourceandconverter.display.BrightnessAutoAdjuster;
 import sc.fiji.bdvpg.spimdata.importer.SpimDataFromXmlImporter;
@@ -28,8 +17,7 @@ import java.util.List;
 
 
 /**
- * NOT WORKING!! A Clone for affine transform or for the outofbounds stuff should be put somewhere
- *
+ * Apparently this works now.
  */
 public class DemoZSlicedSource {
 
@@ -53,10 +41,10 @@ public class DemoZSlicedSource {
         sacs.forEach( sac -> {
             SourceAndConverterServices.getBdvDisplayService().show( bdv, sac );
             new ViewerTransformAdjuster( bdv, sac ).run();
-            new BrightnessAutoAdjuster( sac, 0 ).run();
+            new BrightnessAutoAdjuster<>( sac, 0 ).run();
         } );
 
-        RandomAccessibleInterval nonResliced = sacs.get(0).getSpimSource().getSource(0,0);
+        RandomAccessibleInterval<?> nonResliced = sacs.get(0).getSpimSource().getSource(0,0);
 
         ExtendedRandomAccessibleInterval rai = SlicerViews.extendSlicer(nonResliced,2,0);
 
