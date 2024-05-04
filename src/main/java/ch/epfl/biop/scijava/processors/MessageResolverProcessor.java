@@ -8,6 +8,7 @@ import org.scijava.module.process.AbstractPreprocessorPlugin;
 import org.scijava.module.process.PreprocessorPlugin;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import org.scijava.widget.Button;
 import org.scijava.widget.InputHarvester;
 
 /**
@@ -19,6 +20,7 @@ public class MessageResolverProcessor extends AbstractPreprocessorPlugin {
 
     int unresolvedInputsExceptMessageCount = 0;
     int messagesCount = 0;
+    int buttonCount = 0;
 
     @Parameter
     LogService logger;
@@ -32,7 +34,6 @@ public class MessageResolverProcessor extends AbstractPreprocessorPlugin {
         }
 
         module.getInputs().forEach((name, input) -> {
-
             ModuleItem<?> inputKind = module.getInfo().getInput(name);
             if (inputKind == null) {
                 logger.warn("null input "+name+" for module "+module);
@@ -53,11 +54,20 @@ public class MessageResolverProcessor extends AbstractPreprocessorPlugin {
             }
         });
 
+        module.getInputs().forEach((name, input) -> {
+            ModuleItem<?> inputKind = module.getInfo().getInput(name);
+            if (inputKind == null) {
+                logger.warn("null input "+name+" for module "+module);
+                return; // avoid doing anything
+            }
+            if (inputKind.getType().equals(Button.class)) buttonCount++;
+        });
+
         if (messagesCount > 0) {
-            if (unresolvedInputsExceptMessageCount == 0) {
+            if (unresolvedInputsExceptMessageCount == buttonCount) {
                 // No need for null check, it's been done before
                 module.getInputs().forEach((name, input) -> {
-                    if (module.getInfo().getInput(name).getVisibility().equals(ItemVisibility.MESSAGE)) {
+                    if (module.getInfo().getInput(name).getVisibility().equals(ItemVisibility.MESSAGE)||(module.getInfo().getInput(name).getType().equals(Button.class))) {
                         logger.debug("Resolving parameter "+name+" in module "+module+" in MessageResolverProcessor.");
                         module.resolveInput(name);
                     }

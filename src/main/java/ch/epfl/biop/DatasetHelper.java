@@ -1,5 +1,4 @@
-package fused;
-
+package ch.epfl.biop;
 
 import org.apache.commons.io.FileUtils;
 
@@ -83,16 +82,20 @@ public class DatasetHelper {
     }
 
     public static String dowloadBrainVSIDataset() throws IOException {
+        dowloadBrainVSIDataset(0);
+        dowloadBrainVSIDataset(1);
+        dowloadBrainVSIDataset(2);
+        dowloadBrainVSIDataset(3);
+        dowloadBrainVSIDataset(4);
+        dowloadBrainVSIDataset(5);
+        return dowloadBrainVSIDataset(6);
+    }
+
+    public static String dowloadBrainVSIDataset(int i) throws IOException {
         // URL = https://zenodo.org/records/6553641
         String targetDir = cachedSampleDir.getAbsolutePath()+File.separator+"records"+File.separator+"6553641"+File.separator+"files"+File.separator;
         String urlBrainSlices = "https://zenodo.org/records/6553641/files/";
-        if (!new File(targetDir+"Slide_00.vsi").exists()) dlUnzip(urlBrainSlices+"Slide_00.zip", targetDir);
-        if (!new File(targetDir+"Slide_01.vsi").exists()) dlUnzip(urlBrainSlices+"Slide_01.zip", targetDir);
-        if (!new File(targetDir+"Slide_02.vsi").exists()) dlUnzip(urlBrainSlices+"Slide_02.zip", targetDir);
-        if (!new File(targetDir+"Slide_03.vsi").exists()) dlUnzip(urlBrainSlices+"Slide_03.zip", targetDir);
-        if (!new File(targetDir+"Slide_04.vsi").exists()) dlUnzip(urlBrainSlices+"Slide_04.zip", targetDir);
-        if (!new File(targetDir+"Slide_05.vsi").exists()) dlUnzip(urlBrainSlices+"Slide_05.zip", targetDir);
-        if (!new File(targetDir+"Slide_06.vsi").exists()) dlUnzip(urlBrainSlices+"Slide_06.zip", targetDir);
+        if (!new File(targetDir+"Slide_0"+i+".vsi").exists()) dlUnzip(urlBrainSlices+"Slide_00.zip", targetDir);
         return targetDir;
     }
 
@@ -100,8 +103,6 @@ public class DatasetHelper {
         File tempZip = getDataset(url);
         unpack(tempZip.getAbsolutePath(), targetDir);
         tempZip.delete();
-
-
     }
 
     private static void unpack(String zipFilePath, String destDirectory) throws IOException {

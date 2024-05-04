@@ -1,20 +1,14 @@
 package fused;
 
+import ch.epfl.biop.DatasetHelper;
 import ch.epfl.biop.scijava.command.spimdata.CreateCZIDatasetCommand;
 import ch.epfl.biop.scijava.command.spimdata.FuseBigStitcherDatasetIntoOMETiffCommand;
 import loci.common.DebugTools;
 import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;
 import org.apache.commons.io.FilenameUtils;
-import org.scijava.Context;
-import org.scijava.command.CommandService;
-import org.scijava.convert.ConvertService;
-import org.scijava.task.TaskService;
-import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
 
 import java.io.File;
-import java.net.URLDecoder;
-import java.util.function.Function;
 
 import static fiji.util.TicToc.tic;
 import static fiji.util.TicToc.toc;

@@ -37,7 +37,6 @@ public class DisplayEllipseFromTransformCommand implements Command {
 
     @Override
     public void run() {
-
         RealRandomAccessible<UnsignedShortType> rra = (new Procedural3DImageShort(
             p -> {
               if ((p[0]>rMin)&&(p[0]<rMax)) {

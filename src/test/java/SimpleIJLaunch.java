@@ -1,11 +1,6 @@
-import loci.common.DebugTools;
-import net.imagej.ImageJ;
-
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
-import static fused.DatasetHelper.dowloadBrainVSIDataset;
+import static ch.epfl.biop.DatasetHelper.dowloadBrainVSIDataset;
 
 public class SimpleIJLaunch {
 

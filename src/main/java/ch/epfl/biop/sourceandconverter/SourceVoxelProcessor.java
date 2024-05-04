@@ -2,7 +2,6 @@ package ch.epfl.biop.sourceandconverter;
 
 import bdv.BigDataViewer;
 import bdv.cache.SharedQueue;
-import bdv.util.VolatileSource;
 import bdv.util.WrapVolatileSource;
 import bdv.util.source.process.VoxelProcessedSource;
 import bdv.viewer.Source;

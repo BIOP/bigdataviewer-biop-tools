@@ -4,7 +4,6 @@ import bdv.tools.brightness.ConverterSetup;
 import bdv.util.BdvHandle;
 import bdv.util.RealTransformHelper;
 import bdv.util.EmptySource;
-import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imagej.ImageJ;
@@ -13,11 +12,9 @@ import net.imglib2.realtransform.RealTransform;
 import net.imglib2.type.numeric.ARGBType;
 import sc.fiji.bdvpg.bdv.navigate.ViewerTransformAdjuster;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
 import sc.fiji.bdvpg.sourceandconverter.display.BrightnessAutoAdjuster;
 import sc.fiji.bdvpg.sourceandconverter.register.BigWarpLauncher;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceRealTransformer;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceResampler;
 import sc.fiji.bdvpg.spimdata.importer.SpimDataFromXmlImporter;
 
 import java.util.ArrayList;
@@ -103,12 +100,11 @@ public class DemoCachedTransform {
 
         EmptySource.EmptySourceParams params = new EmptySource.EmptySourceParams();
         params.name = "Model Source";
-        params.nx = 25*5;
-        params.ny = 25*5;
-        params.nz = 25*5;
-        params.at3D.scale(20/5,20/5,20/5);
-        params.at3D.translate(-100,-100, -100);
-
+        params.nx = 25; // <25 breaks!! singular matrix exception
+        params.ny = 25;
+        params.nz = 20; // could be anything ?
+        params.at3D.scale(10,10,10);
+        params.at3D.translate(-50,-50, -50);
         EmptySource model = new EmptySource(params);
 
         //Source<?> model = sacFixed.getSpimSource();
@@ -125,6 +121,9 @@ public class DemoCachedTransform {
         SourceAndConverter tr = new SourceRealTransformer(null,transform).apply(sacFixed);
         SourceAndConverterServices.getBdvDisplayService()
                 .show(bdvHandle, tr);
+
+        SourceAndConverterServices.getBdvDisplayService()
+                .show(bdvHandle, bwl.getWarpedSources()[0]);
 
         /*SourceAndConverter resampled = new SourceResampler(fixedSources.get(0), SourceAndConverterHelper.createSourceAndConverter(model), "Model Size", false, false, false, 0).get();
 
