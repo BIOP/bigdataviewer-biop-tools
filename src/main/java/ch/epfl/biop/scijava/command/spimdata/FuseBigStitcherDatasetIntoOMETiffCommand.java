@@ -193,9 +193,9 @@ public class FuseBigStitcherDatasetIntoOMETiffCommand implements Command {
         // Create a model source
         SourceAndConverter model = SourceHelper.getModelFusedMultiSources(allSources.toArray(new SourceAndConverter[0]),
                 0, SourceAndConverterHelper.getMaxTimepoint(allSources.toArray(new SourceAndConverter[0])),
-                1, z_ratio,
+                1, 1, z_ratio,
                 1,
-                1,1,"Model");
+                1,1,1, "Model");
 
         // For fusion with smooth edges:
 
@@ -236,7 +236,7 @@ public class FuseBigStitcherDatasetIntoOMETiffCommand implements Command {
         // OME Tiff exporter
         try {
 
-            if ((split_channels==false)&&(split_slices==false)&&(split_frames==false)) {
+            if ((!split_channels)&&(!split_slices)&&(!split_frames)) {
 
                 OMETiffExporter.OMETiffExporterBuilder.WriterOptions.WriterOptionsBuilder exporter = OMETiffExporter.builder()
                         .put(fusedSources)

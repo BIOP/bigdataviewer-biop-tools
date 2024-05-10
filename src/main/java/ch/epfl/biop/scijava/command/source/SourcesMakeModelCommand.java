@@ -3,7 +3,6 @@ package ch.epfl.biop.scijava.command.source;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.sourceandconverter.SourceHelper;
 import org.scijava.ItemIO;
-import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
@@ -13,10 +12,13 @@ import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 public class SourcesMakeModelCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(label = "Select Source(s)")
-    SourceAndConverter[] sacs;
+    SourceAndConverter<?>[] sacs;
 
-    @Parameter(label = "Voxel size (XY)")
-    double vox_size_xy;
+    @Parameter(label = "Voxel size (X)")
+    double vox_size_x;
+
+    @Parameter(label = "Voxel size (Y)")
+    double vox_size_y;
 
     @Parameter(label = "Voxel size (Z)")
     double vox_size_z;
@@ -30,8 +32,11 @@ public class SourcesMakeModelCommand implements BdvPlaygroundActionCommand {
     @Parameter(label = "Number of resolution levels")
     int n_resolution_levels = 1;
 
-    @Parameter(label = "XY Downscale Factor")
-    int downscale_xy = 1;
+    @Parameter(label = "X Downscale Factor")
+    int downscale_x = 1;
+
+    @Parameter(label = "Y Downscale Factor")
+    int downscale_y = 1;
 
     @Parameter(label = "Z Downscale Factor")
     int downscale_z = 1;
@@ -40,15 +45,15 @@ public class SourcesMakeModelCommand implements BdvPlaygroundActionCommand {
     String name; // CSV separate for multiple sources
 
     @Parameter(type = ItemIO.OUTPUT)
-    SourceAndConverter sac_out;
+    SourceAndConverter<?> sac_out;
 
     @Override
     public void run() {
         sac_out = SourceHelper.getModelFusedMultiSources(sacs,
                 timepoint, n_timepoints,
-                vox_size_xy, vox_size_z,
+                vox_size_x, vox_size_y, vox_size_z,
                 n_resolution_levels,
-                downscale_xy,downscale_z,name);
+                downscale_x,downscale_y,downscale_z,name);
     }
 
 }

@@ -17,7 +17,6 @@ import net.imglib2.img.cell.CellGrid;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
-import net.imglib2.view.ExtendedRandomAccessibleInterval;
 import net.imglib2.view.Views;
 import sc.fiji.bdvpg.cache.GlobalLoaderCache;
 
@@ -30,7 +29,7 @@ import java.util.Map;
  * XY gets downscaled by a factor 2 until one dimension goes below 64 pixels (purely arbitrary) or we reach
  * the max downscaling which will be a factor 32 :
  * 1          2          4          8        16       32
- * 512x512 -> 256x256 -> 128x128 -> 64x64 -> 32x32 -> 16x16
+ * 512x512 to 256x256 to 128x128 to 64x64 to 32x32 to 16x16
  *
  * @param <T>
  */

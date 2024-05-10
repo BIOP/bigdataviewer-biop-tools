@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 
 public class SourceHelper {
 
-    public static Source AlignAxisResample(Source src, RealPoint pA, RealPoint pB, double voxSize, int nPixX, int nPixY, int nPixZ, boolean alignX, boolean sourceInterpolate) {
+    public static<T> Source<T> AlignAxisResample(Source<T> src, RealPoint pA, RealPoint pB, double voxSize, int nPixX, int nPixY, int nPixZ, boolean alignX, boolean sourceInterpolate) {
         AffineTransform3D rot = getRotationMatrixAlignZ(pA,pB, alignX);
 
         double cx = ((pA.getDoublePosition(0)+pB.getDoublePosition(0))/2.0);
@@ -131,10 +131,12 @@ public class SourceHelper {
      * @param sources the sources to span
      * @param timepoint the timepoint of reference for computing the bounding box
      * @param nTimepoints number of timepoints
-     * @param pixSizeXY pixel size in xy in physical units
-     * @param pixSizeZ pixel size in xy in physical units
+     * @param pixSizeX pixel size in x in physical units
+     * @param pixSizeY pixel size in y in physical units
+     * @param pixSizeZ pixel size in z in physical units
      * @param nResolutionLevels number of resolution level to make in the model
-     * @param downscaleXY downscaling in XY between resolution levels
+     * @param downscaleX downscaling in X between resolution levels
+     * @param downscaleY downscaling in Y between resolution levels
      * @param downscaleZ downscaling in Z between resolution levels
      * @param model_name name of the output model source
      * @return the model source with the specified properties in the constructor
@@ -142,9 +144,9 @@ public class SourceHelper {
     public static SourceAndConverter<?> getModelFusedMultiSources(
             SourceAndConverter<?>[] sources,
             int timepoint, int nTimepoints,
-            double pixSizeXY, double pixSizeZ,
+            double pixSizeX, double pixSizeY, double pixSizeZ,
             int nResolutionLevels,
-            int downscaleXY, int downscaleZ,
+            int downscaleX, int downscaleY, int downscaleZ,
             String model_name) {
 
         List<RealInterval> intervalList = Arrays.stream(sources)
@@ -198,18 +200,18 @@ public class SourceHelper {
         double sizeZ = imageInterval.realMax(2)-imageInterval.realMin(2);
 
         AffineTransform3D at3D = new AffineTransform3D();
-        at3D.scale(pixSizeXY, pixSizeXY, pixSizeZ);
+        at3D.scale(pixSizeX, pixSizeY, pixSizeZ);
         at3D.translate(imageInterval.realMin(0), imageInterval.realMin(1), imageInterval.realMin(2));
 
-        long nPx = (long)Math.ceil(sizeX/pixSizeXY);
-        long nPy = (long)Math.ceil(sizeY/pixSizeXY);
+        long nPx = (long)Math.ceil(sizeX/pixSizeX);
+        long nPy = (long)Math.ceil(sizeY/pixSizeY);
         long nPz = (long)Math.ceil(sizeZ/pixSizeZ);
 
         return new EmptyMultiResolutionSourceAndConverterCreator(
                 model_name,
                 at3D, nPx, nPy, nPz,
                 nTimepoints,
-                downscaleXY, downscaleXY, downscaleZ,
+                downscaleX, downscaleY, downscaleZ,
                 nResolutionLevels).get();
     }
 
