@@ -2,14 +2,13 @@ package ch.epfl.biop.scijava.command.spimdata;
 
 import ch.epfl.biop.bdv.img.OpenersToSpimData;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsHelper;
-import ch.epfl.biop.bdv.img.legacy.bioformats.entity.FileIndex;
+import ch.epfl.biop.bdv.img.entity.ImageName;
 import ch.epfl.biop.bdv.img.opener.OpenerSettings;
 import ij.IJ;
 import mpicbg.spim.data.SpimData;
 import mpicbg.spim.data.SpimDataException;
 import mpicbg.spim.data.XmlIoSpimData;
 import mpicbg.spim.data.generic.AbstractSpimData;
-import org.apache.commons.io.FilenameUtils;
 import org.scijava.Context;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
@@ -33,24 +32,33 @@ public class CreateCZIDatasetCommand implements Command {
     @Parameter
     Context ctx;
 
-    @Parameter(type = ItemIO.OUTPUT)
-    File xml_out;
+    @Parameter
+    Boolean erase_if_file_already_exists = false;
 
-    @Parameter(label = "Output directory", style = "directory", required = false, persist = false)
-    File output_folder = null;
+    @Parameter(type = ItemIO.BOTH, label = "Output file (xml)", style = "save")
+    File xml_out = null;
 
     @Override
     public void run() {
 
-        if (output_folder == null) {
-            xml_out = new File(czi_file.getParent(), FilenameUtils.removeExtension(czi_file.getName()) + ".xml");
-        } else {
-            xml_out = new File(output_folder, FilenameUtils.removeExtension(czi_file.getName()) + ".xml");
-        }
         if (xml_out.exists()) {
-            IJ.error("The output file already exist! Skipping execution");
-            return;
+            if (xml_out.isFile()) {
+                if (erase_if_file_already_exists) {
+                    boolean isDeleted = xml_out.delete();
+                    if (!isDeleted) {
+                        IJ.error("ommand aborted: the output file could not be deleted.");
+                        return;
+                    }
+                } else {
+                    IJ.error("Command aborted: the output file already exists!");
+                    return;
+                }
+            } else {
+                IJ.error("Command aborted: the output path is a folder, it won't be deleted.");
+                return;
+            }
         }
+
         // We need to:
         // make a spimdata
         // rescale it
@@ -73,23 +81,23 @@ public class CreateCZIDatasetCommand implements Command {
         AbstractSpimData<?> asd = OpenersToSpimData.getSpimData(openerSettings);
 
         // Remove display settings attributes because this causes issues with BigStitcher
-        SpimDataHelper.removeEntities(asd, Displaysettings.class, FileIndex.class);
+        SpimDataHelper.removeEntities(asd, Displaysettings.class, ImageName.class);
 
         double pixSizeXYMicrometer = asd.getViewRegistrations().getViewRegistration(0,0).getModel().get(0,0);
 
-        double scalingForBigStitcher = 1 / pixSizeXYMicrometer;
+        double scalingForBigStitcher = 1.0 / pixSizeXYMicrometer;
 
         // Scaling such as size of one pixel = 1
         SpimDataHelper.scale(asd, "BigStitcher Scaling", scalingForBigStitcher);
 
         asd.setBasePath(new File(xml_out.getAbsolutePath()).getParentFile());
+
         try {
             new XmlIoSpimData().save((SpimData) asd, xml_out.getAbsolutePath());
         } catch (SpimDataException e) {
             e.printStackTrace();
             throw new RuntimeException(e);
         }
-
 
     }
 }
