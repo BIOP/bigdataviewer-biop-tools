@@ -1,7 +1,11 @@
 package ch.epfl.biop.sourceandconverter;
 
+import bdv.BigDataViewer;
+import bdv.cache.SharedQueue;
 import bdv.util.EmptySource;
 import bdv.util.ResampledSource;
+import bdv.util.WrapVolatileSource;
+import bdv.util.source.process.LazyDownscaledXY2Source;
 import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
 import mpicbg.spim.data.sequence.FinalVoxelDimensions;
@@ -9,7 +13,14 @@ import net.imglib2.FinalRealInterval;
 import net.imglib2.Interval;
 import net.imglib2.RealInterval;
 import net.imglib2.RealPoint;
+import net.imglib2.converter.Converter;
+import net.imglib2.display.ColorConverter;
+import net.imglib2.display.LinearRange;
 import net.imglib2.realtransform.AffineTransform3D;
+import net.imglib2.type.NativeType;
+import net.imglib2.type.numeric.ARGBType;
+import net.imglib2.type.numeric.NumericType;
+import net.imglib2.type.numeric.RealType;
 import net.imglib2.util.LinAlgHelpers;
 
 import java.util.ArrayList;
@@ -30,7 +41,7 @@ public class SourceHelper {
         center.setPosition(new double[] {cx,cy,cz});
 
         AffineTransform3D translateCenterBwd = new AffineTransform3D();
-        translateCenterBwd.translate(-nPixX/2,-nPixY/2,-nPixZ/2);
+        translateCenterBwd.translate(-nPixX/2.0,-nPixY/2.0,-nPixZ/2.0);
 
         AffineTransform3D translateCenterFwd = new AffineTransform3D();
         translateCenterFwd.translate(-cx,-cy,-cz);
@@ -128,8 +139,8 @@ public class SourceHelper {
      * @param model_name name of the output model source
      * @return the model source with the specified properties in the constructor
      */
-    public static SourceAndConverter getModelFusedMultiSources(
-            SourceAndConverter[] sources,
+    public static SourceAndConverter<?> getModelFusedMultiSources(
+            SourceAndConverter<?>[] sources,
             int timepoint, int nTimepoints,
             double pixSizeXY, double pixSizeZ,
             int nResolutionLevels,
@@ -200,6 +211,61 @@ public class SourceHelper {
                 nTimepoints,
                 downscaleXY, downscaleXY, downscaleZ,
                 nResolutionLevels).get();
+    }
+
+    public static<T extends RealType<T> & NativeType<T>> SourceAndConverter<T> lazyPyramidizeXY2(SourceAndConverter<T> sac) {
+        return lazyPyramidizeXY2(sac, new SharedQueue(Runtime.getRuntime().availableProcessors()-1, 5));
+    }
+
+    public static<T extends RealType<T> & NativeType<T>> SourceAndConverter<T> lazyPyramidizeXY2(SourceAndConverter<T> sac, SharedQueue queue) {
+
+            Source<T> srcLazyDownscaled = new LazyDownscaledXY2Source<>(sac.getSpimSource().getName()+"_pyramid", sac.getSpimSource());
+
+            SourceAndConverter<T> sac_out;
+
+            SourceAndConverter<?> vsac;
+            Source<?> vsrcRsampled;
+
+            vsrcRsampled = new WrapVolatileSource<>(srcLazyDownscaled, queue);
+            if (sac.asVolatile()==null) throw new UnsupportedOperationException("Can't lazy downscale non cached source");
+            ((WrapVolatileSource) vsrcRsampled).setVolatileSourceForHighestResolution(sac.asVolatile().getSpimSource());
+            Converter< ?, ARGBType> volatileConverter = BigDataViewer.createConverterToARGB((NumericType) vsrcRsampled.getType());
+            Converter< ?, ARGBType> converter = BigDataViewer.createConverterToARGB(srcLazyDownscaled.getType());
+
+            if ((sac.getConverter() instanceof ColorConverter)&&(volatileConverter instanceof ColorConverter)) {
+                ((ColorConverter) volatileConverter).setColor(
+                        ((ColorConverter) sac.getConverter()).getColor().copy()
+                );
+            }
+
+            if ((sac.getConverter() instanceof ColorConverter)&&(converter instanceof ColorConverter)) {
+                ((ColorConverter) converter).setColor(
+                        ((ColorConverter) sac.getConverter()).getColor().copy()
+                );
+            }
+
+            if ((sac.getConverter() instanceof LinearRange)&&(volatileConverter instanceof LinearRange)) {
+                ((LinearRange) volatileConverter).setMin(
+                        ((LinearRange) sac.getConverter()).getMin()
+                );
+                ((LinearRange) volatileConverter).setMax(
+                        ((LinearRange) sac.getConverter()).getMax()
+                );
+            }
+
+            if ((sac.getConverter() instanceof LinearRange)&&(converter instanceof LinearRange)) {
+                ((LinearRange) converter).setMin(
+                        ((LinearRange) sac.getConverter()).getMin()
+                );
+                ((LinearRange) converter).setMax(
+                        ((LinearRange) sac.getConverter()).getMax()
+                );
+            }
+
+            vsac = new SourceAndConverter(vsrcRsampled,volatileConverter);
+            sac_out = new SourceAndConverter(srcLazyDownscaled, converter,vsac);
+
+            return sac_out;
     }
 
 }

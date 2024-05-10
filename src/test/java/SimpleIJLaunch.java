@@ -1,18 +1,17 @@
-import java.io.IOException;
+import loci.common.DebugTools;
+import net.imagej.ImageJ;
 
-import static ch.epfl.biop.DatasetHelper.dowloadBrainVSIDataset;
+import java.io.IOException;
 
 public class SimpleIJLaunch {
 
     static public void main(String... args) throws IOException {
-        /*final ImageJ ij = new ImageJ();
+        final ImageJ ij = new ImageJ();
 
         DebugTools.enableLogging("INFO");
-        ij.ui().showUI();*/
+        ij.ui().showUI();
 
-        dowloadBrainVSIDataset();
-
-
+        //dowloadBrainVSIDataset();
 
     }
 
