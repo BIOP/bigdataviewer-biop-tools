@@ -17,10 +17,9 @@ import ij.plugin.frame.RoiManager;
 import net.imglib2.RealPoint;
 import net.imglib2.realtransform.AffineTransform3D;
 import org.mastodon.graph.Edge;
-import org.mastodon.mamut.MamutAppModel;
+import org.mastodon.mamut.ProjectModel;
 import org.mastodon.mamut.model.Model;
 import org.mastodon.mamut.model.Spot;
-import org.mastodon.mamut.plugin.MamutPluginAppModel;
 import org.mastodon.model.tag.TagSetStructure;
 import org.scijava.Context;
 import org.scijava.ItemIO;
@@ -37,7 +36,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -47,7 +45,7 @@ public class MamutWarperCommand implements Command {
 
     @SuppressWarnings( "unused" )
     @Parameter
-    private MamutPluginAppModel appModel;
+    private ProjectModel appModel;
 
     @Parameter(label = "Select the image plus projected image")
     ImagePlus image;
@@ -92,7 +90,7 @@ public class MamutWarperCommand implements Command {
 
         String tag1 = null;
         String tag2 = null;
-        if ((combine_create_tag!=null)&&(combine_create_tag!="")&&(combine_create_tag.split(",").length==2)) {
+        if ((combine_create_tag!=null)&&(!combine_create_tag.equals(""))&&(combine_create_tag.split(",").length==2)) {
             tag1 = combine_create_tag.split(",")[0].trim();
             tag2 = combine_create_tag.split(",")[1].trim();
             IJ.log("Creating combined tag tag_"+tag1+" and "+tag2);
@@ -105,8 +103,7 @@ public class MamutWarperCommand implements Command {
             roiManager.reset();
             Elliptical3DTransform e3Dt = ScijavaGsonHelper.getGson(context).fromJson(new FileReader(elliptical_transform_file), Elliptical3DTransform.class);//getEllipticalTransformFromImagePlus(image);
 
-            MamutAppModel am = appModel.getAppModel();
-            Model model = am.getModel();
+            Model model = appModel.getModel();
             ReentrantReadWriteLock.WriteLock lock = model.getGraph().getLock().writeLock();
 
             // For TrackMate export:
@@ -116,8 +113,6 @@ public class MamutWarperCommand implements Command {
             Settings settings = new Settings(image);
             settings.addAllAnalyzers();
             tm_model.beginUpdate();
-
-
 
             List<TagSetStructure.Tag> allTags = new ArrayList<>();
             List<String> allTagsString = new ArrayList<>();
@@ -130,12 +125,10 @@ public class MamutWarperCommand implements Command {
 
                 Map<Integer, fiji.plugin.trackmate.Spot> mastodonToTM = new HashMap<>();
 
-                model.getTagSetModel().getTagSetStructure().getTagSets().forEach(ts -> {
-                    ts.getTags().forEach(tag -> {
-                        allTags.add(tag);
-                        allTagsString.add(tag.label());
-                    });
-                });
+                model.getTagSetModel().getTagSetStructure().getTagSets().forEach(ts -> ts.getTags().forEach(tag -> {
+                    allTags.add(tag);
+                    allTagsString.add(tag.label());
+                }));
 
                 if (tag1!=null) {
                     allTagsString.add(tag1+"_"+tag2);
@@ -144,18 +137,16 @@ public class MamutWarperCommand implements Command {
                 declareFeatures(tm_model, allTagsString);
 
 
-                allTags.forEach(tag -> {
-                    model.getTagSetModel()
-                            .getVertexTags()
-                            .getTaggedWith(tag)
-                            .forEach(spot -> {
-                                int idx = spot.getInternalPoolIndex();
-                                if (!idToTags.containsKey(spot.getInternalPoolIndex())) {
-                                    idToTags.put(idx, new ArrayList<>());
-                                }
-                                idToTags.get(idx).add(tag);
-                            });
-                });
+                allTags.forEach(tag -> model.getTagSetModel()
+                        .getVertexTags()
+                        .getTaggedWith(tag)
+                        .forEach(spot -> {
+                            int idx = spot.getInternalPoolIndex();
+                            if (!idToTags.containsKey(spot.getInternalPoolIndex())) {
+                                idToTags.put(idx, new ArrayList<>());
+                            }
+                            idToTags.get(idx).add(tag);
+                        }));
 
 
 
@@ -184,15 +175,13 @@ public class MamutWarperCommand implements Command {
 
                     if (idToTags.containsKey(spot.getInternalPoolIndex())) {
                         idToTags.get(spot.getInternalPoolIndex())
-                                .forEach(tag -> {
-                                    tm_spot.putFeature("tag_"+tag.label(), 1.0);
-                                });
+                                .forEach(tag -> tm_spot.putFeature("tag_"+tag.label(), 1.0));
                     }
 
                     if (tag1!=null) {
                         if (idToTags.containsKey(spot.getInternalPoolIndex())) {
                             List<TagSetStructure.Tag> tags = idToTags.get(spot.getInternalPoolIndex());
-                            Set<String> stringTags = tags.stream().map(tag -> tag.label()).collect(Collectors.toSet());
+                            Set<String> stringTags = tags.stream().map(TagSetStructure.Tag::label).collect(Collectors.toSet());
                             if ((stringTags.contains(tag1))&&(stringTags.contains(tag2))) {
                                 tm_spot.putFeature("tag_"+tag1+"_"+tag2, 1.0);
                             } else {
@@ -320,13 +309,6 @@ public class MamutWarperCommand implements Command {
 
         return e3Dt;
 
-    }
-
-    private static void covarianceFromRadiusSquared( final double rsqu, final double[][] cov )
-    {
-        for( int row = 0; row < 3; ++row )
-            for( int col = 0; col < 3; ++col )
-                cov[ row ][ col ] = ( row == col ) ? rsqu : 0;
     }
 
     /*

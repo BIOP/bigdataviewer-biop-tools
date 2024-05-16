@@ -1,21 +1,22 @@
 package ch.epfl.biop.mastodon;
 
 import java.awt.event.ActionEvent;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.mastodon.app.ui.ViewMenuBuilder;
+import org.mastodon.mamut.KeyConfigScopes;
 import org.mastodon.mamut.MamutMenuBuilder;
+import org.mastodon.mamut.ProjectModel;
 import org.mastodon.mamut.plugin.MamutPlugin;
-import org.mastodon.mamut.plugin.MamutPluginAppModel;
-import org.mastodon.ui.keymap.CommandDescriptionProvider;
-import org.mastodon.ui.keymap.CommandDescriptions;
 import org.mastodon.ui.keymap.KeyConfigContexts;
 import org.scijava.command.CommandService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import org.scijava.ui.behaviour.io.gui.CommandDescriptionProvider;
+import org.scijava.ui.behaviour.io.gui.CommandDescriptions;
 import org.scijava.ui.behaviour.util.AbstractNamedAction;
 import org.scijava.ui.behaviour.util.Actions;
 
@@ -33,12 +34,12 @@ public class MamutWarperPlugin implements MamutPlugin
     /*
      * Command descriptions for all provided commands
      */
-    @Plugin( type = CommandDescriptionProvider.class )
+    @Plugin( type = Descriptions.class )
     public static class Descriptions extends CommandDescriptionProvider
     {
         public Descriptions()
         {
-            super( KeyConfigContexts.MASTODON );
+            super( KeyConfigScopes.MAMUT, KeyConfigContexts.MASTODON );
         }
 
         @Override
@@ -49,9 +50,9 @@ public class MamutWarperPlugin implements MamutPlugin
     }
 
     @SuppressWarnings( "unused" )
-    private MamutPluginAppModel appModel;
+    private ProjectModel appModel;
 
-    private static Map< String, String > menuTexts = new HashMap<>();
+    private static final Map< String, String > menuTexts = new HashMap<>();
 
     static
     {
@@ -74,9 +75,9 @@ public class MamutWarperPlugin implements MamutPlugin
     @Override
     public List< ViewMenuBuilder.MenuItem > getMenuItems()
     {
-        return Arrays.asList(
-                MamutMenuBuilder.menu( "Plugins",
-                        MamutMenuBuilder.item(ACTION_WARP_SPOTS) ) );
+        return Collections.singletonList(
+                MamutMenuBuilder.menu("Plugins",
+                        MamutMenuBuilder.item(ACTION_WARP_SPOTS)));
     }
 
     @Override
@@ -92,7 +93,7 @@ public class MamutWarperPlugin implements MamutPlugin
     }
 
     @Override
-    public void setAppPluginModel( final MamutPluginAppModel appModel )
+    public void setAppPluginModel( final ProjectModel appModel )
     {
         this.appModel = appModel;
     }
