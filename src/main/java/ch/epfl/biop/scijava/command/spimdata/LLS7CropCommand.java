@@ -53,7 +53,7 @@ public class LLS7CropCommand implements Command {
     //@Parameter
     double box_size_x = 150/4.0;
     double box_size_y = 150/4.0;
-    double box_size_z = 50/4.0;
+    double box_size_z = 150/4.0;
 
     @Parameter(type = ItemIO.OUTPUT)
     RealInterval interval;

@@ -102,7 +102,7 @@
 		<bigdataviewer-playground.version>0.10.1</bigdataviewer-playground.version>
 		<bigdataviewer-playground-display.version>0.4.1</bigdataviewer-playground-display.version>
 		<image-transform-converters.version>0.1.7</image-transform-converters.version>
-		<bigdataviewer-image-loaders.version>0.6.4</bigdataviewer-image-loaders.version>
+		<bigdataviewer-image-loaders.version>0.7.1</bigdataviewer-image-loaders.version>
 
 		<!-- biop dependencies -->
 		<ijl-utilities-wrappers.version>0.9.6</ijl-utilities-wrappers.version>
