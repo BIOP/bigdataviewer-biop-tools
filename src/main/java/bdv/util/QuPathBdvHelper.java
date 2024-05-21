@@ -22,12 +22,18 @@ public class QuPathBdvHelper {
      * @return the file of the data of this source
      * @throws IllegalArgumentException if the qupath file is not found
      */
-    public static File getDataEntryFolder(SourceAndConverter source) throws IllegalArgumentException {
+    public static File getDataEntryFolder(SourceAndConverter<?> source) throws IllegalArgumentException {
         File quPathProject = QuPathBdvHelper.getProjectFile(source);
         int entryId = QuPathBdvHelper.getEntryId(source);
+        if (!new File(quPathProject.getParent()).exists()) {
+            throw new IllegalArgumentException("QuPath parent folder "+quPathProject.getParent()+" does not exist.");
+        }
         File f = new File(quPathProject.getParent(), "data"+File.separator+entryId);
         if (!f.exists()) {
-            throw new IllegalArgumentException("QuPath entry folder "+f.getAbsolutePath()+" does not exist.");
+            // throw new IllegalArgumentException("QuPath entry folder "+f.getAbsolutePath()+" does not exist.");
+            // It could be that the data folder was not created yet. Let's do it
+            boolean result = f.mkdirs();
+            if (!result) throw new IllegalArgumentException("Impossible to create QuPath entry folder "+f.getAbsolutePath());
         }
         return f;
     }
@@ -37,10 +43,10 @@ public class QuPathBdvHelper {
      * @return the file of the QuPath Project from this source
      * @throws IllegalArgumentException if the qupath file is not found
      */
-    public static File getProjectFile(SourceAndConverter source_in) throws IllegalArgumentException {
+    public static File getProjectFile(SourceAndConverter<?> source_in) throws IllegalArgumentException {
         SourceAndConverter<?> rootSource = SourceAndConverterInspector.getRootSourceAndConverter(source_in);
         if (!isBoundToLegacyQuPathBDVDataset(rootSource)) {
-            AbstractSpimData asd =
+            AbstractSpimData<?> asd =
                     ((SourceAndConverterService.SpimDataInfo) SourceAndConverterServices.getSourceAndConverterService()
                             .getMetadata(rootSource, SourceAndConverterService.SPIM_DATA_INFO)).asd;
 
@@ -78,11 +84,11 @@ public class QuPathBdvHelper {
         }
     }
 
-    public static int getEntryId(SourceAndConverter source) throws IllegalArgumentException {
+    public static int getEntryId(SourceAndConverter<?> source) throws IllegalArgumentException {
         SourceAndConverter<?> rootSource = SourceAndConverterInspector.getRootSourceAndConverter(source);
         if (!isBoundToLegacyQuPathBDVDataset(rootSource)) {
 
-            AbstractSpimData asd =
+            AbstractSpimData<?> asd =
                     ((SourceAndConverterService.SpimDataInfo) SourceAndConverterServices.getSourceAndConverterService()
                             .getMetadata(rootSource, SourceAndConverterService.SPIM_DATA_INFO)).asd;
 
@@ -115,14 +121,14 @@ public class QuPathBdvHelper {
                 .getMetadata(testSource, SourceAndConverterService.SPIM_DATA_INFO)==null) {
                 throw new IllegalArgumentException("No BDV dataset is associated with the source "+testSource.getSpimSource().getName());
         } else {
-            AbstractSpimData asd =
+            AbstractSpimData<?> asd =
                     ((SourceAndConverterService.SpimDataInfo) SourceAndConverterServices.getSourceAndConverterService()
                             .getMetadata(testSource, SourceAndConverterService.SPIM_DATA_INFO)).asd;
 
             int viewSetupId = ((SourceAndConverterService.SpimDataInfo) SourceAndConverterServices.getSourceAndConverterService()
                     .getMetadata(testSource, SourceAndConverterService.SPIM_DATA_INFO)).setupId;
 
-            BasicViewSetup bvs = (BasicViewSetup) asd.getSequenceDescription().getViewSetups().get(viewSetupId);
+            BasicViewSetup bvs = asd.getSequenceDescription().getViewSetups().get(viewSetupId);
 
             //noinspection deprecation
             return  bvs.getAttribute(QuPathEntryEntity.class)!=null;
@@ -131,7 +137,7 @@ public class QuPathBdvHelper {
 
     /**
      * Deprecated : Use getQuPathEntry instead
-     *
+     * <br>
      * Returns the QuPathEntity from a source directly linked to a dataset generated
      * from a qupath project. Returns null is there's not any
      * @param source_in source which should be linked to q QuPath dataset
@@ -139,20 +145,20 @@ public class QuPathBdvHelper {
      */
     @SuppressWarnings("DeprecatedIsStillUsed")
     @Deprecated
-    private static QuPathEntryEntity getQuPathEntityFromSource(SourceAndConverter source_in) {
+    private static QuPathEntryEntity getQuPathEntityFromSource(SourceAndConverter<?> source_in) {
         SourceAndConverter<?> rootSource = SourceAndConverterInspector.getRootSourceAndConverter(source_in);
         if (SourceAndConverterServices.getSourceAndConverterService()
                 .getMetadata(rootSource, SourceAndConverterService.SPIM_DATA_INFO)==null) {
             return null;
         } else {
-            AbstractSpimData asd =
+            AbstractSpimData<?> asd =
                     ((SourceAndConverterService.SpimDataInfo) SourceAndConverterServices.getSourceAndConverterService()
                             .getMetadata(rootSource, SourceAndConverterService.SPIM_DATA_INFO)).asd;
 
             int viewSetupId = ((SourceAndConverterService.SpimDataInfo) SourceAndConverterServices.getSourceAndConverterService()
                     .getMetadata(rootSource, SourceAndConverterService.SPIM_DATA_INFO)).setupId;
 
-            BasicViewSetup bvs = (BasicViewSetup) asd.getSequenceDescription().getViewSetups().get(viewSetupId);
+            BasicViewSetup bvs = asd.getSequenceDescription().getViewSetups().get(viewSetupId);
 
             return bvs.getAttribute(QuPathEntryEntity.class);
         }
@@ -161,7 +167,7 @@ public class QuPathBdvHelper {
     /**
      * @param entity qupathEntry Entity, contained in a bdv dataset
      * @return qupath project file
-     * @throws Exception if the file is not found
+     * @throws IllegalArgumentException if the file is not found
      */
     @SuppressWarnings("DeprecatedIsStillUsed")
     @Deprecated
