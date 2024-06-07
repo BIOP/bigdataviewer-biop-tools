@@ -6,6 +6,7 @@ import bdv.viewer.Source;
 import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.RealRandomAccessible;
+import net.imglib2.outofbounds.OutOfBoundsConstantValueFactory;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.view.ExtendedRandomAccessibleInterval;
@@ -44,8 +45,9 @@ public class VoxelProcessedSource<I,O extends NumericType<O>> implements Source<
     public RealRandomAccessible<O> getInterpolatedSource(int t, int level, Interpolation method) {
         final O zero = getType();
         zero.setZero();
+
         ExtendedRandomAccessibleInterval<O, RandomAccessibleInterval< O >>
-                eView = Views.extendZero(getSource( t, level ));
+                eView = Views.extend(getSource( t, level ), new OutOfBoundsConstantValueFactory(zero));//Views.extendZero(getSource( t, level ));
         RealRandomAccessible< O > realRandomAccessible = Views.interpolate( eView, interpolators.get(method) );
         return realRandomAccessible;
     }

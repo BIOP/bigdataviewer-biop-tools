@@ -99,7 +99,7 @@
 
 		<!-- general imagej dependencies -->
 		<!-- bdv playground related dependencies -->
-		<bigdataviewer-playground.version>0.10.1</bigdataviewer-playground.version>
+		<bigdataviewer-playground.version>0.10.2</bigdataviewer-playground.version>
 		<bigdataviewer-playground-display.version>0.4.2</bigdataviewer-playground-display.version>
 		<image-transform-converters.version>0.1.7</image-transform-converters.version>
 		<bigdataviewer-image-loaders.version>0.7.1</bigdataviewer-image-loaders.version>
@@ -305,7 +305,7 @@
 		<dependency>
 			<groupId>ch.epfl.biop</groupId>
 			<artifactId>quick-start-czi-reader</artifactId>
-			<version>0.2.4</version>
+			<version>0.2.5</version>
 			<scope>test</scope>
 		</dependency>
 

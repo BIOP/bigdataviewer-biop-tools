@@ -38,24 +38,26 @@ public class LLS7OpenDatasetCommand implements
 
     @Parameter
     Context ctx;
+    @Parameter
+    boolean legacy_xy_mode;
 
     @Parameter
     SourceAndConverterService sac_service;
 
     public void run() {
         List<OpenerSettings> openerSettings = new ArrayList<>();
-            int nSeries = BioFormatsHelper.getNSeries(czi_file);
-            for (int i = 0; i < nSeries; i++) {
-                openerSettings.add(
-                        OpenerSettings.BioFormats()
-                                .location(czi_file)
-                                .setSerie(i)
-                                .unit(unit)
-                                .splitRGBChannels(false)
-                                .positionConvention(plane_origin_convention)
-                                .cornerPositionConvention()
-                                .context(ctx));
-            }
+        int nSeries = BioFormatsHelper.getNSeries(czi_file);
+        for (int i = 0; i < nSeries; i++) {
+            openerSettings.add(
+                    OpenerSettings.BioFormats()
+                            .location(czi_file)
+                            .setSerie(i)
+                            .unit(unit)
+                            .splitRGBChannels(false)
+                            .positionConvention(plane_origin_convention)
+                            .cornerPositionConvention()
+                            .context(ctx));
+        }
         AbstractSpimData<?> spimdata = OpenersToSpimData.getSpimData(openerSettings);
         sac_service.register(spimdata);
         sac_service.setSpimDataName(spimdata, FilenameUtils.removeExtension(czi_file.getName()));
@@ -70,6 +72,7 @@ public class LLS7OpenDatasetCommand implements
         for (SourceAndConverter<?> source : sources) {
 
             AffineTransform3D latticeTransform = new AffineTransform3D();
+
             latticeTransform.set(
                     1,0,0,0,
                     0,Math.cos(angle),0,0,
@@ -125,16 +128,40 @@ public class LLS7OpenDatasetCommand implements
             sac_service.register(spimdata);
             sac_service.setSpimDataName(spimdata, FilenameUtils.removeExtension(mipFile.getName()));
 
-            AffineTransform3D offset = new AffineTransform3D();
-
             sources = sac_service.getSourceAndConverterFromSpimdata(spimdata);
 
-            sources.get(0).getSpimSource().getSourceTransform(0,0, offset);
-            double ox = offset.get(0,3);
-            double oy = offset.get(1,3);
-            double oz = offset.get(2,3);
+            if (!legacy_xy_mode) {
+                for (SourceAndConverter<?> source : sources) {
+                    AffineTransform3D ori = new AffineTransform3D();
+                    source.getSpimSource().getSourceTransform(0,0, ori);
+                    double ox = ori.get(0,3);
+                    double oy = ori.get(1,3);
+                    double oz = ori.get(2,3);
 
-            //System.out.println("mipox = "+ox+" mipoy = "+oy+" mipoz = "+oz);
+                    AffineTransform3D addOffset = new AffineTransform3D();
+                    addOffset.identity();
+                    addOffset.set(ox,0,3);
+                    addOffset.set(oy,1,3);
+                    addOffset.set(oz,2,3);
+
+                    AffineTransform3D concatTr = new AffineTransform3D();
+                    // swap x and y
+                    concatTr.set(ori.get(0,0),0,1);
+                    concatTr.set(-ori.get(1,1),1,0);
+                    concatTr.set(0,0,0);
+                    concatTr.set(0,1,1);
+                    concatTr.set(ori.get(2,2),2,2);
+                    // source.getSpimSource().getSource(0,0).max(1)*ori.get(1,1)
+
+                    AffineTransform3D shifty = new AffineTransform3D();
+                    shifty.translate(0,source.getSpimSource().getSource(0,0).max(0)*ori.get(1,1),0);
+                    concatTr.preConcatenate(shifty);
+                    concatTr.preConcatenate(addOffset);
+                    concatTr.concatenate(ori.inverse());
+
+                    SourceTransformHelper.append(concatTr, new SourceAndConverterAndTimeRange<>(source,0,nTimepoints));
+                }
+            }
         }
     }
 
