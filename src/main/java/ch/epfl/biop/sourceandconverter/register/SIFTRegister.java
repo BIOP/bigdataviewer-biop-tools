@@ -162,8 +162,8 @@ public class SIFTRegister<FT extends NativeType<FT> & NumericType<FT>,
         IJ.log( inliers.size() + " corresponding features with an average displacement of " +  PointMatch.meanDistance( inliers ) + "px identified." );
         IJ.log( "Estimated transformation model: " + model );
 
-        final ArrayList< Point > points1 = new ArrayList< Point >();
-        final ArrayList< Point > points2 = new ArrayList<Point>();
+        final ArrayList< Point > points1 = new ArrayList<>();
+        final ArrayList< Point > points2 = new ArrayList<>();
 
         PointMatch.sourcePoints( inliers, points1 );
         PointMatch.targetPoints( inliers, points2 );

@@ -46,7 +46,7 @@ public class Sift2DAffineRegisterCommand extends Abstract2DRegistrationInRectang
         if (success) {
             at3D = reg.getAffineTransform();
         } else {
-            logger.error("Error during registration");
+            logger.error("Error during registration: "+reg.getErrorMessage());
         }
     }
 

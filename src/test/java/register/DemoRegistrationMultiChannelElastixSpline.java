@@ -26,8 +26,6 @@ public class DemoRegistrationMultiChannelElastixSpline {
     static final ImageJ ij = new ImageJ();
 
     static public void main(String... args) throws Exception {
-        ConvertibleRois cr;
-        DefaultTransformixTask dtt;
         ij.ui().showUI();
 
         OpenerSettings atlasSettings = OpenerSettings.BioFormats()
