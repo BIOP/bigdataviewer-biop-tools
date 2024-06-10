@@ -1,3 +1,5 @@
+package register;
+
 import bdv.util.BdvFunctions;
 import bdv.util.BdvHandle;
 import bdv.util.BdvOptions;
@@ -32,7 +34,7 @@ import java.util.List;
 import java.util.concurrent.Future;
 
 
-public class DemoRegistrationAffine {
+public class DemoRegistrationElastixAffine {
 
     static {
         LegacyInjector.preinit();
