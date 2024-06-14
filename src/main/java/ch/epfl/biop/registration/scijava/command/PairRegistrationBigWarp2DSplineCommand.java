@@ -11,10 +11,10 @@ import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 import java.util.Map;
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
-        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Register Sources with BigWarp - 2D - Spline",
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Register Pair with BigWarp - 2D - Spline",
         description = "Performs a manual registration with BigWarp between two sources."  )
 
-public class SacBigWarp2DRegistrationCommand extends AbstractSourcesRegistrationCommand implements Command {
+public class PairRegistrationBigWarp2DSplineCommand extends AbstractPairRegistration2DCommand implements Command {
 
 
     @Override

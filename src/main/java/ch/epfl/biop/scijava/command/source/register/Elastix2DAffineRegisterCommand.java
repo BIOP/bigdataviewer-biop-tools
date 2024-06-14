@@ -5,11 +5,11 @@ import ch.epfl.biop.wrappers.elastix.RegParamAffine_Fast;
 import ch.epfl.biop.wrappers.elastix.RegisterHelper;
 import ch.epfl.biop.wrappers.elastix.RegistrationParameters;
 import org.scijava.Context;
+import org.scijava.ItemIO;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 
 /**
@@ -30,6 +30,9 @@ public class Elastix2DAffineRegisterCommand extends AbstractElastix2DRegistratio
 
     @Parameter
     Context ctx;
+
+    @Parameter(type = ItemIO.OUTPUT)
+    boolean success;
 
     @Override
     public void run() {
@@ -69,7 +72,7 @@ public class Elastix2DAffineRegisterCommand extends AbstractElastix2DRegistratio
                 showImagePlusRegistrationResult);
         reg.setInterpolate(interpolate);
 
-        boolean success = reg.run();
+        success = reg.run();
 
         if (success) {
             at3D = reg.getAffineTransform();

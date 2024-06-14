@@ -2,6 +2,7 @@ package ch.epfl.biop.scijava.command.source.register;
 
 import ch.epfl.biop.sourceandconverter.register.SIFTRegister;
 import mpicbg.imagefeatures.FloatArray2DSIFT;
+import org.scijava.ItemIO;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
@@ -31,6 +32,9 @@ public class Sift2DAffineRegisterCommand extends Abstract2DRegistrationInRectang
     @Parameter
     boolean invert_fixed;
 
+    @Parameter(type = ItemIO.OUTPUT)
+    boolean success;
+
     @Override
     public void run() {
 
@@ -48,7 +52,7 @@ public class Sift2DAffineRegisterCommand extends Abstract2DRegistrationInRectang
 
         reg.setInterpolate(interpolate);
 
-        boolean success = reg.run();
+        success = reg.run();
 
         if (success) {
             at3D = reg.getAffineTransform();

@@ -108,6 +108,9 @@ public class SIFTRegister<FT extends NativeType<FT> & NumericType<FT>,
         ImagePlus croppedMoving = getCroppedImage("Moving", sacs_moving, tpMoving, levelMipmapMoving);
         ImagePlus croppedFixed = getCroppedImage("Fixed", sacs_fixed, tpFixed, levelMipmapFixed);
 
+        croppedFixed.show();
+        croppedMoving.show();
+
         Source<MT> sMoving = sacs_moving[0].getSpimSource();
         Source<FT> sFixed = sacs_fixed[0].getSpimSource();
 
@@ -165,6 +168,11 @@ public class SIFTRegister<FT extends NativeType<FT> & NumericType<FT>,
         }
 
         PointMatch.apply( inliers, model );
+
+        if (inliers.size()<minNumInliers) {
+            IJ.log( "Not enough points found." );
+            return false;
+        }
 
         IJ.log( inliers.size() + " corresponding features with an average displacement of " +  PointMatch.meanDistance( inliers ) + "px identified." );
         IJ.log( "Estimated transformation model: " + model );

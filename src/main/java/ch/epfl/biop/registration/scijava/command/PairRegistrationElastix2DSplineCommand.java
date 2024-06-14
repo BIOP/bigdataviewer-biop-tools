@@ -12,10 +12,10 @@ import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 import java.util.Map;
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
-        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Register Sources with Elastix - 2D - Spline",
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Register Pair with Elastix - 2D - Spline",
         description = "Performs a manual registration with BigWarp between two sources."  )
 
-public class Elastix2DSplineRegistrationCommand extends AbstractSourcesRegistrationCommand implements Command {
+public class PairRegistrationElastix2DSplineCommand extends AbstractPairRegistration2DCommand implements Command {
 
     @Parameter(label = "Number of control points along X, minimum 2.")
     int nb_control_points_x = 10;

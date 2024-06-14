@@ -107,25 +107,29 @@ public class Elastix2DSplineRegistration extends RealTransformSourceAndConverter
                    .getService(CommandService.class)
                    .run(registrationCommandClass, false,
                            flatParameters.toArray(new Object[0]));
+            try {
+                CommandModule module = task.get();
 
-            CommandModule module = task.get();
-
-            if (module.getOutputs().containsKey("success")) {
-                success = (boolean) module.getOutput("success");
-            }
-
-            if (success) {
-                rt = (RealTransform) module.getOutput("rt");
-                rt = pruneLandMarksOutsideAtlas(rt);
-            } else {
-                if (module.getOutputs().containsKey("error")) {
-                    errorMessage = (String) module.getOutput("error");
+                if (module.getOutputs().containsKey("success")) {
+                    success = (boolean) module.getOutput("success");
                 }
+
+                if (success) {
+                    rt = (RealTransform) module.getOutput("rt");
+                    rt = pruneLandMarksOutsideAtlas(rt);
+                } else {
+                    if (module.getOutputs().containsKey("error")) {
+                        errorMessage = (String) module.getOutput("error");
+                    }
+                }
+
+                isDone = true;
+                return success;
+            } catch (Exception e) {
+                isDone = true;
+                errorMessage = e.getMessage();
+                return success;
             }
-
-
-            isDone = true;
-            return success;
         } catch (Exception e) {
             errorMessage = e.getMessage();
             e.printStackTrace();

@@ -12,10 +12,10 @@ import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 import java.util.Map;
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
-        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Register Sources with Elastix - 2D - Affine",
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Register Pair with Elastix - 2D - Affine",
         description = "Performs a manual registration with BigWarp between two sources."  )
 
-public class Elastix2DAffineRegistrationCommand extends AbstractSourcesRegistrationCommand implements Command {
+public class PairRegistrationElastix2DAffineCommand extends AbstractPairRegistration2DCommand implements Command {
 
     @Parameter(label = "Registration re-sampling (micrometers)")
     double pixel_size_micrometer = 20;

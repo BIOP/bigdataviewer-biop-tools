@@ -25,6 +25,9 @@ public class Elastix2DSplineRegisterCommand extends AbstractElastix2DRegistratio
     @Parameter
     Context ctx;
 
+    @Parameter(type = ItemIO.OUTPUT)
+    boolean success;
+
     @Override
     public void run() {
         ElastixHelper.checkOrSetLocal(ctx);
@@ -41,7 +44,7 @@ public class Elastix2DSplineRegisterCommand extends AbstractElastix2DRegistratio
 
         reg.setInterpolate(interpolate);
 
-        reg.run();
+        success = reg.run();
 
         //registeredSource = reg.getRegisteredSac();
         rt = reg.getRealTransform();
