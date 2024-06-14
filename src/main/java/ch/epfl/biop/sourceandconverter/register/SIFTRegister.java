@@ -35,6 +35,7 @@ public class SIFTRegister<FT extends NativeType<FT> & NumericType<FT>,
     SourceAndConverter<FT>[] sacs_fixed;
     SourceAndConverter<MT>[] sacs_moving;
     int levelMipmapFixed, levelMipmapMoving;
+    final boolean invertFixed, invertMoving;
     int tpMoving,tpFixed;
 
     AffineTransform3D affineTransformOut;
@@ -56,9 +57,11 @@ public class SIFTRegister<FT extends NativeType<FT> & NumericType<FT>,
     public SIFTRegister(SourceAndConverter<FT>[] sacs_fixed,
                                    int levelMipmapFixed,
                                    int tpFixed,
+                                   boolean invertFixed,
                                    SourceAndConverter<MT>[] sacs_moving,
                                    int levelMipmapMoving,
                                    int tpMoving,
+                                   boolean invertMoving,
                                    double pxSizeInCurrentUnit,
                                    double px,
                                    double py,
@@ -88,6 +91,8 @@ public class SIFTRegister<FT extends NativeType<FT> & NumericType<FT>,
         this.maxEpsilon = maxEpsilon;
         this.minNumInliers = minNumInliers;
         this.minInlierRatio = minInlierRatio;
+        this.invertFixed = invertFixed;
+        this.invertMoving = invertMoving;
     }
 
     public void setInterpolate(boolean interpolate) {
@@ -127,6 +132,8 @@ public class SIFTRegister<FT extends NativeType<FT> & NumericType<FT>,
 
         final List<Feature> fs1 = new ArrayList<>();
         final List<Feature> fs2 = new ArrayList<>();
+        if (invertFixed) croppedFixed.getProcessor().invert();
+        if (invertMoving) croppedMoving.getProcessor().invert();
         ijSIFT.extractFeatures( croppedFixed.getProcessor(), fs1 );
         IJ.log( fs1.size() + " features extracted for fixed image" );
         ijSIFT.extractFeatures( croppedMoving.getProcessor(), fs2 );
