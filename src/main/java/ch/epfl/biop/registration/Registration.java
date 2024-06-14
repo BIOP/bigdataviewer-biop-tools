@@ -12,6 +12,12 @@ import java.util.Map;
 
 public interface Registration<T> {
 
+    String ROI_PX = "px";
+    String ROI_PY = "py";
+    String ROI_SX = "sx";
+    String ROI_SY = "sy";
+    String RESAMPLING_PX_SIZE = "pxSizeInCurrentUnit";
+
     /**
      * Is called just after the Registration object creation to pass
      * the current scijava context

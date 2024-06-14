@@ -16,11 +16,11 @@ import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
  * on big images. See {@link RegisterWholeSlideScans2DCommand}
  */
 
-@Plugin(type = BdvPlaygroundActionCommand.class,
+@Plugin(type = BdvPlaygroundActionCommand.class/*,
         menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Register Sources with SIFT (Affine, 2D)",
         description = "Performs an affine registration in 2D between 2 sources. Low level command which\n"+
                       "requires many parameters. For more user friendly command, use wizards instead.\n"+
-                      "Outputs the transform to apply to the moving source."  )
+                      "Outputs the transform to apply to the moving source."  */)
 public class Sift2DAffineRegisterCommand extends Abstract2DRegistrationInRectangleCommand implements BdvPlaygroundActionCommand {
 
     private static Logger logger = LoggerFactory.getLogger(Sift2DAffineRegisterCommand.class);
