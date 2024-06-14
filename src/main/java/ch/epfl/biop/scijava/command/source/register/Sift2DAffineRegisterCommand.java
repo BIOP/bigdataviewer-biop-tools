@@ -2,6 +2,7 @@ package ch.epfl.biop.scijava.command.source.register;
 
 import ch.epfl.biop.sourceandconverter.register.SIFTRegister;
 import mpicbg.imagefeatures.FloatArray2DSIFT;
+import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,12 +25,18 @@ public class Sift2DAffineRegisterCommand extends Abstract2DRegistrationInRectang
 
     private static Logger logger = LoggerFactory.getLogger(Sift2DAffineRegisterCommand.class);
 
+    @Parameter
+    boolean invert_moving;
+
+    @Parameter
+    boolean invert_fixed;
+
     @Override
     public void run() {
 
         SIFTRegister reg = new SIFTRegister(
-                sacs_fixed,levelFixedSource,tpFixed,
-                sacs_moving,levelMovingSource,tpMoving,
+                sacs_fixed,levelFixedSource,tpFixed,invert_fixed,
+                sacs_moving,levelMovingSource,tpMoving,invert_moving,
                 pxSizeInCurrentUnit,
                 px,py,pz,sx,sy,
                 new FloatArray2DSIFT.Param(),
