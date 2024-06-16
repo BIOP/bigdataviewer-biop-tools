@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 abstract public class AbstractPairRegistrationInROI2DCommand extends AbstractPairRegistration2DCommand {
 
-    @Parameter(label = "ROI for registration (choose custom in order to use the parameters below)", choices = {"intersection", "union", "custom"})
+    @Parameter(label = "ROI for registration (select custom in order to use the parameters below)", choices = {"intersection", "union", "custom"})
     String bounds = "intersection";
 
     @Parameter(label = "ROI for registration (position x)", style = "format:0.#####E0", required = false)

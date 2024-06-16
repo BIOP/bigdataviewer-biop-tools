@@ -27,28 +27,17 @@ abstract public class AbstractPairRegistration2DCommand implements Command {
     RegistrationPair registration_pair;
 
     @Parameter(type = ItemIO.OUTPUT)
-    boolean success;
+    boolean success = false;
 
     @Override
     final public void run() {
         synchronized (registration_pair) {
             try {
-                SourceAndConverter<?>[] moving_sources = registration_pair.getMovingSourcesRegistered();
-                SourceAndConverter<?>[] fixed_sources = registration_pair.getFixedSources();
-
+                Map<String, Object> parameters = new HashMap<>();
                 Registration<SourceAndConverter<?>[]> registration = getRegistration();
                 registration.setScijavaContext(ctx);
-
                 registration.setTimePoint(0);
-
-                registration.setMovingImage(getSourcesProcessorMoving().apply(moving_sources));
-                registration.setFixedImage(getSourcesProcessorFixed().apply(fixed_sources));
-
-                Map<String, Object> parameters = new HashMap<>();
-
                 addRegistrationParameters(parameters);
-
-                registration.setRegistrationParameters(convertToString(ctx, parameters));
 
                 boolean ok = validate();
 
@@ -57,13 +46,14 @@ abstract public class AbstractPairRegistration2DCommand implements Command {
                     return;
                 }
 
-                success = registration.register(); // Do it!
+                success = registration_pair
+                        .executeRegistration(registration,
+                                convertToString(ctx, parameters),
+                                getSourcesProcessorFixed(),
+                                getSourcesProcessorMoving());
 
-                if (success) {
-                    //registered_sources = registration.getTransformedImageMovingToFixed(moving_sources);
-                    registration_pair.appendRegistration(registration);
-                } else {
-                    System.err.println("Registration unsuccessful: " + registration.getExceptionMessage());
+                if (!success) {
+                    System.err.println("Registration unsuccessful: " + registration_pair.getRegistrationErrorMessage());
                 }
             } catch (Exception e) {
                 System.err.println("Error during registration: "+e.getMessage());
@@ -72,6 +62,26 @@ abstract public class AbstractPairRegistration2DCommand implements Command {
             }
         }
 
+    }
+
+    abstract protected void addRegistrationParameters(Map<String, Object> parameters);
+
+    abstract Registration<SourceAndConverter<?>[]> getRegistration();
+
+    abstract protected SourcesProcessor getSourcesProcessorFixed();
+
+    abstract protected SourcesProcessor getSourcesProcessorMoving();
+
+    abstract protected boolean validate();
+
+    public static Map<String,String> convertToString(Context ctx, Map<String, Object> params) {
+        Map<String,String> convertedParams = new HashMap<>();
+
+        ConvertService cs = ctx.getService(ConvertService.class);
+
+        params.keySet().forEach(k -> convertedParams.put(k, cs.convert(params.get(k), String.class)));
+
+        return convertedParams;
     }
 
     protected static SourcesChannelsSelect getChannelProcessorFromCsv(String channelsCsv, int nChannels) throws NumberFormatException, IndexOutOfBoundsException {
@@ -93,26 +103,6 @@ abstract public class AbstractPairRegistration2DCommand implements Command {
         }
 
         return new SourcesChannelsSelect(channels);
-    }
-
-    protected abstract void addRegistrationParameters(Map<String, Object> parameters);
-
-    abstract Registration<SourceAndConverter<?>[]> getRegistration();
-
-    abstract protected SourcesProcessor getSourcesProcessorFixed();
-
-    abstract protected SourcesProcessor getSourcesProcessorMoving();
-
-    protected abstract boolean validate();
-
-    public static Map<String,String> convertToString(Context ctx, Map<String, Object> params) {
-        Map<String,String> convertedParams = new HashMap<>();
-
-        ConvertService cs = ctx.getService(ConvertService.class);
-
-        params.keySet().forEach(k -> convertedParams.put(k, cs.convert(params.get(k), String.class)));
-
-        return convertedParams;
     }
 
 }

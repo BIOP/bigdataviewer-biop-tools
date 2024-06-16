@@ -13,7 +13,7 @@ import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 import java.util.Map;
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
-        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Register Pair with Sift - 2D - Affine",
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Register Pair 2D - Sift Affine",
         description = "Performs a manual registration with BigWarp between two sources."  )
 
 public class PairRegistrationSift2DAffineCommand extends AbstractPairRegistrationInROI2DCommand implements Command {
@@ -36,8 +36,8 @@ public class PairRegistrationSift2DAffineCommand extends AbstractPairRegistratio
     @Override
     protected void addRegistrationSpecificParametersExceptRoi(Map<String, Object> parameters) {
         parameters.put(Registration.RESAMPLING_PX_SIZE, pixel_size_micrometer/1000.0);
-        parameters.put("invert_moving", invert_moving);
-        parameters.put("invert_fixed", invert_fixed);
+        parameters.put(Sift2DAffineRegistration.INVERT_MOVING_KEY, invert_moving);
+        parameters.put(Sift2DAffineRegistration.INVERT_FIXED_KEY, invert_fixed);
     }
 
     @Override

@@ -13,11 +13,10 @@ import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 import java.util.Map;
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
-        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Register Pair with BigWarp - 2D - Spline",
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Register Pair 2D - BigWarp Spline",
         description = "Performs a manual registration with BigWarp between two sources."  )
 
 public class PairRegistrationBigWarp2DSplineCommand extends AbstractPairRegistration2DCommand implements Command {
-
 
     @Override
     protected void addRegistrationParameters(Map<String, Object> parameters) {

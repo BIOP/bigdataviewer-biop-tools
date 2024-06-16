@@ -16,8 +16,8 @@ import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
 import java.util.Map;
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
-        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Register Pair - Center moving on fixed",
-        description = "Defines a registration pair"  )
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Register Pair - Center moving sources on fixed sources",
+        description = "Registration that centers moving sources over fixed sources."  )
 public class PairRegistrationCenterCommand extends AbstractPairRegistration2DCommand implements Command {
 
     @Override
@@ -29,7 +29,7 @@ public class PairRegistrationCenterCommand extends AbstractPairRegistration2DCom
         double dy = centerFixed.getDoublePosition(1)-centerMoving.getDoublePosition(1);
         double dz = centerFixed.getDoublePosition(2)-centerMoving.getDoublePosition(2);
         affineTransform3D.translate(dx,dy,dz);
-        parameters.put("transform", AffineRegistration.affineTransform3DToString(affineTransform3D));
+        parameters.put(AffineRegistration.TRANSFORM_KEY, AffineRegistration.affineTransform3DToString(affineTransform3D));
     }
 
     @Override
@@ -41,7 +41,6 @@ public class PairRegistrationCenterCommand extends AbstractPairRegistration2DCom
     protected boolean validate() {
         return true;
     }
-
 
     @Override
     protected SourcesProcessor getSourcesProcessorFixed() {

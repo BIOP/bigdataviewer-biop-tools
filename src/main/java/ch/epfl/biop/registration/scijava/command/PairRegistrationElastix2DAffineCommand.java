@@ -13,7 +13,7 @@ import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 import java.util.Map;
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
-        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Register Pair with Elastix - 2D - Affine",
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Register Pair 2D - Elastix Affine",
         description = "Performs a manual registration with BigWarp between two sources."  )
 
 public class PairRegistrationElastix2DAffineCommand extends AbstractPairRegistrationInROI2DCommand implements Command {

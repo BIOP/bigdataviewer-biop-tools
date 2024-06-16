@@ -1,8 +1,6 @@
 package ch.epfl.biop.registration.scijava.command;
 
-import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.registration.RegistrationPair;
-import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.object.ObjectService;
 import org.scijava.plugin.Parameter;

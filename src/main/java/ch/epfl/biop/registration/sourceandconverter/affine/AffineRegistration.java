@@ -22,6 +22,8 @@ public class AffineRegistration extends AffineTransformSourceAndConverterRegistr
 
     protected static Logger logger = LoggerFactory.getLogger(AffineRegistration.class);
 
+    public final static String TRANSFORM_KEY = "transform";
+
     @Override
     public void setFixedImage(SourceAndConverter<?>[] fimg) {
         super.setFixedImage(fimg);
@@ -45,7 +47,7 @@ public class AffineRegistration extends AffineTransformSourceAndConverterRegistr
 
     @Override
     public boolean register() {
-        at3d = stringToAffineTransform3D(parameters.get("transform"));
+        at3d = stringToAffineTransform3D(parameters.get(TRANSFORM_KEY));
         isDone = true;
         return true;
     }

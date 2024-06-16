@@ -8,7 +8,7 @@ import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
-        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Registration pair - edit last registration",
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Register Pair - Edit last registration",
         description = "Edit the last registration of a registration pair"  )
 public class PairRegistrationEditLastRegistrationCommand implements Command {
 

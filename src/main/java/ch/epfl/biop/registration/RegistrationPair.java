@@ -3,12 +3,14 @@ package ch.epfl.biop.registration;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.registration.plugin.RegistrationPluginHelper;
 import ch.epfl.biop.sourceandconverter.processor.SourcesAffineTransformer;
+import ch.epfl.biop.sourceandconverter.processor.SourcesProcessor;
 import net.imglib2.realtransform.AffineTransform3D;
 import org.scijava.Named;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class RegistrationPair implements Named {
 
@@ -20,14 +22,16 @@ public class RegistrationPair implements Named {
     final String name;
 
     SourceAndConverter<?>[] movingSourcesRegistered;
-    final List<RegistrationAndSources> registrationAndSources = new ArrayList<>();
+    final List<RegistrationStep> registrationPairSteps = new ArrayList<>();
 
     public RegistrationPair(SourceAndConverter<?>[] fixedSources,
                             int timepointFixed,
                             SourceAndConverter<?>[] movingSources,
                             int timepointMoving,
-                            String name, boolean removezOffset
+                            String name,
+                            boolean removezOffset
                              ) {
+
         if (removezOffset) {
             this.fixedSources = new SourcesAffineTransformer(findZ0Transform(fixedSources[0], timepointFixed)).apply(fixedSources);
             this.movingSourcesOrigin = new SourcesAffineTransformer(findZ0Transform(movingSources[0], timepointMoving)).apply(movingSources);
@@ -55,11 +59,45 @@ public class RegistrationPair implements Named {
         return movingSourcesRegistered;
     }
 
-    public synchronized void appendRegistration(Registration<SourceAndConverter<?>[]> reg) {
-        RegistrationAndSources ras = new RegistrationAndSources(reg, reg.getTransformedImageMovingToFixed(getMovingSourcesRegistered()));
-        movingSourcesRegistered = ras.sacs;
-        SourceAndConverterServices.getSourceAndConverterService().register(ras.sacs[0]);
-        registrationAndSources.add(ras);
+    String errorMessage = "";
+
+    public String getRegistrationErrorMessage() {
+        return errorMessage;
+    }
+
+    public synchronized boolean executeRegistration(Registration<SourceAndConverter<?>[]> reg,
+                                                Map<String, String> parameters,
+                                                SourcesProcessor fixedProcessorForRegistration,
+                                                SourcesProcessor movingProcessorForRegistration) {
+        reg.setRegistrationParameters(parameters);
+        reg.setMovingImage(movingProcessorForRegistration.apply(getMovingSourcesRegistered()));
+        reg.setFixedImage(fixedProcessorForRegistration.apply(getFixedSources()));
+
+        boolean success = reg.register();
+
+        if (!success) {
+            errorMessage = reg.getExceptionMessage();
+            return false;
+        }
+
+        appendRegistration(reg, fixedProcessorForRegistration, movingProcessorForRegistration);
+
+        return true;
+    }
+
+    private void appendRegistration(Registration<SourceAndConverter<?>[]> reg,
+                                    SourcesProcessor fixedProcessorForRegistration,
+                                    SourcesProcessor movingProcessorForRegistration) {
+
+        movingSourcesRegistered = reg.getTransformedImageMovingToFixed(getMovingSourcesRegistered());
+
+        RegistrationStep rp = new RegistrationStep(
+                reg,
+                getMovingSourcesRegistered(),
+                fixedProcessorForRegistration, movingProcessorForRegistration);
+
+        SourceAndConverterServices.getSourceAndConverterService().register(rp.sacs[0]);
+        registrationPairSteps.add(rp);
     }
 
     @Override
@@ -69,38 +107,36 @@ public class RegistrationPair implements Named {
 
     @Override
     public void setName(String name) {
-        throw new UnsupportedOperationException("You can't rename a registration pair object");
+        throw new UnsupportedOperationException("You can't rename a registration pair sequence object");
     }
 
     public synchronized void removeLastRegistration() {
-        if (registrationAndSources.size() == 0) return;
-        if (registrationAndSources.size()==1) {
-            registrationAndSources.remove(0);
+        if (registrationPairSteps.isEmpty()) return;
+        if (registrationPairSteps.size()==1) {
+            registrationPairSteps.remove(0);
             this.movingSourcesRegistered = movingSourcesOrigin;
         } else {
-            RegistrationAndSources ras = registrationAndSources.get(registrationAndSources.size()-2);
-            registrationAndSources.remove(registrationAndSources.size()-1);
-            this.movingSourcesRegistered = ras.sacs;
+            RegistrationStep rs = registrationPairSteps.get(registrationPairSteps.size()-2);
+            registrationPairSteps.remove(registrationPairSteps.size()-1);
+            this.movingSourcesRegistered = rs.sacs;
         }
     }
 
     public synchronized void editLastRegistration() {
-        if (registrationAndSources.size() == 0) {
+        if (registrationPairSteps.isEmpty()) {
             System.err.println("There is no registration to edit");
             return;
         }
 
-        Registration lastReg = registrationAndSources.get(registrationAndSources.size()-1).reg;
-        if (!RegistrationPluginHelper.isEditable(lastReg)) {
+        RegistrationStep lastStep = registrationPairSteps.get(registrationPairSteps.size()-1);
+        if (!RegistrationPluginHelper.isEditable(lastStep.reg)) {
             System.err.println("The last registration is not editable");
             return;
         }
 
         removeLastRegistration();
-
-        lastReg.edit();
-
-        appendRegistration(lastReg);
+        lastStep.reg.edit();
+        appendRegistration(lastStep.reg, lastStep.fixedProcessor, lastStep.movingProcessor);
     }
 
     public int getFixedTimepoint() {
@@ -111,20 +147,27 @@ public class RegistrationPair implements Named {
         return timepointMoving;
     }
 
-    private static class RegistrationAndSources {
+    private static class RegistrationStep {
 
         final Registration<SourceAndConverter<?>[]> reg;
         final SourceAndConverter<?>[] sacs;
+        final SourcesProcessor fixedProcessor;
+        final SourcesProcessor movingProcessor;
 
-        public RegistrationAndSources(Registration<SourceAndConverter<?>[]> reg, SourceAndConverter<?>[] sacs) {
+        public RegistrationStep(Registration<SourceAndConverter<?>[]> reg,
+                                SourceAndConverter<?>[] sacs,
+                                SourcesProcessor fixedProcessor,
+                                SourcesProcessor movingProcessor) {
             this.reg = reg;
             this.sacs = sacs;
+            this.fixedProcessor = fixedProcessor;
+            this.movingProcessor = movingProcessor;
         }
     }
 
     @Override
     public String toString() {
-        return name+" [#f="+fixedSources.length+" #m="+movingSourcesOrigin.length+" #regs="+registrationAndSources.size()+"]";
+        return name;//+" [#f="+fixedSources.length+" #m="+movingSourcesOrigin.length+" #regs="+registrationAndSources.size()+"]";
     }
 
     private static AffineTransform3D findZ0Transform(SourceAndConverter<?> source, int timePoint) {

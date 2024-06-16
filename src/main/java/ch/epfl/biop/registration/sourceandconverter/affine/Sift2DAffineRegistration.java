@@ -31,6 +31,9 @@ public class Sift2DAffineRegistration extends AffineTransformSourceAndConverterR
 
     protected static final Logger logger = LoggerFactory.getLogger(Sift2DAffineRegistration.class);
 
+    public final static String INVERT_MOVING_KEY = "invert_moving";
+    public final static String INVERT_FIXED_KEY = "invert_fixed";
+
     @Override
     public void setFixedImage(SourceAndConverter[] fimg) {
         if (fimg.length==0) {
@@ -70,8 +73,8 @@ public class Sift2DAffineRegistration extends AffineTransformSourceAndConverterR
             List<Object> flatParameters = new ArrayList<>(parameters.size()*2+4);
 
             double voxSizeInMm = Double.parseDouble(parameters.get("pxSizeInCurrentUnit"));
-            boolean invert_moving = Boolean.parseBoolean(parameters.get("invert_moving"));
-            boolean invert_fixed = Boolean.parseBoolean(parameters.get("invert_fixed"));
+            boolean invert_moving = Boolean.parseBoolean(parameters.get(INVERT_MOVING_KEY));
+            boolean invert_fixed = Boolean.parseBoolean(parameters.get(INVERT_FIXED_KEY));
 
             parameters.keySet().forEach(k -> {
                 flatParameters.add(k);
