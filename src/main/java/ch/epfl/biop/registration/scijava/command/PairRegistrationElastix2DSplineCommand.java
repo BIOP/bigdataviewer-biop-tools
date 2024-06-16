@@ -3,6 +3,7 @@ package ch.epfl.biop.registration.scijava.command;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.registration.Registration;
 import ch.epfl.biop.registration.sourceandconverter.spline.Elastix2DSplineRegistration;
+import ch.epfl.biop.sourceandconverter.processor.SourcesProcessor;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
@@ -19,6 +20,12 @@ public class PairRegistrationElastix2DSplineCommand extends AbstractPairRegistra
 
     @Parameter(label = "Number of control points along X, minimum 2.")
     int nb_control_points_x = 10;
+
+    @Parameter(label = "Fixed image channels used for registration (comma separated)")
+    String channels_fixed_csv;
+
+    @Parameter(label = "Moving image channels used for registration (comma separated)")
+    String channels_moving_csv;
 
     @Parameter(label = "Registration re-sampling (micrometers)")
     double pixel_size_micrometer = 20;
@@ -43,5 +50,15 @@ public class PairRegistrationElastix2DSplineCommand extends AbstractPairRegistra
     @Override
     protected boolean validate() {
         return true;
+    }
+
+    @Override
+    protected SourcesProcessor getSourcesProcessorFixed() {
+        return AbstractPairRegistration2DCommand.getChannelProcessorFromCsv(channels_fixed_csv, registration_pair.getFixedSources().length);
+    }
+
+    @Override
+    protected SourcesProcessor getSourcesProcessorMoving() {
+        return AbstractPairRegistration2DCommand.getChannelProcessorFromCsv(channels_moving_csv, registration_pair.getMovingSourcesOrigin().length);
     }
 }

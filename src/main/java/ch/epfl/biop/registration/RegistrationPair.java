@@ -103,6 +103,14 @@ public class RegistrationPair implements Named {
         appendRegistration(lastReg);
     }
 
+    public int getFixedTimepoint() {
+        return timepointFixed;
+    }
+
+    public int getMovingTimepoint() {
+        return timepointMoving;
+    }
+
     private static class RegistrationAndSources {
 
         final Registration<SourceAndConverter<?>[]> reg;

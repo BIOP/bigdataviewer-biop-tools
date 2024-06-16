@@ -77,15 +77,18 @@ abstract public class AbstractPairRegistrationInROI2DCommand extends AbstractPai
             Interval interval = sourceAndConverter.getSpimSource().getSource(0, 0);
             AffineTransform3D sourceTransform = new AffineTransform3D();
             sourceAndConverter.getSpimSource().getSourceTransform(0, 0, sourceTransform);
-            RealPoint corner0 = new RealPoint(new float[]{(float)interval.min(0), (float)interval.min(1), (float)interval.min(2)});
-            RealPoint corner1 = new RealPoint(new float[]{(float)interval.max(0), (float)interval.max(1), (float)interval.max(2)});
+            RealPoint corner0 = new RealPoint((float)interval.min(0), (float)interval.min(1), (float)interval.min(2));
+            RealPoint corner1 = new RealPoint((float)interval.max(0), (float)interval.max(1), (float)interval.max(2));
             sourceTransform.apply(corner0, corner0);
             sourceTransform.apply(corner1, corner1);
             return new FinalRealInterval(new double[]{Math.min(corner0.getDoublePosition(0), corner1.getDoublePosition(0)), Math.min(corner0.getDoublePosition(1), corner1.getDoublePosition(1)), Math.min(corner0.getDoublePosition(2), corner1.getDoublePosition(2))}, new double[]{Math.max(corner0.getDoublePosition(0), corner1.getDoublePosition(0)), Math.max(corner0.getDoublePosition(1), corner1.getDoublePosition(1)), Math.max(corner0.getDoublePosition(2), corner1.getDoublePosition(2))});
         }).collect(Collectors.toList());
-        RealInterval maxInterval = intervalList.stream().reduce((i1, i2) -> {
-            return new FinalRealInterval(new double[]{Math.min(i1.realMin(0), i2.realMin(0)), Math.min(i1.realMin(1), i2.realMin(1)), Math.min(i1.realMin(2), i2.realMin(2))}, new double[]{Math.max(i1.realMax(0), i2.realMax(0)), Math.max(i1.realMax(1), i2.realMax(1)), Math.max(i1.realMax(2), i2.realMax(2))});
-        }).get();
+        RealInterval maxInterval = intervalList.stream()
+                .reduce((i1, i2) ->
+                        new FinalRealInterval(
+                                new double[]{Math.min(i1.realMin(0), i2.realMin(0)), Math.min(i1.realMin(1), i2.realMin(1)), Math.min(i1.realMin(2), i2.realMin(2))},
+                                new double[]{Math.max(i1.realMax(0), i2.realMax(0)), Math.max(i1.realMax(1), i2.realMax(1)), Math.max(i1.realMax(2), i2.realMax(2))}))
+                .get();
         return maxInterval;
     }
 }

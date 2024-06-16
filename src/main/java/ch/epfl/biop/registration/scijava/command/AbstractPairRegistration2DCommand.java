@@ -4,6 +4,7 @@ import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.registration.Registration;
 import ch.epfl.biop.registration.RegistrationPair;
 import ch.epfl.biop.sourceandconverter.processor.SourcesChannelsSelect;
+import ch.epfl.biop.sourceandconverter.processor.SourcesProcessor;
 import org.scijava.Context;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
@@ -25,103 +26,82 @@ abstract public class AbstractPairRegistration2DCommand implements Command {
     @Parameter
     RegistrationPair registration_pair;
 
-    @Parameter(label = "Fixed image channels used for registration (comma separated)")
-    String channels_fixed_csv;
-
-    @Parameter(label = "Moving image channels used for registration (comma separated)")
-    String channels_moving_csv;
-
     @Parameter(type = ItemIO.OUTPUT)
     boolean success;
 
     @Override
     final public void run() {
         synchronized (registration_pair) {
-            SourceAndConverter<?>[] moving_sources = registration_pair.getMovingSourcesRegistered();
-            SourceAndConverter<?>[] fixed_sources = registration_pair.getFixedSources();
-
-            List<Integer> moving_channels;
-            List<Integer> fixed_channels;
-
             try {
-                moving_channels = Arrays.stream(channels_moving_csv.split(","))
-                        .map(Integer::parseInt)
-                        .collect(Collectors.toList());
-                fixed_channels = Arrays.stream(channels_fixed_csv.split(","))
-                        .map(Integer::parseInt)
-                        .collect(Collectors.toList());
-            } catch (NumberFormatException e) {
-                System.err.println("Number parsing exception " + e.getMessage());
-                return;
-            }
+                SourceAndConverter<?>[] moving_sources = registration_pair.getMovingSourcesRegistered();
+                SourceAndConverter<?>[] fixed_sources = registration_pair.getFixedSources();
 
-            if (moving_channels.isEmpty()) {
-                System.err.println("Error, you did not specify any channel within the moving image.");
-                return;
-            }
+                Registration<SourceAndConverter<?>[]> registration = getRegistration();
+                registration.setScijavaContext(ctx);
 
-            if (fixed_channels.isEmpty()) {
-                System.err.println("Error, you did not specify any channel within the fixed image.");
-                return;
-            }
+                registration.setTimePoint(0);
 
-            int maxIndexMoving = Collections.max(moving_channels);
-            int minIndexMoving = Collections.min(moving_channels);
+                registration.setMovingImage(getSourcesProcessorMoving().apply(moving_sources));
+                registration.setFixedImage(getSourcesProcessorFixed().apply(fixed_sources));
 
-            int maxIndexFixed = Collections.max(fixed_channels);
-            int minIndexFixed = Collections.min(fixed_channels);
+                Map<String, Object> parameters = new HashMap<>();
 
-            if ((minIndexMoving < 0) || (minIndexFixed < 0)) {
-                System.err.println("All channels indices should be positive");
-                return;
-            }
+                addRegistrationParameters(parameters);
 
-            if (!(maxIndexFixed < fixed_sources.length)) {
-                System.err.println("The max index within the fixed sources (" + maxIndexFixed + ") is above its maximum (" + (fixed_sources.length - 1) + ")");
-                return;
-            }
+                registration.setRegistrationParameters(convertToString(ctx, parameters));
 
-            if (!(maxIndexMoving < moving_sources.length)) {
-                System.err.println("The max index within the moving sources (" + maxIndexFixed + ") is above its maximum (" + (moving_sources.length - 1) + ")");
-                return;
-            }
+                boolean ok = validate();
 
-            Registration<SourceAndConverter<?>[]> registration = getRegistration();
-            registration.setScijavaContext(ctx);
+                if (!ok) {
+                    System.err.println("Validation failed.");
+                    return;
+                }
 
-            registration.setTimePoint(0);
+                success = registration.register(); // Do it!
 
-            registration.setMovingImage(new SourcesChannelsSelect(moving_channels).apply(moving_sources));
-            registration.setFixedImage(new SourcesChannelsSelect(fixed_channels).apply(fixed_sources));
-
-            Map<String, Object> parameters = new HashMap<>();
-
-            addRegistrationParameters(parameters);
-
-            registration.setRegistrationParameters(convertToString(ctx, parameters));
-
-            boolean ok = validate();
-
-            if (!ok) {
-                System.err.println("Validation failed.");
-                return;
-            }
-
-            success = registration.register(); // Do it!
-
-            if (success) {
-                //registered_sources = registration.getTransformedImageMovingToFixed(moving_sources);
-                registration_pair.appendRegistration(registration);
-            } else {
-                System.err.println("Registration unsuccessful: " + registration.getExceptionMessage());
+                if (success) {
+                    //registered_sources = registration.getTransformedImageMovingToFixed(moving_sources);
+                    registration_pair.appendRegistration(registration);
+                } else {
+                    System.err.println("Registration unsuccessful: " + registration.getExceptionMessage());
+                }
+            } catch (Exception e) {
+                System.err.println("Error during registration: "+e.getMessage());
+                e.printStackTrace();
+                success = false;
             }
         }
 
     }
 
+    protected static SourcesChannelsSelect getChannelProcessorFromCsv(String channelsCsv, int nChannels) throws NumberFormatException, IndexOutOfBoundsException {
+        List<Integer> channels = Arrays.stream(channelsCsv.split(","))
+                .map(Integer::parseInt)
+                .collect(Collectors.toList());
+
+        int maxIndex = Collections.max(channels);
+        int minIndex = Collections.min(channels);
+
+        if (minIndex < 0) {
+            System.err.println("All channels indices should be positive");
+            throw new IndexOutOfBoundsException();
+        }
+
+        if (!(maxIndex < nChannels)) {
+            System.err.println("The max index (" + maxIndex + ") is above its maximum (" + (nChannels) + ")");
+            throw new IndexOutOfBoundsException();
+        }
+
+        return new SourcesChannelsSelect(channels);
+    }
+
     protected abstract void addRegistrationParameters(Map<String, Object> parameters);
 
     abstract Registration<SourceAndConverter<?>[]> getRegistration();
+
+    abstract protected SourcesProcessor getSourcesProcessorFixed();
+
+    abstract protected SourcesProcessor getSourcesProcessorMoving();
 
     protected abstract boolean validate();
 
@@ -134,4 +114,5 @@ abstract public class AbstractPairRegistration2DCommand implements Command {
 
         return convertedParams;
     }
+
 }

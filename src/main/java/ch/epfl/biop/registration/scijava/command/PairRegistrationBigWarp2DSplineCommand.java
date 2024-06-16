@@ -3,6 +3,8 @@ package ch.epfl.biop.registration.scijava.command;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.registration.Registration;
 import ch.epfl.biop.registration.sourceandconverter.bigwarp.SacBigWarp2DRegistration;
+import ch.epfl.biop.sourceandconverter.processor.SourcesIdentity;
+import ch.epfl.biop.sourceandconverter.processor.SourcesProcessor;
 import org.scijava.command.Command;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
@@ -30,5 +32,16 @@ public class PairRegistrationBigWarp2DSplineCommand extends AbstractPairRegistra
     @Override
     protected boolean validate() {
         return true;
+    }
+
+
+    @Override
+    protected SourcesProcessor getSourcesProcessorFixed() {
+        return new SourcesIdentity();
+    }
+
+    @Override
+    protected SourcesProcessor getSourcesProcessorMoving() {
+        return new SourcesIdentity();
     }
 }

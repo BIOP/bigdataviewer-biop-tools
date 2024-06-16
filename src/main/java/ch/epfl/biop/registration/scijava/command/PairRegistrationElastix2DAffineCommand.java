@@ -3,6 +3,7 @@ package ch.epfl.biop.registration.scijava.command;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.registration.Registration;
 import ch.epfl.biop.registration.sourceandconverter.affine.Elastix2DAffineRegistration;
+import ch.epfl.biop.sourceandconverter.processor.SourcesProcessor;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
@@ -16,6 +17,12 @@ import java.util.Map;
         description = "Performs a manual registration with BigWarp between two sources."  )
 
 public class PairRegistrationElastix2DAffineCommand extends AbstractPairRegistrationInROI2DCommand implements Command {
+
+    @Parameter(label = "Fixed image channels used for registration (comma separated)")
+    String channels_fixed_csv;
+
+    @Parameter(label = "Moving image channels used for registration (comma separated)")
+    String channels_moving_csv;
 
     @Parameter(label = "Registration re-sampling (micrometers)")
     double pixel_size_micrometer = 20;
@@ -39,5 +46,15 @@ public class PairRegistrationElastix2DAffineCommand extends AbstractPairRegistra
     @Override
     protected boolean validate() {
         return true;
+    }
+
+    @Override
+    protected SourcesProcessor getSourcesProcessorFixed() {
+        return AbstractPairRegistration2DCommand.getChannelProcessorFromCsv(channels_fixed_csv, registration_pair.getFixedSources().length);
+    }
+
+    @Override
+    protected SourcesProcessor getSourcesProcessorMoving() {
+        return AbstractPairRegistration2DCommand.getChannelProcessorFromCsv(channels_moving_csv, registration_pair.getMovingSourcesOrigin().length);
     }
 }
