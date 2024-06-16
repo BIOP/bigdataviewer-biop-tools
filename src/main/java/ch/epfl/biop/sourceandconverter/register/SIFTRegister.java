@@ -108,9 +108,6 @@ public class SIFTRegister<FT extends NativeType<FT> & NumericType<FT>,
         ImagePlus croppedMoving = getCroppedImage("Moving", sacs_moving, tpMoving, levelMipmapMoving);
         ImagePlus croppedFixed = getCroppedImage("Fixed", sacs_fixed, tpFixed, levelMipmapFixed);
 
-        croppedFixed.show();
-        croppedMoving.show();
-
         Source<MT> sMoving = sacs_moving[0].getSpimSource();
         Source<FT> sFixed = sacs_fixed[0].getSpimSource();
 

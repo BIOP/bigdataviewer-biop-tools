@@ -12,9 +12,9 @@ import net.imglib2.realtransform.RealTransform;
 import org.apache.commons.io.FileUtils;
 import org.scijava.Context;
 import org.scijava.Named;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
 import sc.fiji.persist.ScijavaGsonHelper;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class RegistrationPair implements Named {
+public class RegistrationPair implements Named, Closeable {
 
     final SourceAndConverter<?>[] movingSourcesOrigin;
     final SourceAndConverter<?>[] fixedSources;
@@ -106,8 +106,8 @@ public class RegistrationPair implements Named {
                 getMovingSourcesRegistered(),
                 fixedProcessorForRegistration, movingProcessorForRegistration);
 
-        SourceAndConverterServices.getSourceAndConverterService().register(rp.sacs[0]);
         registrationPairSteps.add(rp);
+        listeners.forEach(listener -> listener.newEvent(RegistrationEvents.STEP_ADDED));
     }
 
     @Override
@@ -130,6 +130,7 @@ public class RegistrationPair implements Named {
             registrationPairSteps.remove(registrationPairSteps.size()-1);
             this.movingSourcesRegistered = rs.sacs;
         }
+        listeners.forEach(listener -> listener.newEvent(RegistrationEvents.STEP_REMOVED));
     }
 
     public synchronized void editLastRegistration() {
@@ -253,7 +254,8 @@ public class RegistrationPair implements Named {
         fixed_source.getSpimSource().getSourceTransform(0,0,fixedToPixel);
 
         InvertibleRealTransformSequence rt = new InvertibleRealTransformSequence();
-        for (RegistrationStep rp: registrationPairSteps) {
+        for (int iReg = 0; iReg<registrationPairSteps.size(); iReg++) {
+            RegistrationStep rp = registrationPairSteps.get(registrationPairSteps.size()-iReg-1);
             RealTransform rt_temp = rp.reg.getTransformAsRealTransform();
             if (rt_temp instanceof InvertibleRealTransform) {
                 rt.add((InvertibleRealTransform) rt_temp);
@@ -295,6 +297,20 @@ public class RegistrationPair implements Named {
         return true;
     }
 
+    @Override
+    public void close() throws IOException {
+        listeners.forEach(listener -> listener.newEvent(RegistrationEvents.CLOSED));
+        listeners.clear();
+    }
+
+    public synchronized List<SourceAndConverter<?>[]> getAllSourcesPerStep() {
+        List<SourceAndConverter<?>[]> sourcesPerStep = new ArrayList<>();
+        for (RegistrationStep rs: registrationPairSteps) {
+            sourcesPerStep.add(rs.sacs);
+        }
+        return sourcesPerStep;
+    }
+
     private static class RegistrationStep {
 
         final Registration<SourceAndConverter<?>[]> reg;
@@ -329,4 +345,25 @@ public class RegistrationPair implements Named {
         at3DCenter.preConcatenate(at3D);
         return at3DCenter;
     }
+
+    public enum RegistrationEvents {
+        STEP_ADDED,
+        STEP_REMOVED,
+        CLOSED
+    }
+
+    final List<RegistrationPairListener> listeners = new ArrayList<>();
+
+    public void addListener(RegistrationPairListener listener) {
+        listeners.add(listener);
+    }
+
+    public void removeListener(RegistrationPairListener listener) {
+        listeners.remove(listener);
+    }
+
+    public interface RegistrationPairListener {
+        void newEvent(RegistrationEvents event);
+    }
+
 }

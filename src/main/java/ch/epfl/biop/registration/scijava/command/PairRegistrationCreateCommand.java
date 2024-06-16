@@ -43,5 +43,7 @@ public class PairRegistrationCreateCommand implements Command {
 
         registration_pair = new RegistrationPair(fixed_sources,0,moving_sources,0, registration_name, true);
         objectService.addObject(registration_pair);
+
     }
 }
+

@@ -8,6 +8,8 @@ import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 
+import java.io.IOException;
+
 @Plugin(type = BdvPlaygroundActionCommand.class,
         menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Delete registration pair",
         description = "Delete a registration pair"  )
@@ -22,5 +24,10 @@ public class PairRegistrationDeleteCommand implements Command {
     @Override
     public void run() {
         objectService.removeObject(registration_pair);
+        try {
+            registration_pair.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

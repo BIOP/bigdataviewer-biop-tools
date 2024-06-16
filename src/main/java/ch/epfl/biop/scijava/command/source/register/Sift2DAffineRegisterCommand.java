@@ -37,13 +37,15 @@ public class Sift2DAffineRegisterCommand extends Abstract2DRegistrationInRectang
 
     @Override
     public void run() {
+        FloatArray2DSIFT.Param param = new FloatArray2DSIFT.Param();
+        param.maxOctaveSize = 2048;
 
         SIFTRegister reg = new SIFTRegister(
                 sacs_fixed,levelFixedSource,tpFixed,invert_fixed,
                 sacs_moving,levelMovingSource,tpMoving,invert_moving,
                 pxSizeInCurrentUnit,
                 px,py,pz,sx,sy,
-                new FloatArray2DSIFT.Param(),
+                param,
                 0.92f,
                 25.0f,
                 0.05f,
