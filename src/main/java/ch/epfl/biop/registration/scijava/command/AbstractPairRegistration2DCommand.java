@@ -31,23 +31,11 @@ abstract public class AbstractPairRegistration2DCommand implements Command {
     @Parameter(label = "Moving image channels used for registration (comma separated)")
     String channels_moving_csv;
 
-    @Parameter(label = "ROI for registration (position x)", style = "format:0.#####E0")
-    double px;
-
-    @Parameter(label = "ROI for registration (position y)", style = "format:0.#####E0")
-    double py;
-
-    @Parameter(label = "ROI for registration (size x)", style = "format:0.#####E0")
-    double sx;
-
-    @Parameter(label = "ROI for registration (size y)", style = "format:0.#####E0")
-    double sy;
-
     @Parameter(type = ItemIO.OUTPUT)
     boolean success;
 
     @Override
-    public void run() {
+    final public void run() {
         synchronized (registration_pair) {
             SourceAndConverter<?>[] moving_sources = registration_pair.getMovingSourcesRegistered();
             SourceAndConverter<?>[] fixed_sources = registration_pair.getFixedSources();
@@ -108,12 +96,7 @@ abstract public class AbstractPairRegistration2DCommand implements Command {
 
             Map<String, Object> parameters = new HashMap<>();
 
-            parameters.put(Registration.ROI_PX, px);
-            parameters.put(Registration.ROI_PY, py);
-            parameters.put(Registration.ROI_SX, sx);
-            parameters.put(Registration.ROI_SY, sy);
-
-            addRegistrationSpecificParameters(parameters);
+            addRegistrationParameters(parameters);
 
             registration.setRegistrationParameters(convertToString(ctx, parameters));
 
@@ -136,7 +119,7 @@ abstract public class AbstractPairRegistration2DCommand implements Command {
 
     }
 
-    protected abstract void addRegistrationSpecificParameters(Map<String, Object> parameters);
+    protected abstract void addRegistrationParameters(Map<String, Object> parameters);
 
     abstract Registration<SourceAndConverter<?>[]> getRegistration();
 

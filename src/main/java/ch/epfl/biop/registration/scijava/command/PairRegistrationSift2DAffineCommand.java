@@ -15,7 +15,7 @@ import java.util.Map;
         menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Register Pair with Sift - 2D - Affine",
         description = "Performs a manual registration with BigWarp between two sources."  )
 
-public class PairRegistrationSift2DAffineCommand extends AbstractPairRegistration2DCommand implements Command {
+public class PairRegistrationSift2DAffineCommand extends AbstractPairRegistrationInROI2DCommand implements Command {
 
     @Parameter(label = "Registration re-sampling (micrometers)")
     double pixel_size_micrometer = 20;
@@ -27,7 +27,7 @@ public class PairRegistrationSift2DAffineCommand extends AbstractPairRegistratio
     boolean invert_fixed;
 
     @Override
-    protected void addRegistrationSpecificParameters(Map<String, Object> parameters) {
+    protected void addRegistrationSpecificParametersExceptRoi(Map<String, Object> parameters) {
         parameters.put(Registration.RESAMPLING_PX_SIZE, pixel_size_micrometer/1000.0);
         parameters.put("invert_moving", invert_moving);
         parameters.put("invert_fixed", invert_fixed);

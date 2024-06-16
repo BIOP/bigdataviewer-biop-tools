@@ -15,7 +15,7 @@ import java.util.Map;
         menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Register Pair with Elastix - 2D - Affine",
         description = "Performs a manual registration with BigWarp between two sources."  )
 
-public class PairRegistrationElastix2DAffineCommand extends AbstractPairRegistration2DCommand implements Command {
+public class PairRegistrationElastix2DAffineCommand extends AbstractPairRegistrationInROI2DCommand implements Command {
 
     @Parameter(label = "Registration re-sampling (micrometers)")
     double pixel_size_micrometer = 20;
@@ -24,7 +24,7 @@ public class PairRegistrationElastix2DAffineCommand extends AbstractPairRegistra
     boolean show_imageplus_registration_result;
 
     @Override
-    protected void addRegistrationSpecificParameters(Map<String, Object> parameters) {
+    protected void addRegistrationSpecificParametersExceptRoi(Map<String, Object> parameters) {
         parameters.put(Registration.RESAMPLING_PX_SIZE, pixel_size_micrometer/1000.0);
         parameters.put("background_offset_value_moving", 0);
         parameters.put("background_offset_value_fixed", 0);
