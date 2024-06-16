@@ -6,10 +6,18 @@ import ch.epfl.biop.registration.plugin.RegistrationPluginHelper;
 import ch.epfl.biop.sourceandconverter.processor.SourcesAffineTransformer;
 import ch.epfl.biop.sourceandconverter.processor.SourcesProcessor;
 import net.imglib2.realtransform.AffineTransform3D;
+import net.imglib2.realtransform.InvertibleRealTransform;
+import net.imglib2.realtransform.InvertibleRealTransformSequence;
+import net.imglib2.realtransform.RealTransform;
+import org.apache.commons.io.FileUtils;
+import org.scijava.Context;
 import org.scijava.Named;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
+import sc.fiji.persist.ScijavaGsonHelper;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -224,11 +232,67 @@ public class RegistrationPair implements Named {
         return true;
     }
 
-    public synchronized boolean exportToQuPath(boolean allowOverwrite) {
+    public synchronized boolean exportToQuPath(boolean allowOverwrite, Context scijavaCtx) {
         boolean result = checkQuPathCompatibility();
         if (!result) return false;
+
+        SourceAndConverter<?> moving_source = movingSourcesOrigin[0];
+        SourceAndConverter<?> fixed_source = fixedSources[0];
         // Is there already a registration ? Can I erase it ?
         // All right, now it is the
+
+        // Because QuPath works in pixel coordinates and bdv playground in real space coordinates
+        // We need to account for this
+
+        AffineTransform3D movingToPixel = new AffineTransform3D();
+
+        moving_source.getSpimSource().getSourceTransform(0,0,movingToPixel);
+
+        AffineTransform3D fixedToPixel = new AffineTransform3D();
+
+        fixed_source.getSpimSource().getSourceTransform(0,0,fixedToPixel);
+
+        InvertibleRealTransformSequence rt = new InvertibleRealTransformSequence();
+        for (RegistrationStep rp: registrationPairSteps) {
+            RealTransform rt_temp = rp.reg.getTransformAsRealTransform();
+            if (rt_temp instanceof InvertibleRealTransform) {
+                rt.add((InvertibleRealTransform) rt_temp);
+            } else {
+                errorMessage = "A transformation within the sequence is not invertible!";
+                return false;
+            }
+        }
+
+        InvertibleRealTransformSequence irts = new InvertibleRealTransformSequence();
+
+        irts.add(fixedToPixel);
+        irts.add(rt);
+        irts.add(movingToPixel.inverse());
+
+        String jsonMovingToFixed = ScijavaGsonHelper.getGson(scijavaCtx).toJson(irts, RealTransform.class);
+
+        int moving_series_entry_id = QuPathBdvHelper.getEntryId(moving_source);
+        int fixed_series_entry_id = QuPathBdvHelper.getEntryId(fixed_source);
+
+        String movingToFixedLandmarkName = "transform_"+moving_series_entry_id+"_"+fixed_series_entry_id+".json";
+
+        File moving_entry_folder = QuPathBdvHelper.getDataEntryFolder(movingSourcesOrigin[0]);
+
+        File resultFile = new File(moving_entry_folder.getAbsolutePath(), movingToFixedLandmarkName);
+        if (resultFile.exists() && (allowOverwrite == false)) {
+            errorMessage = "The registration file already exists, overwrite not allowed.";
+            return false;
+        }
+        try {
+            FileUtils.writeStringToFile(resultFile, jsonMovingToFixed, Charset.defaultCharset());
+        } catch (IOException e) {
+            errorMessage = e.getMessage();
+            return false;
+        }
+
+        System.out.println("Fixed: "+fixed_source.getSpimSource().getName()+" | Moving: "+moving_source.getSpimSource().getName());
+        System.out.println("Transformation file successfully written to QuPath project: "+result);
+        return true;
     }
 
     private static class RegistrationStep {
