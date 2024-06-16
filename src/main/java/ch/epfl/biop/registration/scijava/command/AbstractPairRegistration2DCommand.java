@@ -53,7 +53,7 @@ abstract public class AbstractPairRegistration2DCommand implements Command {
                                 getSourcesProcessorMoving());
 
                 if (!success) {
-                    System.err.println("Registration unsuccessful: " + registration_pair.getRegistrationErrorMessage());
+                    System.err.println("Registration unsuccessful: " + registration_pair.getLastErrorMessage());
                 }
             } catch (Exception e) {
                 System.err.println("Error during registration: "+e.getMessage());

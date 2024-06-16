@@ -1,5 +1,6 @@
 package ch.epfl.biop.registration;
 
+import bdv.util.QuPathBdvHelper;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.registration.plugin.RegistrationPluginHelper;
 import ch.epfl.biop.sourceandconverter.processor.SourcesAffineTransformer;
@@ -8,6 +9,7 @@ import net.imglib2.realtransform.AffineTransform3D;
 import org.scijava.Named;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -61,7 +63,7 @@ public class RegistrationPair implements Named {
 
     String errorMessage = "";
 
-    public String getRegistrationErrorMessage() {
+    public String getLastErrorMessage() {
         return errorMessage;
     }
 
@@ -145,6 +147,88 @@ public class RegistrationPair implements Named {
 
     public int getMovingTimepoint() {
         return timepointMoving;
+    }
+
+    public boolean checkQuPathCompatibility() {
+        // A few checks are necessary in order to know if this registration pair is compatible with an export to QuPath
+
+        // Is the first fixed source belonging to a QuPath project -> Strict requirement
+        if (!QuPathBdvHelper.isSourceLinkedToQuPath(fixedSources[0])) {
+            errorMessage = "The first fixed source is not linked to a QuPath project";
+            return false;
+        }
+
+        // Is the first moving source belonging to a QuPath project -> Strict requirement
+        if (!QuPathBdvHelper.isSourceLinkedToQuPath(movingSourcesOrigin[0])) {
+            errorMessage = "The first moving source is not linked to a QuPath project";
+            return false;
+        }
+
+        // Do they belong to the same QuPath project ? -> Strict requirement
+        File quPathProject = QuPathBdvHelper.getProjectFile(fixedSources[0]);
+
+        if (!quPathProject.equals(QuPathBdvHelper.getProjectFile(movingSourcesOrigin[0]))) {
+            errorMessage = "Moving and fixed sources do not belong to the same QuPath project.";
+            return false;
+        }
+
+        // Do moving and fixed sources belong to different entries ? -> Strict requirement
+        int entryIdFixed = QuPathBdvHelper.getEntryId(fixedSources[0]);
+        int entryIdMoving = QuPathBdvHelper.getEntryId(movingSourcesOrigin[0]);
+
+        if (entryIdFixed==entryIdMoving) {
+            errorMessage = "The first moving source and the first fixed source belong to the same QuPath entry";
+            return false;
+        }
+
+        // Are all moving sources belonging to a QuPath entry ? -> Warning
+        for (int i = 1; i<fixedSources.length; i++) {
+            if (QuPathBdvHelper.isSourceLinkedToQuPath(fixedSources[i])) {
+                if (QuPathBdvHelper.getEntryId(fixedSources[i]) != entryIdFixed) {
+                    System.out.println("Warning: all fixed sources do not belong to the same QuPath entry");
+                    break;
+                }
+            } else {
+                System.out.println("Warning: some sources do not belong to a QuPath project.");
+            }
+        }
+
+        // Are all moving sources belonging to the same QuPath entry ? -> Warning
+        for (int i = 1; i<movingSourcesOrigin.length; i++) {
+            if (QuPathBdvHelper.isSourceLinkedToQuPath(movingSourcesOrigin[i])) {
+                if (QuPathBdvHelper.getEntryId(movingSourcesOrigin[i])!=entryIdMoving) {
+                    System.out.println("Warning: all moving sources do not belong to the same QuPath entry");
+                    break;
+                }
+            } else {
+                System.out.println("Warning: some sources do not belong to a QuPath project.");
+            }
+        }
+
+        // We should be fine, let's just create the data folder in case it doesn't exist
+
+        File fixedEntryFolder = QuPathBdvHelper.getDataEntryFolder(fixedSources[0]);
+        fixedEntryFolder.mkdirs();
+        if (!fixedEntryFolder.exists()) {
+            errorMessage = "Could not create fixed entry folder "+fixedEntryFolder.getAbsolutePath();
+            return false;
+        }
+
+        File movingEntryFolder = QuPathBdvHelper.getDataEntryFolder(movingSourcesOrigin[0]);
+        movingEntryFolder.mkdirs();
+        if (!movingEntryFolder.exists()) {
+            errorMessage = "Could not create moving entry folder "+movingEntryFolder.getAbsolutePath();
+            return false;
+        }
+
+        return true;
+    }
+
+    public synchronized boolean exportToQuPath(boolean allowOverwrite) {
+        boolean result = checkQuPathCompatibility();
+        if (!result) return false;
+        // Is there already a registration ? Can I erase it ?
+        // All right, now it is the
     }
 
     private static class RegistrationStep {
