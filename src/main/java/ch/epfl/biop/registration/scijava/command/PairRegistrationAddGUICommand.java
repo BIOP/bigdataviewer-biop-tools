@@ -73,10 +73,6 @@ public class PairRegistrationAddGUICommand implements Command {
             bdvh.getViewerPanel().state()
                     .addSourcesToGroup(Arrays.asList(registration_pair.getMovingSourcesOrigin()), movingOriginGroup);
 
-            for (int g = 2; g<bdvh.getViewerPanel().state().getGroups().size(); g++) {
-                bdvh.getViewerPanel().state().setGroupName(bdvh.getViewerPanel().state().getGroups().get(g), "Moving sources - step ("+(g-1)+")");
-            }
-
             updateBdvSourceGroups(bdvh);
 
             bdvh.getViewerPanel().setDisplayMode(DisplayMode.FUSEDGROUP);
@@ -128,7 +124,9 @@ public class PairRegistrationAddGUICommand implements Command {
     }
 
     private void updateBdvSourceGroups(BdvHandle bdvh) {
-
+        for (int g = 2; g<bdvh.getViewerPanel().state().getGroups().size(); g++) {
+            bdvh.getViewerPanel().state().setGroupName(bdvh.getViewerPanel().state().getGroups().get(g), "+ "+registration_pair.getRegistrationName(g-2));
+        }
         List<SourceAndConverter<?>[]> sourcesPerStep = registration_pair.getAllSourcesPerStep();
         for (int step = 0; step < sourcesPerStep.size(); step++) {
             SourceGroup group = bdvh.getViewerPanel().state().getGroups().get(step+2);

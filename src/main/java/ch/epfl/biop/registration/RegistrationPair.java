@@ -311,6 +311,19 @@ public class RegistrationPair implements Named, Closeable {
         return sourcesPerStep;
     }
 
+    public String getRegistrationName(int step) {
+        if ((step>=0)&&(step<registrationPairSteps.size())) {
+            Registration reg = registrationPairSteps.get(step).reg;//.toString();
+            if (RegistrationPluginHelper.isEditable(reg)) {
+                return reg+" (editable)";
+            } else {
+                return reg.toString();
+            }
+        } else {
+            return "";
+        }
+    }
+
     private static class RegistrationStep {
 
         final Registration<SourceAndConverter<?>[]> reg;

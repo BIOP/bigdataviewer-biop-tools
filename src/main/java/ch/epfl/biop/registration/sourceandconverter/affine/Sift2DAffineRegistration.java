@@ -144,7 +144,7 @@ public class Sift2DAffineRegistration extends AffineTransformSourceAndConverterR
     }
 
     public String toString() {
-        return "Elastix 2D Affine";
+        return "Sift 2D Affine";
     }
 
 }
