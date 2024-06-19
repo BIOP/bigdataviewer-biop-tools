@@ -25,8 +25,8 @@ import java.util.stream.Collectors;
 
 import static bdv.util.RealTransformHelper.BigWarpFileFromRealTransform;
 
-@Plugin(type = BdvPlaygroundActionCommand.class,
-        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Edit Sources Warping")
+@Plugin(type = BdvPlaygroundActionCommand.class/*,
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Edit Sources Warping"*/)
 
 public class EditSourcesWarpingCommand implements BdvPlaygroundActionCommand {
 

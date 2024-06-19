@@ -46,7 +46,7 @@ public class RemoveZOffsetCommand implements BdvPlaygroundActionCommand {
 
             AffineTransform3D at3DCenter = new AffineTransform3D();
             at3DCenter.concatenate(at3D.inverse());
-            at3DCenter.translate(0, 0,-sz/2);
+            at3DCenter.translate(0, 0,-sz/2.0);
             //at3D.set(cx,0,3);
             //at3D.set(cy,1,3);
             at3D.set(0,2,3);

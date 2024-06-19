@@ -9,7 +9,8 @@ import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 
-@Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Register Sources with Elastix (Spline, 2D)")
+@Plugin(type = BdvPlaygroundActionCommand.class/*,
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Register Sources with Elastix (Spline, 2D)"*/)
 public class Elastix2DSplineRegisterCommand extends AbstractElastix2DRegistrationInRectangleCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(label = "Number of control points along the X axis")
@@ -23,6 +24,9 @@ public class Elastix2DSplineRegisterCommand extends AbstractElastix2DRegistratio
 
     @Parameter
     Context ctx;
+
+    @Parameter(type = ItemIO.OUTPUT)
+    boolean success;
 
     @Override
     public void run() {
@@ -40,7 +44,7 @@ public class Elastix2DSplineRegisterCommand extends AbstractElastix2DRegistratio
 
         reg.setInterpolate(interpolate);
 
-        reg.run();
+        success = reg.run();
 
         //registeredSource = reg.getRegisteredSac();
         rt = reg.getRealTransform();

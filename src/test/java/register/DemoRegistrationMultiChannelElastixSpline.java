@@ -1,3 +1,5 @@
+package register;
+
 import bdv.util.BdvHandle;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.bdv.img.OpenersToSpimData;
@@ -15,7 +17,7 @@ import sc.fiji.bdvpg.services.SourceAndConverterServices;
 import java.util.List;
 
 
-public class DemoRegistrationMultiChannelSpline {
+public class DemoRegistrationMultiChannelElastixSpline {
 
     static SourceAndConverter<?> fixedSource;
 
@@ -24,8 +26,6 @@ public class DemoRegistrationMultiChannelSpline {
     static final ImageJ ij = new ImageJ();
 
     static public void main(String... args) throws Exception {
-        ConvertibleRois cr;
-        DefaultTransformixTask dtt;
         ij.ui().showUI();
 
         OpenerSettings atlasSettings = OpenerSettings.BioFormats()

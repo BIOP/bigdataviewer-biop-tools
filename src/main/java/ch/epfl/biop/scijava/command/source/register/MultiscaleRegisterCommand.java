@@ -46,7 +46,7 @@ import java.util.stream.Collectors;
 
 // TODO test edge cases
 @Plugin(type = BdvPlaygroundActionCommand.class,
-        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Multiscale Registration (2D)",
+        //menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Multiscale Registration (2D)",
         headless = true, // User interface not required
         initializer = "updateInfo"
         )

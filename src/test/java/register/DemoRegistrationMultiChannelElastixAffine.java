@@ -1,3 +1,5 @@
+package register;
+
 import bdv.util.BdvHandle;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.bdv.img.OpenersToSpimData;
@@ -12,7 +14,7 @@ import sc.fiji.bdvpg.services.SourceAndConverterServices;
 
 import java.util.List;
 
-public class DemoRegistrationMultiChannelAffine {
+public class DemoRegistrationMultiChannelElastixAffine {
 
     static SourceAndConverter<?> fixedSource;
 
