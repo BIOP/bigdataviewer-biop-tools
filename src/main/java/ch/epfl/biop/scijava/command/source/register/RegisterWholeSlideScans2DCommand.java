@@ -25,8 +25,8 @@ import sc.fiji.bdvpg.sourceandconverter.transform.SourceAffineTransformer;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
-@Plugin(type = BdvPlaygroundActionCommand.class/*,
-        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Align Slides (2D)"*/)
+@Plugin(type = BdvPlaygroundActionCommand.class,
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Align Slides (2D)")
 public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionCommand {
 
     private static Logger logger = LoggerFactory.getLogger(RegisterWholeSlideScans2DCommand.class);

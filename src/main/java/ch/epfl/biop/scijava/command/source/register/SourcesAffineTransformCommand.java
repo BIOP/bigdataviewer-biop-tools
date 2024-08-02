@@ -12,8 +12,8 @@ import sc.fiji.bdvpg.sourceandconverter.transform.SourceTransformHelper;
 
 import java.util.Arrays;
 
-@Plugin(type = BdvPlaygroundActionCommand.class/*,
-        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>Affine Transform Sources"*/)
+@Plugin(type = BdvPlaygroundActionCommand.class,
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>Affine Transform Sources")
 public class SourcesAffineTransformCommand implements BdvPlaygroundActionCommand {
     @Parameter
     SourceAndConverter[] sources_in;
