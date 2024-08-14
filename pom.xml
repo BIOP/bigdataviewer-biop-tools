@@ -101,7 +101,7 @@
 		<!-- bdv playground related dependencies -->
 		<bigdataviewer-playground.version>0.10.3</bigdataviewer-playground.version>
 		<bigdataviewer-playground-display.version>0.4.3</bigdataviewer-playground-display.version>
-		<image-transform-converters.version>0.1.8</image-transform-converters.version>
+		<image-transform-converters.version>0.1.9</image-transform-converters.version>
 		<bigdataviewer-image-loaders.version>0.8.1</bigdataviewer-image-loaders.version>
 
 		<!-- biop dependencies -->
