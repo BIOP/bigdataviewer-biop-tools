@@ -15,6 +15,7 @@ import org.scijava.task.Task;
 import org.scijava.task.TaskService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 
 import java.util.ArrayList;
@@ -24,13 +25,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-@Plugin(type = BdvPlaygroundActionCommand.class/*,
-        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>AutoWarp Sources with Elastix and BigWarp (2D)",
+@Plugin(type = BdvPlaygroundActionCommand.class,
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Obsolete>AutoWarp Sources with Elastix and BigWarp (2D)",
         description =
                 "Register two 2D sources by automatically registering small fields of view \n" +
                 "surrounding the specified points of interests using elastix. The returned result \n" +
                 "is a thin plate spline transform object that can be applied to other sources then \n" +
-                "edited in BigWarp."*/)
+                "edited in BigWarp.")
 
 public class Elastix2DSparsePointsRegisterCommand extends SelectSourcesForRegistrationCommand implements BdvPlaygroundActionCommand {
 

@@ -30,6 +30,7 @@ import org.scijava.task.Task;
 import org.scijava.task.TaskService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterAndTimeRange;
@@ -45,7 +46,7 @@ import java.util.stream.Collectors;
 
 // TODO test edge cases
 @Plugin(type = BdvPlaygroundActionCommand.class,
-        //menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Multiscale Registration (2D)",
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Obsolete>Multiscale Registration (2D)",
         headless = true, // User interface not required
         initializer = "updateInfo"
         )

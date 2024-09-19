@@ -4,6 +4,7 @@ import bdv.viewer.SourceAndConverter;
 import net.imglib2.realtransform.AffineTransform3D;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterAndTimeRange;
@@ -11,8 +12,8 @@ import sc.fiji.bdvpg.sourceandconverter.transform.SourceTransformHelper;
 
 import java.util.Arrays;
 
-@Plugin(type = BdvPlaygroundActionCommand.class/*,
-        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>Affine Transform Sources"*/)
+@Plugin(type = BdvPlaygroundActionCommand.class,
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>Obsolete>Affine Transform Sources")
 public class SourcesAffineTransformCommand implements BdvPlaygroundActionCommand {
     @Parameter
     SourceAndConverter[] sources_in;

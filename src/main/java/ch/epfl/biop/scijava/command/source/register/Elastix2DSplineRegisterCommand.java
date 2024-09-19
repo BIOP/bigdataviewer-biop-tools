@@ -6,10 +6,11 @@ import org.scijava.Context;
 import org.scijava.ItemIO;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 
-@Plugin(type = BdvPlaygroundActionCommand.class/*,
-        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Register Sources with Elastix (Spline, 2D)"*/)
+@Plugin(type = BdvPlaygroundActionCommand.class,
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Obsolete>Register Sources with Elastix (Spline, 2D)")
 public class Elastix2DSplineRegisterCommand extends AbstractElastix2DRegistrationInRectangleCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(label = "Number of control points along the X axis")

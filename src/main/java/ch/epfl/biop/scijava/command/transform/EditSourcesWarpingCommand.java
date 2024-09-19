@@ -10,6 +10,7 @@ import org.scijava.ItemIO;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.bdv.BdvHandleHelper;
+import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
 import sc.fiji.bdvpg.sourceandconverter.register.BigWarpLauncher;
@@ -21,8 +22,8 @@ import java.util.stream.Collectors;
 
 import static bdv.util.RealTransformHelper.BigWarpFileFromRealTransform;
 
-@Plugin(type = BdvPlaygroundActionCommand.class/*,
-        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Edit Sources Warping"*/)
+@Plugin(type = BdvPlaygroundActionCommand.class,
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Obsolete>Edit Sources Warping")
 
 public class EditSourcesWarpingCommand implements BdvPlaygroundActionCommand {
 

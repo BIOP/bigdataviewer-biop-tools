@@ -15,6 +15,7 @@ import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 import sc.fiji.bdvpg.scijava.command.bdv.BdvSourcesShowCommand;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
@@ -23,8 +24,8 @@ import sc.fiji.bdvpg.sourceandconverter.transform.SourceAffineTransformer;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
-@Plugin(type = BdvPlaygroundActionCommand.class/*,
-        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Align Slides (2D)"*/)
+@Plugin(type = BdvPlaygroundActionCommand.class,
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Obsolete>Align Slides (2D)")
 public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionCommand {
 
     private static Logger logger = LoggerFactory.getLogger(RegisterWholeSlideScans2DCommand.class);

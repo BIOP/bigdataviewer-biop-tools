@@ -12,8 +12,8 @@ import sc.fiji.bdvpg.sourceandconverter.transform.SourceRealTransformer;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-@Plugin(type = BdvPlaygroundActionCommand.class/*,
-        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>Real Transform Sources"*/)
+@Plugin(type = BdvPlaygroundActionCommand.class,
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>Obsolete>Real Transform Sources")
 public class SourcesRealTransformCommand implements BdvPlaygroundActionCommand {
 
     @Parameter
