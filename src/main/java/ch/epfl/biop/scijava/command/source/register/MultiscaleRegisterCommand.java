@@ -30,7 +30,6 @@ import org.scijava.task.Task;
 import org.scijava.task.TaskService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterAndTimeRange;
@@ -63,7 +62,7 @@ public class MultiscaleRegisterCommand implements BdvPlaygroundActionCommand{
     int n_scales = 4;
 
     @Parameter(visibility = ItemVisibility.MESSAGE, required = false)
-    String infoRegistration = "";
+    String info_registration = "";
 
     @Parameter(label = "Fixed reference sources", style = "sorted")
     SourceAndConverter<?>[] fixed;
@@ -472,6 +471,6 @@ public class MultiscaleRegisterCommand implements BdvPlaygroundActionCommand{
 
     void updateInfo() {
         int nReg = 4*((int) (Math.pow(2, n_scales-1)-1));
-        infoRegistration = nReg+" registrations will be computed, resulting in "+(int) Math.pow(2, n_scales)+" control points";
+        info_registration = nReg+" registrations will be computed, resulting in "+(int) Math.pow(2, n_scales)+" control points";
     }
 }

@@ -18,10 +18,10 @@ public class GetUserRectangleCommand implements Command {
     BdvHandle bdvh;
 
     @Parameter
-    String messageForUser;
+    String message_for_user;
 
     @Parameter(required = false)
-    int timeOutInMs=-1;
+    int time_out_in_ms =-1;
 
     @Parameter(type = ItemIO.BOTH, required = false) // BOTH allow to pass an initial rectangle
     RealPoint p1;
@@ -32,9 +32,9 @@ public class GetUserRectangleCommand implements Command {
     @Override
     public void run() {
         RectangleSelectorBehaviour rsb =
-                new RectangleSelectorBehaviour(bdvh, messageForUser, p1, p2);
+                new RectangleSelectorBehaviour(bdvh, message_for_user, p1, p2);
         rsb.install();
-        List<RealPoint> pts = rsb.waitForSelection(timeOutInMs);
+        List<RealPoint> pts = rsb.waitForSelection(time_out_in_ms);
         rsb.uninstall();
         p1 = pts.get(0);
         p2 = pts.get(1);

@@ -22,6 +22,6 @@ abstract class Abstract2DRegistrationInRectangleCommand extends SelectSourcesFor
     double sy;
 
     @Parameter(type = ItemIO.OUTPUT)
-    AffineTransform3D at3D;
+    AffineTransform3D at3d;
 
 }

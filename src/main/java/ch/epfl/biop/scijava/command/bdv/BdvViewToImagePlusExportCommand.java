@@ -6,7 +6,6 @@ import ch.epfl.biop.sourceandconverter.exporter.ImagePlusSampler;
 import ij.ImagePlus;
 import net.imglib2.RealPoint;
 import net.imglib2.realtransform.AffineTransform3D;
-import net.imglib2.type.Type;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.volatiles.VolatileARGBType;
 import org.scijava.ItemIO;
@@ -110,13 +109,13 @@ public class BdvViewToImagePlusExportCommand implements BdvPlaygroundActionComma
     String export_mode = "Non virtual";
 
     @Parameter( label = "Acquire channels in parallel (Normal only)", required = false)
-    Boolean parallelC = false;
+    Boolean parallel_c = false;
 
     @Parameter( label = "Acquire slices in parallel (Normal only)", required = false)
-    Boolean parallelZ = false;
+    Boolean parallel_z = false;
 
     @Parameter( label = "Acquire timepoints in parallel (Normal only)", required = false)
-    Boolean parallelT = false;
+    Boolean parallel_t = false;
 
     //@Parameter( label = "Monitor loaded data")
     private Boolean monitor = true;
@@ -186,7 +185,7 @@ public class BdvViewToImagePlusExportCommand implements BdvPlaygroundActionComma
                                             .unit(unit)
                                             .monitor(task)
                                             .title(capturename)
-                                            .parallelC(parallelC).parallelZ(parallelZ).parallelT(parallelT)
+                                            .parallelC(parallel_c).parallelZ(parallel_z).parallelT(parallel_t)
                                             .setModel(model)
                                             .interpolate(interpolate)
                                             .rangeT(selected_timepoints_str)
@@ -207,7 +206,7 @@ public class BdvViewToImagePlusExportCommand implements BdvPlaygroundActionComma
                             .monitor(task)
                             .title(capturename)
                             .setModel(model)
-                            .parallelC(parallelC).parallelZ(parallelZ).parallelT(parallelT)
+                            .parallelC(parallel_c).parallelZ(parallel_z).parallelT(parallel_t)
                             .interpolate(interpolate)
                             .rangeT(selected_timepoints_str)
                             .sources(typeToSources.get(pixelType).toArray(new SourceAndConverter[0]))

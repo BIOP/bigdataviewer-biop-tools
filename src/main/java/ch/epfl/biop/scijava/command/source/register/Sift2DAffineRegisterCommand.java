@@ -7,7 +7,6 @@ import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 
 /**
@@ -41,9 +40,9 @@ public class Sift2DAffineRegisterCommand extends Abstract2DRegistrationInRectang
         param.maxOctaveSize = 2048;
 
         SIFTRegister reg = new SIFTRegister(
-                sacs_fixed,levelFixedSource,tpFixed,invert_fixed,
-                sacs_moving,levelMovingSource,tpMoving,invert_moving,
-                pxSizeInCurrentUnit,
+                sacs_fixed, level_fixed_source, tp_fixed,invert_fixed,
+                sacs_moving, level_moving_source, tp_moving,invert_moving,
+                px_size_in_current_unit,
                 px,py,pz,sx,sy,
                 param,
                 0.92f,
@@ -57,7 +56,7 @@ public class Sift2DAffineRegisterCommand extends Abstract2DRegistrationInRectang
         success = reg.run();
 
         if (success) {
-            at3D = reg.getAffineTransform();
+            at3d = reg.getAffineTransform();
         } else {
             logger.error("Error during registration: "+reg.getErrorMessage());
         }

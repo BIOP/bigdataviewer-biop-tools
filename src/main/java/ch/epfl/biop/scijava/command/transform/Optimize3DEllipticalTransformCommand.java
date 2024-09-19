@@ -18,7 +18,6 @@ import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.NelderMeadSimplex
 import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.SimplexOptimizer;
 import org.scijava.plugin.Parameter;
 import org.scijava.ItemIO;
-import org.scijava.command.Command;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
@@ -42,10 +41,10 @@ import static bdv.util.Elliptical3DTransform.ROTATION_Z;
 public class Optimize3DEllipticalTransformCommand implements BdvPlaygroundActionCommand{
 
     @Parameter(type = ItemIO.BOTH)
-    Elliptical3DTransform e3dT;
+    Elliptical3DTransform e3dt;
 
     @Parameter
-    double thresholdIntensity = 0;
+    double threshold_intensity = 0;
 
     @Parameter
     boolean r1=true;
@@ -90,16 +89,16 @@ public class Optimize3DEllipticalTransformCommand implements BdvPlaygroundAction
     int nOptimizedParams;
 
     @Parameter
-    int sourceMipMapLevel=0;
+    int source_mip_map_level =0;
 
     @Parameter
-    int sourceTimePoint = 0;
+    int source_timepoint = 0;
 
     @Parameter
-    double phiMin=-Math.PI, phiMax=Math.PI, thetaMin=0, thetaMax=Math.PI, dPhi=0.05, dTheta=0.05;
+    double phi_min =-Math.PI, phi_max =Math.PI, theta_min =0, theta_max =Math.PI, d_phi =0.05, d_theta =0.05;
 
     @Parameter
-    int maxOptimisationStep;
+    int max_optimisation_step;
 
     @Parameter
     int timeout_seconds;
@@ -141,8 +140,8 @@ public class Optimize3DEllipticalTransformCommand implements BdvPlaygroundAction
 
             MultivariateFunction mf = doubles -> {
                 this.setParams(doubles);
-                double ans = computeIntegratedIntensity((RealRandomAccess) ws.getInterpolatedSource(sourceTimePoint,sourceMipMapLevel, Interpolation.NEARESTNEIGHBOR).realRandomAccess());
-                Map<String, Double> params = e3dT.getParameters();
+                double ans = computeIntegratedIntensity((RealRandomAccess) ws.getInterpolatedSource(source_timepoint, source_mip_map_level, Interpolation.NEARESTNEIGHBOR).realRandomAccess());
+                Map<String, Double> params = e3dt.getParameters();
                 return  ans*params.get(RADIUS_X)*params.get(RADIUS_Y)*params.get(RADIUS_Z); // Avoid strongly curved on a single bright pixel -> correct jacobian ?
             };
 
@@ -160,7 +159,7 @@ public class Optimize3DEllipticalTransformCommand implements BdvPlaygroundAction
                     public double[] call() throws Exception {
                         final PointValuePair optimum =
                                 optimizer.optimize(
-                                        new MaxEval(maxOptimisationStep),
+                                        new MaxEval(max_optimisation_step),
                                         new ObjectiveFunction(mf),
                                         GoalType.MAXIMIZE,
                                         new InitialGuess(getCurrentOptimizedParamsAsDoubles()),
@@ -185,7 +184,7 @@ public class Optimize3DEllipticalTransformCommand implements BdvPlaygroundAction
 
             } catch (TooManyEvaluationsException e) {
 
-                System.err.println("Optimization did not converge in "+maxOptimisationStep+" iterations");
+                System.err.println("Optimization did not converge in "+ max_optimisation_step +" iterations");
             }
             /*System.out.println(Arrays.toString(e3dT.getParameters().values()) + " : "
                     + optimum.getSecond());*/
@@ -198,7 +197,7 @@ public class Optimize3DEllipticalTransformCommand implements BdvPlaygroundAction
     public double[] getCurrentOptimizedParamsAsDoubles() {
         double[] ans = new double[nOptimizedParams];
         int cIndex=0;
-        Map<String, Double> p = e3dT.getParameters();
+        Map<String, Double> p = e3dt.getParameters();
         if (r1) {ans[cIndex]=p.get(RADIUS_X);cIndex++;}
         if (r2) {ans[cIndex]=p.get(RADIUS_Y);cIndex++;}
         if (r3) {ans[cIndex]=p.get(RADIUS_Z);cIndex++;}
@@ -214,7 +213,7 @@ public class Optimize3DEllipticalTransformCommand implements BdvPlaygroundAction
     public double[] getStepOptimizedParamsAsDoubles() {
         double[] ans = new double[nOptimizedParams];
         int cIndex=0;
-        Map<String, Double> p = e3dT.getParameters();
+        Map<String, Double> p = e3dt.getParameters();
         if (r1) {ans[cIndex]=sr1;cIndex++;}
         if (r2) {ans[cIndex]=sr2;cIndex++;}
         if (r3) {ans[cIndex]=sr3;cIndex++;}
@@ -240,7 +239,7 @@ public class Optimize3DEllipticalTransformCommand implements BdvPlaygroundAction
         if (tx) {args[2*cIndex]=CENTER_X;args[2*cIndex+1]=params[cIndex];cIndex++;}
         if (ty) {args[2*cIndex]=CENTER_Y;args[2*cIndex+1]=params[cIndex];cIndex++;}
         if (tz) {args[2*cIndex]=CENTER_Z;args[2*cIndex+1]=params[cIndex];cIndex++;}
-        e3dT.setParameters(args);
+        e3dt.setParameters(args);
     }
 
     int counter = 0;
@@ -248,11 +247,11 @@ public class Optimize3DEllipticalTransformCommand implements BdvPlaygroundAction
     public < T extends RealType< T > & NativeType< T >> double computeIntegratedIntensity(RealRandomAccess<T> rra) {
         // TODO : ponderate with Jacobian
         double somme =0;
-        for (double pTheta=thetaMin;pTheta<=thetaMax;pTheta+=dTheta) {
-            for (double pPhi=phiMin;pPhi<=phiMax;pPhi+=dPhi) {
+        for (double pTheta = theta_min; pTheta<= theta_max; pTheta+= d_theta) {
+            for (double pPhi = phi_min; pPhi<= phi_max; pPhi+= d_phi) {
                 rra.setPosition(new double[]{1,pTheta,pPhi});
                 double v = rra.get().getRealDouble();
-                if (v>thresholdIntensity) {
+                if (v> threshold_intensity) {
                     somme+=v*Math.abs(Math.sin(pTheta));
                 }
             }

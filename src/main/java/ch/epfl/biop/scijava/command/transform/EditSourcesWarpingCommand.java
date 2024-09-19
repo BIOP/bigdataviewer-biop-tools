@@ -3,7 +3,6 @@ package ch.epfl.biop.scijava.command.transform;
 import bdv.img.WarpedSource;
 import bdv.tools.brightness.ConverterSetup;
 import bdv.util.BdvHandle;
-import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
 import ij.gui.WaitForUserDialog;
 import net.imglib2.realtransform.RealTransform;
@@ -11,12 +10,9 @@ import org.scijava.ItemIO;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.bdv.BdvHandleHelper;
-import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
 import sc.fiji.bdvpg.sourceandconverter.register.BigWarpLauncher;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceRealTransformer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,14 +27,14 @@ import static bdv.util.RealTransformHelper.BigWarpFileFromRealTransform;
 public class EditSourcesWarpingCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(type = ItemIO.BOTH)
-    SourceAndConverter<?>[] movingSources;
+    SourceAndConverter<?>[] moving_sources;
 
 
     @Parameter(required = false)
-    SourceAndConverter<?>[] fixedSources;
+    SourceAndConverter<?>[] fixed_sources;
 
     @Parameter
-    boolean is2D;
+    boolean is2d;
 
     Runnable waitForUser = () -> {
         WaitForUserDialog dialog = new WaitForUserDialog("Choose slice","Please perform carefully your registration then press ok.");
@@ -47,22 +43,22 @@ public class EditSourcesWarpingCommand implements BdvPlaygroundActionCommand {
 
     @Override
     public void run() {
-        for (SourceAndConverter sac : movingSources) {
+        for (SourceAndConverter sac : moving_sources) {
             if (!(sac.getSpimSource() instanceof WarpedSource)) {
                 System.err.println(sac.getSpimSource().getName()+" is not a Warped source, it cannot be edited");
             }
         }
 
-        RealTransform rt = ((WarpedSource) movingSources[0].getSpimSource()).getTransform();
+        RealTransform rt = ((WarpedSource) moving_sources[0].getSpimSource()).getTransform();
 
-        List<SourceAndConverter<?>> movingSacs = Arrays.stream(movingSources).collect(Collectors.toList());
+        List<SourceAndConverter<?>> movingSacs = Arrays.stream(moving_sources).collect(Collectors.toList());
 
-        List<ConverterSetup> converterSetups = Arrays.stream(movingSources).map(src -> SourceAndConverterServices.getSourceAndConverterService().getConverterSetup(src)).collect(Collectors.toList());
+        List<ConverterSetup> converterSetups = Arrays.stream(moving_sources).map(src -> SourceAndConverterServices.getSourceAndConverterService().getConverterSetup(src)).collect(Collectors.toList());
         List<SourceAndConverter<?>> fixedSacs;
 
-        if (fixedSources!=null) {
-            fixedSacs = Arrays.stream(fixedSources).collect(Collectors.toList());
-            converterSetups.addAll(Arrays.stream(fixedSources).map(src -> SourceAndConverterServices.getSourceAndConverterService().getConverterSetup(src)).collect(Collectors.toList()));
+        if (fixed_sources !=null) {
+            fixedSacs = Arrays.stream(fixed_sources).collect(Collectors.toList());
+            converterSetups.addAll(Arrays.stream(fixed_sources).map(src -> SourceAndConverterServices.getSourceAndConverterService().getConverterSetup(src)).collect(Collectors.toList()));
         } else {
             fixedSacs = new ArrayList<>();
         }
@@ -96,7 +92,7 @@ public class EditSourcesWarpingCommand implements BdvPlaygroundActionCommand {
 
         bwl.getBigWarp().closeAll();
 
-        for (SourceAndConverter sac : movingSources) {
+        for (SourceAndConverter sac : moving_sources) {
             WarpedSource src = ((WarpedSource) sac.getSpimSource());
             src.updateTransform(rt);
             src.setIsTransformed(true);

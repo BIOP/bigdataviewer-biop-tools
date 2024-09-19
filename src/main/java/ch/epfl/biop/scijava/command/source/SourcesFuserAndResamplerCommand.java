@@ -4,7 +4,6 @@ import bdv.util.source.fused.AlphaFusedResampledSource;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.sourceandconverter.SourceFuserAndResampler;
 import org.scijava.ItemIO;
-import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
@@ -34,13 +33,13 @@ public class SourcesFuserAndResamplerCommand implements BdvPlaygroundActionComma
     boolean cache;
 
     @Parameter
-    int cacheX = 64, cacheY=64, cacheZ=64;
+    int cache_x = 64, cache_y =64, cache_z =64;
 
     @Parameter(label = "Number of blocks kept in memory, negative values = no bounds")
-    int cacheBounds = -1;
+    int cache_bounds = -1;
 
     @Parameter
-    int nThreads = 4;
+    int n_threads = 4;
 
     @Parameter(label="Name of the fused resampled source")
     String name; // CSV separate for multiple sources
@@ -49,13 +48,13 @@ public class SourcesFuserAndResamplerCommand implements BdvPlaygroundActionComma
     SourceAndConverter sac_out;
 
     @Parameter(choices = {AlphaFusedResampledSource.SUM, AlphaFusedResampledSource.AVERAGE})
-    String blendingMode;
+    String blending_mode;
 
     @Override
     public void run() {
         // Should not be parallel
         List<SourceAndConverter> sacs_list = Arrays.asList(sacs);
-        sac_out = new SourceFuserAndResampler(sacs_list, blendingMode,  model, name, reusemipmaps, cache, interpolate, defaultmipmaplevel, cacheX, cacheY, cacheZ, cacheBounds, nThreads).get();
+        sac_out = new SourceFuserAndResampler(sacs_list, blending_mode,  model, name, reusemipmaps, cache, interpolate, defaultmipmaplevel, cache_x, cache_y, cache_z, cache_bounds, n_threads).get();
     }
 
 }

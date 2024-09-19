@@ -119,6 +119,7 @@
 
 		<!-- test -->
 
+		<reflections.version>0.10.2</reflections.version>
 		<!-- package version below are determined by the parent pom but need to be upgraded or temporarily fixed for bugs -->
 
 
@@ -279,6 +280,13 @@
 			<groupId>ch.epfl.biop</groupId>
 			<artifactId>quick-start-czi-reader</artifactId>
 			<version>0.2.5</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.reflections</groupId>
+			<artifactId>reflections</artifactId>
+			<version>${reflections.version}</version>
 			<scope>test</scope>
 		</dependency>
 

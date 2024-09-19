@@ -19,21 +19,21 @@ public class AffineTransformCreatorCommand implements Command {
     private static Logger logger = LoggerFactory.getLogger(AffineTransformCreatorCommand.class);
 
     @Parameter(label = "Affine Transform Matrix", style = "text area")
-    String stringMatrix = "1,0,0,0,\n 0,1,0,0,\n 0,0,1,0, \n 0,0,0,1";
+    String string_matrix = "1,0,0,0,\n 0,1,0,0,\n 0,0,1,0, \n 0,0,0,1";
 
     @Parameter(type = ItemIO.OUTPUT)
-    AffineTransform3D at3D;
+    AffineTransform3D at3d;
 
     @Override
     public void run() {
-        at3D = new AffineTransform3D();
-        at3D.set(toDouble());
+        at3d = new AffineTransform3D();
+        at3d.set(toDouble());
     }
 
     public double[] toDouble() {
-        String inputString = stringMatrix;
+        String inputString = string_matrix;
         // Test if the String is written using AffineTransform3D toString() method
-        String[] testIfParenthesis = stringMatrix.split("[\\(\\)]+");// right of left parenthesis
+        String[] testIfParenthesis = string_matrix.split("[\\(\\)]+");// right of left parenthesis
 
         for (String str : testIfParenthesis) {
             System.out.println(str);

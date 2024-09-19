@@ -15,7 +15,6 @@ import org.scijava.task.Task;
 import org.scijava.task.TaskService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 
 import java.util.ArrayList;
@@ -47,10 +46,10 @@ public class Elastix2DSparsePointsRegisterCommand extends SelectSourcesForRegist
     double sx,sy;
 
     @Parameter(label = "Location in z (default 0)", style = "format:0.#####E0")
-    double zLocation = 0;
+    double z_location = 0;
 
     @Parameter(label = "Location of points of interest (px,py) used for registration", style = "text area")
-    String ptListCoordinates = "15,10,\n -30,-40,\n ";
+    String pt_list_coordinates = "15,10,\n -30,-40,\n ";
 
     @Parameter(type = ItemIO.OUTPUT)
     RealTransform tst;
@@ -59,13 +58,13 @@ public class Elastix2DSparsePointsRegisterCommand extends SelectSourcesForRegist
     boolean parallel;
 
     @Parameter(label = "Show point of interests registration in ImageJ1 (disables parallelisation)")
-    boolean showPoints;
+    boolean show_points;
 
     @Parameter
     boolean verbose = false;
 
     @Parameter(label = "Number of iterations for each scale (default 100)")
-    int maxIterationNumberPerScale = 100;
+    int max_iteration_per_scale = 100;
 
     @Parameter(required = false)
     Task task;
@@ -76,9 +75,6 @@ public class Elastix2DSparsePointsRegisterCommand extends SelectSourcesForRegist
     @Parameter
     CommandService cs;
 
-    @Parameter
-    int minPixSize = 32;
-
     public Consumer<String> log = s -> {};
 
     AtomicInteger counter = new AtomicInteger();
@@ -88,17 +84,17 @@ public class Elastix2DSparsePointsRegisterCommand extends SelectSourcesForRegist
 
         if (verbose) log = logger::info;
 
-        if (showPoints) {
+        if (show_points) {
             parallel=false; // Cannot parallelize with IJ1 functions
             logger.warn("Cannot run parallel registrations if showPoints is true.");
         }
 
         ArrayList<RealPoint> pts_Fixed = new ArrayList<>();
 
-        String[] coordsXY = ptListCoordinates.split(",");
+        String[] coordsXY = pt_list_coordinates.split(",");
 
         for (int i = 0;i<coordsXY.length;i+=2) {
-            pts_Fixed.add(new RealPoint(Double.valueOf(coordsXY[i]),Double.valueOf(coordsXY[i+1]),zLocation));
+            pts_Fixed.add(new RealPoint(Double.valueOf(coordsXY[i]),Double.valueOf(coordsXY[i+1]), z_location));
         }
 
         boolean innerTask = false;
@@ -126,21 +122,21 @@ public class Elastix2DSparsePointsRegisterCommand extends SelectSourcesForRegist
                     try {
                         AffineTransform3D at = (AffineTransform3D) cs.run(Elastix2DAffineRegisterCommand.class, true,
                                 "sacs_fixed", sacs_fixed,
-                                "tpFixed", tpFixed,
-                                "levelFixedSource", levelFixedSource,
+                                "tpFixed", tp_fixed,
+                                "levelFixedSource", level_fixed_source,
                                 "sacs_moving", sacs_moving,
-                                "tpMoving", tpMoving,
-                                "levelMovingSource", levelMovingSource,
+                                "tpMoving", tp_moving,
+                                "levelMovingSource", level_moving_source,
                                 "px", pt.getDoublePosition(0) - sx / 2.0,
                                 "py", pt.getDoublePosition(1) - sy / 2.0,
                                 "pz", pt.getDoublePosition(2),
                                 "sx", sx,
                                 "sy", sy,
-                                "pxSizeInCurrentUnit", pxSizeInCurrentUnit,
+                                "pxSizeInCurrentUnit", px_size_in_current_unit,
                                 "interpolate", interpolate,
-                                "showImagePlusRegistrationResult", showPoints,
+                                "showImagePlusRegistrationResult", show_points,
                                 "automaticTransformInitialization", false,
-                                "maxIterationNumberPerScale", maxIterationNumberPerScale,
+                                "maxIterationNumberPerScale", max_iteration_per_scale,
                                 "background_offset_value_moving", background_offset_value_moving,
                                 "background_offset_value_fixed", background_offset_value_fixed,
                                 "minPixSize", 32,

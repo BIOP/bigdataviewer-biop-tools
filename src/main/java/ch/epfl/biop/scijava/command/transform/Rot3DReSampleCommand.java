@@ -1,6 +1,5 @@
 package ch.epfl.biop.scijava.command.transform;
 
-import bdv.tools.brightness.ConverterSetup;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.bdv.img.imageplus.ImagePlusHelper;
 import ch.epfl.biop.bdv.img.imageplus.ImagePlusToSpimData;
@@ -55,16 +54,16 @@ public class Rot3DReSampleCommand<T extends NumericType<T> & NativeType<T>> impl
     double radiusz;
 
     @Parameter(label = "Final Voxel Size X (physical unit)", style="format:0.#####E0")
-    double voxFX;
+    double voxfx;
 
     @Parameter(label = "Final Voxel Size Y (physical unit)", style="format:0.#####E0")
-    double voxFY;
+    double voxfy;
 
     @Parameter(label = "Final Voxel Size Z (physical unit)", style="format:0.#####E0")
-    double voxFZ;
+    double voxfz;
 
     @Parameter(label = "Align X axis (default true)")
-    boolean alignX = true;
+    boolean align_x = true;
 
     @Parameter(type = ItemIO.OUTPUT)
     ImagePlus imp_out;
@@ -149,7 +148,7 @@ public class Rot3DReSampleCommand<T extends NumericType<T> & NativeType<T>> impl
 
         AffineTransform3D rotMatrix = new AffineTransform3D();
 
-        if (alignX) {
+        if (align_x) {
             double[] q2 = new double[4];
 
             double alpha = (Math.atan2(v1y,v1x)+Math.PI/2.0)/2.0;
@@ -174,9 +173,9 @@ public class Rot3DReSampleCommand<T extends NumericType<T> & NativeType<T>> impl
         double cy = ((pt1.getYBase()+pt2.getYBase())/2.0)*voxIY;
         double cz = ((pt1.getZPosition()+pt2.getZPosition())/2.0)*voxIZ;
 
-        double nx =  (2*(radiusx/voxFX));
-        double ny =  (2*(radiusy/voxFY));
-        double nz =  (2*(radiusz/voxFZ));
+        double nx =  (2*(radiusx/ voxfx));
+        double ny =  (2*(radiusy/ voxfy));
+        double nz =  (2*(radiusz/ voxfz));
 
         AffineTransform3D translateCenterBwd = new AffineTransform3D();
         translateCenterBwd.translate(-nx/2,-ny/2,-nz/2);
@@ -185,7 +184,7 @@ public class Rot3DReSampleCommand<T extends NumericType<T> & NativeType<T>> impl
         translateCenterFwd.translate(-cx,-cy,-cz);
 
         AffineTransform3D scaler = new AffineTransform3D();
-        scaler.scale(voxFX, voxFY, voxFZ);
+        scaler.scale(voxfx, voxfy, voxfz);
 
         AffineTransform3D at3D = new AffineTransform3D();
 
@@ -238,9 +237,9 @@ public class Rot3DReSampleCommand<T extends NumericType<T> & NativeType<T>> impl
         calibration.yOrigin=cy;
         calibration.zOrigin=cz;
 
-        calibration.pixelWidth=voxFX;
-        calibration.pixelHeight=voxFY;
-        calibration.pixelDepth=voxFZ;
+        calibration.pixelWidth= voxfx;
+        calibration.pixelHeight= voxfy;
+        calibration.pixelDepth= voxfz;
 
         calibration.setUnit(imp_in.getCalibration().getUnit());
 

@@ -5,9 +5,6 @@ import bdv.tools.boundingbox.TransformedRealBoxSelectionDialog;
 import bdv.util.BdvFunctions;
 import bdv.util.BdvHandle;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.bdv.img.bioformats.BioFormatsHelper;
-import ch.epfl.biop.bdv.img.bioformats.BioFormatsOpener;
-import ch.epfl.biop.sourceandconverter.SourceHelper;
 import net.imglib2.RealInterval;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.util.Intervals;
@@ -20,7 +17,6 @@ import sc.fiji.bdvpg.bdv.navigate.ViewerTransformAdjuster;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.services.SourceAndConverterBdvDisplayService;
 import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
 import sc.fiji.bdvpg.sourceandconverter.importer.EmptySourceAndConverterCreator;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceResampler;
 
@@ -59,7 +55,7 @@ public class LLS7CropCommand implements Command {
     RealInterval interval;
 
     @Parameter(type = ItemIO.OUTPUT)
-    Boolean validResult;
+    Boolean result;
 
     @Parameter
     SourceAndConverterService sac_service;
@@ -88,9 +84,9 @@ public class LLS7CropCommand implements Command {
                 BoxSelectionOptions.options()
                         .title( message ) );
 
-        validResult = result.isValid();
+        this.result = result.isValid();
 
-        if ( validResult )
+        if (this.result)
         {
             interval = result.getInterval();
             // Assert : crop in micrometer, 0.144 micron per pixel

@@ -41,10 +41,10 @@ public class ReorderDatasetCommand implements Command {
     File xmlout;
 
     @Parameter(label="Number of tiles")
-    int nTiles;
+    int n_tiles;
 
     @Parameter(label="Number of channels")
-    int nChannels;
+    int n_channels;
 
     @Override
     public void run() {
@@ -80,7 +80,7 @@ public class ReorderDatasetCommand implements Command {
                 }
 
                 // Creates reordered dataset
-                LifReOrdered kd = new LifReOrdered(intermediateXml, nTiles, nChannels);
+                LifReOrdered kd = new LifReOrdered(intermediateXml, n_tiles, n_channels);
                 kd.initialize();
                 AbstractSpimData reshuffled = kd.constructSpimData();
                 reshuffled.setBasePath(new File(xmlout.getAbsolutePath()).getParentFile()); //TODO TOFIX

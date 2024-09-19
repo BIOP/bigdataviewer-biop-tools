@@ -100,7 +100,7 @@ public class WarpyRegisterCommand implements Command {
                     "verbose", verbose,
                     "background_offset_value_moving", 0,
                     "background_offset_value_fixed", 0,
-                    "sourcesToTransform", new SourceAndConverter[]{moving_source}
+                    "sources_to_transform", new SourceAndConverter[]{moving_source}
             ).get();
 
             // Get transform
@@ -109,7 +109,7 @@ public class WarpyRegisterCommand implements Command {
             // We don't want to keep the transformed sources in memory
             SourceAndConverterServices
                     .getSourceAndConverterService()
-                    .remove((SourceAndConverter[]) module.getOutput("transformedSources"));
+                    .remove((SourceAndConverter[]) module.getOutput("transformed_sources"));
 
             RealTransform transformSequence;
 

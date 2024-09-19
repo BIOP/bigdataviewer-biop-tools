@@ -9,13 +9,12 @@ import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 
 import java.util.Arrays;
-import java.util.stream.Collectors;
 
 @Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>Elliptic 3D Transform Sources")
 public class Elliptic3DTransformerCommand implements BdvPlaygroundActionCommand {
 
     @Parameter
-    Elliptical3DTransform e3Dt;
+    Elliptical3DTransform e3dt;
 
     @Parameter
     SourceAndConverter[] sacs_in;
@@ -23,7 +22,7 @@ public class Elliptic3DTransformerCommand implements BdvPlaygroundActionCommand 
     @Override
     public void run() {
 
-        Elliptic3DTransformer et = new Elliptic3DTransformer(null, e3Dt);
+        Elliptic3DTransformer et = new Elliptic3DTransformer(null, e3dt);
         Arrays.stream(sacs_in).map(et::apply);//.collect(Collectors.toList());
 
     }

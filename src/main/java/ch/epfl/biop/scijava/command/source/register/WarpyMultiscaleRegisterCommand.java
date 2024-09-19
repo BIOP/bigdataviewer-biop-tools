@@ -38,7 +38,7 @@ public class WarpyMultiscaleRegisterCommand implements Command {
     int n_scales = 4;
 
     @Parameter(visibility = ItemVisibility.MESSAGE, required = false)
-    String infoRegistration = "";
+    String info_registration = "";
 
     @Parameter(label = "Fixed source", callback = "updateMessage", style = "sorted")
     SourceAndConverter<?>[] fixed_sources;
@@ -122,7 +122,7 @@ public class WarpyMultiscaleRegisterCommand implements Command {
             // We don't want to keep the transformed sources in memory
             SourceAndConverterServices
                     .getSourceAndConverterService()
-                    .remove((SourceAndConverter[]) module.getOutput("transformedSources"));
+                    .remove((SourceAndConverter[]) module.getOutput("transformed_sources"));
 
             RealTransform transformSequence;
 
@@ -286,7 +286,7 @@ public class WarpyMultiscaleRegisterCommand implements Command {
 
     void updateInfo() {
         int nReg = 4*((int) (Math.pow(2, n_scales-1)-1));
-        infoRegistration = nReg+" registrations will be computed, resulting in "+(int) Math.pow(2, n_scales)+" control points";
+        info_registration = nReg+" registrations will be computed, resulting in "+(int) Math.pow(2, n_scales)+" control points";
     }
 
 }

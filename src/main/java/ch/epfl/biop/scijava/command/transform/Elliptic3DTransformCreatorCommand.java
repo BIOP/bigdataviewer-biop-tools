@@ -12,30 +12,30 @@ import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 public class Elliptic3DTransformCreatorCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(style = "format:0.#####E0")
-    double radiusX, radiusY, radiusZ, // radii of axes 1 2 3 of ellipse
-            rotationX, rotationY, rotationZ, // 3D rotation euler angles  - maybe not the best parametrization
-            centerX, centerY, centerZ; // ellipse center
+    double radius_x, radius_y, radius_z, // radii of axes 1 2 3 of ellipse
+            rotation_x, rotation_y, rotation_z, // 3D rotation euler angles  - maybe not the best parametrization
+            center_x, center_y, center_z; // ellipse center
 
     @Parameter(type = ItemIO.OUTPUT)
-    Elliptical3DTransform e3Dt;
+    Elliptical3DTransform e3dt;
 
     @Parameter
     CommandService cs;
 
     @Override
     public void run() {
-        e3Dt = new Elliptical3DTransform();
-        e3Dt.setParameters(
-                "radiusX", radiusX,
-                "radiusY", radiusY,
-                "radiusZ", radiusZ,
-                "rotationX", rotationX,
-                "rotationY", rotationY,
-                "rotationZ", rotationZ,
-                "centerX", centerX,
-                "centerY", centerY,
-                "centerZ", centerZ );
+        e3dt = new Elliptical3DTransform();
+        e3dt.setParameters(
+                "radiusX", radius_x,
+                "radiusY", radius_y,
+                "radiusZ", radius_z,
+                "rotationX", rotation_x,
+                "rotationY", rotation_y,
+                "rotationZ", rotation_z,
+                "centerX", center_x,
+                "centerY", center_y,
+                "centerZ", center_z);
 
-        cs.run(DisplayEllipseFromTransformCommand.class, false, "rMin", 0.9, "rMax", 1.1, "e3Dt", e3Dt);
+        cs.run(DisplayEllipseFromTransformCommand.class, false, "r_min", 0.9, "r_max", 1.1, "e3Dt", e3dt);
     }
 }

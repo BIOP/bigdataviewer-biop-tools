@@ -1,7 +1,6 @@
 package ch.epfl.biop.scijava.command.transform;
 
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.bdv.img.bioformats.BioFormatsArrayLoaders;
 import net.imglib2.realtransform.AffineTransform3D;
 import org.scijava.ItemIO;
 import org.scijava.plugin.Parameter;
@@ -17,7 +16,7 @@ import sc.fiji.bdvpg.sourceandconverter.transform.SourceTransformHelper;
 public class RemoveZOffsetCommand implements BdvPlaygroundActionCommand {
 
     @Parameter
-    int timePoint = 0;
+    int timepoint = 0;
 
     @Parameter(label = "Sources", type = ItemIO.BOTH)
     public SourceAndConverter[] sacs;
@@ -35,11 +34,11 @@ public class RemoveZOffsetCommand implements BdvPlaygroundActionCommand {
 
             //long sy = sac.getSpimSource().getSource(timePoint, 0).dimension(1);
 
-            long sz = sac.getSpimSource().getSource(timePoint, 0).dimension(2);
+            long sz = sac.getSpimSource().getSource(timepoint, 0).dimension(2);
 
             AffineTransform3D at3D = new AffineTransform3D();
 
-            sac.getSpimSource().getSourceTransform(timePoint, 0, at3D);
+            sac.getSpimSource().getSourceTransform(timepoint, 0, at3D);
 
             //AffineTransform3D at3DToOrigin = new AffineTransform3D();
             //at3DToOrigin.translate(-at3D.get(0, 3), -at3D.get(1, 3), -at3D.get(2, 3));
@@ -54,10 +53,10 @@ public class RemoveZOffsetCommand implements BdvPlaygroundActionCommand {
 
             switch (mode) {
                 case "Mutate":
-                    SourceTransformHelper.mutate(at3DCenter, new SourceAndConverterAndTimeRange(sac, timePoint));
+                    SourceTransformHelper.mutate(at3DCenter, new SourceAndConverterAndTimeRange(sac, timepoint));
                     break;
                 case "Append":
-                    SourceTransformHelper.append(at3DCenter, new SourceAndConverterAndTimeRange(sac, timePoint));
+                    SourceTransformHelper.append(at3DCenter, new SourceAndConverterAndTimeRange(sac, timepoint));
                     break;
             }
         }

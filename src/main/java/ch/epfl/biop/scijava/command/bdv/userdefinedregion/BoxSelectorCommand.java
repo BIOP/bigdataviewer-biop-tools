@@ -34,7 +34,7 @@ public class BoxSelectorCommand implements Command {
     RealInterval interval;
 
     @Parameter(type = ItemIO.OUTPUT)
-    Boolean validResult;
+    Boolean result;
 
     public void run() {
 
@@ -49,9 +49,9 @@ public class BoxSelectorCommand implements Command {
                 BoxSelectionOptions.options()
                         .title( message ) );
 
-        validResult = result.isValid();
+        this.result = result.isValid();
 
-        if ( validResult )
+        if (this.result)
         {
             interval = result.getInterval();
         }

@@ -3,12 +3,6 @@ package ch.epfl.biop.scijava.command.bdv;
 import bdv.tools.brightness.ConverterSetup;
 import bdv.util.BdvHandle;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.bdv.img.bioformats.entity.FileName;
-import ch.epfl.biop.bdv.img.bioformats.entity.SeriesIndex;
-import ch.epfl.biop.bdv.img.entity.ImageName;
-import ch.epfl.biop.bdv.img.legacy.bioformats.entity.FileIndex;
-import ch.epfl.biop.bdv.img.legacy.bioformats.entity.SeriesNumber;
-import ch.epfl.biop.bdv.img.omero.entity.OmeroHostId;
 import ch.epfl.biop.bdv.img.opener.OpenerHelper;
 import ch.epfl.biop.scijava.command.source.ExportToMultipleImagePlusCommand;
 import ch.epfl.biop.bdv.select.SourceSelectorBehaviour;
@@ -17,10 +11,6 @@ import mpicbg.spim.data.generic.AbstractSpimData;
 import mpicbg.spim.data.generic.base.Entity;
 import mpicbg.spim.data.generic.sequence.AbstractSequenceDescription;
 import mpicbg.spim.data.generic.sequence.BasicViewSetup;
-import mpicbg.spim.data.sequence.Angle;
-import mpicbg.spim.data.sequence.Channel;
-import mpicbg.spim.data.sequence.Illumination;
-import mpicbg.spim.data.sequence.Tile;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.volatiles.VolatileARGBType;
@@ -64,13 +54,13 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
     public SourceAndConverter[] sacs;
 
     @Parameter
-    int timepointBegin;
+    int timepoint_begin;
 
     @Parameter
-    int nColumns;
+    int n_columns;
 
     @Parameter(label = "Split by dataset entites, comma separated (channel, fileseries)")
-    String entitiesSplit = "";
+    String entities_split = "";
 
     Map<String, Class<? extends Entity>> entityClasses = OpenerHelper.getEntities();
 
@@ -90,7 +80,7 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
 
         List<Class<? extends Entity>> entSplit = new ArrayList<>();
 
-        for (String entity : entitiesSplit.split(",")) {
+        for (String entity : entities_split.split(",")) {
             String ent = entity.trim().toUpperCase();
             if (!entityClasses.containsKey(ent)){
                 System.err.println("Unrecognized entity class "+ent);
@@ -128,8 +118,8 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
 
             AffineTransform3D location = sacPropsKey.location;
 
-            int xPos = currentIndex % nColumns;
-            int yPos = currentIndex / nColumns;
+            int xPos = currentIndex % n_columns;
+            int yPos = currentIndex / n_columns;
 
             currentAffineTransform.identity();
             currentAffineTransform.preConcatenate(location.inverse());
@@ -140,11 +130,11 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
 
             List<SourceAndConverter<?>> sacs = sorter.apply(sacClasses.get(sacPropsKey));// sacSortedPerLocation.get(location);
 
-            long nPixX = sacs.get(0).getSpimSource().getSource(timepointBegin, 0).dimension(0);
+            long nPixX = sacs.get(0).getSpimSource().getSource(timepoint_begin, 0).dimension(0);
 
-            long nPixY = sacs.get(0).getSpimSource().getSource(timepointBegin, 0).dimension(1);
+            long nPixY = sacs.get(0).getSpimSource().getSource(timepoint_begin, 0).dimension(1);
 
-            long nPixZ = sacs.get(0).getSpimSource().getSource(timepointBegin, 0).dimension(2);
+            long nPixZ = sacs.get(0).getSpimSource().getSource(timepoint_begin, 0).dimension(2);
 
             long sizeMax = Math.max(nPixX, nPixY);
 

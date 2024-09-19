@@ -21,14 +21,14 @@ public class Elliptic3DTransformExporterCommand implements BdvPlaygroundActionCo
     Context context;
 
     @Parameter
-    Elliptical3DTransform e3Dt;
+    Elliptical3DTransform e3dt;
 
     @Parameter(label="Output file", style = "save")
     File file;
 
     @Override
     public void run() {
-        final String json = ScijavaGsonHelper.getGson( context ).toJson( e3Dt, RealTransform.class );
+        final String json = ScijavaGsonHelper.getGson( context ).toJson(e3dt, RealTransform.class );
 
         ensureEndsWithJSON( file );
 

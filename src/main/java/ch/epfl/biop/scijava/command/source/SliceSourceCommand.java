@@ -3,7 +3,6 @@ package ch.epfl.biop.scijava.command.source;
 import bdv.util.BdvHandle;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.sourceandconverter.transform.SourceMosaicZSlicer;
-import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imglib2.RealPoint;
 import net.imglib2.realtransform.AffineTransform3D;
 import org.scijava.plugin.Parameter;
@@ -33,22 +32,22 @@ public class SliceSourceCommand implements BdvPlaygroundActionCommand {
     SourceAndConverter[] sacs;
 
     @Parameter(label="Match bdv frame window size", persist=false, callback = "matchXYBDVFrame")
-    public boolean matchWindowSize=false;
+    public boolean match_window_size =false;
 
     @Parameter(label = "Total Size X (physical unit)", callback = "matchXYBDVFrame", style = "format:0.#####E0")
-    public double xSize = 100;
+    public double x_size = 100;
 
     @Parameter(label = "Total Size Y (physical unit)", callback = "matchXYBDVFrame", style = "format:0.#####E0")
-    public double ySize = 100;
+    public double y_size = 100;
 
     @Parameter(label = "Half Thickness Z (above and below, physical unit)", style = "format:0.#####E0")
-    public double zSize = 100;
+    public double z_size = 100;
 
     @Parameter(label = "XY Pixel size sampling (physical unit)", callback = "changePhysicalSampling", style = "format:0.#####E0")
-    public double samplingXYInPhysicalUnit = 1;
+    public double sampling_xy_in_physical_unit = 1;
 
     @Parameter(label = "Z Pixel size sampling (physical unit)", callback = "changePhysicalSampling", style = "format:0.#####E0")
-    public double samplingZInPhysicalUnit = 1;
+    public double sampling_z_in_physical_unit = 1;
 
     @Parameter(label = "Interpolate")
     public boolean interpolate = true;
@@ -109,16 +108,16 @@ public class SliceSourceCommand implements BdvPlaygroundActionCommand {
         double xNorm = getNormTransform(0, at3D);//trans
         at3D.scale(1/xNorm);
 
-        at3D.scale(1./samplingXYInPhysicalUnit, 1./samplingXYInPhysicalUnit, 1./samplingZInPhysicalUnit);
-        at3D.translate((xSize/(2*samplingXYInPhysicalUnit)), (ySize/(2*samplingXYInPhysicalUnit)), (zSize/(samplingZInPhysicalUnit)));
+        at3D.scale(1./ sampling_xy_in_physical_unit, 1./ sampling_xy_in_physical_unit, 1./ sampling_z_in_physical_unit);
+        at3D.translate((x_size /(2* sampling_xy_in_physical_unit)), (y_size /(2* sampling_xy_in_physical_unit)), (z_size /(sampling_z_in_physical_unit)));
 
-        long nPx = (long)(xSize / samplingXYInPhysicalUnit);
-        long nPy = (long)(ySize / samplingXYInPhysicalUnit);
+        long nPx = (long)(x_size / sampling_xy_in_physical_unit);
+        long nPy = (long)(y_size / sampling_xy_in_physical_unit);
         long nPz;
-        if (samplingZInPhysicalUnit==0) {
+        if (sampling_z_in_physical_unit ==0) {
             nPz = 1;
         } else {
-            nPz = 1+(long)(zSize / (samplingZInPhysicalUnit/2.0)); // TODO : check div by 2
+            nPz = 1+(long)(z_size / (sampling_z_in_physical_unit /2.0)); // TODO : check div by 2
         }
 
         // At least a pixel in all directions
@@ -164,7 +163,7 @@ public class SliceSourceCommand implements BdvPlaygroundActionCommand {
      * Initializes xSize(Pix) and ySize(Pix) according to the current BigDataViewer window
      */
     public void matchXYBDVFrame() {
-        if (matchWindowSize) {
+        if (match_window_size) {
             // Gets window size
             double w = bdv_h.getViewerPanel().getDisplay().getWidth();
             double h = bdv_h.getViewerPanel().getDisplay().getHeight();
@@ -182,8 +181,8 @@ public class SliceSourceCommand implements BdvPlaygroundActionCommand {
             bdv_h.getViewerPanel().displayToGlobalCoordinates(h,0, ptBottomLeft);
 
             // Gets physical size of pixels based on window size, image sampling size and user requested pixel size
-            this.xSize=distance(ptTopLeft, ptTopRight);
-            this.ySize=distance(ptTopLeft, ptBottomLeft);
+            this.x_size =distance(ptTopLeft, ptTopRight);
+            this.y_size =distance(ptTopLeft, ptBottomLeft);
         }
     }
 

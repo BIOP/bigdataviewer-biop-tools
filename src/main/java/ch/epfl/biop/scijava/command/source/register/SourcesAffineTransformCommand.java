@@ -4,7 +4,6 @@ import bdv.viewer.SourceAndConverter;
 import net.imglib2.realtransform.AffineTransform3D;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
-import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterAndTimeRange;
@@ -19,16 +18,16 @@ public class SourcesAffineTransformCommand implements BdvPlaygroundActionCommand
     SourceAndConverter[] sources_in;
 
     @Parameter
-    AffineTransform3D at3D;
+    AffineTransform3D at3d;
 
     @Parameter(choices = {"Mutate", "Append"})
     String mode = "Mutate";
 
     @Parameter
-    int timePointBegin;
+    int timepoint_begin;
 
     @Parameter
-    int timePointEnd;
+    int timepoint_end;
 
     @Override
     public void run() {
@@ -36,10 +35,10 @@ public class SourcesAffineTransformCommand implements BdvPlaygroundActionCommand
         Arrays.stream(sources_in).forEach(sac -> {
             switch (mode) {
                 case "Mutate":
-                    SourceTransformHelper.mutate(at3D, new SourceAndConverterAndTimeRange(sac, timePointBegin, timePointEnd));
+                    SourceTransformHelper.mutate(at3d, new SourceAndConverterAndTimeRange(sac, timepoint_begin, timepoint_end));
                     break;
                 case "Append":
-                    SourceTransformHelper.append(at3D, new SourceAndConverterAndTimeRange(sac, timePointBegin, timePointEnd));
+                    SourceTransformHelper.append(at3d, new SourceAndConverterAndTimeRange(sac, timepoint_begin, timepoint_end));
                     break;
             }
         });

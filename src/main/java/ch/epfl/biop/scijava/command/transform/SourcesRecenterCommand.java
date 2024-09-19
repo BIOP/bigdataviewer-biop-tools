@@ -3,21 +3,19 @@ package ch.epfl.biop.scijava.command.transform;
 import bdv.viewer.SourceAndConverter;
 import net.imglib2.realtransform.AffineTransform3D;
 import org.scijava.ItemIO;
-import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterAndTimeRange;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceTransformHelper;
 
 @Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>Recenter sources")
 public class SourcesRecenterCommand implements BdvPlaygroundActionCommand {
 
     @Parameter
-    int timePoint = 0;
+    int timepoint = 0;
 
     @Parameter(style = "format:0.#####E0")
     double cx, cy, cz;
@@ -32,13 +30,13 @@ public class SourcesRecenterCommand implements BdvPlaygroundActionCommand {
     public void run() {
         for (SourceAndConverter sac:sacs) {
 
-            long sx = sac.getSpimSource().getSource(timePoint, 0).dimension(0);
+            long sx = sac.getSpimSource().getSource(timepoint, 0).dimension(0);
 
-            long sy = sac.getSpimSource().getSource(timePoint, 0).dimension(1);
+            long sy = sac.getSpimSource().getSource(timepoint, 0).dimension(1);
 
             AffineTransform3D at3D = new AffineTransform3D();
 
-            sac.getSpimSource().getSourceTransform(timePoint, 0, at3D);
+            sac.getSpimSource().getSourceTransform(timepoint, 0, at3D);
 
             //AffineTransform3D at3DToOrigin = new AffineTransform3D();
             //at3DToOrigin.translate(-at3D.get(0, 3), -at3D.get(1, 3), -at3D.get(2, 3));
@@ -53,10 +51,10 @@ public class SourcesRecenterCommand implements BdvPlaygroundActionCommand {
 
             switch (mode) {
                 case "Mutate":
-                    SourceTransformHelper.mutate(at3DCenter, new SourceAndConverterAndTimeRange(sac, timePoint));
+                    SourceTransformHelper.mutate(at3DCenter, new SourceAndConverterAndTimeRange(sac, timepoint));
                     break;
                 case "Append":
-                    SourceTransformHelper.append(at3DCenter, new SourceAndConverterAndTimeRange(sac, timePoint));
+                    SourceTransformHelper.append(at3DCenter, new SourceAndConverterAndTimeRange(sac, timepoint));
                     break;
             }
         }

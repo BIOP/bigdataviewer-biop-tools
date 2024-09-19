@@ -2,15 +2,12 @@ package ch.epfl.biop.scijava.command.bdv;
 
 import bdv.util.BdvHandle;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.bdv.img.imageplus.ImagePlusHelper;
 import ch.epfl.biop.sourceandconverter.exporter.ImagePlusSampler;
 import ij.IJ;
 import ij.ImagePlus;
 import net.imglib2.RealPoint;
 import net.imglib2.realtransform.AffineTransform3D;
-import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.ARGBType;
-import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
@@ -94,13 +91,13 @@ public class BasicBdvViewToImagePlusExportCommand<T extends RealType<T>> impleme
     String export_mode = "Non virtual";
 
     @Parameter( label = "Acquire channels in parallel (Normal only)", required = false)
-    Boolean parallelC = false;
+    Boolean parallel_c = false;
 
     @Parameter( label = "Acquire slices in parallel (Normal only)", required = false)
-    Boolean parallelZ = false;
+    Boolean parallel_z = false;
 
     @Parameter( label = "Acquire timepoints in parallel (Normal only)", required = false)
-    Boolean parallelT = false;
+    Boolean parallel_t = false;
 
     //@Parameter( label = "Monitor loaded data")
     private Boolean monitor = true;
@@ -188,7 +185,7 @@ public class BasicBdvViewToImagePlusExportCommand<T extends RealType<T>> impleme
                                         .monitor(task)
                                         .title(capturename)
                                         .setModel(model)
-                                        .parallelC(parallelC).parallelZ(parallelZ).parallelT(parallelT)
+                                        .parallelC(parallel_c).parallelZ(parallel_z).parallelT(parallel_t)
                                         .interpolate(interpolate)
                                         .rangeT(selected_timepoints_str)
                                         .sources(new SourceAndConverter[] {source})
@@ -211,7 +208,7 @@ public class BasicBdvViewToImagePlusExportCommand<T extends RealType<T>> impleme
                             .monitor(task)
                             .title(capturename)
                             .setModel(model)
-                            .parallelC(parallelC).parallelZ(parallelZ).parallelT(parallelT)
+                            .parallelC(parallel_c).parallelZ(parallel_z).parallelT(parallel_t)
                             .interpolate(interpolate)
                             .rangeT(selected_timepoints_str)
                             .sources(typeToSources.get(pixelType).toArray(new SourceAndConverter[0]))

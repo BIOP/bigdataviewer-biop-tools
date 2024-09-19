@@ -18,13 +18,13 @@ public class OpenImarisCommand implements BdvPlaygroundActionCommand {
     public File file;
 
     @Parameter(type = ItemIO.OUTPUT)
-    AbstractSpimData spimData;
+    AbstractSpimData spimdata;
 
     @Override
     public void run() {
         try
         {
-            spimData = Imaris.openIms( file.getAbsolutePath() );
+            spimdata = Imaris.openIms( file.getAbsolutePath() );
         }
         catch ( final IOException e )
         {

@@ -91,46 +91,46 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
     SourceAndConverter<?> moving;
 
     @Parameter(label = "Sources to transform, including the moving source if needed")
-    SourceAndConverter<?>[] sourcesToTransform;
+    SourceAndConverter<?>[] sources_to_transform;
 
     //@Parameter
     BdvHandle bdvh;
 
     @Parameter(label = "Remove images z-offsets")
-    boolean removeZOffset = true;
+    boolean remove_z_offset = true;
 
     @Parameter(label = "0 - Center moving image with fixed image")
-    boolean centerMovingImage = true;
+    boolean center_moving_image = true;
 
     @Parameter(label = "1 - Manual rigid registration")
-    boolean manualRigidRegistration = true;
+    boolean manual_rigid_registration = true;
 
     @Parameter(label = "2 - Auto affine registration")
-    boolean automatedAffineRegistration = true;
+    boolean automated_affine_registration = true;
 
     @Parameter(label = "3 - Semi auto spline registration")
-    boolean automatedSplineRegistration = true;
+    boolean automated_spline_registration = true;
 
     @Parameter(label = "4 - Manual spline registration (BigWarp)")
-    boolean manualSplineRegistration = true;
+    boolean manual_spline_registration = true;
 
     @Parameter(label = "Pixel size for coarse registration in microns (default 10)", style = "format:0.00", persist = false)
-    double coarsePixelSize_um = 10;
+    double coarse_pixel_size_um = 10;
     double coarsePixelSize_mm;
 
     @Parameter(label = "Patch size for registration in microns (default 500)", style = "format:0.0", persist = false)
-    double patchSize_um = 500;
+    double patch_size_um = 500;
     double patchSize_mm;
 
     @Parameter(label = "Pixel size for precise patch registration in microns (default 1)", style = "format:0.00", persist = false)
-    double precisePixelSize_um = 1;
+    double precise_pixel_size_um = 1;
     double precisePixelSize_mm;
 
     @Parameter(label = "Number of iterations for each scale (default 100)")
-    int maxIterationNumberPerScale = 100;
+    int max_iteration_number_per_scale = 100;
 
     @Parameter(label = "Show results of automated registrations (breaks parallelization)")
-    boolean showDetails = false;
+    boolean show_details = false;
 
     @Parameter
     boolean verbose;
@@ -139,7 +139,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
     SourceAndConverterBdvDisplayService sacbds;
 
     @Parameter(type = ItemIO.OUTPUT)
-    SourceAndConverter<?>[] transformedSources;
+    SourceAndConverter<?>[] transformed_sources;
 
     @Parameter(type = ItemIO.OUTPUT)
     RealTransform transformation;
@@ -163,14 +163,14 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
 
     @Override
     public void run() {
-        coarsePixelSize_mm = coarsePixelSize_um / 1000.00;
-        patchSize_mm = patchSize_um / 1000.00;
-        precisePixelSize_mm = precisePixelSize_um / 1000.00;
+        coarsePixelSize_mm = coarse_pixel_size_um / 1000.00;
+        patchSize_mm = patch_size_um / 1000.00;
+        precisePixelSize_mm = precise_pixel_size_um / 1000.00;
 
         bdvh = new WizardBdvSupplier().get(); //
         SourceAndConverterServices.getBdvDisplayService().registerBdvHandle(bdvh);
 
-        if ((!manualRigidRegistration)&&(!automatedAffineRegistration)&&(!automatedSplineRegistration)&&(!manualSplineRegistration)) {
+        if ((!manual_rigid_registration)&&(!automated_affine_registration)&&(!automated_spline_registration)&&(!manual_spline_registration)) {
             IJ.error("You need to select at least one sort of registration!");
             return;
         }
@@ -178,7 +178,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
         // These transforms are removed at the end in the wizard
         AffineTransform3D preTransformFixed = new AffineTransform3D();
 
-        if (removeZOffset) {
+        if (remove_z_offset) {
             AffineTransform3D at3D = new AffineTransform3D();
             moving.getSpimSource().getSourceTransform(0,0,at3D);
             centeringTransform.translate(0,0,-at3D.get(2,3)); // Removes z offset
@@ -187,7 +187,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
             preTransformFixed.translate(0,0,-at3D.get(2,3)); // Removes z offset
         }
 
-        if (centerMovingImage) {
+        if (center_moving_image) {
             RealPoint centerMoving = SourceAndConverterHelper.getSourceAndConverterCenterPoint(moving,0);
             RealPoint centerFixed = SourceAndConverterHelper.getSourceAndConverterCenterPoint(fixed,0);
             centeringTransform.translate(
@@ -211,7 +211,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
 
         addCardPanelCommons();
 
-        if (manualRigidRegistration) {
+        if (manual_rigid_registration) {
             setUserMessage(" 0 - Manual Rigid Registration ");
             addManualRigidRegistration();
             while (manualRegistrationStopped == false) {
@@ -227,7 +227,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
         try {
 
             // Ask the user to select the region that should be aligned ( a rectangle ) - in any case
-            if (automatedAffineRegistration) {
+            if (automated_affine_registration) {
                 setUserMessage(" 1 - Automated Affine Registration ");
                 bdvh.getViewerPanel().state().setViewerTransform(iniView);
                 getUserRectangle();
@@ -247,7 +247,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
             cx = (topLeftX+bottomRightX)/2.0;
             cy = (topLeftY+bottomRightY)/2.0;
 
-            if (automatedSplineRegistration) {
+            if (automated_spline_registration) {
 
                 setUserMessage(" 2 - Automated Spline Registration ");
                 // Ask the user to select the points where the fine tuning should be performed
@@ -265,7 +265,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
 
             // Conversion of RealPoints to String representation for next command launching
             String ptCoords = "";
-            if (automatedSplineRegistration) {
+            if (automated_spline_registration) {
                 for (RealPoint pt : landmarks) {
                     ptCoords += pt.getDoublePosition(0) + "," + pt.getDoublePosition(1) + ",";
                 }
@@ -284,11 +284,11 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
                                "topLeftY", topLeftY,
                                "bottomRightX", bottomRightX,
                                "bottomRightY", bottomRightY,
-                               "showDetails", showDetails,
+                               "showDetails", show_details,
                                "verbose", verbose,
-                               "performFirstCoarseAffineRegistration",  automatedAffineRegistration,
-                               "performSecondSplineRegistration", automatedSplineRegistration,
-                               "maxIterationNumberPerScale", maxIterationNumberPerScale,
+                               "performFirstCoarseAffineRegistration", automated_affine_registration,
+                               "performSecondSplineRegistration", automated_spline_registration,
+                               "maxIterationNumberPerScale", max_iteration_number_per_scale,
                                "background_offset_value_moving", background_offset_value_moving,
                                "background_offset_value_fixed", background_offset_value_fixed,
                                "precisePixelSize_mm", precisePixelSize_mm,
@@ -296,7 +296,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
                                "coarsePixelSize_mm", coarsePixelSize_mm
                     ).get().getOutput("tst");
 
-            if (manualSplineRegistration) {
+            if (manual_spline_registration) {
 
                 IJ.log("BigWarp registration...");
 
@@ -356,7 +356,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
             preTransformLandmarks();
             IJ.log("Registration DONE.");
 
-            transformedSources = Arrays.stream(sourcesToTransform)
+            transformed_sources = Arrays.stream(sources_to_transform)
                     .map(source -> new SourceRealTransformer(transformation).apply(source))
                     .toArray(SourceAndConverter<?>[]::new);
 
@@ -584,7 +584,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
         JLabel gridSpacingLabel = new JLabel("Spacing (um)");
         JTextField gridSpacing = new JTextField();
         gridSpacing.setEditable(true);
-        gridSpacing.setText(Double.toString(patchSize_um));
+        gridSpacing.setText(Double.toString(patch_size_um));
         JButton addPoints = new JButton("Add landmark grid");
         addPoints.addActionListener((e) -> {
             try {

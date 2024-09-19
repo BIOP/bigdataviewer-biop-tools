@@ -6,7 +6,6 @@ import org.scijava.Context;
 import org.scijava.ItemIO;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
-import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 
 @Plugin(type = BdvPlaygroundActionCommand.class/*,
@@ -14,7 +13,7 @@ import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 public class Elastix2DSplineRegisterCommand extends AbstractElastix2DRegistrationInRectangleCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(label = "Number of control points along the X axis")
-    int nbControlPointsX;
+    int num_ctrl_points_x;
 
     @Parameter(type = ItemIO.OUTPUT)
     RealTransform rt;
@@ -32,15 +31,15 @@ public class Elastix2DSplineRegisterCommand extends AbstractElastix2DRegistratio
     public void run() {
         ElastixHelper.checkOrSetLocal(ctx);
         Elastix2DSplineRegister reg = new Elastix2DSplineRegister(
-                sacs_fixed,levelFixedSource,tpFixed,
-                sacs_moving,levelMovingSource,tpMoving,
-                nbControlPointsX,
-                pxSizeInCurrentUnit,
+                sacs_fixed, level_fixed_source, tp_fixed,
+                sacs_moving, level_moving_source, tp_moving,
+                num_ctrl_points_x,
+                px_size_in_current_unit,
                 px,py,pz,sx,sy,
-                maxIterationNumberPerScale,
+                max_iteration_per_scale,
                 background_offset_value_moving,
                 background_offset_value_fixed,
-                showImagePlusRegistrationResult);
+                show_image_registration);
 
         reg.setInterpolate(interpolate);
 

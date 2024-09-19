@@ -62,20 +62,20 @@ public class Elastix2DAffineRegisterCommand extends AbstractElastix2DRegistratio
         rh.addTransform(rp);
 
         Elastix2DAffineRegister reg = new Elastix2DAffineRegister(
-                sacs_fixed,levelFixedSource,tpFixed,
-                sacs_moving,levelMovingSource,tpMoving,
+                sacs_fixed, level_fixed_source, tp_fixed,
+                sacs_moving, level_moving_source, tp_moving,
                 rh,
-                pxSizeInCurrentUnit,
+                px_size_in_current_unit,
                 px,py,pz,sx,sy,
                 background_offset_value_moving,
                 background_offset_value_fixed,
-                showImagePlusRegistrationResult);
+                show_image_registration);
         reg.setInterpolate(interpolate);
 
         success = reg.run();
 
         if (success) {
-            at3D = reg.getAffineTransform();
+            at3d = reg.getAffineTransform();
         } else {
             logger.error("Error during registration");
         }
@@ -85,14 +85,14 @@ public class Elastix2DAffineRegisterCommand extends AbstractElastix2DRegistratio
         RegistrationParameters rp = new RegParamAffine_Fast(); //
 
         rp.AutomaticScalesEstimation = false;
-        if (automaticTransformInitialization) {
+        if (automatic_transform_initialization) {
             rp.AutomaticTransformInitialization = true;
             rp.AutomaticTransformInitializationMethod = "CenterOfGravity";
         } else {
             rp.AutomaticTransformInitialization = false;
         }
 
-        double maxSize = Math.min(sx/pxSizeInCurrentUnit,sy/pxSizeInCurrentUnit);
+        double maxSize = Math.min(sx/ px_size_in_current_unit,sy/ px_size_in_current_unit);
 
         int nScales = 0;
 
@@ -102,14 +102,14 @@ public class Elastix2DAffineRegisterCommand extends AbstractElastix2DRegistratio
 
         int nScalesSkipped = 0;
 
-        while (Math.pow(2,nScalesSkipped)<minPixSize) {
+        while (Math.pow(2,nScalesSkipped)< min_image_size_pix) {
             nScalesSkipped++;
         }
 
         rp.NumberOfResolutions = Math.max(1,nScales-nScalesSkipped); // Starts with 2^nScalesSkipped pixels
 
         rp.BSplineInterpolationOrder = 1;
-        rp.MaximumNumberOfIterations = maxIterationNumberPerScale;
+        rp.MaximumNumberOfIterations = max_iteration_per_scale;
 
         rp.ImagePyramidSchedule = new Integer[2*rp.NumberOfResolutions];
         for (int scale = 0; scale < rp.NumberOfResolutions ; scale++) {

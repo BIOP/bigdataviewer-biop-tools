@@ -56,7 +56,7 @@ public class WarpyExportRegisteredImageCommand implements Command {
     SourceAndConverter<?>[] moving_sources;
 
     @Parameter(label = "Include fixed sources in exported image")
-    boolean includeFixedSources;
+    boolean include_fixed_sources;
 
     @Parameter(label = "Interpolate pixels values")
     boolean interpolate;
@@ -173,7 +173,7 @@ public class WarpyExportRegisteredImageCommand implements Command {
                 modelForResampling = new SourceAndConverter<>(new EmptySource(params), null, null);
             }
 
-            if (includeFixedSources)  {
+            if (include_fixed_sources)  {
                 for (SourceAndConverter<?> source: fixedSacs) {
                     if (!source.getSpimSource().getType().getClass().equals(pixelType)) {
                         IJ.log("ERROR - combining images with different pixel types is not supported: ");

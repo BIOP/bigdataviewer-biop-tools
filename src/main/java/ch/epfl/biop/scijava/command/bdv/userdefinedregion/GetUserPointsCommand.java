@@ -22,25 +22,25 @@ import java.util.function.Function;
 public class GetUserPointsCommand implements Command {
 
     @Parameter(required = false)
-    Function<RealPoint, GraphicalHandle> graphicalHandleSupplier;
+    Function<RealPoint, GraphicalHandle> graphical_handle_supplier;
 
     @Parameter
     BdvHandle bdvh;
 
     @Parameter
-    String messageForUser;
+    String message_for_user;
 
     @Parameter(required = false)
-    int timeOutInMs=-1;
+    int time_out_in_ms =-1;
 
     @Parameter(type = ItemIO.OUTPUT)
     List<RealPoint> pts = new ArrayList<>();
 
     @Override
     public void run() {
-        PointsSelectorBehaviour psb = new PointsSelectorBehaviour(bdvh, messageForUser, graphicalHandleSupplier);
+        PointsSelectorBehaviour psb = new PointsSelectorBehaviour(bdvh, message_for_user, graphical_handle_supplier);
         psb.install();
-        pts = psb.waitForSelection(timeOutInMs);
+        pts = psb.waitForSelection(time_out_in_ms);
         psb.uninstall();
     }
 

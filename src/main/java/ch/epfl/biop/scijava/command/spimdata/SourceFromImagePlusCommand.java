@@ -13,7 +13,7 @@ import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
 public class SourceFromImagePlusCommand implements BdvPlaygroundActionCommand {
 
     @Parameter
-    ImagePlus imagePlus;
+    ImagePlus image;
 
     //@Parameter(type = ItemIO.OUTPUT) // Removed because because using it as a parameter currently prevents
     // its naming...
@@ -24,9 +24,9 @@ public class SourceFromImagePlusCommand implements BdvPlaygroundActionCommand {
     SourceAndConverterService sac_service;
 
     public void run() {
-        AbstractSpimData asd = ImagePlusToSpimData.getSpimData(imagePlus);
+        AbstractSpimData asd = ImagePlusToSpimData.getSpimData(image);
         sac_service.register(asd);
-        sac_service.setSpimDataName(asd, imagePlus.getTitle());
+        sac_service.setSpimDataName(asd, image.getTitle());
     }
 
 }

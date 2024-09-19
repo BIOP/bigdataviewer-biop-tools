@@ -2,7 +2,6 @@ package ch.epfl.biop.scijava.command.source.register;
 
 import bdv.util.BigWarpHelper;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.bdv.img.legacy.bioformats.command.BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand;
 import ch.epfl.biop.bdv.img.qupath.command.CreateBdvDatasetQuPathCommand;
 import ij.IJ;
 import net.imagej.ImageJ;
@@ -16,7 +15,6 @@ import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 import sc.fiji.bdvpg.scijava.command.bdv.BdvSourcesShowCommand;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
@@ -32,10 +30,10 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
     private static Logger logger = LoggerFactory.getLogger(RegisterWholeSlideScans2DCommand.class);
 
     @Parameter(label = "Global reference image (fixed, usually, first dapi channel)")
-    SourceAndConverter globalRefSource;
+    SourceAndConverter global_ref_source;
 
     @Parameter(label = "Index of current reference image (moving, dapi channel of scan i)")
-    SourceAndConverter currentRefSource;
+    SourceAndConverter current_ref_source;
 
     @Parameter(label = "Background offset value for moving image")
     double background_offset_value_moving = 0;
@@ -44,43 +42,43 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
     double background_offset_value_fixed = 0;
 
     @Parameter(label = "Locations of interest for warping registration", style = "text area")
-    String ptListCoordinates = "15,10,\n -30,-40,\n ";
+    String pt_list_coordinates = "15,10,\n -30,-40,\n ";
 
     @Parameter(label = "Make a first affine registration on defined regions")
-    boolean performFirstCoarseAffineRegistration;
+    boolean perform_first_coarse_affine_registration;
 
     @Parameter(label = "Make a second spline registration with landmarks")
-    boolean performSecondSplineRegistration;
+    boolean perform_second_spline_registration;
 
     @Parameter(style = "format:0.#####E0")
-    double topLeftX;
+    double top_left_x;
 
     @Parameter(style = "format:0.#####E0")
-    double topLeftY;
+    double top_left_y;
 
     @Parameter(style = "format:0.#####E0")
-    double bottomRightX;
+    double bottom_right_x;
 
     @Parameter(style = "format:0.#####E0")
-    double bottomRightY;
+    double bottom_right_y;
 
     @Parameter(label = "Number of iterations for each scale (default 100)")
-    int maxIterationNumberPerScale = 100;
+    int max_iteration_per_scale = 100;
 
     @Parameter(label = "Pixel size for coarse registration in mm (default 0.01)", style = "format:0.000", persist = false)
-    double coarsePixelSize_mm = 0.01;
+    double coarse_pixel_size_mm = 0.01;
 
     @Parameter(label = "Patch size for registration in mm (default 0.5)", style = "format:0.000", persist = false)
-    double patchSize_mm = 0.5;
+    double patch_size_mm = 0.5;
 
     @Parameter(label = "Pixel size for precise patch registration in mm (default 0.001)", style = "format:0.000", persist = false)
-    double precisePixelSize_mm = 0.001;
+    double precise_pixel_size_mm = 0.001;
 
     @Parameter
     CommandService cs;
 
     @Parameter
-    boolean showDetails;
+    boolean show_details;
 
     @Parameter(type = ItemIO.OUTPUT)
     RealTransform tst;
@@ -94,29 +92,29 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
         // Approximate rigid registration
         try {
             AffineTransform3D at1 = new AffineTransform3D();
-            SourceAndConverter firstRegSrc = currentRefSource;
+            SourceAndConverter firstRegSrc = current_ref_source;
 
-            if (performFirstCoarseAffineRegistration) {
+            if (perform_first_coarse_affine_registration) {
                 logger.info("----------- First registration - Coarse Affine");
                 IJ.log("- Coarse Affine Registration");
 
                 CommandModule cm = cs.run(Elastix2DAffineRegisterCommand.class, true,
-                        "sacs_fixed", new SourceAndConverter[]{globalRefSource},
+                        "sacs_fixed", new SourceAndConverter[]{global_ref_source},
                         "tpFixed", 0,
-                        "levelFixedSource", SourceAndConverterHelper.bestLevel(globalRefSource, 0, coarsePixelSize_mm),
-                        "sacs_moving", new SourceAndConverter[]{currentRefSource},
+                        "levelFixedSource", SourceAndConverterHelper.bestLevel(global_ref_source, 0, coarse_pixel_size_mm),
+                        "sacs_moving", new SourceAndConverter[]{current_ref_source},
                         "tpMoving", 0,
-                        "levelMovingSource", SourceAndConverterHelper.bestLevel(currentRefSource, 0, coarsePixelSize_mm),
-                        "px", topLeftX,
-                        "py", topLeftY,
+                        "levelMovingSource", SourceAndConverterHelper.bestLevel(current_ref_source, 0, coarse_pixel_size_mm),
+                        "px", top_left_x,
+                        "py", top_left_y,
                         "pz", 0,
-                        "sx", bottomRightX - topLeftX,
-                        "sy", bottomRightY - topLeftY,
-                        "pxSizeInCurrentUnit", coarsePixelSize_mm, // in mm
+                        "sx", bottom_right_x - top_left_x,
+                        "sy", bottom_right_y - top_left_y,
+                        "pxSizeInCurrentUnit", coarse_pixel_size_mm, // in mm
                         "interpolate", true,
-                        "showImagePlusRegistrationResult", showDetails,
+                        "showImagePlusRegistrationResult", show_details,
                         "automaticTransformInitialization", false,
-                        "maxIterationNumberPerScale", maxIterationNumberPerScale,
+                        "maxIterationNumberPerScale", max_iteration_per_scale,
                         "minPixSize", 32,
                         "background_offset_value_moving", background_offset_value_moving,
                         "background_offset_value_fixed", background_offset_value_fixed,
@@ -124,32 +122,32 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
                 ).get();
                 at1 = (AffineTransform3D) cm.getOutput("at3D");
                 //firstRegSrc = (SourceAndConverter) cm.getOutput("registeredSource");
-                firstRegSrc = new SourceAffineTransformer(at1).apply(currentRefSource);
+                firstRegSrc = new SourceAffineTransformer(at1).apply(current_ref_source);
             }
 
             logger.info("----------- Precise Warping based on particular locations");
             RealTransform tst_temp = new AffineTransform3D(); // Identity transform applied if no warping
-            if (performSecondSplineRegistration) {
+            if (perform_second_spline_registration) {
 
                 IJ.log("- Landmarks registration");
                 tst_temp =
                         (RealTransform) cs.run(Elastix2DSparsePointsRegisterCommand.class, true,
-                                "sacs_fixed", new SourceAndConverter[]{globalRefSource},
+                                "sacs_fixed", new SourceAndConverter[]{global_ref_source},
                                 "sacs_moving", new SourceAndConverter[]{firstRegSrc},
                                 "tpFixed", 0,
-                                "levelFixedSource", SourceAndConverterHelper.bestLevel(globalRefSource, 0, precisePixelSize_mm), //TODO does this make sense ? Shouldn't it be self pixel precise size ?
+                                "levelFixedSource", SourceAndConverterHelper.bestLevel(global_ref_source, 0, precise_pixel_size_mm), //TODO does this make sense ? Shouldn't it be self pixel precise size ?
                                 "tpMoving", 0,
-                                "levelMovingSource", SourceAndConverterHelper.bestLevel(firstRegSrc, 0, precisePixelSize_mm),
-                                "ptListCoordinates", ptListCoordinates,
+                                "levelMovingSource", SourceAndConverterHelper.bestLevel(firstRegSrc, 0, precise_pixel_size_mm),
+                                "ptListCoordinates", pt_list_coordinates,
                                 "zLocation", 0,
-                                "sx", patchSize_mm, // 500 microns
-                                "sy", patchSize_mm, // 500 microns
-                                "pxSizeInCurrentUnit", precisePixelSize_mm, //1 micron per pixel
+                                "sx", patch_size_mm, // 500 microns
+                                "sy", patch_size_mm, // 500 microns
+                                "pxSizeInCurrentUnit", precise_pixel_size_mm, //1 micron per pixel
                                 "interpolate", true,
-                                "showPoints", showDetails,//true,
-                                "parallel", !showDetails,//false,
+                                "showPoints", show_details,//true,
+                                "parallel", !show_details,//false,
                                 "verbose", verbose,
-                                "maxIterationNumberPerScale", maxIterationNumberPerScale,
+                                "maxIterationNumberPerScale", max_iteration_per_scale,
                                 "minPixSize", 32,
                                 "background_offset_value_moving", background_offset_value_moving,
                                 "background_offset_value_fixed", background_offset_value_fixed,
@@ -157,10 +155,10 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
                         ).get().getOutput("tst");
             } else {
                 // Let's put landmarks on each corner in case the user wants to edit the registration later
-                ptListCoordinates  = topLeftX+","+topLeftY+",";
-                ptListCoordinates += bottomRightX+","+topLeftY+",";
-                ptListCoordinates += bottomRightX+","+bottomRightY+",";
-                ptListCoordinates += topLeftX+","+bottomRightY;
+                pt_list_coordinates = top_left_x +","+ top_left_y +",";
+                pt_list_coordinates += bottom_right_x +","+ top_left_y +",";
+                pt_list_coordinates += bottom_right_x +","+ bottom_right_y +",";
+                pt_list_coordinates += top_left_x +","+ bottom_right_y;
             }
 
             logger.info("----------- Computing global transformation");
@@ -173,7 +171,7 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
             ArrayList<RealPoint> pts_Fixed = new ArrayList<>();
             ArrayList<RealPoint> pts_Moving = new ArrayList<>();
 
-            String[] coordsXY = ptListCoordinates.split(",");
+            String[] coordsXY = pt_list_coordinates.split(",");
 
             for (int i = 0;i<coordsXY.length;i+=2) {
                 RealPoint pt_fixed = new RealPoint(Double.valueOf(coordsXY[i]),Double.valueOf(coordsXY[i+1]),0);

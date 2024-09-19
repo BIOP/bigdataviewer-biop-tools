@@ -48,7 +48,7 @@ import static bdv.util.Elliptical3DTransform.RADIUS_Z;
 public class ExportEllipticProjection implements Command {
 
     @Parameter(label = "", visibility = ItemVisibility.MESSAGE, required = false, persist = false)
-    String exportSourcesMessage = "<html><h2>Exported Elliptic Transformed Source</h2></html>";
+    String export_sources_message = "<html><h2>Exported Elliptic Transformed Source</h2></html>";
 
     @Parameter(label = "Select the elliptic transformed sources", callback = "validateMessage")
     SourceAndConverter<?>[] sacs;
@@ -57,46 +57,46 @@ public class ExportEllipticProjection implements Command {
     public int level;
 
     @Parameter(label = "Update", callback = "validateMessage")
-    Button updateButton1;
+    Button update_button1;
 
     @Parameter(label = "", visibility = ItemVisibility.MESSAGE, required = false, persist = false)
-    String validateMessage = "Please select the sources to export. Click update for more info.";
+    String validate_message = "Please select the sources to export. Click update for more info.";
 
     @Parameter(label = "", visibility = ItemVisibility.MESSAGE, required = false, persist = false)
-    String exportRangeMessage = "<html><h2>Exported Range</h2></html>";
+    String export_range_message = "<html><h2>Exported Range</h2></html>";
 
     @Parameter(callback = "validateMessage", style = "format:0.#####E0")
-    double rMin = 0.8;
+    double r_min = 0.8;
 
     @Parameter(callback = "validateMessage", style = "format:0.#####E0")
-    double rMax = 1.2;
+    double r_max = 1.2;
 
     @Parameter(callback = "validateMessage", style = "format:0.#####E0")
-    double radiusStep = 0.01;
+    double radius_step = 0.01;
 
     @Parameter(style = "slider, format:0.#####E0", stepSize = "1", min = "0", max = "180", callback = "validateMessage")
-    double thetaMin = 0;
+    double theta_min = 0;
 
     @Parameter(style = "slider, format:0.#####E0", stepSize = "1", min = "0", max = "180", callback = "validateMessage")
-    double thetaMax = 180;
+    double theta_max = 180;
 
     @Parameter(style = "slider, format:0.#####E0", stepSize = "1", min = "0", max = "360", callback = "validateMessage")
-    double phiMin = 0;
+    double phi_min = 0;
 
     @Parameter(style = "slider, format:0.#####E0", stepSize = "1", min = "0", max = "360", callback = "validateMessage")
-    double phiMax = 360;
+    double phi_max = 360;
 
     @Parameter(callback = "validateMessage", style="format:0.#####E0")
-    double angleStep = 0.01;
+    double angle_step = 0.01;
 
     @Parameter(label = "", visibility = ItemVisibility.MESSAGE, required = false, persist = false)
-    String exportedImagePlusMessage = "<html><h2>Exported Image Parameters</h2></html>";
+    String exported_image_message = "<html><h2>Exported Image Parameters</h2></html>";
 
     @Parameter(label = "Exported Image Name")
     public String name = "Image_00";
 
     @Parameter( label = "Select Range", visibility = ItemVisibility.MESSAGE, persist = false, required = false)
-    String rangeMessage = "You can use commas or colons to separate ranges. eg. '1:10' or '1,3,5,8' ";
+    String range_message = "You can use commas or colons to separate ranges. eg. '1:10' or '1,3,5,8' ";
 
     @Parameter( label = "Selected Channels. Leave blank for all", required = false )
     String range_channels = "";
@@ -123,7 +123,7 @@ public class ExportEllipticProjection implements Command {
     public ImagePlus imp_out;
 
     @Parameter(label = "Update", callback = "validateMessage")
-    Button updateButton2;
+    Button update_button2;
 
     @Parameter( label = "Image Info", visibility = ItemVisibility.MESSAGE, persist = false, required = false)
     String message = "[SX: , SY:, SZ:, #C:, #T:], ? Mb";
@@ -171,7 +171,7 @@ public class ExportEllipticProjection implements Command {
             default: throw new UnsupportedOperationException("Unrecognized export mode "+export_mode);
         }
         DecimalFormat df = new DecimalFormat("#.00");
-        String suffixName = "_R["+df.format(rMin)+"; "+df.format(rMax)+"]_Theta["+df.format(thetaMin)+"; "+df.format(thetaMax)+"]_Phi["+df.format(phiMin)+"; "+df.format(phiMax)+"]";
+        String suffixName = "_R["+df.format(r_min)+"; "+df.format(r_max)+"]_Theta["+df.format(theta_min)+"; "+df.format(theta_max)+"]_Phi["+df.format(phi_min)+"; "+df.format(phi_max)+"]";
         try {
             Task task = null;
             if (monitor) task = taskService.createTask("Elliptic projection:"+name+suffixName);
@@ -210,19 +210,19 @@ public class ExportEllipticProjection implements Command {
 
     public void validateMessage() {
         if ((sacs==null)||(sacs.length==0)) {
-            validateMessage = "Please select the sources to export";
+            validate_message = "Please select the sources to export";
             return;
         }
         transform = null;
         boolean hasMultipleTransforms = false;
         for (SourceAndConverter source : sacs) {
             if (!(source.getSpimSource() instanceof WarpedSource)) {
-                validateMessage = source.getSpimSource().getName()+" is not a transformed source";
+                validate_message = source.getSpimSource().getName()+" is not a transformed source";
                 return;
             }
             RealTransform rt = ((WarpedSource) source.getSpimSource()).getTransform();
             if (!(rt instanceof Elliptical3DTransform)) {
-                validateMessage = source.getSpimSource().getName()+" is not an elliptic transformed source";
+                validate_message = source.getSpimSource().getName()+" is not an elliptic transformed source";
                 return;
             } else {
                 if (transform == null) {
@@ -237,9 +237,9 @@ public class ExportEllipticProjection implements Command {
 
         e3dt = transform;
 
-        validateMessage = "<html>";
+        validate_message = "<html>";
         if (hasMultipleTransforms) {
-            validateMessage+="Multiple transforms found. Potential incorrect sampling advice.<br>";
+            validate_message +="Multiple transforms found. Potential incorrect sampling advice.<br>";
         }
 
         // Checks all on a single source
@@ -249,21 +249,21 @@ public class ExportEllipticProjection implements Command {
 
         double rMean = (e3dt.getParameters().get(RADIUS_X)+e3dt.getParameters().get(RADIUS_Y)+e3dt.getParameters().get(RADIUS_Z))/3.0;
 
-        double dxy = rMean * angleStep * Math.PI / 180.0;
-        double dz = rMean * radiusStep;
+        double dxy = rMean * angle_step * Math.PI / 180.0;
+        double dz = rMean * radius_step;
 
         DecimalFormat df = new DecimalFormat("00.###E0");
 
 
         if ((dxy == 0)||(dz == 0)) {
-            validateMessage+="<font color=\"red\"> Error! Wrong step size. </font><br>";
+            validate_message +="<font color=\"red\"> Error! Wrong step size. </font><br>";
         } else {
             int levelXY = SourceAndConverterHelper.bestLevel(wrappedSource, 0, dxy);
-            validateMessage+="Equatorial pixel size (xy): "+df.format(dxy)+"<br>";
-            validateMessage+="Recommended Level:"+levelXY+"<br>";
+            validate_message +="Equatorial pixel size (xy): "+df.format(dxy)+"<br>";
+            validate_message +="Recommended Level:"+levelXY+"<br>";
             int levelZ = SourceAndConverterHelper.bestLevel(wrappedSource, 0, dz);
-            validateMessage+="Equatorial pixel size (z): "+df.format(dz)+"<br>";
-            validateMessage+="Recommended Level:"+levelZ+"<br>";
+            validate_message +="Equatorial pixel size (z): "+df.format(dz)+"<br>";
+            validate_message +="Recommended Level:"+levelZ+"<br>";
         }
 
         maxTimepoint = SourceAndConverterHelper.getMaxTimepoint(sacs);
@@ -272,26 +272,26 @@ public class ExportEllipticProjection implements Command {
 
         int maxZSlices;
 
-        if (rMin==rMax) {
+        if (r_min == r_max) {
             maxZSlices = 1;
         } else {
-            if (radiusStep<=0) {
-                validateMessage+="<font color=\"red\">Error : radius Step is null!</font><br></html>";
+            if (radius_step <=0) {
+                validate_message +="<font color=\"red\">Error : radius Step is null!</font><br></html>";
                 return;
             } else {
-                maxZSlices = (int) ((rMax-rMin) / radiusStep)+1;
+                maxZSlices = (int) ((r_max - r_min) / radius_step)+1;
             }
         }
 
-        if (angleStep<=0) {
-            validateMessage+="<font color=\"red\">Error : angle Step is null!</font><br></html>";
+        if (angle_step <=0) {
+            validate_message +="<font color=\"red\">Error : angle Step is null!</font><br></html>";
         }
 
-        validateMessage+="</html>";
+        validate_message +="</html>";
 
-        int imageWidth = (int) ((phiMax-phiMin) / angleStep);
+        int imageWidth = (int) ((phi_max - phi_min) / angle_step);
 
-        int imageHeight = (int) ((thetaMax-thetaMin) / angleStep);
+        int imageHeight = (int) ((theta_max - theta_min) / angle_step);
 
 
         try {
@@ -301,7 +301,7 @@ public class ExportEllipticProjection implements Command {
                     .setT(range_frames)
                     .get(sacs.length, maxZSlices,maxTimeFrames);
         } catch (Exception e) {
-            validateMessage+="<font color=\"red\">"+e.getMessage()+"</font><br></html>";
+            validate_message +="<font color=\"red\">"+e.getMessage()+"</font><br></html>";
             return;
         }
         long nBytesPerPlane = (long) imageWidth *imageHeight*2; // let's assume 16 bits
@@ -340,23 +340,23 @@ public class ExportEllipticProjection implements Command {
         // Get current big dataviewer transformation : source transform and viewer transform
         AffineTransform3D at3D = new AffineTransform3D(); // Empty Transform
 
-        double samplingxyinphysicalunit = angleStep*Math.PI/180.0;
-        double samplingzinphysicalunit = radiusStep;
+        double samplingxyinphysicalunit = angle_step *Math.PI/180.0;
+        double samplingzinphysicalunit = radius_step;
 
         at3D.set( samplingxyinphysicalunit,0,0);
         at3D.set( samplingxyinphysicalunit,1,1);
         at3D.set( samplingzinphysicalunit,2,2);
         at3D.rotate(1,-Math.PI/2.0);
-        at3D.translate(rMax-radiusStep, ((thetaMin)*Math.PI/180.0), ((phiMin)*Math.PI/180.0));
+        at3D.translate(r_max - radius_step, ((theta_min)*Math.PI/180.0), ((phi_min)*Math.PI/180.0));
 
 
-        long nPx = (int) ((phiMax-phiMin) / angleStep);
-        long nPy = (int) ((thetaMax-thetaMin) / angleStep);
+        long nPx = (int) ((phi_max - phi_min) / angle_step);
+        long nPy = (int) ((theta_max - theta_min) / angle_step);
         long nPz;
-        if (rMin==rMax) {
+        if (r_min == r_max) {
             nPz = 1;
         } else {
-            nPz = (int) ((rMax-rMin) / radiusStep)+1;
+            nPz = (int) ((r_max - r_min) / radius_step)+1;
         }
 
         // At least a pixel in all directions
