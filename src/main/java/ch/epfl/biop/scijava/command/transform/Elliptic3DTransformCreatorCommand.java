@@ -26,16 +26,16 @@ public class Elliptic3DTransformCreatorCommand implements BdvPlaygroundActionCom
     public void run() {
         e3dt = new Elliptical3DTransform();
         e3dt.setParameters(
-                "radiusX", radius_x,
-                "radiusY", radius_y,
-                "radiusZ", radius_z,
-                "rotationX", rotation_x,
-                "rotationY", rotation_y,
-                "rotationZ", rotation_z,
-                "centerX", center_x,
-                "centerY", center_y,
-                "centerZ", center_z);
+                Elliptical3DTransform.RADIUS_X, radius_x,
+                Elliptical3DTransform.RADIUS_Y, radius_y,
+                Elliptical3DTransform.RADIUS_Z, radius_z,
+                Elliptical3DTransform.ROTATION_X, rotation_x,
+                Elliptical3DTransform.ROTATION_Y, rotation_y,
+                Elliptical3DTransform.ROTATION_Z, rotation_z,
+                Elliptical3DTransform.CENTER_X, center_x,
+                Elliptical3DTransform.CENTER_Y, center_y,
+                Elliptical3DTransform.CENTER_Z, center_z);
 
-        cs.run(DisplayEllipseFromTransformCommand.class, false, "r_min", 0.9, "r_max", 1.1, "e3Dt", e3dt);
+        cs.run(DisplayEllipseFromTransformCommand.class, false, "r_min", 0.9, "r_max", 1.1, "e3dt", e3dt);
     }
 }

@@ -25,15 +25,9 @@ public class DemoEllipticalSource {
         ImageJ ij = new ImageJ();
         ij.ui().showUI();
 
-        // Creates a BdvHandle
-        BdvHandle bdvHandle = SourceAndConverterServices
-                .getBdvDisplayService().getActiveBdv();
-
         final String filePath = "src/test/resources/mri-stack.xml";
         // Import SpimData
         SpimDataFromXmlImporter importer = new SpimDataFromXmlImporter(filePath);
-        //importer.run();
-
         final AbstractSpimData spimData = importer.get();
 
         SourceAndConverter sac = SourceAndConverterServices
@@ -53,7 +47,7 @@ public class DemoEllipticalSource {
                     "rotation_z",0, // 3D rotation euler angles  - maybe not the best parametrization
                     "center_x",120,
                     "center_y",120,
-                    "center_z",120).get().getOutput("e3Dt");
+                    "center_z",120).get().getOutput("e3dt");
             SourceAndConverter transformed_source = ((SourceAndConverter[]) ij.command().run(SourcesRealTransformCommand.class, true,
                     "sources_in", new SourceAndConverter[]{sac},
                     "rt", rt).get().getOutput("sources_out"))[0];

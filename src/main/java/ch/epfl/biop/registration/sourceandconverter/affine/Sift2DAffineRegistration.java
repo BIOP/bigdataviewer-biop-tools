@@ -89,13 +89,13 @@ public class Sift2DAffineRegistration extends AffineTransformSourceAndConverterR
                 // No interpolation in resampling
                 "interpolate", false,
                  // Atlas image : a single timepoint
-                 "tpFixed", 0,
+                 "tp_fixed", 0,
                  // Level 2 for the atlas
-                 "levelFixedSource", SourceAndConverterHelper.bestLevel(fimg[0], timePoint, voxSizeInMm),
+                 "level_fixed_source", SourceAndConverterHelper.bestLevel(fimg[0], timePoint, voxSizeInMm),
                  // Timepoint moving source (normally 0)
-                 "tpMoving", timePoint,
+                 "tp_moving", timePoint,
                  // Tries to be clever for the moving source sampling
-                 "levelMovingSource", SourceAndConverterHelper.bestLevel(mimg[0], timePoint, voxSizeInMm),
+                 "level_moving_source", SourceAndConverterHelper.bestLevel(mimg[0], timePoint, voxSizeInMm),
                  "invert_moving", invert_moving,
                  "invert_fixed", invert_fixed
             );
@@ -112,7 +112,7 @@ public class Sift2DAffineRegistration extends AffineTransformSourceAndConverterR
                  success = (boolean) module.getOutput("success");
              }
              if (success) {
-                at3d = (AffineTransform3D) module.getOutput("at3D");
+                at3d = (AffineTransform3D) module.getOutput("at3d");
              } else {
                  if (module.getOutputs().containsKey("error")) {
                      errorMessage = (String) module.getOutput("error");

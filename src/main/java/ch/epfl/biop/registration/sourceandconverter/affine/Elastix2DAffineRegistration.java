@@ -78,21 +78,21 @@ public class Elastix2DAffineRegistration extends AffineTransformSourceAndConvert
                 // No interpolation in resampling
                 "interpolate", false,
                 // Start registration with a 4x4 pixel image
-                "minPixSize",4,
+                "min_image_size_pix",4,
                 // 100 iteration steps
-                "maxIterationNumberPerScale",100,
+                "max_iteration_per_scale",100,
                  // Do not write anything
                  "verbose", false,
                  // Centers centers of mass of both images before starting registration
-                 "automaticTransformInitialization", true,
+                 "automatic_transform_initialization", true,
                  // Atlas image : a single timepoint
-                 "tpFixed", 0,
+                 "tp_fixed", 0,
                  // Level 2 for the atlas
-                 "levelFixedSource", SourceAndConverterHelper.bestLevel(fimg[0], timePoint, voxSizeInMm),
+                 "level_fixed_source", SourceAndConverterHelper.bestLevel(fimg[0], timePoint, voxSizeInMm),
                  // Timepoint moving source (normally 0)
-                 "tpMoving", timePoint,
+                 "tp_moving", timePoint,
                  // Tries to be clever for the moving source sampling
-                 "levelMovingSource", SourceAndConverterHelper.bestLevel(mimg[0], timePoint, voxSizeInMm)
+                 "level_moving_source", SourceAndConverterHelper.bestLevel(mimg[0], timePoint, voxSizeInMm)
             );
 
             task = context
@@ -107,7 +107,7 @@ public class Elastix2DAffineRegistration extends AffineTransformSourceAndConvert
                  success = (boolean) module.getOutput("success");
              }
              if (success) {
-                at3d = (AffineTransform3D) module.getOutput("at3D");
+                at3d = (AffineTransform3D) module.getOutput("at3d");
              } else {
                  if (module.getOutputs().containsKey("error")) {
                      errorMessage = (String) module.getOutput("error");

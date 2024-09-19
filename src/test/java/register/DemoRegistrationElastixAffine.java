@@ -191,7 +191,7 @@ public class DemoRegistrationElastixAffine {
 
                 Thread t = new Thread(() -> {
                     try {
-                        AffineTransform3D at3d = (AffineTransform3D) task.get().getOutput("at3D");
+                        AffineTransform3D at3d = (AffineTransform3D) task.get().getOutput("at3d");
                         SourceTransformHelper.mutate(at3d, new SourceAndConverterAndTimeRange(movingSource,0));
                         bdvh.getViewerPanel().requestRepaint();
                     } catch (Exception e) {

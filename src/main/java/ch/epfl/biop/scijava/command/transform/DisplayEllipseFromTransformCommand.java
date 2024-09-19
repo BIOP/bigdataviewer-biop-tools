@@ -63,6 +63,7 @@ public class DisplayEllipseFromTransformCommand implements Command {
         ws.setIsTransformed(true);
 
         sac_out = SourceAndConverterHelper.createSourceAndConverter(ws);
+        sacService.register(sac_out);
 
         e3dt.updateNotifiers.add(() -> {
             ws.updateTransform(e3dt.inverse());
@@ -73,7 +74,6 @@ public class DisplayEllipseFromTransformCommand implements Command {
 
         new BrightnessAdjuster(sac_out,0,255).run();
 
-        sacService.register(sac_out);
 
     }
 }

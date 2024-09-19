@@ -89,7 +89,7 @@ public class EasyExportEllipticProjection implements Command {
                             ).get();
 
 
-            if ((Boolean) boxSelector.getOutput("validResult")) {
+            if ((Boolean) boxSelector.getOutput("result")) {
                 RealInterval interval = (RealInterval) boxSelector.getOutput("interval");
                 Future<CommandModule> imageGetter =
                         cs.run(ExportEllipticProjection.class, true,

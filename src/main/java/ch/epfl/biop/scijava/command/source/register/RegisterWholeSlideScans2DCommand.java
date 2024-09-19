@@ -120,7 +120,7 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
                         "background_offset_value_fixed", background_offset_value_fixed,
                         "verbose", verbose
                 ).get();
-                at1 = (AffineTransform3D) cm.getOutput("at3D");
+                at1 = (AffineTransform3D) cm.getOutput("at3d");
                 //firstRegSrc = (SourceAndConverter) cm.getOutput("registeredSource");
                 firstRegSrc = new SourceAffineTransformer(at1).apply(current_ref_source);
             }
