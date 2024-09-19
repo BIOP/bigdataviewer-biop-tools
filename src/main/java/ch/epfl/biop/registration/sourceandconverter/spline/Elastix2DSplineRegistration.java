@@ -86,21 +86,21 @@ public class Elastix2DSplineRegistration extends RealTransformSourceAndConverter
                     // Interpolation in resampling
                     "interpolate", true,
                     // Start registration with a 32x32 pixel image
-                    "minPixSize", 32,
+                    "min_image_size_pix", 32,
                     // 100 iteration steps
-                    "maxIterationNumberPerScale",100,
+                    "max_iteration_per_scale",100,
                     // Do not write anything
                     "verbose", false,
                     // Do not center centers of mass of both images before starting registration
-                    "automaticTransformInitialization", false,
+                    "automatic_transform_initialization", false,
                     // Atlas image : a single timepoint
-                    "tpFixed", 0,
+                    "tp_fixed", 0,
                     // Level 2 for the atlas
-                    "levelFixedSource", SourceAndConverterHelper.bestLevel(fimg[0], timePoint, voxSizeInMm),
+                    "level_fixed_source", SourceAndConverterHelper.bestLevel(fimg[0], timePoint, voxSizeInMm),
                     // Timepoint moving source (normally 0)
-                    "tpMoving", timePoint,
+                    "tp_moving", timePoint,
                     // Tries to be clever for the moving source sampling
-                    "levelMovingSource", SourceAndConverterHelper.bestLevel(mimg[0], timePoint, voxSizeInMm)
+                    "level_moving_source", SourceAndConverterHelper.bestLevel(mimg[0], timePoint, voxSizeInMm)
                     );
 
              task = context
