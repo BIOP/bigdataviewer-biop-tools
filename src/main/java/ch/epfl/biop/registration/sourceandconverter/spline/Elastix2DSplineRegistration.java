@@ -71,7 +71,7 @@ public class Elastix2DSplineRegistration extends RealTransformSourceAndConverter
             // Necessary for CommandService
             List<Object> flatParameters = new ArrayList<>(parameters.size()*2+4);
 
-            double voxSizeInMm = Double.parseDouble(parameters.get("pxSizeInCurrentUnit"));
+            double voxSizeInMm = Double.parseDouble(parameters.get(RESAMPLING_PX_SIZE));
 
             parameters.keySet().forEach(k -> {
                 flatParameters.add(k);

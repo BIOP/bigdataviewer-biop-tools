@@ -72,7 +72,7 @@ public class Sift2DAffineRegistration extends AffineTransformSourceAndConverterR
             // Necessary for CommandService
             List<Object> flatParameters = new ArrayList<>(parameters.size()*2+4);
 
-            double voxSizeInMm = Double.parseDouble(parameters.get("pxSizeInCurrentUnit"));
+            double voxSizeInMm = Double.parseDouble(parameters.get(RESAMPLING_PX_SIZE));
             boolean invert_moving = Boolean.parseBoolean(parameters.get(INVERT_MOVING_KEY));
             boolean invert_fixed = Boolean.parseBoolean(parameters.get(INVERT_FIXED_KEY));
 

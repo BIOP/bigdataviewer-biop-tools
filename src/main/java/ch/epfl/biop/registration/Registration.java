@@ -16,7 +16,7 @@ public interface Registration<T> {
     String ROI_PY = "py";
     String ROI_SX = "sx";
     String ROI_SY = "sy";
-    String RESAMPLING_PX_SIZE = "pxSizeInCurrentUnit";
+    String RESAMPLING_PX_SIZE = "px_size_in_current_unit";
 
     /**
      * Is called just after the Registration object creation to pass

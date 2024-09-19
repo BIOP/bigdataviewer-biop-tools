@@ -45,7 +45,8 @@ public class FusePerfMeasure {
         //ctx.getService(CommandService.class)
                 .run(CreateCZIDatasetCommand.class, true,
                         "czi_file", cziTest,
-                        "output_folder", cziTest.getParent()).get();
+                        "xml_out", xmlOut.getAbsolutePath(),
+                        "erase_if_file_already_exists", true).get();
 
         tic();
         ij.command()

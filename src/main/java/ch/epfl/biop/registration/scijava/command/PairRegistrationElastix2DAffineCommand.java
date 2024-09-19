@@ -35,7 +35,7 @@ public class PairRegistrationElastix2DAffineCommand extends AbstractPairRegistra
         parameters.put(Registration.RESAMPLING_PX_SIZE, pixel_size_micrometer/1000.0);
         parameters.put("background_offset_value_moving", 0);
         parameters.put("background_offset_value_fixed", 0);
-        parameters.put("showImagePlusRegistrationResult", show_imageplus_registration_result);
+        parameters.put("show_image_result", show_imageplus_registration_result);
     }
 
     @Override

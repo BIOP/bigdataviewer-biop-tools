@@ -8,6 +8,7 @@ import bdv.util.source.alpha.AlphaSourceDistanceL1RAI;
 import bdv.util.source.alpha.AlphaSourceHelper;
 import bdv.util.source.fused.AlphaFusedResampledSource;
 import bdv.viewer.SourceAndConverter;
+import ch.epfl.biop.bdv.img.OpenersImageLoader;
 import ch.epfl.biop.kheops.ometiff.OMETiffExporter;
 import ch.epfl.biop.sourceandconverter.SourceFuserAndResampler;
 import ch.epfl.biop.sourceandconverter.SourceHelper;
@@ -147,6 +148,7 @@ public class FuseBigStitcherDatasetIntoOMETiffCommand implements Command {
             backingCacheField.setAccessible(true);
             backingCacheField.set(cache,loaderCache);
             // Now overrides the cache in the ImageLoader
+
             if (imageLoader instanceof Hdf5ImageLoader) {
                 Field cacheField = Hdf5ImageLoader.class.getDeclaredField("cache");
                 cacheField.setAccessible(true);
@@ -155,6 +157,8 @@ public class FuseBigStitcherDatasetIntoOMETiffCommand implements Command {
                 Field cacheField = N5ImageLoader.class.getDeclaredField("cache");
                 cacheField.setAccessible(true);
                 cacheField.set(imageLoader,cache);
+            } else if (imageLoader instanceof OpenersImageLoader) {
+               // It's all good, no message to be displayed
             } else {
                 IJ.log("Can't override cache with image loader type: "+imageLoader.getClass().getName());
             }

@@ -1,6 +1,7 @@
 package ch.epfl.biop.registration.sourceandconverter.affine;
 
 import bdv.viewer.SourceAndConverter;
+import ch.epfl.biop.registration.Registration;
 import ch.epfl.biop.registration.plugin.IRegistrationPlugin;
 import ch.epfl.biop.registration.plugin.RegistrationTypeProperties;
 import ch.epfl.biop.scijava.command.source.register.Elastix2DAffineRegisterCommand;
@@ -63,7 +64,7 @@ public class Elastix2DAffineRegistration extends AffineTransformSourceAndConvert
             // Necessary for CommandService
             List<Object> flatParameters = new ArrayList<>(parameters.size()*2+4);
 
-            double voxSizeInMm = Double.parseDouble(parameters.get("pxSizeInCurrentUnit"));
+            double voxSizeInMm = Double.parseDouble(parameters.get(Registration.RESAMPLING_PX_SIZE));
 
             parameters.keySet().forEach(k -> {
                 flatParameters.add(k);

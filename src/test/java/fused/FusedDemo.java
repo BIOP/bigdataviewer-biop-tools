@@ -53,9 +53,9 @@ public class FusedDemo {
 
         IBdvSupplier bdvSupplier = new AlphaBdvSupplier(new AlphaSerializableBdvOptions());
 
-        SourceAndConverterServices.getBdvDisplayService().setDefaultBdvSupplier(bdvSupplier);
+        //SourceAndConverterServices.getBdvDisplayService().setDefaultBdvSupplier(bdvSupplier);
 
-        BdvHandle bdv = SourceAndConverterServices.getBdvDisplayService().getNewBdv();
+        BdvHandle bdv = bdvSupplier.get(); //SourceAndConverterServices.getBdvDisplayService().getNewBdv();
 
         // Import SpimData
         new SpimDataFromXmlImporter( "src/test/resources/mri-stack.xml" ).run();
