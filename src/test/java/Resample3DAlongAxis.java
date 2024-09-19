@@ -11,6 +11,7 @@ import net.imglib2.RealPoint;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
+import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.view.Views;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
 import sc.fiji.bdvpg.spimdata.importer.SpimDataFromXmlImporter;
@@ -51,12 +52,12 @@ public class Resample3DAlongAxis {
 
         sac.getSpimSource().getSourceTransform(0,0,m);
 
-        RandomAccessibleIntervalSource<UnsignedByteType> rais;
+        RandomAccessibleIntervalSource<UnsignedShortType> rais;
 
         // DO NOT WORK
-         rais = new RandomAccessibleIntervalSource<UnsignedByteType>(
+         rais = new RandomAccessibleIntervalSource<UnsignedShortType>(
                 Views.expandZero(sac.getSpimSource().getSource(0,0),0,0,0), // even though we don't care about the size of the border, this helps set the dimension
-                new UnsignedByteType(),
+                new UnsignedShortType(),
                 m,
                 "RAIS"
         );
