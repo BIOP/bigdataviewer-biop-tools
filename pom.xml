@@ -99,18 +99,18 @@
 
 		<!-- general imagej dependencies -->
 		<!-- bdv playground related dependencies -->
-		<bigdataviewer-playground.version>0.10.3</bigdataviewer-playground.version>
+		<bigdataviewer-playground.version>0.10.5</bigdataviewer-playground.version>
 		<bigdataviewer-playground-display.version>0.4.3</bigdataviewer-playground-display.version>
-		<image-transform-converters.version>0.1.7</image-transform-converters.version>
-		<bigdataviewer-image-loaders.version>0.8.1</bigdataviewer-image-loaders.version>
+		<image-transform-converters.version>0.1.9</image-transform-converters.version>
+		<bigdataviewer-image-loaders.version>0.8.5</bigdataviewer-image-loaders.version>
 
 		<!-- biop dependencies -->
-		<ijl-utilities-wrappers.version>0.9.8</ijl-utilities-wrappers.version>
-		<Operetta_Importer.version>0.3.4</Operetta_Importer.version>
-		<ijp-kheops.version>0.4.4</ijp-kheops.version>
+		<ijl-utilities-wrappers.version>0.10.0</ijl-utilities-wrappers.version>
+		<Operetta_Importer.version>0.3.5</Operetta_Importer.version>
+		<ijp-kheops.version>0.5.1</ijp-kheops.version>
 
 		<!-- mastodon -->
-		<mastodon.version>1.0.0-beta-29</mastodon.version>
+		<mastodon.version>1.0.0-beta-30</mastodon.version>
 
 		<!-- maths -->
 		<leastsquares.version>1.0.0</leastsquares.version>

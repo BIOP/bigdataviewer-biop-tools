@@ -1,7 +1,7 @@
 import bdv.util.BdvHandle;
 import bdv.viewer.SourceAndConverter;
+import ch.epfl.biop.DatasetHelper;
 import ch.epfl.biop.bdv.img.bioformats.command.CreateBdvDatasetBioFormatsCommand;
-import ch.epfl.biop.bdv.img.samples.DatasetHelper;
 import loci.common.DebugTools;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imagej.ImageJ;
