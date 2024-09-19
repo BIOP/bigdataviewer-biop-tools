@@ -52,9 +52,9 @@ public class GetUserPointsCommand implements Command {
 
         ij.command().run(GetUserPointsCommand.class, true,
                 "bdvh", bdvh,
-                "timeOutInMs", -1,
-                "messageForUser", "Select your point of interest",
-                "graphicalHandleSupplier",
+                "time_out_in_ms", -1,
+                "message_for_user", "Select your point of interest",
+                "graphical_handle_supplier",
                 (Function<RealPoint, GraphicalHandle>) realPoint ->
                         new XYRectangleGraphicalHandle(
                                 new Behaviours(new InputTriggerConfig()),

@@ -100,22 +100,22 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
 
                 CommandModule cm = cs.run(Elastix2DAffineRegisterCommand.class, true,
                         "sacs_fixed", new SourceAndConverter[]{global_ref_source},
-                        "tpFixed", 0,
-                        "levelFixedSource", SourceAndConverterHelper.bestLevel(global_ref_source, 0, coarse_pixel_size_mm),
+                        "tp_fixed", 0,
+                        "level_fixed_source", SourceAndConverterHelper.bestLevel(global_ref_source, 0, coarse_pixel_size_mm),
                         "sacs_moving", new SourceAndConverter[]{current_ref_source},
-                        "tpMoving", 0,
-                        "levelMovingSource", SourceAndConverterHelper.bestLevel(current_ref_source, 0, coarse_pixel_size_mm),
+                        "tp_moving", 0,
+                        "level_moving_source", SourceAndConverterHelper.bestLevel(current_ref_source, 0, coarse_pixel_size_mm),
                         "px", top_left_x,
                         "py", top_left_y,
                         "pz", 0,
                         "sx", bottom_right_x - top_left_x,
                         "sy", bottom_right_y - top_left_y,
-                        "pxSizeInCurrentUnit", coarse_pixel_size_mm, // in mm
+                        "px_size_in_current_unit", coarse_pixel_size_mm, // in mm
                         "interpolate", true,
-                        "showImagePlusRegistrationResult", show_details,
-                        "automaticTransformInitialization", false,
-                        "maxIterationNumberPerScale", max_iteration_per_scale,
-                        "minPixSize", 32,
+                        "show_image_registration", show_details,
+                        "automatic_transform_initialization", false,
+                        "max_iteration_per_scale", max_iteration_per_scale,
+                        "min_image_size_pix", 32,
                         "background_offset_value_moving", background_offset_value_moving,
                         "background_offset_value_fixed", background_offset_value_fixed,
                         "verbose", verbose
@@ -134,21 +134,20 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
                         (RealTransform) cs.run(Elastix2DSparsePointsRegisterCommand.class, true,
                                 "sacs_fixed", new SourceAndConverter[]{global_ref_source},
                                 "sacs_moving", new SourceAndConverter[]{firstRegSrc},
-                                "tpFixed", 0,
-                                "levelFixedSource", SourceAndConverterHelper.bestLevel(global_ref_source, 0, precise_pixel_size_mm), //TODO does this make sense ? Shouldn't it be self pixel precise size ?
-                                "tpMoving", 0,
-                                "levelMovingSource", SourceAndConverterHelper.bestLevel(firstRegSrc, 0, precise_pixel_size_mm),
-                                "ptListCoordinates", pt_list_coordinates,
-                                "zLocation", 0,
+                                "tp_fixed", 0,
+                                "level_fixed_source", SourceAndConverterHelper.bestLevel(global_ref_source, 0, precise_pixel_size_mm), //TODO does this make sense ? Shouldn't it be self pixel precise size ?
+                                "tp_moving", 0,
+                                "level_moving_source", SourceAndConverterHelper.bestLevel(firstRegSrc, 0, precise_pixel_size_mm),
+                                "pt_list_coordinates", pt_list_coordinates,
+                                "z_location", 0,
                                 "sx", patch_size_mm, // 500 microns
                                 "sy", patch_size_mm, // 500 microns
-                                "pxSizeInCurrentUnit", precise_pixel_size_mm, //1 micron per pixel
+                                "px_size_in_current_unit", precise_pixel_size_mm, //1 micron per pixel
                                 "interpolate", true,
-                                "showPoints", show_details,//true,
+                                "show_points", show_details,//true,
                                 "parallel", !show_details,//false,
                                 "verbose", verbose,
-                                "maxIterationNumberPerScale", max_iteration_per_scale,
-                                "minPixSize", 32,
+                                "max_iteration_per_scale", max_iteration_per_scale,
                                 "background_offset_value_moving", background_offset_value_moving,
                                 "background_offset_value_fixed", background_offset_value_fixed,
                                 "verbose", verbose
@@ -203,7 +202,7 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
 
         cs.run(CreateBdvDatasetQuPathCommand.class,true,
                 "unit","MILLIMETER",
-                "splitRGBChannels",false).get();
+                "split_rgb_channels",false).get();
 
         cs.run(BdvSourcesShowCommand.class,true,
                 "autoContrast",true,

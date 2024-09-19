@@ -32,7 +32,7 @@ public class Elliptic3DTransformImporterCommand implements BdvPlaygroundActionCo
     @Override
     public void run() {
         e3dt = readTransformFromFile(file);
-        commandService.run(DisplayEllipseFromTransformCommand.class, false, "rMin", 0.9, "rMax", 1.1, "e3Dt", e3dt);
+        commandService.run(DisplayEllipseFromTransformCommand.class, false, "r_min", 0.9, "r_max", 1.1, "e3dt", e3dt);
     }
 
     private Elliptical3DTransform readTransformFromFile(File file)

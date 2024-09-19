@@ -68,7 +68,7 @@ public class MamutWarperPlugin implements MamutPlugin
 
         @Override
         public void actionPerformed( final ActionEvent e ) {
-            command.run(MamutWarperCommand.class, true, "appModel", appModel);
+            command.run(MamutWarperCommand.class, true, "app_model", appModel);
         }
     };
 

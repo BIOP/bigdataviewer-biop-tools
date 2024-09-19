@@ -122,26 +122,26 @@ public class Elastix2DSparsePointsRegisterCommand extends SelectSourcesForRegist
                     try {
                         AffineTransform3D at = (AffineTransform3D) cs.run(Elastix2DAffineRegisterCommand.class, true,
                                 "sacs_fixed", sacs_fixed,
-                                "tpFixed", tp_fixed,
-                                "levelFixedSource", level_fixed_source,
+                                "tp_fixed", tp_fixed,
+                                "level_fixed_source", level_fixed_source,
                                 "sacs_moving", sacs_moving,
-                                "tpMoving", tp_moving,
-                                "levelMovingSource", level_moving_source,
+                                "tp_moving", tp_moving,
+                                "level_moving_source", level_moving_source,
                                 "px", pt.getDoublePosition(0) - sx / 2.0,
                                 "py", pt.getDoublePosition(1) - sy / 2.0,
                                 "pz", pt.getDoublePosition(2),
                                 "sx", sx,
                                 "sy", sy,
-                                "pxSizeInCurrentUnit", px_size_in_current_unit,
+                                "px_size_in_current_unit", px_size_in_current_unit,
                                 "interpolate", interpolate,
-                                "showImagePlusRegistrationResult", show_points,
-                                "automaticTransformInitialization", false,
-                                "maxIterationNumberPerScale", max_iteration_per_scale,
+                                "show_image_registration", show_points,
+                                "automatic_transform_initialization", false,
+                                "max_iteration_per_scale", max_iteration_per_scale,
                                 "background_offset_value_moving", background_offset_value_moving,
                                 "background_offset_value_fixed", background_offset_value_fixed,
-                                "minPixSize", 32,
+                                "min_image_size_pix", 32,
                                 "verbose", verbose
-                        ).get().getOutput("at3D");
+                        ).get().getOutput("at3d");
                         if (at != null) {
                             RealPoint ptCorr = new RealPoint(3);
                             at.apply(pt, ptCorr);

@@ -277,23 +277,23 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
 
             // Coarse and spline registration - if selected by the user
             transformation = (RealTransform) cs.run(RegisterWholeSlideScans2DCommand.class, true,
-                        "globalRefSource", fixed,
-                               "currentRefSource", moving,
-                               "ptListCoordinates", ptCoords,
-                               "topLeftX", topLeftX,
-                               "topLeftY", topLeftY,
-                               "bottomRightX", bottomRightX,
-                               "bottomRightY", bottomRightY,
-                               "showDetails", show_details,
+                        "global_ref_source", fixed,
+                               "current_ref_source", moving,
+                               "pt_list_coordinates", ptCoords,
+                               "top_left_x", topLeftX,
+                               "top_left_y", topLeftY,
+                               "bottom_right_x", bottomRightX,
+                               "bottom_right_y", bottomRightY,
+                               "show_details", show_details,
                                "verbose", verbose,
-                               "performFirstCoarseAffineRegistration", automated_affine_registration,
-                               "performSecondSplineRegistration", automated_spline_registration,
-                               "maxIterationNumberPerScale", max_iteration_number_per_scale,
+                               "perform_first_coarse_affine_registration", automated_affine_registration,
+                               "perform_second_spline_registration", automated_spline_registration,
+                               "max_iteration_per_scale", max_iteration_number_per_scale,
                                "background_offset_value_moving", background_offset_value_moving,
                                "background_offset_value_fixed", background_offset_value_fixed,
-                               "precisePixelSize_mm", precisePixelSize_mm,
-                               "patchSize_mm", patchSize_mm,
-                               "coarsePixelSize_mm", coarsePixelSize_mm
+                               "precise_pixel_size_mm", precisePixelSize_mm,
+                               "patch_size_mm", patchSize_mm,
+                               "coarse_pixel_size_mm", coarsePixelSize_mm
                     ).get().getOutput("tst");
 
             if (manual_spline_registration) {
@@ -622,9 +622,9 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
 
         landmarks = (List<RealPoint>) cs
                 .run(GetUserPointsCommand.class, true,
-                        "messageForUser", "Select the position of the landmarks that will be used for the registration (at least 4).",
-                        "timeOutInMs", -1,
-                        "graphicalHandleSupplier",
+                        "message_for_user", "Select the position of the landmarks that will be used for the registration (at least 4).",
+                        "time_out_in_ms", -1,
+                        "graphical_handle_supplier",
                         (Function<RealPoint, GraphicalHandle>) realPoint ->
                                 new XYRectangleGraphicalHandle(
                                         new Behaviours(new InputTriggerConfig()),
@@ -647,8 +647,8 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
         RealInterval box = getBoundingBox();
 
         CommandModule module = cs.run(GetUserRectangleCommand.class, true,
-                        "messageForUser", "Select a rectangular region for the region you'd like to register.",
-                        "timeOutInMs", -1,
+                        "message_for_user", "Select a rectangular region for the region you'd like to register.",
+                        "time_out_in_ms", -1,
                         "p1", box.minAsRealPoint(),
                         "p2", box.maxAsRealPoint()).get();
         corners = new ArrayList<>();

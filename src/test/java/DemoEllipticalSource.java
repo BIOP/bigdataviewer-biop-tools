@@ -45,15 +45,15 @@ public class DemoEllipticalSource {
 
         try {
             RealTransform rt = (RealTransform) ij.command().run(Elliptic3DTransformCreatorCommand.class, true,
-                    "radiusX",100,
-                    "radiusY",100,
-                    "radiusZ",100, // radii of axes 1 2 3 of ellipse
-                    "rotationX",0,
-                    "rotationY",0,
-                    "rotationZ",0, // 3D rotation euler angles  - maybe not the best parametrization
-                    "centerX",120,
-                    "centerY",120,
-                    "centerZ",120).get().getOutput("e3Dt");
+                    "radius_x",100,
+                    "radius_y",100,
+                    "radius_z",100, // radii of axes 1 2 3 of ellipse
+                    "rotation_x",0,
+                    "rotation_y",0,
+                    "rotation_z",0, // 3D rotation euler angles  - maybe not the best parametrization
+                    "center_x",120,
+                    "center_y",120,
+                    "center_z",120).get().getOutput("e3Dt");
             SourceAndConverter transformed_source = ((SourceAndConverter[]) ij.command().run(SourcesRealTransformCommand.class, true,
                     "sources_in", new SourceAndConverter[]{sac},
                     "rt", rt).get().getOutput("sources_out"))[0];

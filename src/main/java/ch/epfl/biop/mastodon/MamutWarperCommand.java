@@ -45,7 +45,7 @@ public class MamutWarperCommand implements Command {
 
     @SuppressWarnings( "unused" )
     @Parameter
-    private ProjectModel appModel;
+    private ProjectModel app_model;
 
     @Parameter(label = "Select the image plus projected image")
     ImagePlus image;
@@ -60,7 +60,7 @@ public class MamutWarperCommand implements Command {
     double cell_size;
 
     @Parameter
-    RoiManager roiManager;
+    RoiManager roi_manager;
 
     @Parameter(label="Create a combined tag, for instance 'A,Somite_6'")
     String combine_create_tag = "";
@@ -100,10 +100,10 @@ public class MamutWarperCommand implements Command {
 
 
         try {
-            roiManager.reset();
+            roi_manager.reset();
             Elliptical3DTransform e3Dt = ScijavaGsonHelper.getGson(context).fromJson(new FileReader(elliptical_transform_file), Elliptical3DTransform.class);//getEllipticalTransformFromImagePlus(image);
 
-            Model model = appModel.getModel();
+            Model model = app_model.getModel();
             ReentrantReadWriteLock.WriteLock lock = model.getGraph().getLock().writeLock();
 
             // For TrackMate export:
@@ -196,7 +196,7 @@ public class MamutWarperCommand implements Command {
 
                     mastodonToTM.put(spot.getInternalPoolIndex(), tm_spot);
                     ovalRoi.setName(spot.getLabel() + "_T" + t);
-                    roiManager.addRoi(ovalRoi);
+                    roi_manager.addRoi(ovalRoi);
 
                 }
 

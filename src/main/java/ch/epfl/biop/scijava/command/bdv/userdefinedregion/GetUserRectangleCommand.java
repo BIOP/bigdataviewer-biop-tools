@@ -48,8 +48,8 @@ public class GetUserRectangleCommand implements Command {
         pB.setPosition(new double[]{800, 500, 80});
         ij.command().run(GetUserRectangleCommand.class, true,
                 "bdvh", bdvh,
-                "timeOutInMs", -1,
-                "messageForUser", "Please select a rectangle and confirm your input",
+                "time_out_in_ms", -1,
+                "message_for_user", "Please select a rectangle and confirm your input",
                 "p1", new RealPoint(3),
                 "p2", pB
         );

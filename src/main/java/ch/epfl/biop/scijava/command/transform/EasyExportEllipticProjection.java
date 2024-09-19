@@ -94,12 +94,12 @@ public class EasyExportEllipticProjection implements Command {
                 Future<CommandModule> imageGetter =
                         cs.run(ExportEllipticProjection.class, true,
                                 "sacs", sacs,
-                                "rMin", interval.realMin(0),
-                                "rMax", interval.realMax(0),
-                                "thetaMin", interval.realMin(1)*180.0/Math.PI,
-                                "thetaMax", interval.realMax(1)*180.0/Math.PI,
-                                "phiMin", interval.realMin(2)*180.0/Math.PI,
-                                "phiMax", interval.realMax(2)*180.0/Math.PI);
+                                "r_min", interval.realMin(0),
+                                "r_max", interval.realMax(0),
+                                "theta_min", interval.realMin(1)*180.0/Math.PI,
+                                "theta_max", interval.realMax(1)*180.0/Math.PI,
+                                "phi_min", interval.realMin(2)*180.0/Math.PI,
+                                "phi_max", interval.realMax(2)*180.0/Math.PI);
 
                 imp_out = (ImagePlus) imageGetter.get().getOutput("imp_out");
             } else {
