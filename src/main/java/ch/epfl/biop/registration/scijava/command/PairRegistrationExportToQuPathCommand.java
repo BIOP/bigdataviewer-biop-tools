@@ -9,7 +9,7 @@ import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
-        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Register Pair - Export registration to QuPath project",
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Export>Register Pair - Export registration to QuPath project",
         description = "If properly defined, exports the registration to the QuPath project"  )
 public class PairRegistrationExportToQuPathCommand implements Command {
 

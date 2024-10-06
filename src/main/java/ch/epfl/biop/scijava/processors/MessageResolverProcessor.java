@@ -64,7 +64,7 @@ public class MessageResolverProcessor extends AbstractPreprocessorPlugin {
         });
 
         if (messagesCount > 0) {
-            if (unresolvedInputsExceptMessageCount == buttonCount) {
+            if ((unresolvedInputsExceptMessageCount == 0)||(unresolvedInputsExceptMessageCount == buttonCount)) {
                 // No need for null check, it's been done before
                 module.getInputs().forEach((name, input) -> {
                     if (module.getInfo().getInput(name).getVisibility().equals(ItemVisibility.MESSAGE)||(module.getInfo().getInput(name).getType().equals(Button.class))) {

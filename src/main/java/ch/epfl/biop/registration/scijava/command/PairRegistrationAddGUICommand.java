@@ -116,11 +116,12 @@ public class PairRegistrationAddGUICommand implements Command {
                 hierarchyLevelsSkipped,"registration_pair", registration_pair);
         BdvScijavaHelper.addCommandToBdvHandleMenu(bdvh, ctx, PairRegistrationExportToQuPathCommand.class,
                 hierarchyLevelsSkipped,"registration_pair", registration_pair);
+        BdvScijavaHelper.addCommandToBdvHandleMenu(bdvh, ctx, PairRegistrationExportToOMETIFFCommand.class,
+                hierarchyLevelsSkipped,"registration_pair", registration_pair);
         BdvScijavaHelper.addCommandToBdvHandleMenu(bdvh, ctx, PairRegistrationEditLastRegistrationCommand.class,
                 hierarchyLevelsSkipped,"registration_pair", registration_pair);
         BdvScijavaHelper.addCommandToBdvHandleMenu(bdvh, ctx, PairRegistrationRemoveLastRegistrationCommand.class,
                 hierarchyLevelsSkipped,"registration_pair", registration_pair);
-
     }
 
     private void updateBdvSourceGroups(BdvHandle bdvh) {
