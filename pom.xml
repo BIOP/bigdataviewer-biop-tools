@@ -122,6 +122,7 @@
 		<reflections.version>0.10.2</reflections.version>
 		<!-- package version below are determined by the parent pom but need to be upgraded or temporarily fixed for bugs -->
 
+		<spim_data.version>2.3.4</spim_data.version>
 
 	</properties>
 
@@ -268,6 +269,12 @@
 			<!--<version>1.6.0</version>-->
 		</dependency>
 
+		<dependency>
+			<groupId>sc.fiji</groupId>
+			<artifactId>spim_data</artifactId>
+			<version>${spim_data.version}</version>
+		</dependency>
+
 		<!-- test dependencies -->
 
 		<dependency>
@@ -289,6 +296,8 @@
 			<version>${reflections.version}</version>
 			<scope>test</scope>
 		</dependency>
+
+
 
 		<!--dependency>
 		  <groupId>net.preibisch</groupId>
