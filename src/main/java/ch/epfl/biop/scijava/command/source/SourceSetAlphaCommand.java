@@ -9,7 +9,6 @@ import net.imglib2.realtransform.AffineTransform3D;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
-import org.scijava.vecmath.Point3d;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 
@@ -34,12 +33,23 @@ public class SourceSetAlphaCommand implements Command {
             } else {
                 AffineTransform3D sourceTransform = new AffineTransform3D();
                 source.getSpimSource().getSourceTransform(0,0, sourceTransform); // Assumption: same voxel size for all timepoints, and timepoint 0 exists
-                Point3d v1 = new Point3d(sourceTransform.get(0, 0), sourceTransform.get(0, 1), sourceTransform.get(0, 2));
-                Point3d v2 = new Point3d(sourceTransform.get(1, 0), sourceTransform.get(1, 1), sourceTransform.get(1, 2));
-                Point3d v3 = new Point3d(sourceTransform.get(2, 0), sourceTransform.get(2, 1), sourceTransform.get(2, 2));
-                double a = Math.sqrt(v1.x * v1.x + v1.y * v1.y + v1.z * v1.z);
-                double b = Math.sqrt(v2.x * v2.x + v2.y * v2.y + v2.z * v2.z);
-                double c = Math.sqrt(v3.x * v3.x + v3.y * v3.y + v3.z * v3.z);
+
+                double v1x = sourceTransform.get(0, 0);
+                double v1y = sourceTransform.get(0, 1);
+                double v1z = sourceTransform.get(0, 2);
+
+                double v2x = sourceTransform.get(1, 0);
+                double v2y = sourceTransform.get(1, 1);
+                double v2z = sourceTransform.get(1,2);
+
+                double v3x = sourceTransform.get(2, 0);
+                double v3y = sourceTransform.get(2, 1);
+                double v3z = sourceTransform.get(2,2);
+
+                double a = Math.sqrt(v1x * v1x + v1y * v1y + v1z * v1z);
+                double b = Math.sqrt(v2x * v2x + v2y * v2y + v2z * v2z);
+                double c = Math.sqrt(v3x * v3x + v3y * v3y + v3z * v3z);
+
                 vox_size_x_micrometer = a;
                 vox_size_y_micrometer = b;
                 vox_size_z_micrometer = c;

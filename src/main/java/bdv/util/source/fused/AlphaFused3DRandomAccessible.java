@@ -75,4 +75,9 @@ public class AlphaFused3DRandomAccessible<T extends RealType<T>> implements Rand
     public int numDimensions() {
         return 3;
     }
+
+    @Override
+    public T getType() {
+        return pixelSupplier.get();
+    }
 }

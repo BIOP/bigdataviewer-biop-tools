@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>38.0.1</version>
+		<version>39.0.0-SNAPSHOT</version>
 		<relativePath />
 	</parent>
 
@@ -99,10 +99,10 @@
 
 		<!-- general imagej dependencies -->
 		<!-- bdv playground related dependencies -->
-		<bigdataviewer-playground.version>0.10.5</bigdataviewer-playground.version>
+		<bigdataviewer-playground.version>0.10.7-SNAPSHOT</bigdataviewer-playground.version>
 		<bigdataviewer-playground-display.version>0.4.3</bigdataviewer-playground-display.version>
 		<image-transform-converters.version>0.1.9</image-transform-converters.version>
-		<bigdataviewer-image-loaders.version>0.8.6</bigdataviewer-image-loaders.version>
+		<bigdataviewer-image-loaders.version>0.8.7-SNAPSHOT</bigdataviewer-image-loaders.version>
 
 		<!-- biop dependencies -->
 		<ijl-utilities-wrappers.version>0.10.0</ijl-utilities-wrappers.version>
