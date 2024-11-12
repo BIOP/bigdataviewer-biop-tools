@@ -14,6 +14,8 @@ import sc.fiji.bdvpg.bdv.BdvHandleHelper;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
 import sc.fiji.bdvpg.sourceandconverter.register.BigWarpLauncher;
 
+import java.awt.EventQueue;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -42,44 +44,52 @@ public class SacBigWarp2DRegistration extends RealTransformSourceAndConverterReg
     public boolean register() {
         {
 
-            List<SourceAndConverter<?>> movingSacs = Arrays.stream(mimg).collect(Collectors.toList());
+            try {
+                EventQueue.invokeAndWait(() -> {
+                    List<SourceAndConverter<?>> movingSacs = Arrays.stream(mimg).collect(Collectors.toList());
 
-            List<SourceAndConverter<?>> fixedSacs = Arrays.stream(fimg).collect(Collectors.toList());
+                    List<SourceAndConverter<?>> fixedSacs = Arrays.stream(fimg).collect(Collectors.toList());
 
-            List<ConverterSetup> converterSetups = Arrays.stream(mimg).map(src -> SourceAndConverterServices.getSourceAndConverterService().getConverterSetup(src)).collect(Collectors.toList());
+                    List<ConverterSetup> converterSetups = Arrays.stream(mimg).map(src -> SourceAndConverterServices.getSourceAndConverterService().getConverterSetup(src)).collect(Collectors.toList());
 
-            converterSetups.addAll(Arrays.stream(fimg).map(src -> SourceAndConverterServices.getSourceAndConverterService().getConverterSetup(src)).collect(Collectors.toList()));
+                    converterSetups.addAll(Arrays.stream(fimg).map(src -> SourceAndConverterServices.getSourceAndConverterService().getConverterSetup(src)).collect(Collectors.toList()));
 
-            // Launch BigWarp
-            bwl = new BigWarpLauncher(movingSacs, fixedSacs, "Big Warp", converterSetups);
-            bwl.set2d();
-            bwl.run();
+                    // Launch BigWarp
+                    bwl = new BigWarpLauncher(movingSacs, fixedSacs, "Big Warp", converterSetups);
+                    bwl.set2d();
+                    bwl.run();
 
-            // Output bdvh handles -> will be put in the object service
-            BdvHandle bdvhQ = bwl.getBdvHandleQ();
-            BdvHandle bdvhP = bwl.getBdvHandleP();
+                    // Output bdvh handles -> will be put in the object service
+                    BdvHandle bdvhQ = bwl.getBdvHandleQ();
+                    BdvHandle bdvhP = bwl.getBdvHandleP();
 
-            bdvhQ.getViewerPanel().state().setDisplayMode(DisplayMode.FUSED);
-            bdvhP.getViewerPanel().state().setDisplayMode(DisplayMode.FUSED);
+                    bdvhQ.getViewerPanel().state().setDisplayMode(DisplayMode.FUSED);
+                    bdvhP.getViewerPanel().state().setDisplayMode(DisplayMode.FUSED);
 
-            bdvhP.getViewerPanel().state().setViewerTransform(BdvHandleHelper.getViewerTransformWithNewCenter(bdvhP, new double[]{0,0,0}));
-            bdvhQ.getViewerPanel().state().setViewerTransform(BdvHandleHelper.getViewerTransformWithNewCenter(bdvhQ, new double[]{0,0,0}));
+                    bdvhP.getViewerPanel().state().setViewerTransform(BdvHandleHelper.getViewerTransformWithNewCenter(bdvhP, new double[]{0,0,0}));
+                    bdvhQ.getViewerPanel().state().setViewerTransform(BdvHandleHelper.getViewerTransformWithNewCenter(bdvhQ, new double[]{0,0,0}));
 
-            SourceAndConverterServices.getBdvDisplayService().pairClosing(bdvhQ,bdvhP);
+                    SourceAndConverterServices.getBdvDisplayService().pairClosing(bdvhQ,bdvhP);
 
-            bdvhP.getViewerPanel().requestRepaint();
-            bdvhQ.getViewerPanel().requestRepaint();
+                    bdvhP.getViewerPanel().requestRepaint();
+                    bdvhQ.getViewerPanel().requestRepaint();
 
-            bwl.getBigWarp().getLandmarkFrame().repaint();
+                    bwl.getBigWarp().getLandmarkFrame().repaint();
 
-            // Restores landmarks if some were already defined
-            if (rt!=null) {
-                String bigWarpFile = BigWarpFileFromRealTransform(rt);
-                if (bigWarpFile!=null) { // If the transform is not a spline, no landmarks are saved, the user has to redo his job
-                    bwl.getBigWarp().loadLandmarks(bigWarpFile);
-                    bwl.getBigWarp().setInLandmarkMode(true);
-                    bwl.getBigWarp().setIsMovingDisplayTransformed(true);
-                }
+                    // Restores landmarks if some were already defined
+                    if (rt!=null) {
+                        String bigWarpFile = BigWarpFileFromRealTransform(rt);
+                        if (bigWarpFile!=null) { // If the transform is not a spline, no landmarks are saved, the user has to redo his job
+                            bwl.getBigWarp().loadLandmarks(bigWarpFile);
+                            bwl.getBigWarp().setInLandmarkMode(true);
+                            bwl.getBigWarp().setIsMovingDisplayTransformed(true);
+                        }
+                    }
+                });
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            } catch (InvocationTargetException e) {
+                throw new RuntimeException(e);
             }
 
             waitForUser.run();
