@@ -141,7 +141,7 @@ public class OpenOperettaDatasetCommand implements Command {
         final IFormatReader[] reader = new IFormatReader[1];
         Thread t = new Thread(() -> {
             try {
-                reader[0] = OperettaManager.createReader(f.getAbsolutePath());
+                reader[0] = OperettaManager.Builder.createReader(f.getAbsolutePath());
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (FormatException e) {
@@ -179,10 +179,10 @@ public class OpenOperettaDatasetCommand implements Command {
         int stack_width = reader[0].getSizeX();
         int stack_height = reader[0].getSizeY();
 
-        opm.getAvailableWellsString().forEach(System.out::println);
+        /*opm.getAvailableWellsString().forEach(System.out::println);
         opm.getAvailableWells().forEach(System.out::println);
         opm.getAvailableFieldIds().forEach(System.out::println);
-        opm.getAvailableFieldsString().forEach(System.out::println);
+        opm.getAvailableFieldsString().forEach(System.out::println);*/
 
 
         try {
@@ -221,7 +221,7 @@ public class OpenOperettaDatasetCommand implements Command {
 
             DefaultTreeModel model = sourceService.getUI().getTreeModel();
 
-            opm.getAvailableWells().forEach(w -> {
+            opm.getWells().forEach(w -> {
                 int row = w.getRow().getValue() + 1;
                 int col = w.getColumn().getValue() + 1;
                 String name = getWellName(row, col);// "R" + row + "-C" + col;
@@ -231,7 +231,7 @@ public class OpenOperettaDatasetCommand implements Command {
                 wellFilters.put(w, sfn);
             });
 
-            opm.getAvailableFieldIds().forEach(id -> {
+            opm.getFieldIds().forEach(id -> {
                 fieldsFilters.put(id,
                         new SourceFilterNode(model,"Field "+id,
                         (source) -> source.getSpimSource().getName().contains(" Field "+id+"-"),false)
@@ -316,7 +316,7 @@ public class OpenOperettaDatasetCommand implements Command {
 
             int nSlices = opm.getRange().getRangeZ().size();
 
-            Well w0 = opm.getAvailableWells().get(0);
+            Well w0 = opm.getWells().get(0);
             int row0 = w0.getRow().getValue() + 1;
             int col0 = w0.getColumn().getValue() + 1;
             String wellName0 =  getWellName(row0, col0); // "R" + row0 + "-C" + col0;
@@ -360,7 +360,7 @@ public class OpenOperettaDatasetCommand implements Command {
             double startX = Double.MAX_VALUE;
             double startY = Double.MAX_VALUE;
             // Moving in space
-            for (Well w : opm.getAvailableWells()) {
+            for (Well w : opm.getWells()) {
                 int row = w.getRow().getValue() + 1;
                 int col = w.getColumn().getValue() + 1;
                 String wellName =  getWellName(row, col);//"R" + row + "-C" + col;
