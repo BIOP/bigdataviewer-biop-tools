@@ -11,6 +11,7 @@ import mpicbg.spim.data.sequence.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -137,7 +138,7 @@ public class LifReOrdered implements ISetupOrder {
         SequenceDescription sd = new SequenceDescription( new TimePoints( timePoints ), newViewSetups , null, new MissingViews(missingViews));
         sd.setImgLoader(new ReorderedImageLoader(this, sd, 4, 2));
 
-        final SpimData spimData = new SpimData( null, sd, new ViewRegistrations( registrations ) );
+        final SpimData spimData = new SpimData( (File) null, sd, new ViewRegistrations( registrations ) );
         return spimData;
     }
 

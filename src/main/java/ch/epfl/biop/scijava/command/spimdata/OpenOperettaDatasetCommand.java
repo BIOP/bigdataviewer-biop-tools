@@ -179,6 +179,12 @@ public class OpenOperettaDatasetCommand implements Command {
         int stack_width = reader[0].getSizeX();
         int stack_height = reader[0].getSizeY();
 
+        /*opm.getAvailableWellsString().forEach(System.out::println);
+        opm.getAvailableWells().forEach(System.out::println);
+        opm.getAvailableFieldIds().forEach(System.out::println);
+        opm.getAvailableFieldsString().forEach(System.out::println);*/
+
+
         try {
             // Block size : reading one full plane at a time
 

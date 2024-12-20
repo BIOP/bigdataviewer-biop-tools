@@ -5,13 +5,13 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>38.0.1</version>
+		<version>39.0.0</version>
 		<relativePath />
 	</parent>
 
 	<groupId>ch.epfl.biop</groupId>
 	<artifactId>bigdataviewer-biop-tools</artifactId>
-	<version>0.10.10-SNAPSHOT</version>
+	<version>0.11.0-SNAPSHOT</version>
 
 	<name>Biop Bigdataviewer Tools and Plugins </name>
 	<description>Big data viewer tools BIOP - EPFL</description>
@@ -99,18 +99,18 @@
 
 		<!-- general imagej dependencies -->
 		<!-- bdv playground related dependencies -->
-		<bigdataviewer-playground.version>0.10.10</bigdataviewer-playground.version>
-		<bigdataviewer-playground-display.version>0.4.3</bigdataviewer-playground-display.version>
-		<image-transform-converters.version>0.1.9</image-transform-converters.version>
-		<bigdataviewer-image-loaders.version>0.8.9</bigdataviewer-image-loaders.version>
+		<bigdataviewer-playground.version>0.11.0</bigdataviewer-playground.version>
+		<bigdataviewer-playground-display.version>0.5.0</bigdataviewer-playground-display.version>
+		<image-transform-converters.version>0.2.0</image-transform-converters.version>
+		<bigdataviewer-image-loaders.version>0.9.0</bigdataviewer-image-loaders.version>
 
 		<!-- biop dependencies -->
-		<ijl-utilities-wrappers.version>0.10.6</ijl-utilities-wrappers.version>
+		<ijl-utilities-wrappers.version>0.11.0</ijl-utilities-wrappers.version>
 		<Operetta_Importer.version>0.4.1</Operetta_Importer.version>
-		<ijp-kheops.version>0.5.1</ijp-kheops.version>
+		<ijp-kheops.version>0.6.0</ijp-kheops.version>
 
 		<!-- mastodon -->
-		<mastodon.version>1.0.0-beta-30</mastodon.version>
+		<mastodon.version>1.0.0-beta-33</mastodon.version>
 
 		<!-- maths -->
 		<leastsquares.version>1.0.0</leastsquares.version>
@@ -122,6 +122,7 @@
 		<reflections.version>0.10.2</reflections.version>
 		<!-- package version below are determined by the parent pom but need to be upgraded or temporarily fixed for bugs -->
 
+		<spim_data.version>2.3.5</spim_data.version>
 
 	</properties>
 
@@ -268,6 +269,12 @@
 			<!--<version>1.6.0</version>-->
 		</dependency>
 
+		<dependency>
+			<groupId>sc.fiji</groupId>
+			<artifactId>spim_data</artifactId>
+			<version>${spim_data.version}</version>
+		</dependency>
+
 		<!-- test dependencies -->
 
 		<dependency>
@@ -289,6 +296,8 @@
 			<version>${reflections.version}</version>
 			<scope>test</scope>
 		</dependency>
+
+
 
 		<!--dependency>
 		  <groupId>net.preibisch</groupId>
