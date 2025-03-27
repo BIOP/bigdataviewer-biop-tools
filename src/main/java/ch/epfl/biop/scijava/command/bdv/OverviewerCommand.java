@@ -283,8 +283,17 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
          */
         public SacProperties(SourceAndConverter sac) {
             location = new AffineTransform3D();
-            sac.getSpimSource().getSourceTransform(0, 0, location);
-            sac.getSpimSource().getSource(0,0).dimensions(dims);
+            int tpTest = 0;
+            int maxTpSearch = 100_000;
+            while (!(sac.getSpimSource().isPresent(tpTest) && (tpTest<maxTpSearch))) {
+                tpTest++;
+            }
+            if (tpTest==maxTpSearch) {
+                throw new RuntimeException("Couldn't find a present timepoint before t = "+maxTpSearch);
+            }
+
+            sac.getSpimSource().getSourceTransform(tpTest, 0, location);
+            sac.getSpimSource().getSource(tpTest,0).dimensions(dims);
             this.sac = sac;
             this.isRGB = (sac.getSpimSource().getType() instanceof ARGBType) || (sac.getSpimSource().getType() instanceof VolatileARGBType);
         }

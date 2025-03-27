@@ -115,6 +115,17 @@ public class IntRangeParser {
         return list;
     }
 
+    /**
+     *
+     * @param length the length in maximum of the total list
+     * @return gnagna
+     * @throws Exception parsing error usually
+     */
+    public List<Integer> get(int min, int length) throws Exception {
+        return get(length).stream().filter(idx -> idx>=min).collect(Collectors.toList());
+    }
+
+
     // convert argument to value : if the value is negative, then subtract to the end
     static double cvt(String arg, int length) throws Exception {
         double  value = Double.valueOf(arg);

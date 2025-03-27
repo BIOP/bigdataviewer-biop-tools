@@ -27,7 +27,7 @@ public class SourceTimeMapper implements Runnable, Function<SourceAndConverter, 
     }
 
     public SourceAndConverter apply(SourceAndConverter src) {
-        Source srcRsampled = new MappedTimeSource(src.asVolatile().getSpimSource(), this.name, timeMapper);
+        Source srcRsampled = new MappedTimeSource(src.getSpimSource(), this.name, timeMapper);
         SourceAndConverter sac;
         if (src.asVolatile() != null) {
             MappedTimeSource vsrcRsampled = new MappedTimeSource(src.asVolatile().getSpimSource(), this.name, timeMapper);

@@ -140,26 +140,29 @@ public class ExportToMultipleImagePlusCommand implements BdvPlaygroundActionComm
             OverviewerCommand.SacProperties sacPropsKey = keySetSac.get(sacKey).get(0);
             List<SourceAndConverter<?>> sources = sacClasses.get(sacPropsKey);
 
-            ImagePlus imp_out;
+            //ImagePlus imp_out;
             int maxTimeFrames = SourceAndConverterHelper.getMaxTimepoint(sources.toArray(new SourceAndConverter[0]));
 
-            int maxZSlices = (int) sources.get(0).getSpimSource().getSource(0,level).dimension(2);
+            int minTimeFrames = SourceAndConverterHelper.getMinTimepoint(sources.toArray(new SourceAndConverter[0]));
+
+            //System.out.println("Min Time Frame = "+minTimeFrames);
+
+            int maxZSlices = (int) sources.get(0).getSpimSource().getSource(minTimeFrames,level).dimension(2);
 
             CZTRange range;
 
             try {
-
                 range = new CZTRange.Builder()
                         .setC(range_channels)
                         .setZ(range_slices)
                         .setT(range_frames)
-                        .get(sources.size(), maxZSlices, maxTimeFrames);
+                        .get(0,sources.size(), 0,maxZSlices, minTimeFrames, maxTimeFrames);
 
                 temporaryImageArray[sortedSacs.indexOf(sacKey)] =
                         ExportToImagePlusCommand.computeImage(sources, task, range, name, level, parallel_c, parallel_z, parallel_t, export_mode);
 
             } catch (Exception e) {
-                logger.error("Invalid range "+e.getMessage());
+                logger.error("Error "+e.getMessage());
             }
         });
 

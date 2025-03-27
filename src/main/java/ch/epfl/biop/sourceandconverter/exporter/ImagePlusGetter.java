@@ -126,7 +126,7 @@ public class ImagePlusGetter {
 
         AffineTransform3D at3D = new AffineTransform3D();
 
-        int timepointbegin = 0;
+        int timepointbegin = range.rangeT.get(0); // Get a valid timepoint
         sources.get(0).getSpimSource().getSourceTransform(timepointbegin, resolutionLevel, at3D);
         String unit = "px";
         if (sources.get(0).getSpimSource().getVoxelDimensions() != null) {

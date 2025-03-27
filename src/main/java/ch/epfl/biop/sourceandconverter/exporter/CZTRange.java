@@ -135,5 +135,22 @@ public class CZTRange {
 
             return new CZTRange(rangeC, rangeZ, rangeT);
         }
+
+        /**
+         * Construct the CZT Range
+         * @param nC maximal number of channels
+         * @param nZ maximal number of Slices
+         * @param nT maximal number of timepoints
+         * @return CZT range
+         * @throws Exception if the String parser is bad
+         */
+        public CZTRange get(int c0, int nC, int z0, int nZ, int t0, int nT) throws Exception {
+            List<Integer> rangeC = new IntRangeParser(expressionRangeC).get(c0, nC);
+            List<Integer> rangeZ = new IntRangeParser(expressionRangeZ).get(z0, nZ);
+            List<Integer> rangeT = new IntRangeParser(expressionRangeT).get(t0, nT);
+
+            return new CZTRange(rangeC, rangeZ, rangeT);
+        }
+
     }
 }
