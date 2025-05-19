@@ -25,7 +25,7 @@ public class PairRegistrationDeleteCommand implements Command {
     public void run() {
         objectService.removeObject(registration_pair);
         try {
-            registration_pair.close();
+            registration_pair.close(false);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

@@ -92,7 +92,7 @@ public class PairRegistrationAddGUICommand implements Command {
                     case STEP_ADDED:
                         updateBdvSourceGroups(bdvh);
                         break;
-                    case CLOSED:
+                    case CLOSE:
                         bdvh.close();
                         break;
                 }
@@ -183,20 +183,29 @@ public class PairRegistrationAddGUICommand implements Command {
             @Override
             public void windowClosing(WindowEvent e) {
             if (!closeAlreadyActivated) {
-                String message = "Are you sure you want to exit the registration GUI?";
+                int confirmed = JOptionPane.YES_OPTION;
 
-                int confirmed = JOptionPane.showConfirmDialog(frame,
-                        message, "Close window ?",
-                        JOptionPane.YES_NO_OPTION);
+                if (!registration_pair.getForceClose()) {
+                    String message = "Are you sure you want to exit the registration GUI?";
+
+                    confirmed = JOptionPane.showConfirmDialog(frame,
+                            message, "Close window ?",
+                            JOptionPane.YES_NO_OPTION);
+                }
+
                 if (confirmed == JOptionPane.YES_OPTION) {
 
                     registration_pair.removeListener(listener);
 
                     closeAlreadyActivated = true;
 
-                    int clearRegistration = JOptionPane.showConfirmDialog(frame,
-                            "Keep registration pair in memory?", "Keep registration in memory.",
-                            JOptionPane.YES_NO_OPTION);
+                    int clearRegistration = JOptionPane.YES_OPTION;
+
+                    if (!registration_pair.getForceClose()) {
+                        clearRegistration = JOptionPane.showConfirmDialog(frame,
+                                "Keep registration pair in memory?", "Keep registration in memory.",
+                                JOptionPane.YES_NO_OPTION);
+                    }
 
                     if (clearRegistration == JOptionPane.NO_OPTION) {
                         try {

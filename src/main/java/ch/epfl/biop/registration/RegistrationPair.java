@@ -299,7 +299,22 @@ public class RegistrationPair implements Named, Closeable {
 
     @Override
     public void close() throws IOException {
-        listeners.forEach(listener -> listener.newEvent(RegistrationEvents.CLOSED));
+        close(true);
+    }
+
+    boolean forceClose = false;
+    private void setForceClose(boolean forceClose) {
+        this.forceClose = forceClose;
+    }
+
+    public boolean getForceClose() {
+        return forceClose;
+    }
+
+    public void close(boolean askForUserConfirmation) throws IOException {
+        ArrayList<RegistrationPairListener> safeListeners = new ArrayList<>(listeners);
+        setForceClose(!askForUserConfirmation);
+        safeListeners.forEach(listener -> listener.newEvent(RegistrationEvents.CLOSE));
         listeners.clear();
     }
 
@@ -362,7 +377,7 @@ public class RegistrationPair implements Named, Closeable {
     public enum RegistrationEvents {
         STEP_ADDED,
         STEP_REMOVED,
-        CLOSED
+        CLOSE
     }
 
     final List<RegistrationPairListener> listeners = new ArrayList<>();
