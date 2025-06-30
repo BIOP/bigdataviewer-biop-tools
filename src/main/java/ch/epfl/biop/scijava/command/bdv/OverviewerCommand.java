@@ -130,11 +130,23 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
 
             List<SourceAndConverter<?>> sacs = sorter.apply(sacClasses.get(sacPropsKey));// sacSortedPerLocation.get(location);
 
-            long nPixX = sacs.get(0).getSpimSource().getSource(timepoint_begin, 0).dimension(0);
+            int tp = timepoint_begin;
 
-            long nPixY = sacs.get(0).getSpimSource().getSource(timepoint_begin, 0).dimension(1);
+            long nPixX = 1, nPixY = 1, nPixZ = 1;
 
-            long nPixZ = sacs.get(0).getSpimSource().getSource(timepoint_begin, 0).dimension(2);
+            if (!sacs.get(0).getSpimSource().isPresent(tp)) {
+                if (SourceAndConverterHelper.hasAValidTimepoint(sacs.get(0).getSpimSource())) {
+                    tp = SourceAndConverterHelper.getAValidTimepoint(sacs.get(0).getSpimSource());
+                }
+            }
+
+            if (sacs.get(0).getSpimSource().isPresent(tp)) {
+                nPixX = sacs.get(0).getSpimSource().getSource(tp, 0).dimension(0);
+
+                nPixY = sacs.get(0).getSpimSource().getSource(tp, 0).dimension(1);
+
+                nPixZ = sacs.get(0).getSpimSource().getSource(tp, 0).dimension(2);
+            }
 
             long sizeMax = Math.max(nPixX, nPixY);
 
@@ -210,7 +222,7 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
 
         addEditorBehaviours(bdvh, ssb);
 
-        bdvh.getViewerPanel().setNumTimepoints(SourceAndConverterHelper.getMaxTimepoint(sacs[0]));
+        bdvh.getViewerPanel().setNumTimepoints(SourceAndConverterHelper.getMaxTimepoint(sacs)+1);
 
         // Close hook to try to release as many resources as possible -> proven avoiding mem leaks
         BdvHandleHelper.setBdvHandleCloseOperation(bdvh, ctx.getService(CacheService.class),
@@ -283,8 +295,12 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
          */
         public SacProperties(SourceAndConverter sac) {
             location = new AffineTransform3D();
-            sac.getSpimSource().getSourceTransform(0, 0, location);
-            sac.getSpimSource().getSource(0,0).dimensions(dims);
+
+            if (SourceAndConverterHelper.hasAValidTimepoint(sac.getSpimSource())) {
+                int tpvalid = SourceAndConverterHelper.getAValidTimepoint(sac.getSpimSource());
+                sac.getSpimSource().getSourceTransform(tpvalid, 0, location);
+                sac.getSpimSource().getSource(tpvalid, 0).dimensions(dims);
+            }
             this.sac = sac;
             this.isRGB = (sac.getSpimSource().getType() instanceof ARGBType) || (sac.getSpimSource().getType() instanceof VolatileARGBType);
         }
