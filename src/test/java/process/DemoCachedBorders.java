@@ -17,7 +17,7 @@ import sc.fiji.bdvpg.sourceandconverter.importer.VoronoiSourceGetter;
 public class DemoCachedBorders {
     public static void main(String... args) throws Exception {
         final net.imagej.ImageJ ij = new ImageJ();
-
+         // This has been transfered to DEMO, except for lazy pyramidize
         DebugTools.enableLogging ("OFF");
         ij.ui().showUI();
 
