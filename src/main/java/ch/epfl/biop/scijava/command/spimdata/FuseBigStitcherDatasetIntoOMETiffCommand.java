@@ -88,14 +88,25 @@ public class FuseBigStitcherDatasetIntoOMETiffCommand implements Command {
     @Parameter(label = "XY/Z anisotropy ratio")
     double z_ratio = 1.0;
 
+    @Parameter(label = "Downsample X")
+    double x_downsample = 1.0;
+
+    @Parameter(label = "Downsample Y")
+    double y_downsample = 1.0;
+
+    @Parameter(label = "Downsample Z")
+    double z_downsample = 1.0;
+
     @Parameter(label = "Interpolate when fusing (~4x slower)")
     boolean use_interpolation = false;
 
     double vox_size_x_micrometer = 1;
-
     double vox_size_y_micrometer = 1;
-
     double vox_size_z_micrometer = 1;
+
+    double output_voxel_size_x_um = Double.NaN;
+    double output_voxel_size_y_um = Double.NaN;
+    double output_voxel_size_z_um = Double.NaN;
 
     @Parameter
     SourceAndConverterService sac_service;
@@ -193,11 +204,20 @@ public class FuseBigStitcherDatasetIntoOMETiffCommand implements Command {
         vox_size_x_micrometer = voxelDimensions.dimension(0);
         vox_size_y_micrometer = voxelDimensions.dimension(1);
         vox_size_z_micrometer = voxelDimensions.dimension(2);
+        IJ.log("Voxel dimension in the original dataset [X, Y, Z]: ["+vox_size_x_micrometer+", "+vox_size_y_micrometer+", "+vox_size_z_micrometer+"]");
+
+        // BigStitcher assumes that in its working coordinates size x = 1, and because of the way we define our output grid, it makes sense to keep vox_size_x_micrometer everywhere in x, y, and z
+
+        output_voxel_size_x_um = vox_size_x_micrometer*x_downsample;
+        output_voxel_size_y_um = vox_size_x_micrometer*y_downsample;
+        output_voxel_size_z_um = vox_size_x_micrometer*z_downsample*z_ratio;
+
+        IJ.log("Voxel dimension in the output dataset [X, Y, Z]: ["+output_voxel_size_x_um+", "+output_voxel_size_y_um+", "+output_voxel_size_z_um+"]");
 
         // Create a model source
         SourceAndConverter model = SourceHelper.getModelFusedMultiSources(allSources.toArray(new SourceAndConverter[0]),
                 0, SourceAndConverterHelper.getMaxTimepoint(allSources.toArray(new SourceAndConverter[0])),
-                1, 1, z_ratio,
+                1*x_downsample, 1*y_downsample, z_ratio*z_downsample,
                 1,
                 1,1,1, "Model");
 
@@ -205,7 +225,7 @@ public class FuseBigStitcherDatasetIntoOMETiffCommand implements Command {
 
         if (fusion_method.equals("SMOOTH "+AlphaFusedResampledSource.AVERAGE)) {
             for (SourceAndConverter<?> source: allSources) {
-                AlphaSource alpha = new AlphaSourceDistanceL1RAI(source.getSpimSource(), (float) vox_size_x_micrometer,(float) vox_size_y_micrometer, (float) vox_size_z_micrometer);
+                AlphaSource alpha = new AlphaSourceDistanceL1RAI(source.getSpimSource(), (float) (vox_size_x_micrometer*x_downsample),(float) (vox_size_y_micrometer*y_downsample), (float) (vox_size_z_micrometer*z_downsample));
                 AlphaSourceHelper.setAlphaSource(source, alpha);
             }
         }
@@ -246,7 +266,7 @@ public class FuseBigStitcherDatasetIntoOMETiffCommand implements Command {
                         .put(fusedSources)
                         .defineMetaData(xml_bigstitcher_file.getName())
                         .putMetadataFromSources(fusedSources, UNITS.MICROMETER)
-                        .voxelPhysicalSizeMicrometer(vox_size_x_micrometer, vox_size_y_micrometer, vox_size_z_micrometer)
+                        .voxelPhysicalSizeMicrometer(output_voxel_size_x_um, output_voxel_size_y_um, output_voxel_size_z_um)
                         .defineWriteOptions()
                         .nThreads(nThreads)
                         .maxTilesInQueue(nThreads * 3)
@@ -426,8 +446,7 @@ public class FuseBigStitcherDatasetIntoOMETiffCommand implements Command {
                 .put(fusedSources)
                 .defineMetaData(xml_bigstitcher_file.getName())
                 .putMetadataFromSources(fusedSources, UNITS.MICROMETER)
-                .voxelPhysicalSizeMicrometer(vox_size_x_micrometer, vox_size_y_micrometer, vox_size_z_micrometer)
-                .defineWriteOptions()
+                .voxelPhysicalSizeMicrometer(output_voxel_size_x_um, output_voxel_size_y_um, output_voxel_size_z_um).defineWriteOptions()
                 .nThreads(nThreads)
                 .maxTilesInQueue(nThreads * 3)
                 .rangeC(select_channels)
