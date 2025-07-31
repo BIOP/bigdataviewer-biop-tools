@@ -102,11 +102,11 @@
 		<bigdataviewer-playground.version>0.11.2</bigdataviewer-playground.version>
 		<bigdataviewer-playground-display.version>0.5.0</bigdataviewer-playground-display.version>
 		<image-transform-converters.version>0.2.0</image-transform-converters.version>
-		<bigdataviewer-image-loaders.version>0.9.0</bigdataviewer-image-loaders.version>
+		<bigdataviewer-image-loaders.version>0.10.0</bigdataviewer-image-loaders.version>
 
 		<!-- biop dependencies -->
-		<ijl-utilities-wrappers.version>0.11.2</ijl-utilities-wrappers.version>
-		<Operetta_Importer.version>0.4.1</Operetta_Importer.version>
+		<ijl-utilities-wrappers.version>0.11.5</ijl-utilities-wrappers.version>
+		<Operetta_Importer.version>0.6.0</Operetta_Importer.version>
 		<ijp-kheops.version>0.6.4</ijp-kheops.version>
 
 		<!-- mastodon -->
