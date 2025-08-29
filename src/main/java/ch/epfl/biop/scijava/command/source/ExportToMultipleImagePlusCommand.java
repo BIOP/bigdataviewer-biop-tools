@@ -153,7 +153,7 @@ public class ExportToMultipleImagePlusCommand implements BdvPlaygroundActionComm
                         .setC(range_channels)
                         .setZ(range_slices)
                         .setT(range_frames)
-                        .get(sources.size(), maxZSlices, maxTimeFrames);
+                        .get(sources.size(), maxZSlices, maxTimeFrames+1);
 
                 temporaryImageArray[sortedSacs.indexOf(sacKey)] =
                         ExportToImagePlusCommand.computeImage(sources, task, range, name, level, parallel_c, parallel_z, parallel_t, export_mode);
