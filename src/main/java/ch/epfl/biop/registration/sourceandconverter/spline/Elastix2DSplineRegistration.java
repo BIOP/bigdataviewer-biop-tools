@@ -245,7 +245,7 @@ public class Elastix2DSplineRegistration extends RealTransformSourceAndConverter
                 }
 
                 if (wrapped2d3d) {
-                    pruned = new Wrapped2DTransformAs3D((InvertibleRealTransform) pruned);
+                    pruned = new InvertibleWrapped2DTransformAs3D((InvertibleRealTransform) pruned);
                 }
 
                 return pruned;
