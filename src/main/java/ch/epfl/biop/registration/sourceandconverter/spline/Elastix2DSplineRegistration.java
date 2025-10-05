@@ -26,9 +26,26 @@ import sc.fiji.bdvpg.services.SourceAndConverterServices;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
 import sc.fiji.bdvpg.sourceandconverter.register.BigWarpLauncher;
 
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JEditorPane;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.event.HyperlinkEvent;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Desktop;
+import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.Frame;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
@@ -254,11 +271,6 @@ public class Elastix2DSplineRegistration extends RealTransformSourceAndConverter
         }
     }
 
-    Runnable waitForUser = () -> {
-        WaitForUserDialog dialog = new WaitForUserDialog("Choose slice","Please perform carefully your registration then press ok.");
-        dialog.show();
-    };
-
     BigWarpLauncher bwl;
 
     @Override
@@ -306,7 +318,29 @@ public class Elastix2DSplineRegistration extends RealTransformSourceAndConverter
             throw new RuntimeException(e);
         }
 
-        waitForUser.run();
+        String helpMessage = "<html><body width='420'>" +
+                "<h2>BigWarp Registration</h2>" +
+                "<p><b>Key Controls:</b></p>" +
+                "<ul>" +
+                "<li><b>Space</b> — Toggle between Landmark mode and Navigation mode</li>" +
+                "<li><b>Click</b> (in Landmark mode) — Move landmark point</li>" +
+                "<li><b>Ctrl + Click</b> — Create a new landmark</li>" +
+                "<li><b>T</b> — Toggle warped/raw view of moving image</li>" +
+                "<li><b>E</b> — Center view on selected landmark</li>" +
+                "<li><b>Delete</b> — Remove selected landmark from table</li>" +
+                "<li><b>Ctrl + Z/Y</b> — Undo/Redo landmark changes</li>" +
+                "</ul>" +
+                "<p><b>When satisfied with the alignment, press OK.</b></p>" +
+                "<p style='margin-top:10px;'><small>More info: <a href='https://imagej.net/plugins/bigwarp'>BigWarp Documentation</a></small></p>" +
+                "</body></html>";
+
+        try {
+            showAndWait(bwl.getBigWarp().getLandmarkFrame(),
+                    helpMessage,
+                        "Edit Spline Registration");
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         rt = bwl.getBigWarp().getBwTransform().getTransformation();
 
@@ -327,6 +361,72 @@ public class Elastix2DSplineRegistration extends RealTransformSourceAndConverter
 
     public String toString() {
         return "Elastix 2D Spline";
+    }
+
+
+    public static void showAndWait(Component parent, String message, String title)
+            throws InterruptedException {
+
+        CountDownLatch latch = new CountDownLatch(1);
+
+        SwingUtilities.invokeLater(() -> {
+            JDialog dialog = new JDialog(
+                    (Frame) SwingUtilities.getWindowAncestor(parent),
+                    title,
+                    false
+            );
+
+            JPanel panel = new JPanel(new BorderLayout(10, 10));
+            panel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+
+            // Use JEditorPane for clickable HTML links
+            JEditorPane editorPane = new JEditorPane("text/html", message);
+            editorPane.setEditable(false);
+            editorPane.setOpaque(false);
+            editorPane.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
+            editorPane.setFont(UIManager.getFont("Label.font")); // Match standard label font
+
+            // Make links clickable
+            editorPane.addHyperlinkListener(e -> {
+                if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+                    try {
+                        Desktop.getDesktop().browse(e.getURL().toURI());
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            });
+
+            // Wrap in a scroll pane in case content is large
+            JScrollPane scrollPane = new JScrollPane(editorPane);
+            scrollPane.setBorder(null);
+            scrollPane.setPreferredSize(new Dimension(450, 300)); // Adjust as needed
+            panel.add(scrollPane, BorderLayout.CENTER);
+
+            JButton okButton = new JButton("OK");
+            okButton.addActionListener(e -> {
+                dialog.dispose();
+                latch.countDown();
+            });
+
+            JPanel buttonPanel = new JPanel();
+            buttonPanel.add(okButton);
+            panel.add(buttonPanel, BorderLayout.SOUTH);
+
+            dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+                @Override
+                public void windowClosing(java.awt.event.WindowEvent e) {
+                    latch.countDown();
+                }
+            });
+
+            dialog.setContentPane(panel);
+            dialog.pack();
+            dialog.setLocationRelativeTo(parent);
+            dialog.setVisible(true);
+        });
+
+        latch.await();
     }
 
 }

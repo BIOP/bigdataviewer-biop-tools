@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static bdv.util.RealTransformHelper.BigWarpFileFromRealTransform;
+import static ch.epfl.biop.registration.sourceandconverter.spline.Elastix2DSplineRegistration.showAndWait;
 
 @Plugin(type = IRegistrationPlugin.class)
 @RegistrationTypeProperties(
@@ -32,8 +33,32 @@ public class SacBigWarp2DRegistration extends RealTransformSourceAndConverterReg
     BigWarpLauncher bwl;
 
     Runnable waitForUser = () -> {
-        WaitForUserDialog dialog = new WaitForUserDialog("Big Warp registration","Please perform carefully your registration then press ok. Do not forget to press 't' when 4 landmarks are placed.");
-        dialog.show();
+
+        String helpMessage = "<html><body width='420'>" +
+                "<h2>BigWarp Registration</h2>" +
+                "<p>Place landmark pairs on corresponding points in both images to create your transformation.</p>" +
+                "<p><b>Key Controls:</b></p>" +
+                "<ul>" +
+                "<li><b>Space</b> — Toggle between Landmark mode and Navigation mode</li>" +
+                "<li><b>Click</b> (in Landmark mode) — Add or move landmark points</li>" +
+                "<li><b>Ctrl + Click</b> — Pin a point (same location in both images)</li>" +
+                "<li><b>T</b> — Toggle warped/raw view of moving image</li>" +
+                "<li><b>E</b> — Center view on nearest landmark</li>" +
+                "<li><b>Q/W</b> — Align viewers to each other</li>" +
+                "<li><b>Delete</b> — Remove selected landmark from table</li>" +
+                "<li><b>Ctrl + Z/Y</b> — Undo/Redo landmark changes</li>" +
+                "</ul>" +
+                "<p><b>When satisfied with the alignment, press OK.</b></p>" +
+                "<p style='margin-top:10px;'><small>More info: <a href='https://imagej.net/plugins/bigwarp'>BigWarp Documentation</a></small></p>" +
+                "</body></html>";
+
+        try {
+            showAndWait(bwl.getBigWarp().getLandmarkFrame(),
+                    helpMessage,
+                    "BigWarp Registration");
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     };
 
     public void setWaitForUserMethod(Runnable r) {
