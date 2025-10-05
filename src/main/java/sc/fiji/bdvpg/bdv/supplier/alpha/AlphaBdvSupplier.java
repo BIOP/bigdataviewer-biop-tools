@@ -99,8 +99,6 @@ public class AlphaBdvSupplier implements IBdvSupplier {
                 projectorFactory = new LayerAlphaProjectorFactory();
                 ((ILayerAlphaProjectorFactory)projectorFactory).setSourcesMeta(sourcesMetadata);
             }
-            /*projectorFactory = new LayerAlphaProjectorFactory();
-            ((ILayerAlphaProjectorFactory)projectorFactory).setSourcesMeta(sourcesMetadata);*/
         }
 
         BdvOptions options = sOptions.getBdvOptions();
@@ -116,6 +114,19 @@ public class AlphaBdvSupplier implements IBdvSupplier {
 
         // remove dummy image
         bdvh.getViewerPanel().state().removeSource(bdvh.getViewerPanel().state().getCurrentSource());
+        if (sOptions.numGroups!=bdvh.getViewerPanel().state().getGroups().size()) {
+            while (sOptions.numGroups<bdvh.getViewerPanel().state().getGroups().size()) {
+                bdvh.getViewerPanel().state().removeGroup(
+                  bdvh.getViewerPanel().state().getGroups().get(bdvh.getViewerPanel().state().getGroups().size()-1)
+                );
+            }
+            while (sOptions.numGroups>bdvh.getViewerPanel().state().getGroups().size()) {
+                bdvh.getViewerPanel().state().addGroup(
+                        new SourceGroup()
+                );
+            }
+        }
+
         bdvh.getViewerPanel().setNumTimepoints( sOptions.numTimePoints );
 
         if (sOptions.useAlphaCompositing) {
@@ -167,15 +178,13 @@ public class AlphaBdvSupplier implements IBdvSupplier {
         editorModeToggle.add(nameToggle);
 
         SwingUtilities.invokeLater(() -> {
-            nameOverlayAdder.run();
-            BdvHandleHelper.addCenterCross(bdvh);
-            new RayCastPositionerSliderAdder(bdvh).run();
-            new SourceNavigatorSliderAdder(bdvh).run();
+            if (sOptions.showSourcesNames) nameOverlayAdder.run();
+            if (sOptions.showCenterCross) BdvHandleHelper.addCenterCross(bdvh);
+            if (sOptions.showRayCastSlider) new RayCastPositionerSliderAdder(bdvh).run();
+            if (sOptions.showSourceNavigatorSlider) new SourceNavigatorSliderAdder(bdvh).run();
             new TimepointAdapterAdder(bdvh).run();
         });
-        //SwingUtilities.invokeLater(() -> BdvHandleHelper.addCenterCross(bdvh));
-        //SwingUtilities.invokeLater(() -> new RayCastPositionerSliderAdder(bdvh).run());
-        BdvHandleHelper.addCard(bdvh, "Mode", editorModeToggle, true);
+        if (sOptions.showEditorCard) BdvHandleHelper.addCard(bdvh, "Mode", editorModeToggle, true);
 
         return bdvh;
     }
@@ -410,7 +419,7 @@ public class AlphaBdvSupplier implements IBdvSupplier {
                     } else {
                         // No alpha source, let's try to build it
                         if (!(sac.getSpimSource() instanceof PlaceHolderSource)) {
-                            System.out.println("Building alpha source for source " + sac.getSpimSource().getName() + " of class " + sac.getSpimSource().getClass().getSimpleName());
+                            //("Building alpha source for source " + sac.getSpimSource().getName() + " of class " + sac.getSpimSource().getClass().getSimpleName());
                             SourceAndConverter<FloatType> alpha = AlphaSourceHelper.getOrBuildAlphaSource(sac);
                             alphaSourcesToAdd.add(alpha);
                         }
@@ -419,9 +428,9 @@ public class AlphaBdvSupplier implements IBdvSupplier {
             }
 
             Set<SourceAndConverter<?>> alphaSourcesToRemove = currentAlphaSources.stream().filter(sac -> !usefulAlphaSources.contains(sac)).collect(Collectors.toSet());
+            bdvh.getViewerPanel().state().addSources(alphaSourcesToAdd);
             bdvh.getViewerPanel().state().removeSources(alphaSourcesToRemove);
 
-            bdvh.getViewerPanel().state().addSources(alphaSourcesToAdd);
 
         }
     }

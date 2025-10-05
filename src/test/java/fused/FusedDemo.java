@@ -21,7 +21,6 @@ import sc.fiji.bdvpg.sourceandconverter.display.BrightnessAutoAdjuster;
 import sc.fiji.bdvpg.sourceandconverter.display.ColorChanger;
 import sc.fiji.bdvpg.spimdata.importer.SpimDataFromXmlImporter;
 
-import java.io.File;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;

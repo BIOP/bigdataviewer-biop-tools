@@ -85,10 +85,17 @@ public class AlphaSerializableBdvOptions {
 
     public String font = "Courier";
 
-    // Not serialized
-    //private TransformEventHandlerFactory transformEventHandlerFactory = TransformEventHandler3D::new;
-    //private InputTriggerConfig inputTriggerConfig = null;
-    //private final AffineTransform3D sourceTransform = new AffineTransform3D();
+    public boolean showSourcesNames = true;
+
+    public boolean showCenterCross = true;
+
+    public boolean showRayCastSlider = true;
+
+    public boolean showSourceNavigatorSlider = true;
+
+    public int numGroups = 10;
+
+    public boolean showEditorCard = true;
 
     /**
      *
