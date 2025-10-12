@@ -359,8 +359,15 @@ public class Elastix2DSplineRegistration extends RealTransformSourceAndConverter
         }
     }
 
+    String name = "Elastix 2D Spline";
+
+    @Override
+    public void setRegistrationName(String name) {
+        this.name = name;
+    }
+
     public String toString() {
-        return "Elastix 2D Spline";
+        return name;
     }
 
 

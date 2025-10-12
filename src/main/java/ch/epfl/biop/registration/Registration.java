@@ -174,4 +174,12 @@ public interface Registration<T> {
     default String getRegistrationTypeName() {
       return this.getClass().getSimpleName();
     }
+
+    default void setRegistrationName(String name) {
+
+    }
+
+    default String getRegistrationName() {
+        return toString();
+    }
 }

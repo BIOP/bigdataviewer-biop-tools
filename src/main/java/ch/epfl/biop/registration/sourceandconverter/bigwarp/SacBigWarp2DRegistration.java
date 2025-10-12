@@ -150,9 +150,15 @@ public class SacBigWarp2DRegistration extends RealTransformSourceAndConverterReg
 
     }
 
+    String name = "Big Warp";
+
+    @Override
+    public void setRegistrationName(String name) {
+        this.name = name;
+    }
 
     public String toString() {
-        return "Big Warp";
+        return name;
     }
 
 }

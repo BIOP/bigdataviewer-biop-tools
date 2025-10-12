@@ -57,8 +57,15 @@ public class AffineRegistration extends AffineTransformSourceAndConverterRegistr
 
     }
 
+    String name = "Affine";
+
+    @Override
+    public void setRegistrationName(String name) {
+        this.name = name;
+    }
+
     public String toString() {
-        return "Affine";
+        return name;
     }
 
 }

@@ -139,8 +139,14 @@ public class Elastix2DAffineRegistration extends AffineTransformSourceAndConvert
         }
     }
 
-    public String toString() {
-        return "Elastix 2D Affine";
+    String name = "Elastix 2D Affine";
+
+    @Override
+    public void setRegistrationName(String name) {
+        this.name = name;
     }
 
+    public String toString() {
+        return name;
+    }
 }

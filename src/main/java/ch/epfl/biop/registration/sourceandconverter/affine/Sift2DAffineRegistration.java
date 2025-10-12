@@ -143,8 +143,15 @@ public class Sift2DAffineRegistration extends AffineTransformSourceAndConverterR
         }
     }
 
+    String name = "Sift 2D Affine";
+
+    @Override
+    public void setRegistrationName(String name) {
+        this.name = name;
+    }
+
     public String toString() {
-        return "Sift 2D Affine";
+        return name;
     }
 
 }
