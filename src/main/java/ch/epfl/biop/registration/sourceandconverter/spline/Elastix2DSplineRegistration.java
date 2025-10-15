@@ -45,6 +45,7 @@ import java.awt.EventQueue;
 import java.awt.Frame;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
@@ -146,11 +147,19 @@ public class Elastix2DSplineRegistration extends RealTransformSourceAndConverter
                 return success;
             } catch (Exception e) {
                 isDone = true;
-                errorMessage = e.getMessage();
+                if (e instanceof CancellationException) {
+                    errorMessage = "Registration canceled."; // otherwise error message is just "null"
+                } else {
+                    errorMessage = e.getMessage();
+                }
                 return success;
             }
         } catch (Exception e) {
-            errorMessage = e.getMessage();
+            if (e instanceof CancellationException) {
+                errorMessage = "Registration canceled."; // otherwise error message is just "null"
+            } else {
+                errorMessage = e.getMessage();
+            }
             e.printStackTrace();
             return false;
         }

@@ -15,6 +15,7 @@ import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.Future;
 
 /**
@@ -122,7 +123,11 @@ public class Sift2DAffineRegistration extends AffineTransformSourceAndConverterR
              isDone = true;
              return success;
         } catch (Exception e) {
-            errorMessage = e.getMessage();
+            if (e instanceof CancellationException) {
+                errorMessage = "Registration canceled."; // otherwise error message is just "null"
+            } else {
+                errorMessage = e.getMessage();
+            }
             e.printStackTrace();
             return false;
         }
