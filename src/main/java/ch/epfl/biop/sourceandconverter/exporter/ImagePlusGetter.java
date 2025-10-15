@@ -280,13 +280,13 @@ public class ImagePlusGetter {
     public static CZTRange fromSource(SourceAndConverter<?> source, int t, int resolutionLevel) throws Exception {
         int maxTimeFrames = SourceAndConverterHelper.getMaxTimepoint(source);
         int maxZSlices = (int) source.getSpimSource().getSource(t,resolutionLevel).dimension(2);
-        return new CZTRange.Builder().get(1,maxZSlices, maxTimeFrames);
+        return new CZTRange.Builder().get(1,maxZSlices, maxTimeFrames+1);
     }
 
     public static CZTRange fromSources(List<SourceAndConverter<?>> sources, int t, int resolutionLevel) throws Exception {
         int maxTimeFrames = SourceAndConverterHelper.getMaxTimepoint(sources.get(0));
         int maxZSlices = (int) sources.get(0).getSpimSource().getSource(t,resolutionLevel).dimension(2);
-        return new CZTRange.Builder().get(sources.size(),maxZSlices, maxTimeFrames);
+        return new CZTRange.Builder().get(sources.size(),maxZSlices, maxTimeFrames+1);
     }
 
     public static <T extends NumericType<T> & NativeType<T>> List<SourceAndConverter<T>> sanitizeList(List<SourceAndConverter<?>> sources) {

@@ -1,7 +1,5 @@
 package ch.epfl.biop.sourceandconverter.register;
 
-import bdv.util.RealCropper;
-import bdv.viewer.Interpolation;
 import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.fiji.imageplusutils.ImagePlusFunctions;
@@ -16,24 +14,16 @@ import ch.epfl.biop.wrappers.transformix.TransformHelper;
 import ch.epfl.biop.wrappers.transformix.TransformixTask;
 import ij.IJ;
 import ij.ImagePlus;
-import ij.plugin.Duplicator;
-import itc.transforms.elastix.ElastixTransform;
 import net.imglib2.FinalRealInterval;
-import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.RealPoint;
-import net.imglib2.RealRandomAccessible;
-import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.realtransform.*;
 import net.imglib2.realtransform.inverse.WrappedIterativeInvertibleRealTransform;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.NumericType;
 import sc.fiji.bdvpg.sourceandconverter.importer.EmptySourceAndConverterCreator;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceAffineTransformer;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceRealTransformer;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceResampler;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
