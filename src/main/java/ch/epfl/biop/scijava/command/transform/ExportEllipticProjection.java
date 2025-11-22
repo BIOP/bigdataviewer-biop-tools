@@ -266,9 +266,9 @@ public class ExportEllipticProjection implements Command {
             validate_message +="Recommended Level:"+levelZ+"<br>";
         }
 
-        maxTimepoint = SourceAndConverterHelper.getMaxTimepoint(sacs);
+        maxTimepoint = SourceAndConverterHelper.getMaxTimepoint(sacs)+1;
 
-        int maxTimeFrames = SourceAndConverterHelper.getMaxTimepoint(sacs);
+        int maxTimeFrames = SourceAndConverterHelper.getMaxTimepoint(sacs)+1;
 
         int maxZSlices;
 

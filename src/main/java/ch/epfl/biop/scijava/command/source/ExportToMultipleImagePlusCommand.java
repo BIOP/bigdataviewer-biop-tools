@@ -141,7 +141,7 @@ public class ExportToMultipleImagePlusCommand implements BdvPlaygroundActionComm
             List<SourceAndConverter<?>> sources = sacClasses.get(sacPropsKey);
 
             ImagePlus imp_out;
-            int maxTimeFrames = SourceAndConverterHelper.getMaxTimepoint(sources.toArray(new SourceAndConverter[0]));
+            int numFrames = SourceAndConverterHelper.getMaxTimepoint(sources.toArray(new SourceAndConverter[0]))+1;
 
             int maxZSlices = (int) sources.get(0).getSpimSource().getSource(0,level).dimension(2);
 
@@ -153,7 +153,7 @@ public class ExportToMultipleImagePlusCommand implements BdvPlaygroundActionComm
                         .setC(range_channels)
                         .setZ(range_slices)
                         .setT(range_frames)
-                        .get(sources.size(), maxZSlices, maxTimeFrames+1);
+                        .get(sources.size(), maxZSlices, numFrames);
 
                 temporaryImageArray[sortedSacs.indexOf(sacKey)] =
                         ExportToImagePlusCommand.computeImage(sources, task, range, name, level, parallel_c, parallel_z, parallel_t, export_mode);

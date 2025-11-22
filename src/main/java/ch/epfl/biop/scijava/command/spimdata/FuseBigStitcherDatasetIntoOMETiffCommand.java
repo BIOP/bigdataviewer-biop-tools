@@ -216,7 +216,7 @@ public class FuseBigStitcherDatasetIntoOMETiffCommand implements Command {
 
         // Create a model source
         SourceAndConverter model = SourceHelper.getModelFusedMultiSources(allSources.toArray(new SourceAndConverter[0]),
-                0, SourceAndConverterHelper.getMaxTimepoint(allSources.toArray(new SourceAndConverter[0])),
+                0, SourceAndConverterHelper.getMaxTimepoint(allSources.toArray(new SourceAndConverter[0]))+1,
                 1*x_downsample, 1*y_downsample, z_ratio*z_downsample,
                 1,
                 1,1,1, "Model");
@@ -291,7 +291,7 @@ public class FuseBigStitcherDatasetIntoOMETiffCommand implements Command {
             } else {
                 int nC = fusedSources.length;
                 int nZ = (int) fusedSources[0].getSpimSource().getSource(0,0).realMax(2);
-                int nT = SourceAndConverterHelper.getMaxTimepoint(fusedSources);
+                int nT = SourceAndConverterHelper.getMaxTimepoint(fusedSources)+1;
                 CZTSetIterator iterator = new CZTSetIterator(range_channels, range_slices, range_frames, split_channels, split_slices, split_frames, nC, nZ, nT);
 
                 List<CZTSet> sets = new ArrayList<>();
