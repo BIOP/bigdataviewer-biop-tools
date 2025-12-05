@@ -77,8 +77,7 @@ public class ExportToImagePlusCommand implements BdvPlaygroundActionCommand {
 
         List<SourceAndConverter<?>> sources = sorter.apply(Arrays.asList(sacs));
 
-
-        int maxTimeFrames = SourceAndConverterHelper.getMaxTimepoint(sacs);
+        int numFrames = SourceAndConverterHelper.getMaxTimepoint(sacs)+1;
 
         int maxZSlices = (int) sacs[0].getSpimSource().getSource(0,level).dimension(2);
 
@@ -89,7 +88,8 @@ public class ExportToImagePlusCommand implements BdvPlaygroundActionCommand {
                     .setC(range_channels)
                     .setZ(range_slices)
                     .setT(range_frames)
-                    .get(sacs.length, maxZSlices,maxTimeFrames);
+                    .get(sacs.length, maxZSlices, numFrames);
+
         } catch (Exception e) {
             System.err.println("Invalid range "+e.getMessage());
             return;

@@ -278,15 +278,15 @@ public class ImagePlusGetter {
      * @throws Exception an exception is thrown if the source is null for instance
      */
     public static CZTRange fromSource(SourceAndConverter<?> source, int t, int resolutionLevel) throws Exception {
-        int maxTimeFrames = SourceAndConverterHelper.getMaxTimepoint(source);
-        int maxZSlices = (int) source.getSpimSource().getSource(t,resolutionLevel).dimension(2);
-        return new CZTRange.Builder().get(1,maxZSlices, maxTimeFrames+1);
+        int numFrames = SourceAndConverterHelper.getMaxTimepoint(source)+1;
+        int numZSlices = (int) source.getSpimSource().getSource(t,resolutionLevel).dimension(2);
+        return new CZTRange.Builder().get(1, numZSlices, numFrames);
     }
 
     public static CZTRange fromSources(List<SourceAndConverter<?>> sources, int t, int resolutionLevel) throws Exception {
-        int maxTimeFrames = SourceAndConverterHelper.getMaxTimepoint(sources.get(0));
-        int maxZSlices = (int) sources.get(0).getSpimSource().getSource(t,resolutionLevel).dimension(2);
-        return new CZTRange.Builder().get(sources.size(),maxZSlices, maxTimeFrames+1);
+        int numFrames = SourceAndConverterHelper.getMaxTimepoint(sources.get(0))+1;
+        int numZSlices = (int) sources.get(0).getSpimSource().getSource(t,resolutionLevel).dimension(2);
+        return new CZTRange.Builder().get(sources.size(), numZSlices, numFrames);
     }
 
     public static <T extends NumericType<T> & NativeType<T>> List<SourceAndConverter<T>> sanitizeList(List<SourceAndConverter<?>> sources) {

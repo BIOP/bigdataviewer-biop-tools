@@ -64,7 +64,7 @@ public class LLS7OpenDatasetCommand implements
 
         //SpimDataPostprocessor
         List<SourceAndConverter<?>> sources = sac_service.getSourceAndConverterFromSpimdata(spimdata);
-        int nTimepoints = SourceAndConverterHelper.getMaxTimepoint(sources.get(0));
+        int nTimepoints = SourceAndConverterHelper.getMaxTimepoint(sources.get(0))+1;
 
         //double tx=0, ty=0, tz=0;
         double angle = -60.0/180*Math.PI;

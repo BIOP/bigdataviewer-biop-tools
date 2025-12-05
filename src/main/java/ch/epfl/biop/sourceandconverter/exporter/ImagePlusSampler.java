@@ -288,12 +288,12 @@ public class ImagePlusSampler {
          */
         public ImagePlus get() throws Exception{
 
-            int maxTimeFrames = SourceAndConverterHelper.getMaxTimepoint(sacs);
+            int numFrames = SourceAndConverterHelper.getMaxTimepoint(sacs)+1;
 
             //int maxZSlices = (int) sacs[0].getSpimSource().getSource(0,level).dimension(2);
-            int maxZSlices = (int) model.getSpimSource().getSource(0,level).dimension(2);
+            int numZSlices = (int) model.getSpimSource().getSource(0,level).dimension(2);
 
-            CZTRange range = rangeBuilder.get(sacs.length, maxZSlices, maxTimeFrames);
+            CZTRange range = rangeBuilder.get(sacs.length, numZSlices, numFrames);
 
             return ImagePlusSampler.get(imageName,
                     Arrays.asList(sacs),
