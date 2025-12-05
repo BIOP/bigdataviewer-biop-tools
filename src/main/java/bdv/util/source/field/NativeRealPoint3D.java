@@ -1,10 +1,8 @@
 package bdv.util.source.field;
 
-import net.imglib2.AbstractEuclideanSpace;
 import net.imglib2.Localizable;
 import net.imglib2.RealLocalizable;
 import net.imglib2.RealPositionable;
-import net.imglib2.Volatile;
 import net.imglib2.img.NativeImg;
 import net.imglib2.img.basictypeaccess.FloatAccess;
 import net.imglib2.img.basictypeaccess.array.FloatArray;
