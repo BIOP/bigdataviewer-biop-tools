@@ -45,8 +45,9 @@ public class LLS7OpenDatasetCommand implements
     SourceAndConverterService sac_service;
 
     public void run() {
+        String bfOptions = "--bfOptions zeissczi.autostitch=false";
         List<OpenerSettings> openerSettings = new ArrayList<>();
-        int nSeries = BioFormatsHelper.getNSeries(czi_file);
+        int nSeries = BioFormatsHelper.getNSeries(czi_file, bfOptions);
         for (int i = 0; i < nSeries; i++) {
             openerSettings.add(
                     OpenerSettings.BioFormats()
@@ -56,6 +57,7 @@ public class LLS7OpenDatasetCommand implements
                             .splitRGBChannels(false)
                             .positionConvention(plane_origin_convention)
                             .cornerPositionConvention()
+                            .addOptions(bfOptions)
                             .context(ctx));
         }
         AbstractSpimData<?> spimdata = OpenersToSpimData.getSpimData(openerSettings);
@@ -66,50 +68,13 @@ public class LLS7OpenDatasetCommand implements
         List<SourceAndConverter<?>> sources = sac_service.getSourceAndConverterFromSpimdata(spimdata);
         int nTimepoints = SourceAndConverterHelper.getMaxTimepoint(sources.get(0))+1;
 
-        //double tx=0, ty=0, tz=0;
-        double angle = -60.0/180*Math.PI;
-
-        for (SourceAndConverter<?> source : sources) {
-
-            AffineTransform3D latticeTransform = new AffineTransform3D();
-
-            latticeTransform.set(
-                    1,0,0,0,
-                    0,Math.cos(angle),0,0,
-                    0,+Math.sin(angle),-1,0
-            );
-
-            AffineTransform3D rotateX = new AffineTransform3D();
-            rotateX.rotate(0, Math.PI/2.0);
-
-            latticeTransform.preConcatenate(rotateX);
-            AffineTransform3D addOffset = new AffineTransform3D();
-            source.getSpimSource().getSourceTransform(0,0, addOffset);
-            double ox = addOffset.get(0,3);
-            double oy = addOffset.get(1,3);
-            double oz = addOffset.get(2,3);
-
-            //System.out.println("ox = "+ox+" oy = "+oy+" oz = "+oz);
-            addOffset.identity();
-            addOffset.set(ox,0,3);
-            addOffset.set(oy,1,3);
-            addOffset.set(oz,2,3);
-
-            AffineTransform3D rmOffset = addOffset.inverse();
-
-            latticeTransform.preConcatenate(addOffset);
-            latticeTransform.concatenate(rmOffset);
-
-            SourceTransformHelper.append(latticeTransform, new SourceAndConverterAndTimeRange<>(source,0,nTimepoints));
-        }
-
         // Now let's try to open the max proj, if it exists
 
         String mipFileName = FilenameUtils.removeExtension(czi_file.getName())+"_MIP.czi";
         File mipFile = new File(czi_file.getParent(), mipFileName);
         if (mipFile.exists()) {
             openerSettings = new ArrayList<>();
-            nSeries = BioFormatsHelper.getNSeries(czi_file);
+            nSeries = BioFormatsHelper.getNSeries(czi_file, bfOptions);
             AffineTransform3D scaleVoxZUp = new AffineTransform3D();
             scaleVoxZUp.scale(1,1,1000);
             for (int i = 0; i < nSeries; i++) {
@@ -122,6 +87,7 @@ public class LLS7OpenDatasetCommand implements
                                 .positionConvention(plane_origin_convention)
                                 .cornerPositionConvention()
                                 .setPositionPreTransform(scaleVoxZUp)
+                                .addOptions(bfOptions)
                                 .context(ctx));
             }
             spimdata = OpenersToSpimData.getSpimData(openerSettings);

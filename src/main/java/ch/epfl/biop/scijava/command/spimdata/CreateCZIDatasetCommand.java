@@ -2,7 +2,10 @@ package ch.epfl.biop.scijava.command.spimdata;
 
 import ch.epfl.biop.bdv.img.OpenersToSpimData;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsHelper;
+import ch.epfl.biop.bdv.img.bioformats.entity.SeriesIndex;
 import ch.epfl.biop.bdv.img.entity.ImageName;
+import ch.epfl.biop.bdv.img.legacy.bioformats.entity.FileIndex;
+import ch.epfl.biop.bdv.img.legacy.bioformats.entity.SeriesNumber;
 import ch.epfl.biop.bdv.img.opener.OpenerSettings;
 import ij.IJ;
 import mpicbg.spim.data.SpimData;
@@ -46,7 +49,7 @@ public class CreateCZIDatasetCommand implements Command {
                 if (erase_if_file_already_exists) {
                     boolean isDeleted = xml_out.delete();
                     if (!isDeleted) {
-                        IJ.error("ommand aborted: the output file could not be deleted.");
+                        IJ.error("Command aborted: the output file could not be deleted.");
                         return;
                     }
                 } else {
@@ -81,7 +84,7 @@ public class CreateCZIDatasetCommand implements Command {
         AbstractSpimData<?> asd = OpenersToSpimData.getSpimData(openerSettings);
 
         // Remove display settings attributes because this causes issues with BigStitcher
-        SpimDataHelper.removeEntities(asd, Displaysettings.class, ImageName.class);
+        SpimDataHelper.removeEntities(asd, Displaysettings.class, FileIndex.class, SeriesIndex.class, SeriesNumber.class, ImageName.class);
 
         double pixSizeXYMicrometer = asd.getViewRegistrations().getViewRegistration(0,0).getModel().get(0,0);
 
