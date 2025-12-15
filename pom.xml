@@ -105,7 +105,7 @@
 		<bigdataviewer-image-loaders.version>0.12.0</bigdataviewer-image-loaders.version>
 
 		<!-- biop dependencies -->
-		<ijl-utilities-wrappers.version>0.11.7</ijl-utilities-wrappers.version>
+		<ijl-utilities-wrappers.version>0.12.0</ijl-utilities-wrappers.version>
 		<Operetta_Importer.version>0.6.0</Operetta_Importer.version>
 		<ijp-kheops.version>0.6.7</ijp-kheops.version>
 		<quick-start-czi-reader.version>0.3.0</quick-start-czi-reader.version>
