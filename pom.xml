@@ -99,21 +99,25 @@
 
 		<!-- general imagej dependencies -->
 		<!-- bdv playground related dependencies -->
-		<bigdataviewer-playground.version>0.12.0</bigdataviewer-playground.version>
+		<bigdataviewer-playground.version>0.13.0</bigdataviewer-playground.version>
 		<bigdataviewer-playground-display.version>0.5.0</bigdataviewer-playground-display.version>
 		<image-transform-converters.version>0.2.0</image-transform-converters.version>
-		<bigdataviewer-image-loaders.version>0.11.5</bigdataviewer-image-loaders.version>
+		<bigdataviewer-image-loaders.version>0.12.0</bigdataviewer-image-loaders.version>
 
 		<!-- biop dependencies -->
 		<ijl-utilities-wrappers.version>0.11.7</ijl-utilities-wrappers.version>
 		<Operetta_Importer.version>0.6.0</Operetta_Importer.version>
 		<ijp-kheops.version>0.6.7</ijp-kheops.version>
+		<quick-start-czi-reader.version>0.3.0</quick-start-czi-reader.version>
 
 		<!-- mastodon -->
 		<mastodon.version>1.0.0-beta-33</mastodon.version>
 
 		<!-- maths -->
 		<leastsquares.version>1.0.0</leastsquares.version>
+
+		<!-- deconvolution -->
+		<clij2-fft_.version>2.2.0.22</clij2-fft_.version>
 
 		<releaseProfiles>sign,deploy-to-scijava</releaseProfiles>
 
@@ -275,6 +279,13 @@
 			<version>${spim_data.version}</version>
 		</dependency>
 
+		<!-- GPU Deconv -->
+		<dependency>
+			<groupId>net.haesleinhuepf</groupId>
+			<artifactId>clij2-fft_</artifactId>
+			<version>${clij2-fft_.version}</version>
+		</dependency>
+
 		<!-- test dependencies -->
 
 		<dependency>
@@ -286,8 +297,7 @@
 		<dependency>
 			<groupId>ch.epfl.biop</groupId>
 			<artifactId>quick-start-czi-reader</artifactId>
-			<version>0.2.5</version>
-			<scope>test</scope>
+			<version>${quick-start-czi-reader.version}</version>
 		</dependency>
 
 		<dependency>
