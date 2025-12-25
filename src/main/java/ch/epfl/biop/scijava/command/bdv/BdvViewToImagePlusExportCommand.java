@@ -40,7 +40,10 @@ import java.util.stream.Collectors;
  */
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
-        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Export>Current BDV View To ImagePlus")
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Export>Current BDV View To ImagePlus",
+        description =
+                "Export sources as an ImagePlus object according to the orientation of "+
+                "a bdv window.")
 public class BdvViewToImagePlusExportCommand implements BdvPlaygroundActionCommand {
 
     private static final Logger logger = LoggerFactory.getLogger(BdvViewToImagePlusExportCommand.class);
