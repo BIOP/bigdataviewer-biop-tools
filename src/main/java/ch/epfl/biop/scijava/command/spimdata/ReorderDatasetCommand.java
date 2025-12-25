@@ -31,19 +31,27 @@ import java.io.File;
  */
 @SuppressWarnings("deprecation")
 @Deprecated
-@Plugin(type = Command.class, menuPath = ScijavaBdvDefaults.RootMenu+"BDVDataset>Edit>(Legacy) Reorder BDV Dataset")
+@Plugin(type = Command.class,
+        menuPath = ScijavaBdvDefaults.RootMenu+"BDVDataset>Edit>(Legacy) Reorder BDV Dataset",
+        description = "Reorders a LIF dataset for BigStitcher compatibility (legacy command)")
 public class ReorderDatasetCommand implements Command {
 
-    @Parameter(label="Lif file to reorder", style = "open")
+    @Parameter(label = "LIF Input File",
+            description = "The LIF file to reorder",
+            style = "open")
     File file;
 
-    @Parameter(label="Xml Bdv Dataset output", style = "save")
+    @Parameter(label = "Output XML File",
+            description = "The XML file where the reordered dataset will be saved",
+            style = "save")
     File xmlout;
 
-    @Parameter(label="Number of tiles")
+    @Parameter(label = "Number of Tiles",
+            description = "The number of tiles in the dataset")
     int n_tiles;
 
-    @Parameter(label="Number of channels")
+    @Parameter(label = "Number of Channels",
+            description = "The number of channels in the dataset")
     int n_channels;
 
     @Override

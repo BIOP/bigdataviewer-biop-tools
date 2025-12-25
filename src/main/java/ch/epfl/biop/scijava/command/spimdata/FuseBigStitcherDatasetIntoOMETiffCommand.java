@@ -46,58 +46,84 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static sc.fiji.bdvpg.services.ISourceAndConverterService.SPIM_DATA_INFO;
 
-@Plugin(type = Command.class, menuPath = ScijavaBdvDefaults.RootMenu+"BDVDataset>Fuse a BigStitcher dataset to OME-Tiff")
+@Plugin(type = Command.class,
+        menuPath = ScijavaBdvDefaults.RootMenu+"BDVDataset>Fuse a BigStitcher dataset to OME-Tiff",
+        description = "Fuses a BigStitcher dataset and exports it as a pyramidal OME-TIFF file")
 public class FuseBigStitcherDatasetIntoOMETiffCommand implements Command {
 
-    @Parameter(label = "BigStitcher XML file", style = "open")
+    @Parameter(label = "BigStitcher XML File",
+            description = "The BigStitcher XML dataset file to fuse",
+            style = "open")
     File xml_bigstitcher_file;
 
-    @Parameter(label = "Output folder", style ="directory")
+    @Parameter(label = "Output Folder",
+            description = "The folder where the fused OME-TIFF will be saved",
+            style ="directory")
     File output_path_directory;
 
-    @Parameter( label = "Selected channels. Leave blank for all", required = false )
+    @Parameter(label = "Selected Channels",
+            description = "Channels to export (e.g., '0,1' or '0:2'). Leave blank for all channels",
+            required = false)
     String range_channels = "";
 
-    @Parameter( label = "Selected slices. Leave blank for all", required = false )
+    @Parameter(label = "Selected Slices",
+            description = "Z-slices to export (e.g., '0:100'). Leave blank for all slices",
+            required = false)
     String range_slices = "";
 
-    @Parameter( label = "Selected timepoints. Leave blank for all", required = false )
+    @Parameter(label = "Selected Timepoints",
+            description = "Timepoints to export (e.g., '0:10'). Leave blank for all timepoints",
+            required = false)
     String range_frames = "";
 
-    @Parameter(label = "Number of resolution levels (scale factor = 2)", min = "1")
+    @Parameter(label = "Resolution Levels",
+            description = "Number of pyramid resolution levels to generate (scale factor = 2)",
+            min = "1")
     int n_resolution_levels;
 
-    @Parameter(label = "Fusion method", choices = {"SMOOTH "+AlphaFusedResampledSource.AVERAGE, AlphaFusedResampledSource.MAX, AlphaFusedResampledSource.AVERAGE})
+    @Parameter(label = "Fusion Method",
+            description = "Method used to blend overlapping tiles",
+            choices = {"SMOOTH "+AlphaFusedResampledSource.AVERAGE, AlphaFusedResampledSource.MAX, AlphaFusedResampledSource.AVERAGE})
     String fusion_method;
 
-    @Parameter(label = "Use LZW compression")
+    @Parameter(label = "Use LZW Compression",
+            description = "When checked, applies LZW compression to reduce file size")
     boolean use_lzw_compression;
 
-    @Parameter(label = "Split slices")
+    @Parameter(label = "Split Slices",
+            description = "When checked, exports each Z-slice as a separate file")
     boolean split_slices = false;
 
-    @Parameter(label = "Split channels")
+    @Parameter(label = "Split Channels",
+            description = "When checked, exports each channel as a separate file")
     boolean split_channels = false;
 
-    @Parameter(label = "Split frames")
+    @Parameter(label = "Split Frames",
+            description = "When checked, exports each timepoint as a separate file")
     boolean split_frames = false;
 
-    @Parameter(label = "Use custom XY/Z anisotropy ratio")
+    @Parameter(label = "Override Z Anisotropy",
+            description = "When checked, uses a custom XY/Z anisotropy ratio instead of the dataset value")
     boolean override_z_ratio = false;
 
-    @Parameter(label = "XY/Z anisotropy ratio")
+    @Parameter(label = "XY/Z Anisotropy Ratio",
+            description = "Custom ratio between XY and Z pixel sizes")
     double z_ratio = 1.0;
 
-    @Parameter(label = "Downsample X")
+    @Parameter(label = "Downsample X",
+            description = "Downsampling factor in X (1.0 = no downsampling)")
     double x_downsample = 1.0;
 
-    @Parameter(label = "Downsample Y")
+    @Parameter(label = "Downsample Y",
+            description = "Downsampling factor in Y (1.0 = no downsampling)")
     double y_downsample = 1.0;
 
-    @Parameter(label = "Downsample Z")
+    @Parameter(label = "Downsample Z",
+            description = "Downsampling factor in Z (1.0 = no downsampling)")
     double z_downsample = 1.0;
 
-    @Parameter(label = "Interpolate when fusing (~4x slower)")
+    @Parameter(label = "Use Interpolation",
+            description = "When checked, applies interpolation during fusion (slower but smoother)")
     boolean use_interpolation = false;
 
     double vox_size_x_micrometer = 1;

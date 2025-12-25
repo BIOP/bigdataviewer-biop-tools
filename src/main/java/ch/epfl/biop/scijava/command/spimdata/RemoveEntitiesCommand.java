@@ -18,16 +18,23 @@ import java.io.File;
  * Extra attributes like DisplaySettings break BigStitcher because the grouping is not correct...
  *
  */
-@Plugin(type = Command.class, menuPath = ScijavaBdvDefaults.RootMenu+"BDVDataset>Edit>Remove Entities from BDVDataset")
+@Plugin(type = Command.class,
+        menuPath = ScijavaBdvDefaults.RootMenu+"BDVDataset>Edit>Remove Entities from BDVDataset",
+        description = "Removes specified entity types from a BDV dataset for compatibility with other tools")
 public class RemoveEntitiesCommand implements Command {
 
-    @Parameter(label="Xml Bdv Dataset input", style = "open")
+    @Parameter(label = "Input XML File",
+            description = "The BDV XML dataset file to modify",
+            style = "open")
     File xmlin;
 
-    @Parameter(label="Xml Bdv Dataset output", style = "save")
+    @Parameter(label = "Output XML File",
+            description = "The XML file where the modified dataset will be saved",
+            style = "save")
     File xmlout;
 
-    @Parameter
+    @Parameter(label = "Entities to Remove",
+            description = "Comma-separated list of entity types to remove (e.g., 'displaysettings, fileindex')")
     String entitiestoremove = "displaysettings, fileindex";
 
     @Override

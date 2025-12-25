@@ -18,22 +18,32 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
 
-@Plugin(type = Command.class, menuPath = ScijavaBdvDefaults.RootMenu+"BDV>Get Bdv User Points")
+@Plugin(type = Command.class,
+        menuPath = ScijavaBdvDefaults.RootMenu+"BDV>Get Bdv User Points",
+        description = "Allows the user to interactively select multiple points in a BigDataViewer window")
 public class GetUserPointsCommand implements Command {
 
-    @Parameter(required = false)
+    @Parameter(label = "Graphical Handle Supplier",
+            description = "Optional function to create custom graphical handles for the points",
+            required = false)
     Function<RealPoint, GraphicalHandle> graphical_handle_supplier;
 
-    @Parameter
+    @Parameter(label = "Select BDV Window",
+            description = "The BigDataViewer window where points will be selected")
     BdvHandle bdvh;
 
-    @Parameter
+    @Parameter(label = "Message",
+            description = "The instruction message displayed to the user")
     String message_for_user;
 
-    @Parameter(required = false)
+    @Parameter(label = "Timeout (ms)",
+            description = "Maximum time to wait for selection in milliseconds (-1 for no timeout)",
+            required = false)
     int time_out_in_ms =-1;
 
-    @Parameter(type = ItemIO.OUTPUT)
+    @Parameter(type = ItemIO.OUTPUT,
+            label = "Selected Points",
+            description = "The list of 3D points selected by the user")
     List<RealPoint> pts = new ArrayList<>();
 
     @Override

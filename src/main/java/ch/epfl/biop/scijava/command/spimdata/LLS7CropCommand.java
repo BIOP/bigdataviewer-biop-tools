@@ -23,16 +23,21 @@ import sc.fiji.bdvpg.sourceandconverter.transform.SourceResampler;
 import java.util.ArrayList;
 import java.util.List;
 
-@Plugin(type = Command.class, menuPath = ScijavaBdvDefaults.RootMenu+"BDV>LLS7 - Crop 3D")
+@Plugin(type = Command.class,
+        menuPath = ScijavaBdvDefaults.RootMenu+"BDV>LLS7 - Crop 3D",
+        description = "Crops a 3D region from LLS7 sources using an interactive bounding box")
 public class LLS7CropCommand implements Command {
 
-    @Parameter
+    @Parameter(label = "Select BDV Window",
+            description = "The BigDataViewer window containing the sources to crop")
     BdvHandle bdvh;
 
-    @Parameter
+    @Parameter(label = "Output Name",
+            description = "The name for the cropped image")
     String image_name;
 
-    @Parameter
+    @Parameter(label = "Select Source(s)",
+            description = "The source(s) to crop")
     SourceAndConverter<?>[] sources;
 
     //@Parameter
@@ -51,10 +56,14 @@ public class LLS7CropCommand implements Command {
     double box_size_y = 150/4.0;
     double box_size_z = 150/4.0;
 
-    @Parameter(type = ItemIO.OUTPUT)
+    @Parameter(type = ItemIO.OUTPUT,
+            label = "Cropped Interval",
+            description = "The selected 3D bounding box interval")
     RealInterval interval;
 
-    @Parameter(type = ItemIO.OUTPUT)
+    @Parameter(type = ItemIO.OUTPUT,
+            label = "Selection Valid",
+            description = "True if the user confirmed the selection, false if cancelled")
     Boolean result;
 
     @Parameter

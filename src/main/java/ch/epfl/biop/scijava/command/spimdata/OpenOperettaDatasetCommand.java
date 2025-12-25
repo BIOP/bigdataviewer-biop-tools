@@ -59,20 +59,25 @@ import java.util.stream.Collectors;
  */
 
 @Plugin(type = Command.class,
-        menuPath = ScijavaBdvDefaults.RootMenu+"BDVDataset>Create BDV Dataset [Operetta]"
+        menuPath = ScijavaBdvDefaults.RootMenu+"BDVDataset>Create BDV Dataset [Operetta]",
+        description = "Opens a PerkinElmer Operetta high-content imaging dataset in BigDataViewer"
 )
 public class OpenOperettaDatasetCommand implements Command {
 
     // Useful to display the label of the folder parameter
     @Parameter(
             required = false,
-            label = "Physical unit",
+            label = "World coordinate units",
+            description = "Unit for the common coordinate system where all datasets will be positioned. "+
+                    "Image calibrations will be converted to these units.",
             choices = {"MILLIMETER", "MICROMETER", "NANOMETER"}
     )
     public String unit = "MILLIMETER";
     String message = "BIOP Operetta BigDataViewer";
 
-    @Parameter(label = "Select the 'Images' folder of your Operetta dataset", style = "directory")
+    @Parameter(label = "Operetta Images Folder",
+            description = "The 'Images' or 'flex' folder containing your Operetta dataset",
+            style = "directory")
     File folder;
 
     @Parameter
@@ -84,16 +89,21 @@ public class OpenOperettaDatasetCommand implements Command {
     @Parameter
     SourceAndConverterBdvDisplayService sourceDisplayService;
 
-    @Parameter
+    @Parameter(label = "Min Display Value",
+            description = "Minimum intensity value for display adjustment")
     double min_display_value = 0;
 
-    @Parameter
+    @Parameter(label = "Max Display Value",
+            description = "Maximum intensity value for display adjustment")
     double max_display_value = 20000;
 
-    @Parameter
+    @Parameter(label = "Show in Viewer",
+            description = "When checked, displays the dataset in a new BigDataViewer window")
     boolean show = true;
 
-    @Parameter(type = ItemIO.OUTPUT)
+    @Parameter(type = ItemIO.OUTPUT,
+            label = "Dataset Name",
+            description = "The name assigned to the opened dataset")
     String dataset_name;
 
     @Override

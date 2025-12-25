@@ -11,17 +11,20 @@ import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 
 @Plugin(type = Command.class, initializer = "init",
         menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>New Affine Transform",
-        description = "Creates an affine transform and makes it accessible for other commands\n"
-                     +"An affine transform is a 4x3 matrix; elements are separated by comma.",
+        description = "Creates an affine transform from a 4x4 matrix for use in other commands",
         headless = true)
 public class AffineTransformCreatorCommand implements Command {
 
     private static Logger logger = LoggerFactory.getLogger(AffineTransformCreatorCommand.class);
 
-    @Parameter(label = "Affine Transform Matrix", style = "text area")
+    @Parameter(label = "Transform Matrix",
+            description = "A 4x3 affine transform matrix with 16 comma-separated values",
+            style = "text area")
     String string_matrix = "1,0,0,0,\n 0,1,0,0,\n 0,0,1,0, \n 0,0,0,1";
 
-    @Parameter(type = ItemIO.OUTPUT)
+    @Parameter(type = ItemIO.OUTPUT,
+            label = "Affine Transform",
+            description = "The created 3D affine transform")
     AffineTransform3D at3d;
 
     @Override

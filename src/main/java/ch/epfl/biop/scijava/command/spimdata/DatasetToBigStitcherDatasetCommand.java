@@ -28,16 +28,24 @@ import java.io.File;
  * Extra attributes like DisplaySettings break BigStitcher because the grouping is not correct...
  *
  */
-@Plugin(type = Command.class, menuPath = ScijavaBdvDefaults.RootMenu+"BDVDataset>Edit>Make BDVDataset BigStitcher Compatible")
+@Plugin(type = Command.class,
+        menuPath = ScijavaBdvDefaults.RootMenu+"BDVDataset>Edit>Make BDVDataset BigStitcher Compatible",
+        description = "Converts a BDV dataset to BigStitcher format by removing incompatible attributes and rescaling")
 public class DatasetToBigStitcherDatasetCommand implements Command {
 
-    @Parameter(label="Xml Bdv Dataset input", style = "open")
+    @Parameter(label = "Input XML File",
+            description = "The BDV XML dataset file to convert",
+            style = "open")
     File xmlin;
 
-    @Parameter(label="View setup reference for rescaling, -1 to list all voxel dimensions and pick the first", persist = false)
+    @Parameter(label = "View Setup Reference",
+            description = "View setup index for rescaling reference (-1 to list all and use first)",
+            persist = false)
     int viewsetupreference = -1;
 
-    @Parameter(label="Xml Bdv Dataset output", style = "save")
+    @Parameter(label = "Output XML File",
+            description = "The XML file where the BigStitcher-compatible dataset will be saved",
+            style = "save")
     File xmlout;
 
     @Override

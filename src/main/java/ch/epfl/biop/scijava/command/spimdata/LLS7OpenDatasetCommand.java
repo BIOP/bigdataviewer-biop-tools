@@ -22,14 +22,15 @@ import java.util.List;
 
 @Plugin(type = Command.class,
         menuPath = "Plugins>BigDataViewer-Playground>BDVDataset>Create BDV Dataset [Zeiss LLS7]",
-        description = "Open and live deskew a zeiss Lattice Light Sheet dataset with  Bio-Formats (BioFormats) and BigDataViewer")
+        description = "Opens a Zeiss Lattice Light Sheet 7 dataset with live deskewing using Bio-Formats and BigDataViewer")
 public class LLS7OpenDatasetCommand implements
         Command
 {
 
     public String unit = "MICROMETER";
 
-    @Parameter(label = "CZI LLS7 file")
+    @Parameter(label = "CZI LLS7 File",
+            description = "The CZI file from a Zeiss LLS7 acquisition to open")
     File czi_file;
 
     //@Parameter(required = false,
@@ -38,7 +39,9 @@ public class LLS7OpenDatasetCommand implements
 
     @Parameter
     Context ctx;
-    @Parameter
+
+    @Parameter(label = "Use Legacy XY Mode",
+            description = "When checked, uses legacy XY orientation for compatibility with older datasets")
     boolean legacy_xy_mode;
 
     @Parameter

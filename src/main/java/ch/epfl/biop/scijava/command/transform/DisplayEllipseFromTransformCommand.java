@@ -19,17 +19,29 @@ import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
 import sc.fiji.bdvpg.sourceandconverter.display.BrightnessAdjuster;
 
 
-//@Plugin(type = Command.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>Create Ellipsoid Source")
+//@Plugin(type = Command.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>Create Ellipsoid Source",
+//        description = "Creates an ellipsoid source from an elliptical 3D transform for visualization")
 public class DisplayEllipseFromTransformCommand implements Command {
 
-    @Parameter(type = ItemIO.OUTPUT)
+    @Parameter(type = ItemIO.OUTPUT,
+            label = "Ellipsoid Source",
+            description = "The generated ellipsoid source for visualization")
     SourceAndConverter sac_out;
 
-    @Parameter(type = ItemIO.BOTH)
+    @Parameter(type = ItemIO.BOTH,
+            label = "Elliptical Transform",
+            description = "The elliptical 3D transform defining the ellipsoid shape")
     Elliptical3DTransform e3dt;
 
-    @Parameter(style = "format:0.#####E0")
-    double r_min =0.9, r_max = 1.1;
+    @Parameter(label = "Min Radius",
+            description = "Inner radius threshold for the ellipsoid shell",
+            style = "format:0.#####E0")
+    double r_min =0.9;
+
+    @Parameter(label = "Max Radius",
+            description = "Outer radius threshold for the ellipsoid shell",
+            style = "format:0.#####E0")
+    double r_max = 1.1;
 
     @Parameter
     SourceAndConverterService sacService;

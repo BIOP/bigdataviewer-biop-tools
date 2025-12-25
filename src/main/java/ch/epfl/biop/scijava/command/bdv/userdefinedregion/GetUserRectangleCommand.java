@@ -11,22 +11,34 @@ import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 
 import java.util.List;
 
-@Plugin(type = Command.class, menuPath = ScijavaBdvDefaults.RootMenu+"BDV>Get Bdv User Rectangle")
+@Plugin(type = Command.class,
+        menuPath = ScijavaBdvDefaults.RootMenu+"BDV>Get Bdv User Rectangle",
+        description = "Allows the user to interactively select a rectangle in a BigDataViewer window")
 public class GetUserRectangleCommand implements Command {
 
-    @Parameter
+    @Parameter(label = "Select BDV Window",
+            description = "The BigDataViewer window where the rectangle will be selected")
     BdvHandle bdvh;
 
-    @Parameter
+    @Parameter(label = "Message",
+            description = "The instruction message displayed to the user")
     String message_for_user;
 
-    @Parameter(required = false)
+    @Parameter(label = "Timeout (ms)",
+            description = "Maximum time to wait for selection in milliseconds (-1 for no timeout)",
+            required = false)
     int time_out_in_ms =-1;
 
-    @Parameter(type = ItemIO.BOTH, required = false) // BOTH allow to pass an initial rectangle
+    @Parameter(type = ItemIO.BOTH,
+            label = "Corner Point 1",
+            description = "First corner point of the rectangle (can be preset or will be set by user)",
+            required = false) // BOTH allow to pass an initial rectangle
     RealPoint p1;
 
-    @Parameter(type = ItemIO.BOTH, required = false) // BOTH allow to pass an initial rectangle
+    @Parameter(type = ItemIO.BOTH,
+            label = "Corner Point 2",
+            description = "Opposite corner point of the rectangle (can be preset or will be set by user)",
+            required = false) // BOTH allow to pass an initial rectangle
     RealPoint p2;
 
     @Override

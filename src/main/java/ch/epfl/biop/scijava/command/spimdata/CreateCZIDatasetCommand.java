@@ -26,19 +26,27 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-@Plugin(type = Command.class, menuPath = ScijavaBdvDefaults.RootMenu+"BDVDataset>Edit>Make CZI Dataset for BigStitcher")
+@Plugin(type = Command.class,
+        menuPath = ScijavaBdvDefaults.RootMenu+"BDVDataset>Edit>Make CZI Dataset for BigStitcher",
+        description = "Creates a BigStitcher-compatible XML dataset from a CZI file")
 public class CreateCZIDatasetCommand implements Command {
 
-    @Parameter(style = "open")
+    @Parameter(label = "CZI Input File",
+            description = "The CZI file to convert for BigStitcher",
+            style = "open")
     File czi_file;
 
     @Parameter
     Context ctx;
 
-    @Parameter
+    @Parameter(label = "Overwrite Existing File",
+            description = "When checked, overwrites the output file if it already exists")
     Boolean erase_if_file_already_exists = false;
 
-    @Parameter(type = ItemIO.BOTH, label = "Output file (xml)", style = "save")
+    @Parameter(type = ItemIO.BOTH,
+            label = "Output XML File",
+            description = "The XML file where the BigStitcher dataset will be saved",
+            style = "save")
     File xml_out = null;
 
     @Override
