@@ -14,7 +14,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 
-@Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>Import Elliptic 3D Transform")
+@Plugin(type = BdvPlaygroundActionCommand.class,
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>Import Elliptic 3D Transform",
+        description = "Loads an elliptical 3D transform from a JSON file")
 public class Elliptic3DTransformImporterCommand implements BdvPlaygroundActionCommand {
 
     @Parameter
@@ -23,10 +25,12 @@ public class Elliptic3DTransformImporterCommand implements BdvPlaygroundActionCo
     @Parameter
     Context context;
 
-    @Parameter(label="Json file")
+    @Parameter(label = "JSON File",
+            description = "Path to the JSON file containing the transform")
     File file;
 
-    @Parameter(type = ItemIO.OUTPUT)
+    @Parameter(type = ItemIO.OUTPUT,
+            description = "The loaded elliptical 3D transform")
     Elliptical3DTransform e3dt;
 
     @Override

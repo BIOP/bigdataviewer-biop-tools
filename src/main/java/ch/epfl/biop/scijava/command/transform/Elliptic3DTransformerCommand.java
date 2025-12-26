@@ -10,13 +10,17 @@ import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 
 import java.util.Arrays;
 
-@Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>Elliptic 3D Transform Sources")
+@Plugin(type = BdvPlaygroundActionCommand.class,
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>Elliptic 3D Transform Sources",
+        description = "Applies an elliptical 3D transform to sources for spherical/ellipsoidal projection")
 public class Elliptic3DTransformerCommand implements BdvPlaygroundActionCommand {
 
-    @Parameter
+    @Parameter(label = "Elliptical Transform",
+            description = "The elliptical 3D transform to apply")
     Elliptical3DTransform e3dt;
 
-    @Parameter
+    @Parameter(label = "Select Source(s)",
+            description = "The sources to transform")
     SourceAndConverter[] sacs_in;
 
     @Override

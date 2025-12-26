@@ -28,13 +28,18 @@ import java.util.function.Function;
  * Command used to export an elliptical transformed source
  */
 
-@Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>Export elliptic 3D transformed sources (interactive box)")
+@Plugin(type = BdvPlaygroundActionCommand.class,
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>Export elliptic 3D transformed sources (interactive box)",
+        description = "Interactively select a region in spherical coordinates and export to ImagePlus")
 public class EasyExportEllipticProjection implements Command {
 
-    @Parameter(label = "Select the elliptic transformed sources", callback = "validateMessage")
+    @Parameter(label = "Select Source(s)",
+            callback = "validateMessage",
+            description = "Elliptically-transformed sources to export")
     SourceAndConverter<?>[] sacs;
 
-    @Parameter(type = ItemIO.OUTPUT)
+    @Parameter(type = ItemIO.OUTPUT,
+            description = "The exported image")
     public ImagePlus imp_out;
 
     @Parameter

@@ -29,10 +29,11 @@ import java.util.List;
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
         menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Registration pair - Add GUI",
-        description = "Delete a registration pair"  )
+        description = "Opens a BigDataViewer window with  controls for performing registrations")
 public class PairRegistrationAddGUICommand implements Command {
 
-    @Parameter
+    @Parameter(label = "Registration Pair",
+            description = "The registration pair to visualize and control")
     RegistrationPair registration_pair;
 
     @Parameter

@@ -12,10 +12,13 @@ import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 
-@Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Set L1 Alpha Source")
+@Plugin(type = BdvPlaygroundActionCommand.class,
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Set L1 Alpha Source",
+        description = "Sets L1 distance-based alpha blending for smooth transitions at source edges")
 public class SourceSetAlphaCommand implements Command {
 
-    @Parameter
+    @Parameter(label = "Select Source(s)",
+            description = "The sources to apply L1 alpha blending to")
     SourceAndConverter<?>[] sources;
 
     @Override

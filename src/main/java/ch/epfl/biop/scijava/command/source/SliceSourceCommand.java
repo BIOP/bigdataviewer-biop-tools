@@ -20,42 +20,66 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-@Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>Slice Source")
+@Plugin(type = BdvPlaygroundActionCommand.class,
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>Slice Source",
+        description = "Resamples sources to an arbitrary oblique slice based on the current BDV view orientation")
 public class SliceSourceCommand implements BdvPlaygroundActionCommand {
 
     private static Logger logger = LoggerFactory.getLogger(SliceSourceCommand.class);
 
-    @Parameter(label = "BigDataViewer Frame")
+    @Parameter(label = "BDV Window",
+            description = "The BigDataViewer window whose current view defines the slice orientation")
     public BdvHandle bdv_h;
 
-    @Parameter(required = false)
+    @Parameter(required = false,
+            description = "The sources to slice")
     SourceAndConverter[] sacs;
 
-    @Parameter(label="Match bdv frame window size", persist=false, callback = "matchXYBDVFrame")
-    public boolean match_window_size =false;
+    @Parameter(label = "Match Window Size",
+            persist = false,
+            callback = "matchXYBDVFrame",
+            description = "When checked, sets X and Y sizes to match the BDV window dimensions")
+    public boolean match_window_size = false;
 
-    @Parameter(label = "Total Size X (physical unit)", callback = "matchXYBDVFrame", style = "format:0.#####E0")
+    @Parameter(label = "Size X",
+            callback = "matchXYBDVFrame",
+            style = "format:0.#####E0",
+            description = "Total width of the slice in world coordinates units")
     public double x_size = 100;
 
-    @Parameter(label = "Total Size Y (physical unit)", callback = "matchXYBDVFrame", style = "format:0.#####E0")
+    @Parameter(label = "Size Y",
+            callback = "matchXYBDVFrame",
+            style = "format:0.#####E0",
+            description = "Total height of the slice in world coordinates units")
     public double y_size = 100;
 
-    @Parameter(label = "Half Thickness Z (above and below, physical unit)", style = "format:0.#####E0")
+    @Parameter(label = "Half Thickness Z",
+            style = "format:0.#####E0",
+            description = "Half-depth of the slice (above and below) in world coordinates units")
     public double z_size = 100;
 
-    @Parameter(label = "XY Pixel size sampling (physical unit)", callback = "changePhysicalSampling", style = "format:0.#####E0")
+    @Parameter(label = "XY Sampling",
+            callback = "changePhysicalSampling",
+            style = "format:0.#####E0",
+            description = "Pixel size for XY sampling in world coordinates units")
     public double sampling_xy_in_physical_unit = 1;
 
-    @Parameter(label = "Z Pixel size sampling (physical unit)", callback = "changePhysicalSampling", style = "format:0.#####E0")
+    @Parameter(label = "Z Sampling",
+            callback = "changePhysicalSampling",
+            style = "format:0.#####E0",
+            description = "Pixel size for Z sampling in world coordinates units")
     public double sampling_z_in_physical_unit = 1;
 
-    @Parameter(label = "Interpolate")
+    @Parameter(label = "Interpolate",
+            description = "When checked, uses interpolation when resampling")
     public boolean interpolate = true;
 
-    @Parameter(label = "ReUseMipMaps")
+    @Parameter(label = "Reuse MipMaps",
+            description = "When checked, uses existing pyramid levels for efficiency")
     public boolean reusemipmaps = true;
 
-    @Parameter(label = "cache")
+    @Parameter(label = "Cache",
+            description = "When checked, caches computed slices in memory")
     public boolean cache = false;
 
     String unitOfFirstSource=" ";

@@ -37,13 +37,19 @@ import static bdv.util.Elliptical3DTransform.ROTATION_Y;
 import static bdv.util.Elliptical3DTransform.ROTATION_Z;
 
 
-@Plugin(type = BdvPlaygroundActionCommand.class, initializer = "init", menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>Elliptic 3D Transform Optimization")
+@Plugin(type = BdvPlaygroundActionCommand.class,
+        initializer = "init",
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>Elliptic 3D Transform Optimization",
+        description = "Optimizes elliptical transform parameters to maximize intensity on the ellipsoid surface")
 public class Optimize3DEllipticalTransformCommand implements BdvPlaygroundActionCommand{
 
-    @Parameter(type = ItemIO.BOTH)
+    @Parameter(label = "Elliptical Transform",
+            type = ItemIO.BOTH,
+            description = "The elliptical transform to optimize")
     Elliptical3DTransform e3dt;
 
-    @Parameter
+    @Parameter(label = "Intensity Threshold",
+            description = "Minimum intensity value to include in optimization")
     double threshold_intensity = 0;
 
     @Parameter

@@ -12,10 +12,11 @@ import java.io.IOException;
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
         menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Delete registration pair",
-        description = "Delete a registration pair"  )
+        description = "Removes a registration pair from memory and closes associated resources")
 public class PairRegistrationDeleteCommand implements Command {
 
-    @Parameter
+    @Parameter(label = "Registration Pair",
+            description = "The registration pair to delete")
     RegistrationPair registration_pair;
 
     @Parameter

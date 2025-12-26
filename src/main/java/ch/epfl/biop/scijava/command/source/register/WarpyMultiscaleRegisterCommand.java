@@ -26,7 +26,9 @@ import sc.fiji.persist.ScijavaGsonHelper;
 import java.io.File;
 import java.nio.charset.Charset;
 
-@Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>QuPath - Create Warpy Multiscale Registration")
+@Plugin(type = BdvPlaygroundActionCommand.class,
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>QuPath - Create Warpy Multiscale Registration",
+        description = "Performs automated multiscale registration between QuPath entries, saved to the project")
 public class WarpyMultiscaleRegisterCommand implements Command {
 
     private static Logger logger = LoggerFactory.getLogger(WarpyMultiscaleRegisterCommand.class);
@@ -34,29 +36,44 @@ public class WarpyMultiscaleRegisterCommand implements Command {
     @Parameter(visibility = ItemVisibility.MESSAGE, persist = false, style = "message")
     String message = "<html><h1>QuPath Warpy multiscale registration</h1>Please select a list of moving and a list of fixed source<br></html>";
 
-    @Parameter(label = "Number of registration scales (# registration x2 per scale)", style = "slider", min = "2", max="8", callback = "updateInfo")
+    @Parameter(label = "Number of Scales",
+            style = "slider",
+            min = "2",
+            max = "8",
+            callback = "updateInfo",
+            description = "Number of resolution scales for registration (more scales = more precise but slower)")
     int n_scales = 4;
 
     @Parameter(visibility = ItemVisibility.MESSAGE, required = false)
     String info_registration = "";
 
-    @Parameter(label = "Fixed source", callback = "updateMessage", style = "sorted")
+    @Parameter(label = "Fixed Source(s)",
+            callback = "updateMessage",
+            style = "sorted",
+            description = "Reference source(s) from the QuPath project")
     SourceAndConverter<?>[] fixed_sources;
 
-    @Parameter(label = "Moving source", callback = "updateMessage", style = "sorted")
+    @Parameter(label = "Moving Source(s)",
+            callback = "updateMessage",
+            style = "sorted",
+            description = "Source(s) to be registered to the fixed reference")
     SourceAndConverter<?>[] moving_sources;
 
 
-    @Parameter(label = "Remove images z-offsets")
+    @Parameter(label = "Remove Z Offsets",
+            description = "When checked, removes Z position offsets from sources for 2D registration")
     boolean remove_z_offset = true;
 
-    @Parameter(label = "Center moving image with fixed image")
+    @Parameter(label = "Center Images",
+            description = "When checked, initially centers the moving image on the fixed image")
     boolean center_moving_image = true;
 
-    @Parameter(label = "Number of pixel for each block of image used for the registration (default 128)")
+    @Parameter(label = "Block Size",
+            description = "Size in pixels of each image block used for local registration")
     int pixels_per_block = 128;
 
-    @Parameter(label = "Number of iterations for each registration (default 100)")
+    @Parameter(label = "Iterations Per Scale",
+            description = "Maximum number of iterations for each registration at each scale")
     int max_iteration_number_per_scale = 100;
 
     @Parameter

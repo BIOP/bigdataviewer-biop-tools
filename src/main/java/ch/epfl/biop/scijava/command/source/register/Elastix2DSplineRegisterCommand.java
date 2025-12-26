@@ -10,22 +10,27 @@ import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
-        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Obsolete>Register Sources with Elastix (Spline, 2D)")
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Obsolete>Register Sources with Elastix (Spline, 2D)",
+        description = "Performs B-spline deformable registration in 2D between two sources using Elastix")
 public class Elastix2DSplineRegisterCommand extends AbstractElastix2DRegistrationInRectangleCommand implements BdvPlaygroundActionCommand {
 
-    @Parameter(label = "Number of control points along the X axis")
+    @Parameter(label = "Control Points X",
+            description = "Number of B-spline control points along the X axis")
     int num_ctrl_points_x;
 
-    @Parameter(type = ItemIO.OUTPUT)
+    @Parameter(type = ItemIO.OUTPUT,
+            description = "The forward spline transformation")
     RealTransform rt;
 
-    @Parameter(type = ItemIO.OUTPUT)
+    @Parameter(type = ItemIO.OUTPUT,
+            description = "The inverse spline transformation")
     RealTransform rt_inverse;
 
     @Parameter
     Context ctx;
 
-    @Parameter(type = ItemIO.OUTPUT)
+    @Parameter(type = ItemIO.OUTPUT,
+            description = "Whether the registration completed successfully")
     boolean success;
 
     @Override

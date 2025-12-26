@@ -23,18 +23,23 @@ import java.util.stream.Collectors;
 import static bdv.util.RealTransformHelper.BigWarpFileFromRealTransform;
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
-        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Obsolete>Edit Sources Warping")
-
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Obsolete>Edit Sources Warping",
+        description = "Opens BigWarp to edit the warping transform of already-warped sources")
 public class EditSourcesWarpingCommand implements BdvPlaygroundActionCommand {
 
-    @Parameter(type = ItemIO.BOTH)
+    @Parameter(label = "Moving Source(s)",
+            type = ItemIO.BOTH,
+            description = "The warped sources to edit (must be WarpedSource type)")
     SourceAndConverter<?>[] moving_sources;
 
 
-    @Parameter(required = false)
+    @Parameter(label = "Fixed Source(s)",
+            required = false,
+            description = "Optional reference sources for visual alignment")
     SourceAndConverter<?>[] fixed_sources;
 
-    @Parameter
+    @Parameter(label = "2D Mode",
+            description = "When checked, constrains editing to 2D")
     boolean is2d;
 
     Runnable waitForUser = () -> {

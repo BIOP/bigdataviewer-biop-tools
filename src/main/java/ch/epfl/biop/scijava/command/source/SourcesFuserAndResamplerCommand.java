@@ -17,46 +17,69 @@ import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 import java.util.Arrays;
 import java.util.List;
 
-@Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Fuse and Resample Sources Based on Model Source")
+@Plugin(type = BdvPlaygroundActionCommand.class,
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Fuse and Resample Sources Based on Model Source",
+        description = "Fuses multiple sources into one, resampled to match a model source's grid")
 public class SourcesFuserAndResamplerCommand implements BdvPlaygroundActionCommand {
 
-    @Parameter(label = "Select Source(s)")
+    @Parameter(label = "Select Source(s)",
+            description = "The sources to fuse together")
     SourceAndConverter[] sacs;
 
-    @Parameter
+    @Parameter(label = "Model Source",
+            description = "The source whose grid defines the output resolution and dimensions")
     SourceAndConverter model;
 
-    @Parameter(label="Re-use MipMaps")
+    @Parameter(label = "Re-use MipMaps",
+            description = "When checked, uses existing pyramid levels for efficiency")
     boolean reusemipmaps;
 
-    @Parameter(label="MipMap level if not re-used (0 = max resolution)")
+    @Parameter(label = "Default MipMap Level",
+            description = "Pyramid level to use if not reusing mipmaps (0 = highest resolution)")
     int defaultmipmaplevel;
 
-    @Parameter
+    @Parameter(label = "Interpolate",
+            description = "When checked, uses interpolation when resampling")
     boolean interpolate;
 
-    @Parameter
+    @Parameter(label = "Cache",
+            description = "When checked, caches computed blocks in memory")
     boolean cache;
 
-    @Parameter
-    int cache_x = 64, cache_y =64, cache_z =64;
+    @Parameter(label = "Cache Block X",
+            description = "Cache block size in X dimension")
+    int cache_x = 64;
 
-    @Parameter(label = "Number of blocks kept in memory, negative values = no bounds")
+    @Parameter(label = "Cache Block Y",
+            description = "Cache block size in Y dimension")
+    int cache_y = 64;
+
+    @Parameter(label = "Cache Block Z",
+            description = "Cache block size in Z dimension")
+    int cache_z = 64;
+
+    @Parameter(label = "Cache Size Limit",
+            description = "Maximum number of blocks in cache (-1 = unlimited)")
     int cache_bounds = -1;
 
-    @Parameter
+    @Parameter(label = "Number of Threads",
+            description = "Number of parallel threads for computation")
     int n_threads = 4;
 
-    @Parameter(label="Name of the fused resampled source")
-    String name; // CSV separate for multiple sources
+    @Parameter(label = "Output Name",
+            description = "Name for the fused resampled source")
+    String name;
 
-    @Parameter(type = ItemIO.OUTPUT)
+    @Parameter(type = ItemIO.OUTPUT,
+            label = "Fused Source",
+            description = "The resulting fused and resampled source")
     SourceAndConverter sac_out;
 
-    @Parameter(choices = {AlphaFusedResampledSource.SUM, AlphaFusedResampledSource.AVERAGE,
+    @Parameter(label = "Blending Mode",
+            description = "Method used to combine overlapping sources",
+            choices = {AlphaFusedResampledSource.SUM, AlphaFusedResampledSource.AVERAGE,
             "SMOOTH "+AlphaFusedResampledSource.AVERAGE,
             AlphaFusedResampledSource.MAX})
-
     String blending_mode;
 
     @Override

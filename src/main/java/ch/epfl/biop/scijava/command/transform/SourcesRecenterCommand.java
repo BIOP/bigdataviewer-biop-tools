@@ -11,19 +11,38 @@ import sc.fiji.bdvpg.services.SourceAndConverterServices;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterAndTimeRange;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceTransformHelper;
 
-@Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>Recenter sources")
+@Plugin(type = BdvPlaygroundActionCommand.class,
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>Recenter sources",
+        description = "Moves sources so their center is at the specified coordinates")
 public class SourcesRecenterCommand implements BdvPlaygroundActionCommand {
 
-    @Parameter
+    @Parameter(label = "Timepoint",
+            description = "Timepoint used for computing the recentering transform")
     int timepoint = 0;
 
-    @Parameter(style = "format:0.#####E0")
-    double cx, cy, cz;
+    @Parameter(label = "Center X",
+            style = "format:0.#####E0",
+            description = "Target X coordinate for the source center")
+    double cx;
 
-    @Parameter(label = "Sources", type = ItemIO.BOTH)
+    @Parameter(label = "Center Y",
+            style = "format:0.#####E0",
+            description = "Target Y coordinate for the source center")
+    double cy;
+
+    @Parameter(label = "Center Z",
+            style = "format:0.#####E0",
+            description = "Target Z coordinate for the source center")
+    double cz;
+
+    @Parameter(label = "Select Source(s)",
+            type = ItemIO.BOTH,
+            description = "The sources to recenter")
     public SourceAndConverter[] sacs;
 
-    @Parameter(choices = {"Mutate", "Append"})
+    @Parameter(label = "Mode",
+            choices = {"Mutate", "Append"},
+            description = "Mutate modifies existing transform; Append adds a new transform layer")
     String mode = "Mutate";
 
     @Override

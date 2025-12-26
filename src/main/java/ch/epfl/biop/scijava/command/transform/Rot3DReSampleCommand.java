@@ -31,44 +31,59 @@ import java.util.stream.Collectors;
  * Reorients an ImagePlus in 3D
  */
 
-@Plugin(type = BdvPlaygroundActionCommand.class, menuPath = "Image>Stacks>Rotation 3D Resample",
-description = "Required : two point roi in the ROI Manager and an ImagePlus. " +
-        "This command reorients a 3D IJ1 image (ImagePlus) by creating another IJ1 image where" +
-        "the two points Roi are aligned in Z. Hyperstakcs are supporteda and metadata (original pixel size)" +
-        "matters.")
+@Plugin(type = BdvPlaygroundActionCommand.class,
+        menuPath = "Image>Stacks>Rotation 3D Resample",
+        description = "Reorients a 3D ImagePlus so that two ROI points become aligned along Z axis")
 public class Rot3DReSampleCommand<T extends NumericType<T> & NativeType<T>> implements BdvPlaygroundActionCommand {
 
-    @Parameter
+    @Parameter(label = "Input Image",
+            description = "The 3D image to reorient")
     ImagePlus imp_in;
 
-    @Parameter
+    @Parameter(label = "ROI Manager",
+            description = "Must contain exactly two point ROIs defining the alignment axis")
     RoiManager rm;
 
-    @Parameter(label = "Final Image Size X (physical unit)", style="format:0.#####E0")
+    @Parameter(label = "Output Size X",
+            style = "format:0.#####E0",
+            description = "Width of the output image in world coordinates units")
     double radiusx;
 
-    @Parameter(label = "Final Image Size Y (physical unit)", style="format:0.#####E0")
+    @Parameter(label = "Output Size Y",
+            style = "format:0.#####E0",
+            description = "Height of the output image in world coordinates units")
     double radiusy;
 
-    @Parameter(label = "Final Image Size Z (physical unit)", style="format:0.#####E0")
+    @Parameter(label = "Output Size Z",
+            style = "format:0.#####E0",
+            description = "Depth of the output image in world coordinates units")
     double radiusz;
 
-    @Parameter(label = "Final Voxel Size X (physical unit)", style="format:0.#####E0")
+    @Parameter(label = "Voxel Size X",
+            style = "format:0.#####E0",
+            description = "Output voxel size in X dimension")
     double voxfx;
 
-    @Parameter(label = "Final Voxel Size Y (physical unit)", style="format:0.#####E0")
+    @Parameter(label = "Voxel Size Y",
+            style = "format:0.#####E0",
+            description = "Output voxel size in Y dimension")
     double voxfy;
 
-    @Parameter(label = "Final Voxel Size Z (physical unit)", style="format:0.#####E0")
+    @Parameter(label = "Voxel Size Z",
+            style = "format:0.#####E0",
+            description = "Output voxel size in Z dimension")
     double voxfz;
 
-    @Parameter(label = "Align X axis (default true)")
+    @Parameter(label = "Align X Axis",
+            description = "When checked, also aligns the X axis to the original XY projection")
     boolean align_x = true;
 
-    @Parameter(type = ItemIO.OUTPUT)
+    @Parameter(type = ItemIO.OUTPUT,
+            description = "The reoriented output image")
     ImagePlus imp_out;
 
-    @Parameter(label = "Interpolate pixel values during resampling.")
+    @Parameter(label = "Interpolate",
+            description = "When checked, uses interpolation when resampling pixel values")
     boolean interpolate;
 
     @Parameter

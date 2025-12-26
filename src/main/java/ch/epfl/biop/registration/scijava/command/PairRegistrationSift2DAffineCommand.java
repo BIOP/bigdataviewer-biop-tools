@@ -14,23 +14,28 @@ import java.util.Map;
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
         menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Register Pair 2D - Sift Affine",
-        description = "Performs a manual registration with BigWarp between two sources."  )
+        description = "Performs automatic 2D affine registration using SIFT feature matching")
 
 public class PairRegistrationSift2DAffineCommand extends AbstractPairRegistrationInROI2DCommand implements Command {
 
-    @Parameter(label = "Fixed image channels used for registration (comma separated)")
+    @Parameter(label = "Fixed Channels",
+            description = "Channel indices of the fixed image to use for registration (comma separated, e.g., '0' or '0,1')")
     String channels_fixed_csv;
 
-    @Parameter(label = "Moving image channels used for registration (comma separated)")
+    @Parameter(label = "Moving Channels",
+            description = "Channel indices of the moving image to use for registration (comma separated, e.g., '0' or '0,1')")
     String channels_moving_csv;
 
-    @Parameter(label = "Registration re-sampling (micrometers)")
+    @Parameter(label = "Pixel Size (um)",
+            description = "Pixel size in micrometers for resampling during registration (larger = faster but less precise)")
     double pixel_size_micrometer = 20;
 
-    @Parameter(label = "Invert moving image")
+    @Parameter(label = "Invert Moving",
+            description = "When checked, inverts the intensity of the moving image before matching")
     boolean invert_moving;
 
-    @Parameter(label = "Invert fixed image")
+    @Parameter(label = "Invert Fixed",
+            description = "When checked, inverts the intensity of the fixed image before matching")
     boolean invert_fixed;
 
     @Override

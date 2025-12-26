@@ -14,20 +14,24 @@ import java.util.Map;
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
         menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Register Pair 2D - Elastix Affine",
-        description = "Performs a manual registration with BigWarp between two sources."  )
+        description = "Performs automatic 2D affine registration using Elastix")
 
 public class PairRegistrationElastix2DAffineCommand extends AbstractPairRegistrationInROI2DCommand implements Command {
 
-    @Parameter(label = "Fixed image channels used for registration (comma separated)")
+    @Parameter(label = "Fixed Channels",
+            description = "Channel indices of the fixed image to use for registration (comma separated, e.g., '0' or '0,1')")
     String channels_fixed_csv;
 
-    @Parameter(label = "Moving image channels used for registration (comma separated)")
+    @Parameter(label = "Moving Channels",
+            description = "Channel indices of the moving image to use for registration (comma separated, e.g., '0' or '0,1')")
     String channels_moving_csv;
 
-    @Parameter(label = "Registration re-sampling (micrometers)")
+    @Parameter(label = "Pixel Size (um)",
+            description = "Pixel size in micrometers for resampling during registration (larger = faster but less precise)")
     double pixel_size_micrometer = 20;
 
-    @Parameter(label = "Show registration results as ImagePlus")
+    @Parameter(label = "Show Result",
+            description = "When checked, displays the registration result as an ImagePlus for verification")
     boolean show_imageplus_registration_result;
 
     @Override

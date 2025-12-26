@@ -43,46 +43,61 @@ import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
         description = "Lazy tiled Richardson Lucy deconvolution of Bdv sources that uses the GPU via CLIJ2")
 public class SourcesDeconvolverCommand implements BdvPlaygroundActionCommand {
 
-    @Parameter(label = "Select Source(s) to deconvolve", style="sorted")
+    @Parameter(label = "Select Source(s)",
+            style = "sorted",
+            description = "The sources to deconvolve")
     SourceAndConverter<?>[] sacs;
 
-    @Parameter(label = "Select PSF (one for all sources)")
+    @Parameter(label = "PSF Source",
+            description = "Point spread function used for deconvolution (applied to all sources)")
     SourceAndConverter<?> psf;
 
     final public static String ORIGINAL = "Keep Pixel Type Of Original Image";
     final public static String FLOAT = "Float";
 
-    @Parameter(label = "Deconvolved Image Pixel Type", choices = {ORIGINAL, FLOAT})
+    @Parameter(label = "Output Pixel Type",
+            choices = {ORIGINAL, FLOAT},
+            description = "Pixel type for the deconvolved output")
     String output_pixel_type;
 
-    @Parameter(label = "Source Name Suffix")
+    @Parameter(label = "Name Suffix",
+            description = "Suffix appended to source names for the deconvolved outputs")
     String suffix = "_deconvolved";
 
-    @Parameter(label = "Deconvolution block size X (pix)")
+    @Parameter(label = "Block Size X",
+            description = "Tile size in X dimension for GPU processing (pixels)")
     int block_size_x;
 
-    @Parameter(label = "Deconvolution block size Y (pix)")
+    @Parameter(label = "Block Size Y",
+            description = "Tile size in Y dimension for GPU processing (pixels)")
     int block_size_y;
 
-    @Parameter(label = "Deconvolution block size Z (pix)")
+    @Parameter(label = "Block Size Z",
+            description = "Tile size in Z dimension for GPU processing (pixels)")
     int block_size_z;
 
-    @Parameter(label = "Deconvolution overlap size (pix)")
+    @Parameter(label = "Overlap Size",
+            description = "Overlap between adjacent tiles to avoid edge artifacts (pixels)")
     int overlap_size;
 
-    @Parameter(label = "Number of iterations")
+    @Parameter(label = "Iterations",
+            description = "Number of Richardson-Lucy deconvolution iterations")
     int num_iterations;
 
-    @Parameter(label = "Non Circulant ?")
+    @Parameter(label = "Non-Circulant",
+            description = "When checked, uses non-circulant boundary conditions (reduces edge artifacts)")
     boolean non_circulant;
 
-    @Parameter(label = "Regularization factor")
+    @Parameter(label = "Regularization Factor",
+            description = "Regularization strength to prevent noise amplification (0 = no regularization)")
     float regularization_factor;
 
-    @Parameter(label = "Number of threads")
+    @Parameter(label = "Number of Threads",
+            description = "Number of parallel threads for tile processing")
     int n_threads = 10;
 
-    @Parameter(type = ItemIO.OUTPUT)
+    @Parameter(type = ItemIO.OUTPUT,
+            description = "The deconvolved sources")
     SourceAndConverter<?>[] sacs_out;
 
     @Override

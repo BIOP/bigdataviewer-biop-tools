@@ -34,15 +34,19 @@ import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 
-@Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"BDV>BDV - Set Number Of Timepoints (current window)",
-    description = "Sets the number of timepoints in the current BDV Windows")
+@Plugin(type = BdvPlaygroundActionCommand.class,
+        menuPath = ScijavaBdvDefaults.RootMenu+"BDV>BDV - Set Number Of Timepoints (current window)",
+        description = "Sets the number of timepoints displayed in the BDV time slider")
 
 public class CurrentBdvSetTimepointsNumberCommand implements BdvPlaygroundActionCommand {
 
-    @Parameter(label = "Select BDV Window")
+    @Parameter(label = "Select BDV Window",
+            description = "The BigDataViewer window to modify")
     BdvHandle bdvh;
 
-    @Parameter(label = "Number of timepoints, min = 1", min = "1")
+    @Parameter(label = "Number of Timepoints",
+            description = "The number of timepoints to display in the time slider",
+            min = "1")
     int numberoftimepoints;
 
     public void run() {

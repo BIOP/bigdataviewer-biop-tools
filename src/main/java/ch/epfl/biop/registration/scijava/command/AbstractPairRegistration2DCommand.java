@@ -23,10 +23,13 @@ abstract public class AbstractPairRegistration2DCommand implements Command {
     @Parameter
     Context ctx;
 
-    @Parameter
+    @Parameter(label = "Registration Pair",
+            description = "The registration pair to apply the registration to")
     RegistrationPair registration_pair;
 
-    @Parameter(type = ItemIO.OUTPUT)
+    @Parameter(type = ItemIO.OUTPUT,
+            label = "Success",
+            description = "True if the registration completed successfully")
     boolean success = false;
 
     @Override

@@ -26,52 +26,66 @@ import java.util.concurrent.ExecutionException;
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
         menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Export>Register Pair - Export registration to OME-TIFF",
-        description = "If properly defined, exports the current registration as an OME-TIFF file."  )
+        description = "Exports the registered images as a pyramidal OME-TIFF file")
 public class PairRegistrationExportToOMETIFFCommand implements Command {
 
     @Parameter
     Context ctx;
 
-    @Parameter
+    @Parameter(label = "Registration Pair",
+            description = "The registration pair to export")
     RegistrationPair registration_pair;
 
-    @Parameter(label = "Interpolate pixels values")
+    @Parameter(label = "Interpolate",
+            description = "When checked, uses interpolation when resampling the moving image")
     boolean interpolate;
 
     @Parameter(visibility = ItemVisibility.MESSAGE)
     String message = "If you include channels of the fixed image, the pixel type should match those of the moving one";
 
-    @Parameter(label = "Fixed image channels (comma separated, empty for none, '*' for all)")
+    @Parameter(label = "Fixed Channels",
+            description = "Channels from fixed image to include (comma separated, empty for none, '*' for all)")
     String channels_fixed_csv;
 
-    @Parameter(label = "Moving image channels (comma separated, empty for none, '*' for all)")
+    @Parameter(label = "Moving Channels",
+            description = "Channels from moving image to include (comma separated, empty for none, '*' for all)")
     String channels_moving_csv;
 
-    @Parameter(style = "save")
+    @Parameter(label = "Output File",
+            description = "Path where the OME-TIFF will be saved",
+            style = "save")
     File file_path;
 
     @Parameter
     LogService ls;
 
-    @Parameter(label = "Number of resolution levels")
+    @Parameter(label = "Resolution Levels",
+            description = "Number of pyramid resolution levels to generate")
     int n_resolution_levels = 4;
 
-    @Parameter(label = "Scaling factor between resolution levels")
+    @Parameter(label = "Downscaling Factor",
+            description = "Scale factor between consecutive resolution levels")
     int downscaling = 2;
 
-    @Parameter(label = "Tile Size X (negative: no tiling)")
+    @Parameter(label = "Tile Size X",
+            description = "Width of tiles in pixels (negative for no tiling)")
     int tile_size_x = 512;
 
-    @Parameter(label = "Tile Size Y (negative: no tiling)")
+    @Parameter(label = "Tile Size Y",
+            description = "Height of tiles in pixels (negative for no tiling)")
     int tile_size_y = 512;
 
-    @Parameter(label = "Number of threads (0 = serial)")
+    @Parameter(label = "Number of Threads",
+            description = "Number of parallel threads for export (0 = serial processing)")
     int n_threads = 8;
 
-    @Parameter(label = "Compression type", choices = {"LZW", "Uncompressed", "JPEG-2000", "JPEG-2000 Lossy", "JPEG"})
+    @Parameter(label = "Compression",
+            description = "Compression algorithm for the output file",
+            choices = {"LZW", "Uncompressed", "JPEG-2000", "JPEG-2000 Lossy", "JPEG"})
     String compression = "LZW";
 
-    @Parameter(label = "Compress temporary files (save space on drive during pyramid building)")
+    @Parameter(label = "Compress Temp Files",
+            description = "When checked, compresses temporary files to save disk space during export")
     boolean compress_temp_files = false;
 
     @Parameter

@@ -24,49 +24,78 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @SuppressWarnings({"unused", "CanBeFinal"})
-@Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Export>Export Sources To ImageJ1 (ignore location)")
+@Plugin(type = BdvPlaygroundActionCommand.class,
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Export>Export Sources To ImageJ1 (ignore location)",
+        description = "Exports sources to ImagePlus ignoring their spatial location (stacks sources as channels)")
 public class ExportToImagePlusCommand implements BdvPlaygroundActionCommand {
 
-    @Parameter(label = "Sources to export")
+    @Parameter(label = "Select Source(s)",
+            description = "The sources to export as channels in the output image")
     public SourceAndConverter<?>[] sacs;
 
-    @Parameter(label = "Exported Image Name")
+    @Parameter(label = "Image Name",
+            description = "Name for the exported ImagePlus")
     public String name = "Image_00";
 
-    @Parameter(label = "Resolution level (0 = highest)")
+    @Parameter(label = "Resolution Level",
+            description = "Pyramid level to export (0 = highest resolution)")
     public int level;
 
-    @Parameter( label = "Select Range", visibility = ItemVisibility.MESSAGE, persist = false, required = false)
+    @Parameter(label = "Select Range",
+            visibility = ItemVisibility.MESSAGE,
+            persist = false,
+            required = false)
     String range = "You can use commas or colons to separate ranges. eg. '1:10' or '1,3,5,8' ";
 
-    @Parameter( label = "Selected Channels. Leave blank for all", required = false )
+    @Parameter(label = "Selected Channels",
+            description = "Channel indices to export (e.g., '0:2' or '0,1'). Leave blank for all",
+            required = false)
     String range_channels = "";
 
-    @Parameter( label = "Selected Slices. Leave blank for all", required = false )
+    @Parameter(label = "Selected Slices",
+            description = "Z-slice indices to export (e.g., '0:100'). Leave blank for all",
+            required = false)
     String range_slices = "";
 
-    @Parameter( label = "Selected Timepoints. Leave blank for all", required = false )
+    @Parameter(label = "Selected Timepoints",
+            description = "Timepoint indices to export (e.g., '0:10'). Leave blank for all",
+            required = false)
     String range_frames = "";
 
-    @Parameter( label = "Export mode", choices = {"Normal", "Virtual", "Virtual no-cache"}, required = false )
+    @Parameter(label = "Export Mode",
+            description = "Normal loads all data; Virtual creates a lazy-loading stack",
+            choices = {"Normal", "Virtual", "Virtual no-cache"},
+            required = false)
     String export_mode = "Non virtual";
 
-    @Parameter( label = "Monitor loaded data")
+    @Parameter(label = "Monitor Progress",
+            description = "When checked, displays a progress indicator during export")
     Boolean monitor = false;
 
-    @Parameter( label = "Acquire channels in parallel (Normal only)", required = false)
+    @Parameter(label = "Parallel Channels",
+            description = "When checked, acquires channels in parallel (Normal mode only)",
+            required = false)
     Boolean parallel_c = false;
 
-    @Parameter( label = "Acquire slices in parallel (Normal only)", required = false)
+    @Parameter(label = "Parallel Slices",
+            description = "When checked, acquires Z-slices in parallel (Normal mode only)",
+            required = false)
     Boolean parallel_z = false;
 
-    @Parameter( label = "Acquire timepoints in parallel (Normal only)", required = false)
+    @Parameter(label = "Parallel Timepoints",
+            description = "When checked, acquires timepoints in parallel (Normal mode only)",
+            required = false)
     Boolean parallel_t = false;
 
-    @Parameter(type = ItemIO.OUTPUT)
+    @Parameter(type = ItemIO.OUTPUT,
+            label = "Exported Image",
+            description = "The exported ImagePlus")
     public ImagePlus imp_out;
 
-    @Parameter( label = "Image Info", visibility = ItemVisibility.MESSAGE, persist = false, required = false)
+    @Parameter(label = "Image Info",
+            visibility = ItemVisibility.MESSAGE,
+            persist = false,
+            required = false)
     String message = "[SX: , SY:, SZ:, #C:, #T:], ? Mb";
 
     @Parameter

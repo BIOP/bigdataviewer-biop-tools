@@ -11,17 +11,23 @@ import sc.fiji.bdvpg.services.SourceAndConverterServices;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterAndTimeRange;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceTransformHelper;
 
-@Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>Remove Z Offset")
-
+@Plugin(type = BdvPlaygroundActionCommand.class,
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>Remove Z Offset",
+        description = "Removes the Z position offset from sources, centering them at Z=0")
 public class RemoveZOffsetCommand implements BdvPlaygroundActionCommand {
 
-    @Parameter
+    @Parameter(label = "Timepoint",
+            description = "Timepoint used to compute the Z offset")
     int timepoint = 0;
 
-    @Parameter(label = "Sources", type = ItemIO.BOTH)
+    @Parameter(label = "Select Source(s)",
+            type = ItemIO.BOTH,
+            description = "The sources to remove Z offset from")
     public SourceAndConverter[] sacs;
 
-    @Parameter(choices = {"Mutate", "Append"})
+    @Parameter(label = "Mode",
+            choices = {"Mutate", "Append"},
+            description = "Mutate modifies existing transform; Append adds a new transform layer")
     String mode = "Mutate";
     @Override
     public void run() {

@@ -17,7 +17,7 @@ import java.util.Map;
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
         menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Register Pair - Center moving sources on fixed sources",
-        description = "Registration that centers moving sources over fixed sources."  )
+        description = "Applies a translation to center the moving sources over the fixed sources")
 public class PairRegistrationCenterCommand extends AbstractPairRegistration2DCommand implements Command {
 
     @Override

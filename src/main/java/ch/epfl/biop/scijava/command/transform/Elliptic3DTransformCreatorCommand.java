@@ -8,15 +8,58 @@ import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 
-@Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>New Elliptic 3D Transform")
+@Plugin(type = BdvPlaygroundActionCommand.class,
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>New Elliptic 3D Transform",
+        description = "Creates a new elliptical 3D transform with specified radii, rotation, and center")
 public class Elliptic3DTransformCreatorCommand implements BdvPlaygroundActionCommand {
 
-    @Parameter(style = "format:0.#####E0")
-    double radius_x, radius_y, radius_z, // radii of axes 1 2 3 of ellipse
-            rotation_x, rotation_y, rotation_z, // 3D rotation euler angles  - maybe not the best parametrization
-            center_x, center_y, center_z; // ellipse center
+    @Parameter(label = "Radius X",
+            style = "format:0.#####E0",
+            description = "Radius along the first ellipse axis")
+    double radius_x;
 
-    @Parameter(type = ItemIO.OUTPUT)
+    @Parameter(label = "Radius Y",
+            style = "format:0.#####E0",
+            description = "Radius along the second ellipse axis")
+    double radius_y;
+
+    @Parameter(label = "Radius Z",
+            style = "format:0.#####E0",
+            description = "Radius along the third ellipse axis")
+    double radius_z;
+
+    @Parameter(label = "Rotation X",
+            style = "format:0.#####E0",
+            description = "Euler rotation angle around X axis (radians)")
+    double rotation_x;
+
+    @Parameter(label = "Rotation Y",
+            style = "format:0.#####E0",
+            description = "Euler rotation angle around Y axis (radians)")
+    double rotation_y;
+
+    @Parameter(label = "Rotation Z",
+            style = "format:0.#####E0",
+            description = "Euler rotation angle around Z axis (radians)")
+    double rotation_z;
+
+    @Parameter(label = "Center X",
+            style = "format:0.#####E0",
+            description = "X coordinate of ellipse center")
+    double center_x;
+
+    @Parameter(label = "Center Y",
+            style = "format:0.#####E0",
+            description = "Y coordinate of ellipse center")
+    double center_y;
+
+    @Parameter(label = "Center Z",
+            style = "format:0.#####E0",
+            description = "Z coordinate of ellipse center")
+    double center_z;
+
+    @Parameter(type = ItemIO.OUTPUT,
+            description = "The created elliptical 3D transform")
     Elliptical3DTransform e3dt;
 
     @Parameter

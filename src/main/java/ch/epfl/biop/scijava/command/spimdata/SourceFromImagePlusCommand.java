@@ -9,10 +9,13 @@ import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
 
-@Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Import>Make BDVDataset from current IJ1 image")
+@Plugin(type = BdvPlaygroundActionCommand.class,
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Import>Make BDVDataset from current IJ1 image",
+        description = "Converts an ImageJ1 ImagePlus to a BigDataViewer dataset for visualization and processing")
 public class SourceFromImagePlusCommand implements BdvPlaygroundActionCommand {
 
-    @Parameter
+    @Parameter(label = "Input Image",
+            description = "The ImagePlus image to convert to a BDV dataset")
     ImagePlus image;
 
     //@Parameter(type = ItemIO.OUTPUT) // Removed because because using it as a parameter currently prevents

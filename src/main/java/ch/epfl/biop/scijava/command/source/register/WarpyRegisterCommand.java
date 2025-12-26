@@ -26,7 +26,9 @@ import sc.fiji.persist.ScijavaGsonHelper;
 import java.io.File;
 import java.nio.charset.Charset;
 
-@Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>QuPath - Create Warpy Registration")
+@Plugin(type = BdvPlaygroundActionCommand.class,
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>QuPath - Create Warpy Registration",
+        description = "Interactive wizard for registering QuPath entries with visual landmark editing")
 public class WarpyRegisterCommand implements Command {
 
     private static Logger logger = LoggerFactory.getLogger(WarpyRegisterCommand.class);
@@ -34,10 +36,14 @@ public class WarpyRegisterCommand implements Command {
     @Parameter(visibility = ItemVisibility.MESSAGE, persist = false, style = "message")
     String message = "<html><h1>QuPath registration wizard</h1>Please select a moving and a fixed source<br></html>";
 
-    @Parameter(label = "Fixed source", callback = "updateMessage")
+    @Parameter(label = "Fixed Source(s)",
+            callback = "updateMessage",
+            description = "Reference source(s) from the QuPath project")
     SourceAndConverter<?>[] fixed_sources;
 
-    @Parameter(label = "Moving source", callback = "updateMessage")
+    @Parameter(label = "Moving Source(s)",
+            callback = "updateMessage",
+            description = "Source(s) to be registered to the fixed reference")
     SourceAndConverter<?>[] moving_sources;
 
     @Parameter

@@ -50,10 +50,13 @@ import static sc.fiji.bdvpg.viewers.ViewerOrthoSyncStarter.MatrixApproxEquals;
  * Command which display sources on a grid in BigDataViewer
  */
 @Plugin(type = BdvPlaygroundActionCommand.class,
-        menuPath = ScijavaBdvDefaults.RootMenu+"Display>BDV - Make Grid Bdv")
+        menuPath = ScijavaBdvDefaults.RootMenu+"Display>BDV - Make Grid Bdv",
+        description = "Creates a new BigDataViewer window configured for grid display")
 public class ShowGridBdvCommand implements BdvPlaygroundActionCommand {
 
-    @Parameter(type = ItemIO.OUTPUT)
+    @Parameter(type = ItemIO.OUTPUT,
+            label = "Grid BDV Window",
+            description = "The created BigDataViewer window with grid configuration")
     BdvHandle bdvh;
 
     @Override

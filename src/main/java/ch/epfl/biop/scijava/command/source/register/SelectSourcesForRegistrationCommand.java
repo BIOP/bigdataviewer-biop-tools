@@ -6,28 +6,36 @@ import org.scijava.plugin.Parameter;
 
 abstract public class SelectSourcesForRegistrationCommand implements Command {
 
-    @Parameter(label = "Fixed source for registration", description = "fixed source")
+    @Parameter(label = "Fixed Source(s)",
+            description = "Reference source(s) that remain stationary during registration")
     SourceAndConverter<?>[] sacs_fixed;
 
-    @Parameter(label = "Timepoint of the fixed source")
+    @Parameter(label = "Fixed Timepoint",
+            description = "Timepoint of the fixed source to use for registration")
     int tp_fixed;
 
-    @Parameter(label = "Resolution level of the fixed source (0 = highest)")
+    @Parameter(label = "Fixed Resolution Level",
+            description = "Resolution level of the fixed source (0 = highest resolution)")
     int level_fixed_source;
 
-    @Parameter(label = "Moving source for registration", description = "moving source")
+    @Parameter(label = "Moving Source(s)",
+            description = "Source(s) to be aligned to the fixed reference")
     SourceAndConverter[] sacs_moving;
 
-    @Parameter(label = "Timepoint of the moving source")
+    @Parameter(label = "Moving Timepoint",
+            description = "Timepoint of the moving source to use for registration")
     int tp_moving;
 
-    @Parameter(label = "Resolution level of the moving source (0 = highest)")
+    @Parameter(label = "Moving Resolution Level",
+            description = "Resolution level of the moving source (0 = highest resolution)")
     int level_moving_source;
 
-    @Parameter(label = "Pixel size in physical unit used for image resampling")
+    @Parameter(label = "Resampling Pixel Size",
+            description = "Pixel size in world coordinates units used when resampling images for registration")
     double px_size_in_current_unit;
 
-    @Parameter(label = "Interpolate when resampling images")
+    @Parameter(label = "Interpolate",
+            description = "When checked, uses interpolation when resampling images")
     boolean interpolate;
 
 }

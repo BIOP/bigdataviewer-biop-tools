@@ -26,13 +26,16 @@ public class Sift2DAffineRegisterCommand extends Abstract2DRegistrationInRectang
 
     private static Logger logger = LoggerFactory.getLogger(Sift2DAffineRegisterCommand.class);
 
-    @Parameter
+    @Parameter(label = "Invert Moving",
+            description = "When checked, inverts the intensity of the moving image for matching")
     boolean invert_moving;
 
-    @Parameter
+    @Parameter(label = "Invert Fixed",
+            description = "When checked, inverts the intensity of the fixed image for matching")
     boolean invert_fixed;
 
-    @Parameter(type = ItemIO.OUTPUT)
+    @Parameter(type = ItemIO.OUTPUT,
+            description = "Whether the registration completed successfully")
     boolean success;
 
     @Override

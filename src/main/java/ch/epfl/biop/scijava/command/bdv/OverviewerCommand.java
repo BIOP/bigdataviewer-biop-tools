@@ -44,22 +44,24 @@ import static sc.fiji.bdvpg.viewers.ViewerOrthoSyncStarter.MatrixApproxEquals;
  * Command which display sources on a grid in BigDataViewer
  */
 @Plugin(type = BdvPlaygroundActionCommand.class,
-        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Display Sources On Grid")
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Display Sources On Grid",
+        description = "Displays sources arranged on a grid in a new BigDataViewer window")
 public class OverviewerCommand implements BdvPlaygroundActionCommand {
 
-    /**
-     * Sources to display on a grid
-     */
-    @Parameter
+    @Parameter(label = "Select Source(s)",
+            description = "The sources to display on the grid")
     public SourceAndConverter[] sacs;
 
-    @Parameter
+    @Parameter(label = "Start Timepoint",
+            description = "The timepoint to use for determining source dimensions")
     int timepoint_begin;
 
-    @Parameter
+    @Parameter(label = "Number of Columns",
+            description = "Number of columns in the grid layout")
     int n_columns;
 
-    @Parameter(label = "Split by dataset entites, comma separated (channel, fileseries)")
+    @Parameter(label = "Split by Entities",
+            description = "Comma-separated entity types to split by (e.g., 'channel, fileseries')")
     String entities_split = "";
 
     Map<String, Class<? extends Entity>> entityClasses = OpenerHelper.getEntities();

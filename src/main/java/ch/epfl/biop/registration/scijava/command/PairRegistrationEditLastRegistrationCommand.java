@@ -9,10 +9,11 @@ import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
         menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Register Pair - Edit last registration",
-        description = "Edit the last registration of a registration pair"  )
+        description = "Re-opens the last registration step for editing (e.g., adjust landmarks)")
 public class PairRegistrationEditLastRegistrationCommand implements Command {
 
-    @Parameter
+    @Parameter(label = "Registration Pair",
+            description = "The registration pair whose last step will be edited")
     RegistrationPair registration_pair;
 
     @Override

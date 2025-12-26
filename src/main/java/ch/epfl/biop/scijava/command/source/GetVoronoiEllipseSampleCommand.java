@@ -9,10 +9,13 @@ import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 import sc.fiji.bdvpg.sourceandconverter.display.BrightnessAdjuster;
 
-@Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Create Elliptic Voronoi Source")
+@Plugin(type = BdvPlaygroundActionCommand.class,
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Create Elliptic Voronoi Source",
+        description = "Creates a sample 3D source with weighted Voronoi ellipse patterns for testing")
 public class GetVoronoiEllipseSampleCommand implements BdvPlaygroundActionCommand {
 
-    @Parameter(type = ItemIO.OUTPUT)
+    @Parameter(type = ItemIO.OUTPUT,
+            description = "The generated sample source with Voronoi ellipse patterns")
     SourceAndConverter sample_source;
 
     @Override

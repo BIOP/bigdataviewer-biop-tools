@@ -13,16 +13,20 @@ import sc.fiji.bdvpg.scijava.services.ui.SourceFilterNode;
 
 public class FilterSourcesByNameCommand implements BdvPlaygroundActionCommand {
 
-        @Parameter(label = "Filter name")
+        @Parameter(label = "Filter Name",
+                description = "Name for this filter node in the source tree view")
         String filter_name;
 
-        @Parameter(label = "The source name should contain:")
+        @Parameter(label = "Name Contains",
+                description = "Text pattern that source names must contain to match")
         String string_filter;
 
-        @Parameter(label = "Match case")
+        @Parameter(label = "Match Case",
+                description = "When checked, the name matching is case-sensitive")
         boolean match_case;
 
-        @Parameter(label = "Show sources")
+        @Parameter(label = "Show Sources",
+                description = "When checked, matching sources are displayed; when unchecked, non-matching sources are shown")
         boolean show_sources;
 
         @Parameter

@@ -34,34 +34,51 @@ import java.util.stream.Collectors;
 import static ch.epfl.biop.scijava.command.source.register.WarpyEditRegistrationCommand.removeZOffsets;
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
-        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>QuPath - Export Warpy Registered Image")
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>QuPath - Export Warpy Registered Image",
+        description = "Exports Warpy-registered sources from a QuPath project to a fused OME-TIFF file")
 public class WarpyExportRegisteredImageCommand implements Command {
 
     @Parameter(visibility = ItemVisibility.MESSAGE, persist = false, style = "message")
     String message = "<html><h1>QuPath registration exporter</h1>Please select a moving and a fixed source<br></html>";
 
-    @Parameter(label = "Remove Z offsets")
+    @Parameter(label = "Remove Z Offsets",
+            description = "When checked, removes Z position offsets from sources")
     boolean remove_z_offsets = true;
 
-    @Parameter(label = "Pre-compute transformation before export (faster for n landmarks ~> 40)")
+    @Parameter(label = "Pre-compute Transform",
+            description = "When checked, pre-computes the deformation field (faster for >40 landmarks)")
     boolean pre_compute_transform;
 
-    @Parameter(label = "Transformation pre-computation downsampling", style = "slider", min = "10", max = "200")
+    @Parameter(label = "Transform Downsampling",
+            style = "slider",
+            min = "10",
+            max = "200",
+            description = "Downsampling factor for pre-computed deformation field (higher = faster but less precise)")
     int pre_compute_downsample_xy = 10;
 
-    @Parameter(label = "Fixed source", callback = "updateMessage", style ="sorted")
+    @Parameter(label = "Fixed Source(s)",
+            callback = "updateMessage",
+            style = "sorted",
+            description = "Reference source(s) that define the output geometry")
     SourceAndConverter<?>[] fixed_sources;
 
-    @Parameter(label = "Moving sources", callback = "updateMessage", style ="sorted")
+    @Parameter(label = "Moving Source(s)",
+            callback = "updateMessage",
+            style = "sorted",
+            description = "Registered source(s) to export")
     SourceAndConverter<?>[] moving_sources;
 
-    @Parameter(label = "Include fixed sources in exported image")
+    @Parameter(label = "Include Fixed Sources",
+            description = "When checked, includes fixed sources as channels in the exported image")
     boolean include_fixed_sources;
 
-    @Parameter(label = "Interpolate pixels values")
+    @Parameter(label = "Interpolate",
+            description = "When checked, uses interpolation when resampling")
     boolean interpolate;
 
-    @Parameter(label = "Up (v>1) or Downsample (v<1) the fused image", persist = false)
+    @Parameter(label = "Scaling Factor",
+            persist = false,
+            description = "Factor to up (>1) or downsample (<1) the exported image resolution")
     double upsample = 1.0;
 
     @Parameter

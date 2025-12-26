@@ -42,20 +42,26 @@ import static bdv.util.RealTransformHelper.BigWarpFileFromRealTransform;
 import static ch.epfl.biop.scijava.command.bdv.userdefinedregion.RectangleSelectorBehaviour.box;
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
-        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>QuPath - Edit Warpy Registration")
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>QuPath - Edit Warpy Registration",
+        description = "Opens BigWarp to manually edit an existing Warpy registration between QuPath entries")
 public class WarpyEditRegistrationCommand implements Command {
 
 
     @Parameter(visibility = ItemVisibility.MESSAGE, persist = false, style = "message")
     String message = "<html><h1>QuPath registration edition</h1>Please select a moving and a fixed source<br></html>";
 
-    @Parameter(label = "Remove Z offsets")
+    @Parameter(label = "Remove Z Offsets",
+            description = "When checked, removes Z position offsets from sources for 2D editing")
     boolean remove_z_offsets = true;
 
-    @Parameter(label = "Fixed source", callback = "updateMessage")
+    @Parameter(label = "Fixed Source(s)",
+            callback = "updateMessage",
+            description = "Reference source(s) from the QuPath project")
     SourceAndConverter<?>[] fixed_sources;
 
-    @Parameter(label = "Moving source", callback = "updateMessage")
+    @Parameter(label = "Moving Source(s)",
+            callback = "updateMessage",
+            description = "Source(s) that were registered to the fixed reference")
     SourceAndConverter<?>[] moving_sources;
 
     @Parameter

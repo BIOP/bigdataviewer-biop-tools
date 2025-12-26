@@ -43,70 +43,82 @@ import java.util.stream.Collectors;
  */
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
-        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Export>Current BDV View To ImagePlus (Basic)")
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Export>Current BDV View To ImagePlus (Basic)",
+        description = "Exports the current BDV view as ImagePlus with automatic settings")
 public class BasicBdvViewToImagePlusExportCommand<T extends RealType<T>> implements BdvPlaygroundActionCommand {
 
     private static Logger logger = LoggerFactory.getLogger(BasicBdvViewToImagePlusExportCommand.class);
 
-    /**
-     * Bigdataviewer handle
-     */
-    @Parameter(label = "BigDataViewer Frame")
+    @Parameter(label = "BDV Window",
+            description = "The BigDataViewer window to export from")
     public BdvHandle bdv_h;
 
-    @Parameter(label = "Capture Name")
+    @Parameter(label = "Capture Name",
+            description = "Name for the exported ImagePlus")
     String capturename = "Capture_00";
 
-    /**
-     * Half Thickness Z (above and below, physical unit, 0 for a single slice)
-     */
-    @Parameter(label = "Half Thickness Z (above and below, physical unit, 0 for a single slice)", style = "format:0.#####E0")
+    @Parameter(label = "Half Thickness Z",
+            description = "Half-thickness above and below the current plane (0 for single slice)",
+            style = "format:0.#####E0")
     public double zsize = 100;
 
-    /**
-     * Output pixel size (physical unit)
-     */
-    @Parameter(label = "Output pixel size (physical unit)", style = "format:0.#####E0")
+    @Parameter(label = "XY Pixel Size",
+            description = "Output pixel size in XY (world coordinates units)",
+            style = "format:0.#####E0")
     public double samplingxyinphysicalunit = 1;
 
-    /**
-     * Z Pixel size sampling (physical unit)
-     */
-    @Parameter(label = "Z Pixel size sampling (physical unit)", style = "format:0.#####E0")
+    @Parameter(label = "Z Pixel Size",
+            description = "Output pixel size in Z (world coordinates units)",
+            style = "format:0.#####E0")
     public double samplingzinphysicalunit = 1;
 
-    /**
-     * INterpolate
-     */
-    @Parameter(label = "Interpolate")
+    @Parameter(label = "Interpolate",
+            description = "When checked, uses interpolation when resampling")
     public boolean interpolate = true;
 
-    @Parameter( label = "Select Range", callback = "updateMessage", visibility = ItemVisibility.MESSAGE, persist = false, required = false)
+    @Parameter(label = "Select Range",
+            callback = "updateMessage",
+            visibility = ItemVisibility.MESSAGE,
+            persist = false,
+            required = false)
     String range = "You can use commas or colons to separate ranges. eg. '0:10' or '0,2,4,6' ";
 
-    @Parameter( label = "Selected Timepoints. Leave blank for all", required = false )
+    @Parameter(label = "Selected Timepoints",
+            description = "Timepoints to export (e.g., '0:10' or '0,2,4'). Leave blank for all",
+            required = false)
     String selected_timepoints_str = "";
 
-    @Parameter( label = "Export mode", choices = {"Normal", "Virtual", "Virtual no-cache"}, required = false )
+    @Parameter(label = "Export Mode",
+            description = "Normal loads all data; Virtual creates a lazy-loading stack",
+            choices = {"Normal", "Virtual", "Virtual no-cache"},
+            required = false)
     String export_mode = "Non virtual";
 
-    @Parameter( label = "Acquire channels in parallel (Normal only)", required = false)
+    @Parameter(label = "Parallel Channels",
+            description = "When checked, acquires channels in parallel (Normal mode only)",
+            required = false)
     Boolean parallel_c = false;
 
-    @Parameter( label = "Acquire slices in parallel (Normal only)", required = false)
+    @Parameter(label = "Parallel Slices",
+            description = "When checked, acquires Z-slices in parallel (Normal mode only)",
+            required = false)
     Boolean parallel_z = false;
 
-    @Parameter( label = "Acquire timepoints in parallel (Normal only)", required = false)
+    @Parameter(label = "Parallel Timepoints",
+            description = "When checked, acquires timepoints in parallel (Normal mode only)",
+            required = false)
     Boolean parallel_t = false;
 
     //@Parameter( label = "Monitor loaded data")
     private Boolean monitor = true;
 
-    @Parameter
-    String unit="px";
+    @Parameter(label = "Unit",
+            description = "Physical unit for the output image calibration")
+    String unit = "px";
 
-    // Output imageplus window
-    @Parameter(type = ItemIO.OUTPUT)
+    @Parameter(type = ItemIO.OUTPUT,
+            label = "Exported Images",
+            description = "The exported ImagePlus images")
     public List<ImagePlus> images;
 
     @Parameter

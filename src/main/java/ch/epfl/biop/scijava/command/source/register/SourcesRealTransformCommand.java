@@ -13,16 +13,20 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
-        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>Obsolete>Real Transform Sources")
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>Obsolete>Real Transform Sources",
+        description = "Applies a non-linear real transform (e.g., spline) to sources")
 public class SourcesRealTransformCommand implements BdvPlaygroundActionCommand {
 
-    @Parameter
+    @Parameter(label = "Select Source(s)",
+            description = "The sources to transform")
     SourceAndConverter[] sources_in;
 
-    @Parameter(type = ItemIO.OUTPUT)
+    @Parameter(type = ItemIO.OUTPUT,
+            description = "The transformed sources")
     SourceAndConverter[] sources_out;
 
-    @Parameter
+    @Parameter(label = "Transform",
+            description = "The real transform to apply (e.g., thin plate spline)")
     RealTransform rt;
 
     @Override

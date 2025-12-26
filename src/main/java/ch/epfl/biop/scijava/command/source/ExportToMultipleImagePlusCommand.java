@@ -25,53 +25,80 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Export>Export Sources To ImageJ1")
+@Plugin(type = BdvPlaygroundActionCommand.class,
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Export>Export Sources To ImageJ1",
+        description = "Exports sources to multiple ImagePlus files, respecting their spatial locations")
 public class ExportToMultipleImagePlusCommand implements BdvPlaygroundActionCommand {
 
     private static Logger logger = LoggerFactory.getLogger(ExportToMultipleImagePlusCommand.class);
 
-    @Parameter(label = "Sources to export")
+    @Parameter(label = "Select Source(s)",
+            description = "The sources to export")
     public SourceAndConverter[] sacs;
 
-    @Parameter(label = "Resolution level (0 = highest)")
+    @Parameter(label = "Resolution Level",
+            description = "Pyramid level to export (0 = highest resolution)")
     public int level;
 
-    @Parameter( label = "Select Range", visibility = ItemVisibility.MESSAGE, persist = false, required = false)
+    @Parameter(label = "Select Range",
+            visibility = ItemVisibility.MESSAGE,
+            persist = false,
+            required = false)
     String range = "You can use commas or colons to separate ranges. eg. '1:10' or '1,3,5,8' ";
 
-    @Parameter( label = "Selected Channels. Leave blank for all", required = false )
+    @Parameter(label = "Selected Channels",
+            description = "Channel indices to export (e.g., '0:2' or '0,1'). Leave blank for all",
+            required = false)
     String range_channels = "";
 
-    @Parameter( label = "Selected Slices. Leave blank for all", required = false )
+    @Parameter(label = "Selected Slices",
+            description = "Z-slice indices to export (e.g., '0:100'). Leave blank for all",
+            required = false)
     String range_slices = "";
 
-    @Parameter( label = "Selected Timepoints. Leave blank for all", required = false )
+    @Parameter(label = "Selected Timepoints",
+            description = "Timepoint indices to export (e.g., '0:10'). Leave blank for all",
+            required = false)
     String range_frames = "";
 
-    @Parameter( label = "Export mode", choices = {"Normal", "Virtual", "Virtual no-cache"}, required = false )
+    @Parameter(label = "Export Mode",
+            description = "Normal loads all data; Virtual creates a lazy-loading stack",
+            choices = {"Normal", "Virtual", "Virtual no-cache"},
+            required = false)
     String export_mode = "Non virtual";
 
-    @Parameter( label = "Monitor loaded data")
+    @Parameter(label = "Monitor Progress",
+            description = "When checked, displays a progress indicator during export")
     Boolean monitor = false;
 
-    @Parameter( label = "Open images in parallel")
+    @Parameter(label = "Export in Parallel",
+            description = "When checked, exports multiple images simultaneously")
     Boolean parallel = false;
 
-    @Parameter( label = "Acquire channels in parallel (Normal only)", required = false)
+    @Parameter(label = "Parallel Channels",
+            description = "When checked, acquires channels in parallel (Normal mode only)",
+            required = false)
     Boolean parallel_c = false;
 
-    @Parameter( label = "Acquire slices in parallel (Normal only)", required = false)
+    @Parameter(label = "Parallel Slices",
+            description = "When checked, acquires Z-slices in parallel (Normal mode only)",
+            required = false)
     Boolean parallel_z = false;
 
-    @Parameter( label = "Acquire timepoints in parallel (Normal only)", required = false)
+    @Parameter(label = "Parallel Timepoints",
+            description = "When checked, acquires timepoints in parallel (Normal mode only)",
+            required = false)
     Boolean parallel_t = false;
 
-    @Parameter(label = "Split by dataset entities, comma separated (channel, imagename)")
+    @Parameter(label = "Split by Entities",
+            description = "Comma-separated entity types to split by (e.g., 'channel, imagename')")
     String entities_split = "";
 
     Map<String, Class<? extends Entity>> entityClasses = OpenerHelper.getEntities();;
 
-    @Parameter(type = ItemIO.OUTPUT)
+    @Parameter(type = ItemIO.OUTPUT,
+            label = "Exported Images",
+            description = "The exported ImagePlus images")
     public List<ImagePlus> imps_out = new ArrayList<>();
 
     @Parameter(required = false)

@@ -41,92 +41,106 @@ import java.util.stream.Collectors;
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
         menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Export>Current BDV View To ImagePlus",
-        description =
-                "Export sources as an ImagePlus object according to the orientation of "+
-                "a bdv window.")
+        description = "Exports sources as ImagePlus with full control over sampling and region")
 public class BdvViewToImagePlusExportCommand implements BdvPlaygroundActionCommand {
 
     private static final Logger logger = LoggerFactory.getLogger(BdvViewToImagePlusExportCommand.class);
 
-    /**
-     * BigDataViewer Frame
-     */
-    @Parameter(label = "BigDataViewer Frame")
+    @Parameter(label = "BDV Window",
+            description = "The BigDataViewer window to export from")
     public BdvHandle bdv_h;
 
-    @Parameter(label = "Capture Name")
+    @Parameter(label = "Capture Name",
+            description = "Name for the exported ImagePlus")
     String capturename = "Capture_00";
 
-    @Parameter(required = false)
+    @Parameter(label = "Select Source(s)",
+            description = "The source(s) to export",
+            required = false)
     SourceAndConverter[] sacs;
 
-    /**
-     * Match bdv frame window size
-     */
-    @Parameter(label="Match bdv frame window size", persist=false, callback = "matchXYBDVFrame")
-    public boolean matchwindowsize =false;
+    @Parameter(label = "Match Window Size",
+            description = "When checked, uses the BDV window dimensions for X and Y size",
+            persist = false,
+            callback = "matchXYBDVFrame")
+    public boolean matchwindowsize = false;
 
-    /**
-     * Total Size X (physical unit)
-     */
-    @Parameter(label = "Total Size X (physical unit)", callback = "matchXYBDVFrame", style = "format:0.#####E0")
+    @Parameter(label = "Size X",
+            description = "Total width in world coordinates units",
+            callback = "matchXYBDVFrame",
+            style = "format:0.#####E0")
     public double xsize = 100;
 
-    /**
-     * Total Size Y (physical unit)
-     */
-    @Parameter(label = "Total Size Y (physical unit)", callback = "matchXYBDVFrame", style = "format:0.#####E0")
+    @Parameter(label = "Size Y",
+            description = "Total height in world coordinates units",
+            callback = "matchXYBDVFrame",
+            style = "format:0.#####E0")
     public double ysize = 100;
 
-    /**
-     * Half Thickness Z (above and below, physical unit, 0 for a single slice)
-     */
-    @Parameter(label = "Half Thickness Z (above and below, physical unit, 0 for a single slice)", style = "format:0.#####E0")
+    @Parameter(label = "Half Thickness Z",
+            description = "Half-thickness above and below the current plane (0 for single slice)",
+            style = "format:0.#####E0")
     public double zsize = 100;
 
-    @Parameter( label = "Select Range", callback = "updateMessage", visibility = ItemVisibility.MESSAGE, persist = false, required = false)
+    @Parameter(label = "Select Range",
+            callback = "updateMessage",
+            visibility = ItemVisibility.MESSAGE,
+            persist = false,
+            required = false)
     String range = "You can use commas or colons to separate ranges. eg. '1:10' or '1,3,5,8' ";
 
-    @Parameter( label = "Selected Timepoints. Leave blank for all", required = false )
+    @Parameter(label = "Selected Timepoints",
+            description = "Timepoints to export (e.g., '0:10' or '0,2,4'). Leave blank for all",
+            required = false)
     private String selected_timepoints_str = "";
 
-    /**
-     * XY Pixel size sampling (physical unit)
-     */
-    @Parameter(label = "XY Pixel size sampling (physical unit)", callback = "changePhysicalSampling", style = "format:0.#####E0")
+    @Parameter(label = "XY Pixel Size",
+            description = "Output pixel size in XY (world coordinates units)",
+            callback = "changePhysicalSampling",
+            style = "format:0.#####E0")
     public double samplingxyinphysicalunit = 1;
 
-    /**
-     * Z Pixel size sampling (physical unit)
-     */
-    @Parameter(label = "Z Pixel size sampling (physical unit)", callback = "changePhysicalSampling", style = "format:0.#####E0")
+    @Parameter(label = "Z Pixel Size",
+            description = "Output pixel size in Z (world coordinates units)",
+            callback = "changePhysicalSampling",
+            style = "format:0.#####E0")
     public double samplingzinphysicalunit = 1;
 
-    /**
-     * Interpolate
-     */
-    @Parameter(label = "Interpolate")
+    @Parameter(label = "Interpolate",
+            description = "When checked, uses interpolation when resampling")
     boolean interpolate = true;
 
-    @Parameter( label = "Export mode", choices = {"Normal", "Virtual", "Virtual no-cache"}, required = false )
+    @Parameter(label = "Export Mode",
+            description = "Normal loads all data; Virtual creates a lazy-loading stack",
+            choices = {"Normal", "Virtual", "Virtual no-cache"},
+            required = false)
     String export_mode = "Non virtual";
 
-    @Parameter( label = "Acquire channels in parallel (Normal only)", required = false)
+    @Parameter(label = "Parallel Channels",
+            description = "When checked, acquires channels in parallel (Normal mode only)",
+            required = false)
     Boolean parallel_c = false;
 
-    @Parameter( label = "Acquire slices in parallel (Normal only)", required = false)
+    @Parameter(label = "Parallel Slices",
+            description = "When checked, acquires Z-slices in parallel (Normal mode only)",
+            required = false)
     Boolean parallel_z = false;
 
-    @Parameter( label = "Acquire timepoints in parallel (Normal only)", required = false)
+    @Parameter(label = "Parallel Timepoints",
+            description = "When checked, acquires timepoints in parallel (Normal mode only)",
+            required = false)
     Boolean parallel_t = false;
 
     //@Parameter( label = "Monitor loaded data")
     private Boolean monitor = true;
 
-    @Parameter
-    String unit="px";
+    @Parameter(label = "Unit",
+            description = "Physical unit for the output image calibration")
+    String unit = "px";
 
-    @Parameter(type = ItemIO.OUTPUT)
+    @Parameter(type = ItemIO.OUTPUT,
+            label = "Exported Images",
+            description = "The exported ImagePlus images")
     public List<ImagePlus> images;
 
     @Parameter

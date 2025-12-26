@@ -16,19 +16,33 @@ import java.util.stream.Collectors;
 
 abstract public class AbstractPairRegistrationInROI2DCommand extends AbstractPairRegistration2DCommand {
 
-    @Parameter(label = "ROI for registration (select custom in order to use the parameters below)", choices = {"intersection", "union", "custom"})
+    @Parameter(label = "ROI Mode",
+            description = "How to define the region of interest: intersection of sources, union of sources, or custom coordinates",
+            choices = {"intersection", "union", "custom"})
     String bounds = "intersection";
 
-    @Parameter(label = "ROI for registration (position x)", style = "format:0.#####E0", required = false)
+    @Parameter(label = "ROI Position X",
+            description = "X coordinate of the ROI origin (only used when ROI Mode is 'custom')",
+            style = "format:0.#####E0",
+            required = false)
     double px;
 
-    @Parameter(label = "ROI for registration (position y)", style = "format:0.#####E0", required = false)
+    @Parameter(label = "ROI Position Y",
+            description = "Y coordinate of the ROI origin (only used when ROI Mode is 'custom')",
+            style = "format:0.#####E0",
+            required = false)
     double py;
 
-    @Parameter(label = "ROI for registration (size x)", style = "format:0.#####E0", required = false)
+    @Parameter(label = "ROI Size X",
+            description = "Width of the ROI (only used when ROI Mode is 'custom')",
+            style = "format:0.#####E0",
+            required = false)
     double sx;
 
-    @Parameter(label = "ROI for registration (size y)", style = "format:0.#####E0", required = false)
+    @Parameter(label = "ROI Size Y",
+            description = "Height of the ROI (only used when ROI Mode is 'custom')",
+            style = "format:0.#####E0",
+            required = false)
     double sy;
 
     final protected void addRegistrationParameters(Map<String, Object> parameters) {

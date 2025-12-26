@@ -14,7 +14,7 @@ import java.util.Map;
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
         menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Register Pair 2D - BigWarp Spline",
-        description = "Performs a manual registration with BigWarp between two sources."  )
+        description = "Opens BigWarp for interactive manual landmark-based spline registration")
 
 public class PairRegistrationBigWarp2DSplineCommand extends AbstractPairRegistration2DCommand implements Command {
 

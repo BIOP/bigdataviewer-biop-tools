@@ -44,16 +44,21 @@ import static bdv.util.Elliptical3DTransform.RADIUS_Z;
  * Command used to export an elliptical transformed source
  */
 
-@Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>Export elliptic 3D transformed sources")
+@Plugin(type = BdvPlaygroundActionCommand.class,
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>Export elliptic 3D transformed sources",
+        description = "Exports elliptically-transformed sources to an ImagePlus with spherical coordinate sampling")
 public class ExportEllipticProjection implements Command {
 
     @Parameter(label = "", visibility = ItemVisibility.MESSAGE, required = false, persist = false)
     String export_sources_message = "<html><h2>Exported Elliptic Transformed Source</h2></html>";
 
-    @Parameter(label = "Select the elliptic transformed sources", callback = "validateMessage")
+    @Parameter(label = "Select Source(s)",
+            callback = "validateMessage",
+            description = "Elliptically-transformed sources to export")
     SourceAndConverter<?>[] sacs;
 
-    @Parameter(label = "Resolution level (0 = highest)")
+    @Parameter(label = "Resolution Level",
+            description = "Pyramid level to use (0 = highest resolution)")
     public int level;
 
     @Parameter(label = "Update", callback = "validateMessage")

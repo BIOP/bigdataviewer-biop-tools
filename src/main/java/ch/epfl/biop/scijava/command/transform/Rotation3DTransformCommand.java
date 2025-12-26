@@ -16,23 +16,50 @@ import sc.fiji.bdvpg.services.SourceAndConverterServices;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceTransformHelper;
 
-@Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>Rotation 3D Transform")
+@Plugin(type = BdvPlaygroundActionCommand.class,
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>Rotation 3D Transform",
+        description = "Applies interactive 3D rotation to sources around a specified center point")
 public class Rotation3DTransformCommand extends InteractiveCommand implements BdvPlaygroundActionCommand {
 
-    @Parameter
+    @Parameter(label = "Select Source(s)",
+            description = "The sources to rotate (must be wrapped as TransformedSource)")
     SourceAndConverter[] sacs;
 
-    @Parameter(style = "slider,format:0.#####E0", min = "0", max = "360")
+    @Parameter(label = "Rotation X",
+            style = "slider,format:0.#####E0",
+            min = "0",
+            max = "360",
+            description = "Rotation angle around X axis in degrees")
     int rx;
 
-    @Parameter(style = "slider,format:0.#####E0", min = "0", max = "360")
+    @Parameter(label = "Rotation Y",
+            style = "slider,format:0.#####E0",
+            min = "0",
+            max = "360",
+            description = "Rotation angle around Y axis in degrees")
     int ry;
 
-    @Parameter(style = "slider,format:0.#####E0", min = "0", max = "360")
+    @Parameter(label = "Rotation Z",
+            style = "slider,format:0.#####E0",
+            min = "0",
+            max = "360",
+            description = "Rotation angle around Z axis in degrees")
     double rz;
 
-    @Parameter(style = "format:0.#####E0")
-    double cx, cy, cz;
+    @Parameter(label = "Center X",
+            style = "format:0.#####E0",
+            description = "X coordinate of rotation center")
+    double cx;
+
+    @Parameter(label = "Center Y",
+            style = "format:0.#####E0",
+            description = "Y coordinate of rotation center")
+    double cy;
+
+    @Parameter(label = "Center Z",
+            style = "format:0.#####E0",
+            description = "Z coordinate of rotation center")
+    double cz;
 
     public void run() {
 

@@ -14,19 +14,26 @@ import java.util.List;
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
         menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Create registration pair",
-        description = "Defines a registration pair"  )
+        description = "Creates a new registration pair from fixed and moving sources for the Warpy workflow")
 public class PairRegistrationCreateCommand implements Command {
 
-    @Parameter(label = "Fixed source for registration", description = "fixed sources", style = "sorted")
+    @Parameter(label = "Fixed Source(s)",
+            description = "The reference source(s) that will remain stationary during registration",
+            style = "sorted")
     SourceAndConverter<?>[] fixed_sources;
 
-    @Parameter(label = "Moving source for registration", description = "moving sources", style = "sorted")
+    @Parameter(label = "Moving Source(s)",
+            description = "The source(s) to be registered and aligned to the fixed source(s)",
+            style = "sorted")
     SourceAndConverter<?>[] moving_sources;
 
-    @Parameter
+    @Parameter(label = "Registration Name",
+            description = "A unique name to identify this registration pair")
     String registration_name;
 
-    @Parameter(type = ItemIO.OUTPUT)
+    @Parameter(type = ItemIO.OUTPUT,
+            label = "Registration Pair",
+            description = "The created registration pair object")
     RegistrationPair registration_pair;
 
     @Parameter

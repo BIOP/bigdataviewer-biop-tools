@@ -10,16 +10,18 @@ import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
         menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Export>Register Pair - Export registration to QuPath project",
-        description = "If properly defined, exports the registration to the QuPath project"  )
+        description = "Exports the registration transforms to a QuPath project for use in Warpy")
 public class PairRegistrationExportToQuPathCommand implements Command {
 
-    @Parameter
+    @Parameter(label = "Registration Pair",
+            description = "The registration pair to export")
     RegistrationPair registration_pair;
 
     @Parameter
     Context ctx;
 
-    @Parameter
+    @Parameter(label = "Allow Overwrite",
+            description = "When checked, overwrites existing registration files in the QuPath project")
     boolean allow_overwrite = true;
 
     @Override

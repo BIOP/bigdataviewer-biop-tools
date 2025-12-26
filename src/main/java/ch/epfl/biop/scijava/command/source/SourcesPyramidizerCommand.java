@@ -9,13 +9,17 @@ import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 
-@Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Adds pyramids to sources")
+@Plugin(type = BdvPlaygroundActionCommand.class,
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Adds pyramids to sources",
+        description = "Generates multi-resolution pyramid levels for sources that lack them")
 public class SourcesPyramidizerCommand implements BdvPlaygroundActionCommand {
 
-    @Parameter(label = "Select Source(s)")
+    @Parameter(label = "Select Source(s)",
+            description = "The sources to add pyramid levels to")
     SourceAndConverter<?>[] sacs;
 
-    @Parameter(type = ItemIO.OUTPUT)
+    @Parameter(type = ItemIO.OUTPUT,
+            description = "The sources with newly generated pyramid levels")
     SourceAndConverter<?>[] sacs_out;
     @Override
     public void run() {

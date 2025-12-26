@@ -11,13 +11,17 @@ import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
 import java.io.File;
 import java.io.IOException;
 
-@Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"BDVDataset>Create BDV Dataset [Imaris]")
+@Plugin(type = BdvPlaygroundActionCommand.class,
+        menuPath = ScijavaBdvDefaults.RootMenu+"BDVDataset>Create BDV Dataset [Imaris]",
+        description = "Opens an Imaris .ims file as a BigDataViewer dataset")
 public class OpenImarisCommand implements BdvPlaygroundActionCommand {
 
-    @Parameter(label = "Imaris File")
+    @Parameter(label = "Imaris File",
+            description = "Path to the Imaris .ims file to open")
     public File file;
 
-    @Parameter(type = ItemIO.OUTPUT)
+    @Parameter(type = ItemIO.OUTPUT,
+            description = "The opened Imaris dataset")
     AbstractSpimData spimdata;
 
     @Override
