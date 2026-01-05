@@ -2,6 +2,7 @@ package ch.epfl.biop.scijava.command.spimdata;
 
 import bdv.viewer.SourceAndConverter;
 import ij.ImagePlus;
+import ij.process.FloatProcessor;
 import net.imglib2.Cursor;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.display.imagej.ImageJFunctions;
@@ -122,12 +123,6 @@ public class LLS7ZDriftCompensationCommand implements BdvPlaygroundActionCommand
         long middleZ = sizeZ / 2;
         RandomAccessibleInterval<T> xzPlane = Views.hyperSlice(rai, 2, middleZ);
 
-        // Debug: show the XZ plane
-        if (debug) {
-            ImagePlus debugImp = ImageJFunctions.wrap(xzPlane, "XZ plane t=" + timepoint + " (middleZ=" + middleZ + ")");
-            debugImp.show();
-        }
-
         // For each Z, compute median of X values
         float[] medianProfile = new float[(int) sizeY];
 
@@ -146,6 +141,14 @@ public class LLS7ZDriftCompensationCommand implements BdvPlaygroundActionCommand
 
             // Compute median
             medianProfile[y] = computeMedian(xValues);
+        }
+
+        // Debug: show the XZ plane
+        if (debug) {
+            FloatProcessor fp = new FloatProcessor((int) sizeY, 1, medianProfile);
+            ImagePlus debugImp = new ImagePlus("XZ median profile t=" + timepoint + " (middleZ=" + middleZ + ")", fp);
+            //ImageJFunctions.wrap(xzPlane, "XZ median profile t=" + timepoint + " (middleZ=" + middleZ + ")");
+            debugImp.show();
         }
 
         // Find first Z from bottom exceeding threshold

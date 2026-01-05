@@ -29,7 +29,7 @@ public class DemoZDriftCompensate {
                         "sources_to_correct", sources,
                         "threshold", 225,
                         "mode", "Append",
-                        "debug", false
+                        "debug", true
                 ).get();
     }
 
