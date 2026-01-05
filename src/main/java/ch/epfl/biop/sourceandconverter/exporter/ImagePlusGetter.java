@@ -47,6 +47,7 @@ public class ImagePlusGetter {
      * @param cache if set to true, each time a plane is computed, it is stored in memory. Ultimately,
      *              this leads to filling the RAM as in a non-virtual image, if all planes are visited
      * @param task can be used for monitoring the progression of the ImagePlus acquisition progression
+     * @param <T> the pixel type of the sources, must be a NumericType and NativeType
      * @return a virtual {@link ImagePlus} out of a list of {@link SourceAndConverter},
      * taken at a certain resolution level, and which czt range is specified via a {@link CZTRange} object
      */
@@ -150,6 +151,7 @@ public class ImagePlusGetter {
      * @param parallelZ loads all slices in parallel
      * @param parallelT loads all timepoints in parallel
      * @param task can be used for monitoring the progression of the ImagePlus acquisition progression
+     * @param <T> the pixel type of the sources, must be a NumericType and NativeType
      * @return a non virtual {@link ImagePlus} out of a list of {@link SourceAndConverter},
      *       taken at a certain resolution level, and which czt range is specified via a {@link CZTRange} object
      */

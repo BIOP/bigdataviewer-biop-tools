@@ -25,6 +25,8 @@ public interface SimpleRegistrationPlugin {
      *
      * @param fixed image
      * @param moving image
+     * @param fixedMask optional mask for the fixed image (can be null)
+     * @param movingMask optional mask for the moving image (can be null)
      * @return the transform, result of the registration, in
      * going from fixed to moving coordinates, in pixels
      */

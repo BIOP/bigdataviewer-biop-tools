@@ -54,7 +54,7 @@ abstract public class SourceAndConverterRegistration implements IRegistrationPlu
      * Is called just after the Registration object creation to pass
      * the current scijava context
      * is adopted by all registrations
-     * @param context
+     * @param context the SciJava context to use for this registration
      */
     public void setScijavaContext(Context context) {
         this.context = context;

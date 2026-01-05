@@ -31,7 +31,7 @@ import java.util.Map;
  * 1          2          4          8        16       32
  * 512x512 to 256x256 to 128x128 to 64x64 to 32x32 to 16x16
  *
- * @param <T>
+ * @param <T> the pixel type of the source, must be a RealType and NativeType
  */
 public class LazyDownscaledXY2Source<T extends RealType<T> & NativeType<T>> implements Source<T> {
 

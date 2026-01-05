@@ -7,6 +7,7 @@ public class RegistrationPluginHelper {
 
     /**
      * Does the registration required an user input ?
+     * @param reg the registration to check
      * @return true if user input is required
      */
     public static boolean isManual(Registration<?> reg) {
@@ -26,6 +27,8 @@ public class RegistrationPluginHelper {
     /**
      * Can the registration be edited after it has run ?
      * Considered a manual task by default
+     * @param reg the registration to check
+     * @return true if the registration can be edited after execution
      */
     public static boolean isEditable(Registration<?> reg) {
         if (reg.getClass().isAnnotationPresent(RegistrationTypeProperties.class)) {

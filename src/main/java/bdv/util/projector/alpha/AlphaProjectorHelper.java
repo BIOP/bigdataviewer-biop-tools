@@ -36,6 +36,7 @@ public class AlphaProjectorHelper {
      * Most simple interface.
      * Allows for backward compatibility.
      * This default interface makes this projector equivalent to bdv's default projector
+     * @return a default SourcesMetadata implementation with no alpha sources
      */
     public static SourcesMetadata getDefaultSourcesMetadata() {
         return new SourcesMetadata() {

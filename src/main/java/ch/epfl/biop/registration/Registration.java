@@ -22,7 +22,7 @@ public interface Registration<T> {
      * Is called just after the Registration object creation to pass
      * the current scijava context
      * is adopted by all registrations
-     * @param context
+     * @param context the SciJava context to use for this registration
      */
     void setScijavaContext(Context context);
 
@@ -75,7 +75,7 @@ public interface Registration<T> {
     /**
      * Sets the timepoint of the source that should be used for the
      * registration. 0 in most cases
-     * @param timePoint
+     * @param timePoint the timepoint index to use for registration
      */
     void setTimePoint(int timePoint);
 
@@ -154,7 +154,7 @@ public interface Registration<T> {
      * a serialized representation of the transform is sent, leading
      * to an immediate registration being done
      * isDone should return true after this function is being called
-     * @param serialized_transform
+     * @param serialized_transform the serialized transform string to restore
      */
     void setTransform(String serialized_transform);
 
@@ -163,13 +163,13 @@ public interface Registration<T> {
      * this can be used to serialize the successive registrations as a
      * {@link net.imglib2.realtransform.RealTransformSequence} object, or even,
      * if all transformations are invertible, as a {@link net.imglib2.realtransform.InvertibleRealTransformSequence} object
-     * @return
+     * @return the registration transform as a RealTransform object
      */
     RealTransform getTransformAsRealTransform();
 
     /**
      * Used for serialisation
-     * @return
+     * @return the simple class name of this registration type
      */
     default String getRegistrationTypeName() {
       return this.getClass().getSimpleName();
