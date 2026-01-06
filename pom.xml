@@ -119,6 +119,9 @@
 		<!-- deconvolution -->
 		<clij2-fft_.version>2.2.0.22</clij2-fft_.version>
 
+		<!-- labkit -->
+		<labkit-ui.version>0.4.0</labkit-ui.version>
+
 		<releaseProfiles>sign,deploy-to-scijava</releaseProfiles>
 
 		<!-- test -->
@@ -284,6 +287,13 @@
 			<groupId>net.haesleinhuepf</groupId>
 			<artifactId>clij2-fft_</artifactId>
 			<version>${clij2-fft_.version}</version>
+		</dependency>
+
+		<!-- Labkit -->
+		<dependency>
+			<groupId>sc.fiji</groupId>
+			<artifactId>labkit-ui</artifactId>
+			<version>${labkit-ui.version}</version>
 		</dependency>
 
 		<!-- test dependencies -->
