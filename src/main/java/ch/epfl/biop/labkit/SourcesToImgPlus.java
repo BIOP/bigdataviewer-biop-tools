@@ -65,6 +65,40 @@ public class SourcesToImgPlus {
         return new ImgPlus(img, name, axes);
     }
 
+    /**
+     * Wraps sources at a specific timepoint as an ImgPlus (no time dimension).
+     *
+     * @param sources the input sources
+     * @param name the name for the ImgPlus
+     * @param resolutionLevel the resolution level to use
+     * @param timepoint the specific timepoint to use
+     * @param <T> the pixel type
+     * @return an ImgPlus for the given timepoint
+     */
+    public static <T> ImgPlus<T> wrap(SourceAndConverter<T>[] sources, String name, int resolutionLevel, int timepoint) {
+        Img<?> img = ImgView.wrap(Cast.unchecked(asRaiSingleTimepoint(sources, resolutionLevel, timepoint)),
+                Cast.unchecked(new CellImgFactory()));
+        CalibratedAxis[] axes = getAxesSingleTimepoint(sources, resolutionLevel);
+        return new ImgPlus(img, name, axes);
+    }
+
+    private static <T> RandomAccessibleInterval<?> asRaiSingleTimepoint(SourceAndConverter<T>[] sources, int level, int timepoint) {
+        return dropThirdDimension(combineChannels(Arrays.asList(sources), new TimePoint(timepoint), level));
+    }
+
+    private static CalibratedAxis[] getAxesSingleTimepoint(SourceAndConverter[] sources, int resolutionLevel) {
+        VoxelDimensions voxelSize = sources[0].getSpimSource().getVoxelDimensions();
+        List<CalibratedAxis> list = new ArrayList<>();
+        list.add(new DefaultLinearAxis(Axes.X, voxelSize.unit(), voxelSize.dimension(0)));
+        list.add(new DefaultLinearAxis(Axes.Y, voxelSize.unit(), voxelSize.dimension(1)));
+        if (is3d(sources, resolutionLevel))
+            list.add(new DefaultLinearAxis(Axes.Z, voxelSize.unit(), voxelSize.dimension(2)));
+        if (sources.length > 1)
+            list.add(new IdentityAxis(Axes.CHANNEL));
+        // No TIME axis for single timepoint
+        return list.toArray(new CalibratedAxis[0]);
+    }
+
     private static <T> RandomAccessibleInterval<?> asRai(SourceAndConverter[] sources,
                                                          Integer level)
     {
