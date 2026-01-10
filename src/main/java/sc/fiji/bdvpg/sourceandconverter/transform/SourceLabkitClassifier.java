@@ -61,6 +61,7 @@ public class SourceLabkitClassifier implements Runnable, Function<SourceAndConve
     private final int resolutionLevel;
     private final String name;
     private final Segmenter segmenter;
+    private final boolean useGpu;
 
     private SourceAndConverter<UnsignedByteType> result;
 
@@ -74,12 +75,27 @@ public class SourceLabkitClassifier implements Runnable, Function<SourceAndConve
      * @param resolutionLevel the resolution level to use from the input sources
      */
     public SourceLabkitClassifier(SourceAndConverter<?>[] sources, String classifierPath, Context context, String name, int resolutionLevel) {
+        this(sources, classifierPath, context, name, resolutionLevel, false);
+    }
+
+    /**
+     * Creates a SourceLabkitClassifier action with GPU option.
+     *
+     * @param sources the input sources (each source represents a channel)
+     * @param classifierPath path to the Labkit .classifier file
+     * @param context the SciJava context
+     * @param name the name for the output source
+     * @param resolutionLevel the resolution level to use from the input sources
+     * @param useGpu whether to use GPU acceleration for segmentation
+     */
+    public SourceLabkitClassifier(SourceAndConverter<?>[] sources, String classifierPath, Context context, String name, int resolutionLevel, boolean useGpu) {
         this.sources = sources;
         this.classifierPath = classifierPath;
         this.context = context;
         this.name = name;
         this.resolutionLevel = resolutionLevel;
         this.segmenter = null;
+        this.useGpu = useGpu;
     }
 
     /**
@@ -97,6 +113,7 @@ public class SourceLabkitClassifier implements Runnable, Function<SourceAndConve
         this.name = name;
         this.resolutionLevel = resolutionLevel;
         this.segmenter = segmenter;
+        this.useGpu = false; // GPU setting should already be configured in the provided segmenter
     }
 
     @Override
@@ -136,7 +153,7 @@ public class SourceLabkitClassifier implements Runnable, Function<SourceAndConve
         if (segmenter != null) {
             labkitSource = new LabkitSource(name, srcs, segmenter, resolutionLevel);
         } else {
-            labkitSource = new LabkitSource(name, srcs, classifierPath, context, resolutionLevel);
+            labkitSource = new LabkitSource(name, srcs, classifierPath, context, resolutionLevel, useGpu);
         }
 
         // Create a simple grayscale converter for the segmentation result

@@ -53,7 +53,7 @@ public class DemoLabkitSegmentation {
                 classifierPath,
                 ij.context(),
                 "Segmentation",
-                0  // resolution level
+                0, true  // resolution level
         );
 
         // Get the result (this creates the lazy source)

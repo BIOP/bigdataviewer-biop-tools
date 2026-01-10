@@ -55,12 +55,27 @@ public class LabkitSource<T> implements Source<UnsignedByteType> {
      * @param resolutionLevel the resolution level to use from the input sources
      */
     public LabkitSource(String name, SourceAndConverter<T>[] sources, String classifierPath, Context context, int resolutionLevel) {
+        this(name, sources, classifierPath, context, resolutionLevel, false);
+    }
+
+    /**
+     * Creates a LabkitSource from an array of input sources and a classifier file with GPU option.
+     *
+     * @param name the name of this source
+     * @param sources the input sources (each source represents a channel)
+     * @param classifierPath path to the Labkit .classifier file
+     * @param context the SciJava context
+     * @param resolutionLevel the resolution level to use from the input sources
+     * @param useGpu whether to use GPU acceleration for segmentation
+     */
+    public LabkitSource(String name, SourceAndConverter<T>[] sources, String classifierPath, Context context, int resolutionLevel, boolean useGpu) {
         this.name = name;
         this.sources = sources;
         this.resolutionLevel = resolutionLevel;
 
         // Load the classifier
         this.segmenter = new TrainableSegmentationSegmenter(context);
+        this.segmenter.setUseGpu(useGpu);
         this.segmenter.openModel(classifierPath);
     }
 
