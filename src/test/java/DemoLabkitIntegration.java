@@ -72,8 +72,8 @@ public class DemoLabkitIntegration {
 
         // Download and open the LLS7 dataset
         File fileCZI = DatasetHelper
-                //.getDataset("https://zenodo.org/records/14505724/files/Hela-Kyoto-1-Timepoint-LLS7.czi"); // Multi Channel
-                .getDataset("https://zenodo.org/records/14903188/files/RBC_full_time_series.czi"); // Multi Timepoints
+                .getDataset("https://zenodo.org/records/14505724/files/Hela-Kyoto-1-Timepoint-LLS7.czi"); // Multi Channel
+                //.getDataset("https://zenodo.org/records/14903188/files/RBC_full_time_series.czi"); // Multi Timepoints
 
         ij.command().run(LLS7OpenDatasetCommand.class, true,
                 "czi_file", fileCZI,
