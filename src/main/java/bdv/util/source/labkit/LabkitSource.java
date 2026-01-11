@@ -41,6 +41,8 @@ public class LabkitSource<T> implements Source<UnsignedByteType> {
     private final int resolutionLevel;
     private final String name;
     private final Segmenter segmenter;
+    private final String classifierPath;
+    private final boolean useGpu;
 
     // Cache for computed segmentations per timepoint
     private final Map<Integer, RandomAccessibleInterval<UnsignedByteType>> cachedSegmentations = new HashMap<>();
@@ -72,6 +74,8 @@ public class LabkitSource<T> implements Source<UnsignedByteType> {
         this.name = name;
         this.sources = sources;
         this.resolutionLevel = resolutionLevel;
+        this.classifierPath = classifierPath;
+        this.useGpu = useGpu;
 
         // Load the classifier
         this.segmenter = new TrainableSegmentationSegmenter(context);
@@ -92,6 +96,8 @@ public class LabkitSource<T> implements Source<UnsignedByteType> {
         this.sources = sources;
         this.resolutionLevel = resolutionLevel;
         this.segmenter = segmenter;
+        this.classifierPath = null; // Not available when using pre-loaded segmenter
+        this.useGpu = false; // GPU setting is managed by the provided segmenter
     }
 
     /**
@@ -156,5 +162,41 @@ public class LabkitSource<T> implements Source<UnsignedByteType> {
     public int getNumMipmapLevels() {
         // Only one resolution level for the segmentation output
         return 1;
+    }
+
+    /**
+     * Returns the input sources used for classification.
+     *
+     * @return the array of input SourceAndConverter
+     */
+    public SourceAndConverter<T>[] getInputSources() {
+        return sources;
+    }
+
+    /**
+     * Returns the path to the classifier file, or null if a pre-loaded segmenter was used.
+     *
+     * @return the classifier path, or null
+     */
+    public String getClassifierPath() {
+        return classifierPath;
+    }
+
+    /**
+     * Returns the resolution level used from the input sources.
+     *
+     * @return the resolution level
+     */
+    public int getResolutionLevel() {
+        return resolutionLevel;
+    }
+
+    /**
+     * Returns whether GPU acceleration is enabled.
+     *
+     * @return true if GPU is used, false otherwise
+     */
+    public boolean isUseGpu() {
+        return useGpu;
     }
 }
