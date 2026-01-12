@@ -10,10 +10,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -24,21 +24,20 @@
  * #L%
  */
 
-import bdv.cache.SharedQueue;
 import bdv.util.BdvFunctions;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.DatasetHelper;
 import ch.epfl.biop.bdv.img.bioformats.command.CreateBdvDatasetBioFormatsCommand;
+import ch.epfl.biop.scijava.command.source.deconvolve.SourcesDeconvolverCommand;
 import ch.epfl.biop.scijava.command.spimdata.LLS7OpenDatasetCommand;
-import ch.epfl.biop.sourceandconverter.deconvolve.Deconvolver;
 import net.haesleinhuepf.clij.CLIJ;
-import net.haesleinhuepf.clijx.imglib2cache.Clij2RichardsonLucyImglib2Cache;
 import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;
 import org.apache.commons.io.FilenameUtils;
 import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
 
 import java.io.File;
+import java.util.concurrent.Future;
 
 public class DemoDeconvolution {
 
@@ -56,9 +55,6 @@ public class DemoDeconvolution {
      */
     public static void main(final String... args) throws Exception {
 
-        //System.out.println(System.getProperty("java.library.path"));
-        //clij2fftWrapper.diagnostic();
-
         // create the ImageJ application context with all available services
         final ImageJ ij = new ImageJ();
         ij.ui().showUI();
@@ -69,12 +65,14 @@ public class DemoDeconvolution {
 
     public static void demoDeconvolution(ImageJ ij) throws Exception {
 
+        // Load the LLS7 dataset
         File helaKyotoLLS7 = DatasetHelper.getDataset("https://zenodo.org/records/14505724/files/Hela-Kyoto-1-Timepoint-LLS7.czi");
 
         ij.command().run(LLS7OpenDatasetCommand.class, true,
                 "czi_file", helaKyotoLLS7,
                 "legacy_xy_mode", false).get();
 
+        // Load the PSF
         File psfLLS7 = DatasetHelper.getDataset("https://zenodo.org/records/14505724/files/psf-200nm.tif");
         ij.command().run(CreateBdvDatasetBioFormatsCommand.class, true,
                 "files", new File[]{psfLLS7},
@@ -84,34 +82,44 @@ public class DemoDeconvolution {
                 "auto_pyramidize", false,
                 "plane_origin_convention", "CENTER",
                 "disable_memo", false
-                ).get();
+        ).get();
 
+        // Get the source and PSF from the service
         String datasetName = FilenameUtils.removeExtension(helaKyotoLLS7.getName());
-        SourceAndConverter source = ij.context().getService(SourceAndConverterService.class).getUI().getSourceAndConvertersFromPath(datasetName)
+        SourceAndConverterService sacService = ij.context().getService(SourceAndConverterService.class);
+
+        SourceAndConverter[] sources = sacService.getUI().getSourceAndConvertersFromPath(datasetName)
+                .toArray(new SourceAndConverter[0]);
+
+        SourceAndConverter psf = sacService.getUI().getSourceAndConvertersFromPath("psf_lls7_200nm")
                 .toArray(new SourceAndConverter[0])[0];
 
-        SourceAndConverter psf = ij.context().getService(SourceAndConverterService.class).getUI().getSourceAndConvertersFromPath("psf_lls7_200nm")
-                .toArray(new SourceAndConverter[0])[0];
+        // Run the deconvolution command
+        Future<?> result = ij.command().run(SourcesDeconvolverCommand.class, true,
+                "sacs", new SourceAndConverter[]{sources[0]},
+                "psf", psf,
+                "output_pixel_type", SourcesDeconvolverCommand.ORIGINAL,
+                "suffix", "_deconvolved",
+                "block_size_x", 128 - 32,
+                "block_size_y", 512 - 32,
+                "block_size_z", 32,
+                "overlap_size", 32,
+                "num_iterations", 40,
+                "non_circulant", false,
+                "regularization_factor", 0.001f,
+                "n_threads", 4
+        );
 
-        Clij2RichardsonLucyImglib2Cache.Builder builder =
-                Clij2RichardsonLucyImglib2Cache.builder()
-                        .nonCirculant(false)
-                        .numberOfIterations(40)
-                        .psf(psf.getSpimSource().getSource(0,0))
-                        .overlap(32, 32, 16)
-                        .regularizationFactor(0.001f);
+        // Wait for completion and get output
+        result.get();
 
-        SourceAndConverter<?> deconvolved = Deconvolver.getDeconvolvedCast(
-                source,
-                "Deconvolved",
-                new int[]{128-32,512-32,32},
-                builder,
-                new SharedQueue(4,1));
+        // Get the deconvolved source from the service (it was registered by the command)
+        SourceAndConverter[] deconvolvedSources = sacService.getSourceAndConverters().stream()
+                .filter(sac -> sac.getSpimSource().getName().contains("_deconvolved"))
+                .toArray(SourceAndConverter[]::new);
 
-        BdvFunctions.show(deconvolved);
-
-        ij.get(SourceAndConverterService.class).register(deconvolved);
-
+        if (deconvolvedSources.length > 0) {
+            BdvFunctions.show(deconvolvedSources[0]);
+        }
     }
-
 }

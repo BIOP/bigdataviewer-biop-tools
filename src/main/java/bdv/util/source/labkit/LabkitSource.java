@@ -13,13 +13,17 @@ import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.view.Views;
 import org.scijava.Context;
+import sc.fiji.bdvpg.scijava.services.ui.RenamableSourceAndConverter;
+import sc.fiji.bdvpg.scijava.services.ui.inspect.ISourceInspector;
+import sc.fiji.bdvpg.services.ISourceAndConverterService;
 import sc.fiji.labkit.ui.segmentation.SegmentationUtils;
 import sc.fiji.labkit.ui.segmentation.Segmenter;
 import sc.fiji.labkit.ui.segmentation.weka.TrainableSegmentationSegmenter;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import javax.swing.tree.DefaultMutableTreeNode;
+import java.util.*;
+
+import static sc.fiji.bdvpg.scijava.services.ui.SourceAndConverterInspector.appendInspectorResult;
 
 /**
  * A lazy Source that applies a Labkit classifier to input sources.
@@ -33,7 +37,7 @@ import java.util.Map;
  * only provides a single resolution level (the one specified at construction).
  * </p>
  */
-public class LabkitSource<T> implements Source<UnsignedByteType> {
+public class LabkitSource<T> implements Source<UnsignedByteType>, ISourceInspector {
 
     protected final DefaultInterpolators<UnsignedByteType> interpolators = new DefaultInterpolators<>();
 
@@ -198,5 +202,50 @@ public class LabkitSource<T> implements Source<UnsignedByteType> {
      */
     public boolean isUseGpu() {
         return useGpu;
+    }
+
+    @Override
+    public Set<SourceAndConverter<?>> inspect(DefaultMutableTreeNode parent, SourceAndConverter<?> sac, ISourceAndConverterService sourceAndConverterService, boolean registerIntermediateSources) {
+        DefaultMutableTreeNode nameNode = new DefaultMutableTreeNode(
+                "Name: " + this.name);
+        parent.add(nameNode);
+
+        DefaultMutableTreeNode pathNode = new DefaultMutableTreeNode(
+                "Classifier: " + this.classifierPath);
+        parent.add(pathNode);
+
+        DefaultMutableTreeNode classNode = new DefaultMutableTreeNode(
+                "Classes: ");
+
+        int i = 0;
+        for (String className: segmenter.classNames()) {
+            classNode.add(new DefaultMutableTreeNode(
+                    i+": " + className));
+            i++;
+        }
+        parent.add(classNode);
+
+        DefaultMutableTreeNode resolutionLevelNode = new DefaultMutableTreeNode(
+                "Resolution Level: " + this.resolutionLevel);
+        parent.add(resolutionLevelNode);
+
+        DefaultMutableTreeNode useGpuNode = new DefaultMutableTreeNode(
+                "GPU: " + this.useGpu);
+        parent.add(useGpuNode);
+
+        DefaultMutableTreeNode classifiedSources = new DefaultMutableTreeNode("Classified Sources");
+
+        parent.add(classifiedSources);
+
+        for (SourceAndConverter source : this.sources) {
+            DefaultMutableTreeNode sourceNode = new DefaultMutableTreeNode(
+                    new RenamableSourceAndConverter(source));
+            classifiedSources.add(sourceNode);
+            appendInspectorResult(sourceNode, source,
+                    sourceAndConverterService, registerIntermediateSources);
+        }
+
+
+        return new HashSet<>(Arrays.asList(this.sources));
     }
 }

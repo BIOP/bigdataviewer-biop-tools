@@ -9,6 +9,7 @@ import net.imagej.patcher.LegacyInjector;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import org.apache.commons.io.FilenameUtils;
 import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
+import sc.fiji.bdvpg.services.SourceAndConverterServices;
 import sc.fiji.bdvpg.sourceandconverter.transform.SourceLabkitClassifier;
 
 import java.io.File;
@@ -58,6 +59,8 @@ public class DemoLabkitSegmentation {
 
         // Get the result (this creates the lazy source)
         SourceAndConverter<UnsignedByteType> segmentationSac = classifier.get();
+
+        SourceAndConverterServices.getSourceAndConverterService().register(segmentationSac);
 
         System.out.println("Segmentation created with classes: " + classifier.getClassNames());
 

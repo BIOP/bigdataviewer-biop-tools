@@ -29,7 +29,6 @@ import bdv.cache.SharedQueue;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.sourceandconverter.SourceHelper;
 import ch.epfl.biop.sourceandconverter.deconvolve.Deconvolver;
-import net.haesleinhuepf.clijx.imglib2cache.Clij2RichardsonLucyImglib2Cache;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.RealType;
 import org.scijava.ItemIO;
@@ -127,37 +126,43 @@ public class SourcesDeconvolverCommand implements BdvPlaygroundActionCommand {
 
         int nMipmapLevels = sacs[0].getSpimSource().getNumMipmapLevels();
 
-                Clij2RichardsonLucyImglib2Cache.Builder builder =
-                        Clij2RichardsonLucyImglib2Cache.builder()
-                                .nonCirculant(non_circulant)
-                                .numberOfIterations(num_iterations)
-                                .psf(psfRAI)
-                                .overlap(overlap_size, overlap_size, overlap_size)
-                                .regularizationFactor(regularization_factor);
+        int[] cellDimensions = new int[]{block_size_x, block_size_y, block_size_z};
+        int[] overlap = new int[]{overlap_size, overlap_size, overlap_size};
 
-                switch (output_pixel_type) {
-                    case FLOAT:
-                        for (int i = 0;i< sacs.length; i++) {
-                            sacs_out[i] = Deconvolver.getDeconvolved(
-                                    (SourceAndConverter) sacs[i],
-                                    sacs[i].getSpimSource().getName()+suffix,
-                                    new int[]{block_size_x, block_size_y, block_size_z},
-                                    builder,
-                                    new SharedQueue(n_threads,1)
-                            );
-                        } break;
-                    case ORIGINAL:
-                        for (int i = 0;i< sacs.length; i++) {
-                            sacs_out[i] = Deconvolver.getDeconvolvedCast(
-                                    (SourceAndConverter) sacs[i],
-                                    sacs[i].getSpimSource().getName()+suffix,
-                                    new int[]{block_size_x, block_size_y, block_size_z},
-                                    builder,
-                                    new SharedQueue(n_threads,1)
-                            );
-                        }break;
-                    default:throw new RuntimeException("Unrecognized output pixel type "+output_pixel_type);
+        switch (output_pixel_type) {
+            case FLOAT:
+                for (int i = 0; i < sacs.length; i++) {
+                    sacs_out[i] = Deconvolver.getDeconvolved(
+                            (SourceAndConverter) sacs[i],
+                            sacs[i].getSpimSource().getName() + suffix,
+                            cellDimensions,
+                            overlap,
+                            num_iterations,
+                            non_circulant,
+                            regularization_factor,
+                            psfRAI,
+                            new SharedQueue(n_threads, 1)
+                    );
                 }
+                break;
+            case ORIGINAL:
+                for (int i = 0; i < sacs.length; i++) {
+                    sacs_out[i] = Deconvolver.getDeconvolvedCast(
+                            (SourceAndConverter) sacs[i],
+                            sacs[i].getSpimSource().getName() + suffix,
+                            cellDimensions,
+                            overlap,
+                            num_iterations,
+                            non_circulant,
+                            regularization_factor,
+                            psfRAI,
+                            new SharedQueue(n_threads, 1)
+                    );
+                }
+                break;
+            default:
+                throw new RuntimeException("Unrecognized output pixel type " + output_pixel_type);
+        }
 
 
         if (nMipmapLevels>1) {
