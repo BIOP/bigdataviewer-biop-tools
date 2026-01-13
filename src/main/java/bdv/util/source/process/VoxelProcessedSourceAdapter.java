@@ -52,7 +52,6 @@ import java.lang.reflect.Type;
  *   <li>The processor (via registered processor adapters)</li>
  *   <li>The output type</li>
  * </ul>
- * </p>
  */
 @Plugin(type = ISourceAdapter.class)
 public class VoxelProcessedSourceAdapter implements ISourceAdapter<VoxelProcessedSource> {
