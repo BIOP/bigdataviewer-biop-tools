@@ -28,7 +28,6 @@ package ch.epfl.biop.sourceandconverter.deconvolve;
 import bdv.cache.SharedQueue;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.sourceandconverter.SourceVoxelProcessor;
-import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
@@ -53,7 +52,7 @@ public class Deconvolver {
      * @param numIterations number of Richardson-Lucy iterations
      * @param nonCirculant whether to use non-circulant boundary conditions
      * @param regularizationFactor regularization factor (0 = no regularization)
-     * @param psf the point spread function
+     * @param psfSource the point spread function as a SourceAndConverter
      * @param queue shared queue for volatile source
      * @return the deconvolved source with FloatType pixels
      */
@@ -65,12 +64,12 @@ public class Deconvolver {
             int numIterations,
             boolean nonCirculant,
             float regularizationFactor,
-            RandomAccessibleInterval<? extends RealType<?>> psf,
+            SourceAndConverter<? extends RealType<?>> psfSource,
             SharedQueue queue) {
 
         DeconvolutionProcessor<T> processor = new DeconvolutionProcessor<>(
-                cellDimensions, overlap, numIterations, nonCirculant, regularizationFactor, psf);
-        processor.initialize(source.getSpimSource());
+                cellDimensions, overlap, numIterations, nonCirculant, regularizationFactor, psfSource);
+        processor.initialize(source);
 
         return new SourceVoxelProcessor<>(name, source, processor, new FloatType(), queue).get();
     }
@@ -86,7 +85,7 @@ public class Deconvolver {
      * @param numIterations number of Richardson-Lucy iterations
      * @param nonCirculant whether to use non-circulant boundary conditions
      * @param regularizationFactor regularization factor (0 = no regularization)
-     * @param psf the point spread function
+     * @param psfSource the point spread function as a SourceAndConverter
      * @param queue shared queue for volatile source
      * @return the deconvolved source with the same pixel type as input
      */
@@ -98,12 +97,12 @@ public class Deconvolver {
             int numIterations,
             boolean nonCirculant,
             float regularizationFactor,
-            RandomAccessibleInterval<? extends RealType<?>> psf,
+            SourceAndConverter<? extends RealType<?>> psfSource,
             SharedQueue queue) {
 
         DeconvolutionProcessorCast<T> processor = new DeconvolutionProcessorCast<>(
-                cellDimensions, overlap, numIterations, nonCirculant, regularizationFactor, psf);
-        processor.initialize(source.getSpimSource());
+                cellDimensions, overlap, numIterations, nonCirculant, regularizationFactor, psfSource);
+        processor.initialize(source);
 
         return new SourceVoxelProcessor<>(name, source, processor, source.getSpimSource().getType(), queue).get();
     }

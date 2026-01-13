@@ -50,6 +50,7 @@ import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;
 import sc.fiji.bdvpg.cache.GlobalLoaderCache;
+import sc.fiji.bdvpg.scijava.services.ui.RenamableSourceAndConverter;
 import sc.fiji.bdvpg.scijava.services.ui.inspect.ISourceInspector;
 import sc.fiji.bdvpg.services.ISourceAndConverterService;
 import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
@@ -57,10 +58,12 @@ import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static sc.fiji.bdvpg.scijava.services.ui.SourceAndConverterInspector.appendInspectorResult;
 
 /**
  * A named processor class for Richardson-Lucy deconvolution that casts the output
@@ -79,11 +82,11 @@ public class DeconvolutionProcessorCast<T extends RealType<T> & NativeType<T>> i
     private final int numIterations;
     private final boolean nonCirculant;
     private final float regularizationFactor;
-    private final RandomAccessibleInterval<? extends RealType<?>> psf;
+    private final SourceAndConverter<? extends RealType<?>> psfSource;
 
     // Cached operations per timepoint (lazily initialized)
     private transient List<Clij2RichardsonLucyImglib2Cache<FloatType, T, T>> ops;
-    private transient Source<T> source;
+    private transient SourceAndConverter<T> source;
     private transient ConcurrentHashMap<Integer, ConcurrentHashMap<Integer, RandomAccessibleInterval<T>>> cachedRAIs;
 
     /**
@@ -94,17 +97,17 @@ public class DeconvolutionProcessorCast<T extends RealType<T> & NativeType<T>> i
      * @param numIterations number of Richardson-Lucy iterations
      * @param nonCirculant whether to use non-circulant boundary conditions
      * @param regularizationFactor regularization factor to prevent noise amplification
-     * @param psf the point spread function
+     * @param psfSource the point spread function as a SourceAndConverter
      */
     public DeconvolutionProcessorCast(int[] cellDimensions, int[] overlap, int numIterations,
                                        boolean nonCirculant, float regularizationFactor,
-                                       RandomAccessibleInterval<? extends RealType<?>> psf) {
+                                       SourceAndConverter<? extends RealType<?>> psfSource) {
         this.cellDimensions = cellDimensions;
         this.overlap = overlap;
         this.numIterations = numIterations;
         this.nonCirculant = nonCirculant;
         this.regularizationFactor = regularizationFactor;
-        this.psf = psf;
+        this.psfSource = psfSource;
         this.cachedRAIs = new ConcurrentHashMap<>();
     }
 
@@ -114,22 +117,26 @@ public class DeconvolutionProcessorCast<T extends RealType<T> & NativeType<T>> i
      *
      * @param source the source to process
      */
-    public void initialize(Source<T> source) {
+    public void initialize(SourceAndConverter<T> source) {
         this.source = source;
         this.ops = new ArrayList<>();
         this.cachedRAIs = new ConcurrentHashMap<>();
 
         int numTimepoints = SourceAndConverterHelper.getMaxTimepoint(source) + 1;
 
+        // Extract PSF RAI from the SourceAndConverter (timepoint 0, resolution level 0)
+        RandomAccessibleInterval<? extends RealType<?>> psfRAI =
+                (RandomAccessibleInterval<? extends RealType<?>>) psfSource.getSpimSource().getSource(0, 0);
+
         Clij2RichardsonLucyImglib2Cache.Builder builder = Clij2RichardsonLucyImglib2Cache.builder()
                 .nonCirculant(nonCirculant)
                 .numberOfIterations(numIterations)
-                .psf(psf)
+                .psf(psfRAI)
                 .overlap(overlap[0], overlap[1], overlap[2])
                 .regularizationFactor(regularizationFactor);
 
         for (int t = 0; t < numTimepoints; t++) {
-            ops.add((Clij2RichardsonLucyImglib2Cache<FloatType, T, T>) builder.rai(source.getSource(t, 0)).build());
+            ops.add((Clij2RichardsonLucyImglib2Cache<FloatType, T, T>) builder.rai(source.getSpimSource().getSource(t, 0)).build());
         }
     }
 
@@ -226,8 +233,12 @@ public class DeconvolutionProcessorCast<T extends RealType<T> & NativeType<T>> i
         return regularizationFactor;
     }
 
-    public RandomAccessibleInterval<? extends RealType<?>> getPsf() {
-        return psf;
+    public SourceAndConverter<? extends RealType<?>> getPsfSource() {
+        return psfSource;
+    }
+
+    public SourceAndConverter<? extends RealType<?>> getRawSource() {
+        return source;
     }
 
     @Override
@@ -239,9 +250,17 @@ public class DeconvolutionProcessorCast<T extends RealType<T> & NativeType<T>> i
         parent.add(new DefaultMutableTreeNode("Iterations: " + numIterations));
         parent.add(new DefaultMutableTreeNode("Non-Circulant: " + nonCirculant));
         parent.add(new DefaultMutableTreeNode("Regularization Factor: " + regularizationFactor));
-        parent.add(new DefaultMutableTreeNode("PSF Dimensions: " + Arrays.toString(psf.dimensionsAsLongArray())));
+        parent.add(new DefaultMutableTreeNode("PSF Source: " + psfSource.getSpimSource().getName()));
         parent.add(new DefaultMutableTreeNode("Output Type: Original (cast)"));
 
-        return Collections.emptySet();
+        DefaultMutableTreeNode sourceNode = new DefaultMutableTreeNode(
+                new RenamableSourceAndConverter(psfSource));
+        appendInspectorResult(sourceNode, psfSource,
+                sourceAndConverterService, registerIntermediateSources);
+        parent.add(sourceNode);
+
+        Set<SourceAndConverter<?>> subSources = new HashSet<>();
+        subSources.add((SourceAndConverter<?>) psfSource);
+        return subSources;
     }
 }

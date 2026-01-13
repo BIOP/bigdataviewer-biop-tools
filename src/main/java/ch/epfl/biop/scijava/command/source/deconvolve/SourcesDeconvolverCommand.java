@@ -29,7 +29,6 @@ import bdv.cache.SharedQueue;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.sourceandconverter.SourceHelper;
 import ch.epfl.biop.sourceandconverter.deconvolve.Deconvolver;
-import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.RealType;
 import org.scijava.ItemIO;
 import org.scijava.plugin.Parameter;
@@ -120,8 +119,6 @@ public class SourcesDeconvolverCommand implements BdvPlaygroundActionCommand {
             return;
         }
 
-        RandomAccessibleInterval<? extends RealType<?>> psfRAI = (RandomAccessibleInterval<? extends RealType<?>>) psf.getSpimSource().getSource(0,0);
-
         sacs_out = new SourceAndConverter[sacs.length];
 
         int nMipmapLevels = sacs[0].getSpimSource().getNumMipmapLevels();
@@ -140,7 +137,7 @@ public class SourcesDeconvolverCommand implements BdvPlaygroundActionCommand {
                             num_iterations,
                             non_circulant,
                             regularization_factor,
-                            psfRAI,
+                            (SourceAndConverter) psf,
                             new SharedQueue(n_threads, 1)
                     );
                 }
@@ -155,7 +152,7 @@ public class SourcesDeconvolverCommand implements BdvPlaygroundActionCommand {
                             num_iterations,
                             non_circulant,
                             regularization_factor,
-                            psfRAI,
+                            (SourceAndConverter) psf,
                             new SharedQueue(n_threads, 1)
                     );
                 }

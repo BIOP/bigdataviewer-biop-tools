@@ -26,15 +26,9 @@
 package ch.epfl.biop.sourceandconverter.deconvolve;
 
 import bdv.util.source.process.VoxelProcessedSource;
+import bdv.viewer.SourceAndConverter;
 import com.google.gson.*;
-import net.imglib2.Cursor;
-import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.img.array.ArrayImg;
-import net.imglib2.img.array.ArrayImgs;
-import net.imglib2.img.basictypeaccess.array.FloatArray;
 import net.imglib2.type.numeric.RealType;
-import net.imglib2.type.numeric.real.FloatType;
-import net.imglib2.view.Views;
 import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +39,7 @@ import java.lang.reflect.Type;
 /**
  * JSON adapter for {@link DeconvolutionProcessor}.
  * <p>
- * Serializes all deconvolution parameters including the PSF (stored as raw float data).
+ * Serializes all deconvolution parameters including the PSF source.
  * </p>
  */
 @Plugin(type = IClassRuntimeAdapter.class)
@@ -79,19 +73,10 @@ public class DeconvolutionProcessorAdapter implements IClassRuntimeAdapter<Voxel
         obj.addProperty("non_circulant", processor.isNonCirculant());
         obj.addProperty("regularization_factor", processor.getRegularizationFactor());
 
-        // Serialize PSF as raw float array with dimensions
-        RandomAccessibleInterval<? extends RealType<?>> psf = processor.getPsf();
-        long[] dims = psf.dimensionsAsLongArray();
-        obj.add("psf_dimensions", context.serialize(dims));
-
-        // Convert PSF to float array
-        float[] psfData = new float[(int) (dims[0] * dims[1] * dims[2])];
-        Cursor<? extends RealType<?>> cursor = Views.flatIterable(psf).cursor();
-        int i = 0;
-        while (cursor.hasNext()) {
-            psfData[i++] = cursor.next().getRealFloat();
-        }
-        obj.add("psf_data", context.serialize(psfData));
+        // Serialize PSF source via the SourceAndConverter serialization mechanism
+        SourceAndConverter<?> psfSource = processor.getPsfSource();
+        obj.add("psf_source", context.serialize(psfSource, SourceAndConverter.class));
+        obj.add("raw_source", context.serialize(processor.getRawSource(), SourceAndConverter.class));
 
         return obj;
     }
@@ -107,13 +92,15 @@ public class DeconvolutionProcessorAdapter implements IClassRuntimeAdapter<Voxel
         boolean nonCirculant = obj.getAsJsonPrimitive("non_circulant").getAsBoolean();
         float regularizationFactor = obj.getAsJsonPrimitive("regularization_factor").getAsFloat();
 
-        // Deserialize PSF
-        long[] psfDims = context.deserialize(obj.get("psf_dimensions"), long[].class);
-        float[] psfData = context.deserialize(obj.get("psf_data"), float[].class);
+        // Deserialize PSF source
+        @SuppressWarnings("unchecked")
+        SourceAndConverter<? extends RealType<?>> psfSource =
+                (SourceAndConverter<? extends RealType<?>>) context.deserialize(obj.get("psf_source"), SourceAndConverter.class);
+        SourceAndConverter<? extends RealType<?>> rawSource =
+                (SourceAndConverter<? extends RealType<?>>) context.deserialize(obj.get("raw_source"), SourceAndConverter.class);
 
-        // Reconstruct PSF as ArrayImg
-        ArrayImg<FloatType, FloatArray> psf = ArrayImgs.floats(psfData, psfDims);
-
-        return new DeconvolutionProcessor<>(cellDimensions, overlap, numIterations, nonCirculant, regularizationFactor, psf);
+        DeconvolutionProcessor p = new DeconvolutionProcessor<>(cellDimensions, overlap, numIterations, nonCirculant, regularizationFactor, psfSource);
+        p.initialize(rawSource);
+        return p;
     }
 }
