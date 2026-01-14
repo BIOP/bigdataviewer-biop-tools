@@ -324,6 +324,8 @@ public class CombinedSpimData {
             AbstractSpimData<?> source = sources.get(sourceIndex);
             int newTimepoint = sourceIndex;
 
+            logger.debug("Building registrations for source {} (timepoint {})", sourceIndex, newTimepoint);
+
             // For each setup, copy the registration from the source (at timepoint 0)
             for (ViewSetup vs : viewSetups) {
                 int setupId = vs.getId();
@@ -336,6 +338,10 @@ public class CombinedSpimData {
                             setupId,
                             sourceReg.getModel()
                     ));
+                    logger.debug("  Added registration for setup {} at timepoint {}", setupId, newTimepoint);
+                } else {
+                    logger.warn("  Missing registration for setup {} in source {} - timepoint {} will be incomplete!",
+                            setupId, sourceIndex, newTimepoint);
                 }
             }
         }

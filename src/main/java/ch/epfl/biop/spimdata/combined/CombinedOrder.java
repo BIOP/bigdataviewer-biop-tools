@@ -40,6 +40,7 @@ import mpicbg.spim.data.generic.AbstractSpimData;
 import mpicbg.spim.data.sequence.ViewId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sc.fiji.bdvpg.services.SourceAndConverterServices;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -128,6 +129,7 @@ public class CombinedOrder implements ISetupOrder {
             try {
                 logger.debug("Loading source SpimData from: {}", path);
                 AbstractSpimData<?> spimData = xmlIo.load(path);
+                SourceAndConverterServices.getSourceAndConverterService().register(spimData, "no tree"); // proper cache
                 loadedSources.add(spimData);
             } catch (SpimDataException e) {
                 throw new RuntimeException("Failed to load SpimData from: " + path, e);

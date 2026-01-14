@@ -35,11 +35,11 @@ package ch.epfl.biop.scijava.command.spimdata;
 import ch.epfl.biop.spimdata.combined.CombinedSpimData;
 import ij.IJ;
 import mpicbg.spim.data.generic.AbstractSpimData;
+import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
-import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
 
 import java.io.File;
 import java.util.Arrays;
@@ -98,12 +98,12 @@ public class CombineSpimDataCommand implements Command {
             description = "How to combine the datasets: as separate timepoints or as separate channels")
     CombineMode combine_mode = CombineMode.CONCATENATE_TIMEPOINTS;
 
-    @Parameter(label = "Output Dataset Name",
-            description = "Name for the combined dataset")
-    String output_name = "Combined Dataset";
+    @Parameter(label = "Dataset Name",
+            description = "Name for the resulting BDV dataset.")
+    public String datasetname = "dataset";
 
-    @Parameter
-    SourceAndConverterService sac_service;
+    @Parameter(type = ItemIO.OUTPUT, label = "Output BDV dataset object")
+    AbstractSpimData<?> combinedSpimData;
 
     @Override
     public void run() {
@@ -125,7 +125,6 @@ public class CombineSpimDataCommand implements Command {
         IJ.log("Combining " + xmlPaths.size() + " datasets in mode: " + combine_mode);
 
         try {
-            AbstractSpimData<?> combinedSpimData;
 
             switch (combine_mode) {
                 case CONCATENATE_TIMEPOINTS:
@@ -138,11 +137,7 @@ public class CombineSpimDataCommand implements Command {
                     throw new IllegalArgumentException("Unknown combine mode: " + combine_mode);
             }
 
-            // Register with the SourceAndConverterService
-            sac_service.register(combinedSpimData);
-            sac_service.setSpimDataName(combinedSpimData, output_name);
-
-            IJ.log("Successfully created combined dataset: " + output_name);
+            IJ.log("Successfully created combined dataset: " + datasetname);
             IJ.log("  - Input files: " + xmlPaths.size());
             IJ.log("  - Mode: " + combine_mode);
 

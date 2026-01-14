@@ -99,7 +99,7 @@
 
 		<!-- general imagej dependencies -->
 		<!-- bdv playground related dependencies -->
-		<bigdataviewer-playground.version>0.15.1</bigdataviewer-playground.version>
+		<bigdataviewer-playground.version>0.15.2-SNAPSHOT</bigdataviewer-playground.version>
 		<bigdataviewer-playground-display.version>0.5.0</bigdataviewer-playground-display.version>
 		<image-transform-converters.version>0.2.0</image-transform-converters.version>
 		<bigdataviewer-image-loaders.version>0.12.2</bigdataviewer-image-loaders.version>
