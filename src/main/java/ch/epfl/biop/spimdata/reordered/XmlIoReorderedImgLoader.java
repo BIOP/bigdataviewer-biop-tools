@@ -74,12 +74,21 @@ public class XmlIoReorderedImgLoader implements XmlIoBasicImgLoader< ReorderedIm
             String orderClassName = XmlHelpers.getText( elem, ORDER_CLASS );
             Gson gson = new Gson();
             String orderString = XmlHelpers.getText( elem, ORDER_TAG );
-            /*if (orderClassName.equals(KunalDataset.class.getSimpleName())) {
-                 } else {
-                throw new UnsupportedOperationException("Unknown ISetupOrder class "+orderClassName+" vs expected "+KunalDataset.class.getSimpleName());
-            }*/
-            //System.out.println("ISetupOrder class "+orderClassName+" vs expected "+ LifReOrdered.class.getSimpleName());
-            ISetupOrder order = gson.fromJson(orderString, LifReOrdered.class);
+
+            // Deserialize based on the order class name
+            orderClassName = gson.fromJson(orderClassName, String.class);
+
+            ISetupOrder order;
+            if (orderClassName.equals(LifReOrdered.class.getSimpleName())) {
+                order = gson.fromJson(orderString, LifReOrdered.class);
+            } else if (orderClassName.equals(ch.epfl.biop.spimdata.combined.CombinedOrder.class.getSimpleName())) {
+                order = gson.fromJson(orderString, ch.epfl.biop.spimdata.combined.CombinedOrder.class);
+            } else {
+                throw new UnsupportedOperationException("Unknown ISetupOrder class: " + orderClassName +
+                    ". Supported types: " + LifReOrdered.class.getSimpleName() + ", " +
+                    ch.epfl.biop.spimdata.combined.CombinedOrder.class.getSimpleName());
+            }
+
             order.initialize();
             return new ReorderedImageLoader( order, sequenceDescription, numFetcherThreads, numPriorities);
 

@@ -60,15 +60,25 @@ import java.util.stream.IntStream;
  *   <li>{@link #fromChannels(List)}: Combine multiple files as separate channels</li>
  * </ul>
  *
- * <h3>Example: Creating a timelapse from multiple CZI files</h3>
+ * <h3>Example: Creating and saving a timelapse from multiple files</h3>
  * <pre>{@code
+ * // Create combined dataset
  * List<String> files = Arrays.asList(
  *     "/path/to/timepoint_0.xml",
  *     "/path/to/timepoint_1.xml",
  *     "/path/to/timepoint_2.xml"
  * );
  * AbstractSpimData<?> timelapse = CombinedSpimData.fromTimepoints(files);
+ *
+ * // Save combined dataset
+ * new XmlIoSpimData().save(timelapse, "/path/to/combined.xml");
+ *
+ * // Later, reload the combined dataset
+ * AbstractSpimData<?> reloaded = new XmlIoSpimData().load("/path/to/combined.xml");
  * }</pre>
+ *
+ * <p><b>Note:</b> Serialization uses {@link ch.epfl.biop.spimdata.reordered.XmlIoReorderedImgLoader}
+ * which is automatically registered via the {@link mpicbg.spim.data.generic.sequence.ImgLoaderIo} annotation.
  */
 public class CombinedSpimData {
 
@@ -324,8 +334,6 @@ public class CombinedSpimData {
             AbstractSpimData<?> source = sources.get(sourceIndex);
             int newTimepoint = sourceIndex;
 
-            logger.debug("Building registrations for source {} (timepoint {})", sourceIndex, newTimepoint);
-
             // For each setup, copy the registration from the source (at timepoint 0)
             for (ViewSetup vs : viewSetups) {
                 int setupId = vs.getId();
@@ -338,10 +346,6 @@ public class CombinedSpimData {
                             setupId,
                             sourceReg.getModel()
                     ));
-                    logger.debug("  Added registration for setup {} at timepoint {}", setupId, newTimepoint);
-                } else {
-                    logger.warn("  Missing registration for setup {} in source {} - timepoint {} will be incomplete!",
-                            setupId, sourceIndex, newTimepoint);
                 }
             }
         }
