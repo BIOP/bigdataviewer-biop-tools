@@ -61,6 +61,7 @@ import java.util.stream.Collectors;
 import static bdv.ui.BdvDefaultCards.*;
 import static bdv.util.RealTransformHelper.BigWarpFileFromRealTransform;
 import static ch.epfl.biop.scijava.command.bdv.userdefinedregion.RectangleSelectorBehaviour.box;
+import static ch.epfl.biop.scijava.command.transform.RemoveZOffsetCommand.getZ0Transform;
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
         menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Wizard Align Slides (2D)",
@@ -179,12 +180,8 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
         AffineTransform3D preTransformFixed = new AffineTransform3D();
 
         if (remove_z_offset) {
-            AffineTransform3D at3D = new AffineTransform3D();
-            moving.getSpimSource().getSourceTransform(0,0,at3D);
-            centeringTransform.translate(0,0,-at3D.get(2,3)); // Removes z offset
-
-            fixed.getSpimSource().getSourceTransform(0,0,at3D);
-            preTransformFixed.translate(0,0,-at3D.get(2,3)); // Removes z offset
+            centeringTransform = getZ0Transform(moving,0);
+            preTransformFixed = getZ0Transform(fixed,0);
         }
 
         if (center_moving_image) {
@@ -677,6 +674,13 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
     private void showImages() {
         sacbds.show(bdvh,fixed, moving);
         new ViewerTransformAdjuster(bdvh, new SourceAndConverter[]{fixed, moving}).run();
+
+        // Set Z to zero anyway
+        AffineTransform3D transform3D = new AffineTransform3D();
+        bdvh.getViewerPanel().state().getViewerTransform(transform3D);
+        AffineTransform3D recenter = transform3D.copy();
+        recenter.set(0,2,3);
+        bdvh.getViewerPanel().state().setViewerTransform(recenter);
     }
 
     void fitBdvOnUserROI(BdvHandle bdvh) {

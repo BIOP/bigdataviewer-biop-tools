@@ -1,6 +1,7 @@
 package ch.epfl.biop.scijava.command.transform;
 
 import bdv.viewer.SourceAndConverter;
+import net.imglib2.RealPoint;
 import net.imglib2.realtransform.AffineTransform3D;
 import org.scijava.ItemIO;
 import org.scijava.plugin.Parameter;
@@ -59,24 +60,22 @@ public class RemoveZOffsetCommand implements BdvPlaygroundActionCommand {
     }
 
     private void removeZOffsetForTimepoint(SourceAndConverter sac, int tp) {
-        long sz = sac.getSpimSource().getSource(tp, 0).dimension(2);
-
-        AffineTransform3D at3D = new AffineTransform3D();
-        sac.getSpimSource().getSourceTransform(tp, 0, at3D);
-
-        AffineTransform3D at3DCenter = new AffineTransform3D();
-        at3DCenter.concatenate(at3D.inverse());
-        at3DCenter.translate(0, 0, -sz / 2.0);
-        at3D.set(0, 2, 3);
-        at3DCenter.preConcatenate(at3D);
 
         switch (mode) {
             case "Mutate":
-                SourceTransformHelper.mutate(at3DCenter, new SourceAndConverterAndTimeRange(sac, tp));
+                SourceTransformHelper.mutate(getZ0Transform(sac, tp), new SourceAndConverterAndTimeRange(sac, tp));
                 break;
             case "Append":
-                SourceTransformHelper.append(at3DCenter, new SourceAndConverterAndTimeRange(sac, tp));
+                SourceTransformHelper.append(getZ0Transform(sac, tp), new SourceAndConverterAndTimeRange(sac, tp));
                 break;
         }
     }
+
+    public static AffineTransform3D getZ0Transform(SourceAndConverter sac, int tp) {
+        RealPoint center = SourceAndConverterHelper.getSourceAndConverterCenterPoint(sac, tp);
+        AffineTransform3D z0 = new AffineTransform3D();
+        z0.set(-center.getDoublePosition(2),2,3);
+        return z0;
+    }
+
 }
