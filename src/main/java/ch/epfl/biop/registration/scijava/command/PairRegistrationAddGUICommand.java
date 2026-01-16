@@ -117,6 +117,10 @@ public class PairRegistrationAddGUICommand implements Command {
         int hierarchyLevelsSkipped = 3;
         BdvScijavaHelper.addCommandToBdvHandleMenu(bdvh, ctx, PairRegistrationCenterCommand.class,
                 hierarchyLevelsSkipped,"registration_pair", registration_pair);
+        BdvScijavaHelper.addCommandToBdvHandleMenu(bdvh, ctx, PairRegistrationRotateCommand.class,
+                hierarchyLevelsSkipped,"registration_pair", registration_pair);
+        BdvScijavaHelper.addCommandToBdvHandleMenu(bdvh, ctx, PairRegistrationFlipCommand.class,
+                hierarchyLevelsSkipped,"registration_pair", registration_pair);
         BdvScijavaHelper.addCommandToBdvHandleMenu(bdvh, ctx, PairRegistrationSift2DAffineCommand.class,
                 hierarchyLevelsSkipped,"registration_pair", registration_pair);
         BdvScijavaHelper.addCommandToBdvHandleMenu(bdvh, ctx, PairRegistrationElastix2DAffineCommand.class,
