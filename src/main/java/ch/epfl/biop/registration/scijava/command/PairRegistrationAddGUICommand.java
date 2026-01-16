@@ -8,6 +8,7 @@ import bdv.viewer.DisplayMode;
 import bdv.viewer.SourceAndConverter;
 import bdv.viewer.SourceGroup;
 import ch.epfl.biop.registration.RegistrationPair;
+import net.imglib2.realtransform.AffineTransform3D;
 import org.scijava.Context;
 import org.scijava.command.Command;
 import org.scijava.object.ObjectService;
@@ -26,6 +27,7 @@ import java.awt.event.WindowListener;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
         menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Registration pair - Add GUI",
@@ -78,6 +80,13 @@ public class PairRegistrationAddGUICommand implements Command {
 
             bdvh.getViewerPanel().setDisplayMode(DisplayMode.FUSEDGROUP);
             new ViewerTransformAdjuster(bdvh, new SourceAndConverter[]{registration_pair.getFixedSources()[0], registration_pair.getMovingSourcesRegistered()[0]}).run();
+
+            // Set Z to zero anyway
+            AffineTransform3D transform3D = new AffineTransform3D();
+            bdvh.getViewerPanel().state().getViewerTransform(transform3D);
+            AffineTransform3D recenter = transform3D.copy();
+            recenter.set(0,2,3);
+            bdvh.getViewerPanel().state().setViewerTransform(recenter);
         }
 
         listener = new RegistrationPair.RegistrationPairListener() {
@@ -86,8 +95,9 @@ public class PairRegistrationAddGUICommand implements Command {
                 switch (event) {
                     case STEP_REMOVED:
                         int nSteps = registration_pair.getAllSourcesPerStep().size();
-                        SourceGroup group = bdvh.getViewerPanel().state().getGroups().get(nSteps);
-                        bdvh.getViewerPanel().state().removeSources(bdvh.getViewerPanel().state().getSourcesInGroup(group));
+                        SourceGroup group = bdvh.getViewerPanel().state().getGroups().get(nSteps+2);
+                        Set<SourceAndConverter<?>> sources = bdvh.getViewerPanel().state().getSourcesInGroup(group);
+                        bdvh.getViewerPanel().state().removeSources(sources);
                         updateBdvSourceGroups(bdvh);
                         break;
                     case STEP_ADDED:
