@@ -137,6 +137,8 @@ public class PairRegistrationAddGUICommand implements Command {
                 hierarchyLevelsSkipped,"registration_pair", registration_pair);
         BdvScijavaHelper.addCommandToBdvHandleMenu(bdvh, ctx, PairRegistrationRemoveLastRegistrationCommand.class,
                 hierarchyLevelsSkipped,"registration_pair", registration_pair);
+
+        BdvHandleHelper.setWindowTitle(bdvh, "Warpy Registration: "+registration_pair.getName());
     }
 
     private void updateBdvSourceGroups(BdvHandle bdvh) {
