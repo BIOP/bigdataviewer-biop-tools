@@ -11,7 +11,6 @@ import java.util.stream.IntStream;
  *
  *
  *
- * TODO : all of this below is a wish...
  *
  * For each dimension, a String specifies what indexes are selected.
  *

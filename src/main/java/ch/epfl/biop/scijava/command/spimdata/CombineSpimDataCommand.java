@@ -32,8 +32,10 @@
  */
 package ch.epfl.biop.scijava.command.spimdata;
 
+import ch.epfl.biop.sourceandconverter.exporter.IntRangeParser;
 import ch.epfl.biop.spimdata.combined.CombinedSpimData;
 import ij.IJ;
+import mpicbg.spim.data.XmlIoSpimData;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
@@ -53,9 +55,18 @@ import java.util.stream.Collectors;
  * <ul>
  *   <li><b>Concatenate Timepoints</b>: Each input file becomes a separate timepoint.
  *       Useful for combining multiple single-timepoint acquisitions (e.g., CZI files)
- *       into a timelapse.</li>
+ *       into a timelapse. Supports optional setup filtering.</li>
  *   <li><b>Concatenate Channels</b>: Each input file's setups are added as additional
  *       channels. Useful for combining different acquisitions as separate channels.</li>
+ * </ul>
+ * <p>
+ * <b>Setup Filtering:</b> In timepoint concatenation mode, you can optionally filter which
+ * setups to include using a range expression. For example:
+ * <ul>
+ *   <li>"0:5" - Includes setups 0, 1, 2, 3, 4, 5</li>
+ *   <li>"0,5,10" - Includes only setups 0, 5, and 10</li>
+ *   <li>"0:10:2" - Includes every other setup from 0 to 10 (0, 2, 4, 6, 8, 10)</li>
+ *   <li>"" (empty) - Includes all setups (default)</li>
  * </ul>
  */
 @Plugin(type = Command.class,
@@ -98,6 +109,11 @@ public class CombineSpimDataCommand implements Command {
             description = "How to combine the datasets: as separate timepoints or as separate channels")
     CombineMode combine_mode = CombineMode.CONCATENATE_TIMEPOINTS;
 
+    @Parameter(label = "Filter Setup IDs (optional)",
+            description = "Comma-separated setup IDs or ranges (e.g., '0:5,10,15:20'). Leave empty to include all setups.",
+            required = false)
+    String setup_filter = "";
+
     @Parameter(label = "Dataset Name",
             description = "Name for the resulting BDV dataset.")
     public String datasetname = "dataset";
@@ -125,10 +141,32 @@ public class CombineSpimDataCommand implements Command {
         IJ.log("Combining " + xmlPaths.size() + " datasets in mode: " + combine_mode);
 
         try {
+            // Parse setup filter if provided
+            List<Integer> setupIds = null;
+            if (setup_filter != null && !setup_filter.trim().isEmpty()) {
+                try {
+                    // Get the number of setups from the first file to validate the range
+                    AbstractSpimData<?> firstSource = new XmlIoSpimData().load(xmlPaths.get(0));
+                    int numSetups = firstSource.getSequenceDescription().getViewSetupsOrdered().size();
+
+                    IntRangeParser parser = new IntRangeParser(setup_filter);
+                    setupIds = parser.get(numSetups);
+
+                    IJ.log("Setup filter: " + setup_filter);
+                    IJ.log("Selected " + setupIds.size() + " setups out of " + numSetups);
+                } catch (Exception e) {
+                    IJ.error("Failed to parse setup filter '" + setup_filter + "': " + e.getMessage());
+                    return;
+                }
+            }
 
             switch (combine_mode) {
                 case CONCATENATE_TIMEPOINTS:
-                    combinedSpimData = CombinedSpimData.fromTimepoints(xmlPaths);
+                    if (setupIds != null) {
+                        combinedSpimData = CombinedSpimData.fromTimepoints(xmlPaths, setupIds);
+                    } else {
+                        combinedSpimData = CombinedSpimData.fromTimepoints(xmlPaths);
+                    }
                     break;
                 case CONCATENATE_CHANNELS:
                     combinedSpimData = CombinedSpimData.fromChannels(xmlPaths);
@@ -140,6 +178,9 @@ public class CombineSpimDataCommand implements Command {
             IJ.log("Successfully created combined dataset: " + datasetname);
             IJ.log("  - Input files: " + xmlPaths.size());
             IJ.log("  - Mode: " + combine_mode);
+            if (setupIds != null) {
+                IJ.log("  - Filtered setups: " + setupIds.size());
+            }
 
         } catch (Exception e) {
             IJ.error("Failed to combine datasets: " + e.getMessage());

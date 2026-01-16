@@ -43,7 +43,9 @@ import org.slf4j.LoggerFactory;
 import sc.fiji.bdvpg.services.SourceAndConverterServices;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Implementation of {@link ISetupOrder} that combines multiple SpimData sources
@@ -85,6 +87,10 @@ public class CombinedOrder implements ISetupOrder {
     // For CONCATENATE_CHANNELS mode: number of setups per source
     private final List<Integer> setupsPerSource;
 
+    // Optional setup ID filter: maps filtered (output) setup ID to original (source) setup ID
+    // If null, no filtering is applied (all setups included)
+    private final Map<Integer, Integer> setupIdMapping;
+
     // Transient state (rebuilt on initialize)
     private transient List<AbstractSpimData<?>> loadedSources;
     private transient boolean initialized = false;
@@ -96,7 +102,19 @@ public class CombinedOrder implements ISetupOrder {
      * @return CombinedOrder configured for timepoint concatenation
      */
     public static CombinedOrder forTimepoints(List<String> sourcePaths) {
-        return new CombinedOrder(sourcePaths, MappingMode.CONCATENATE_TIMEPOINTS, null);
+        return new CombinedOrder(sourcePaths, MappingMode.CONCATENATE_TIMEPOINTS, null, null);
+    }
+
+    /**
+     * Creates a CombinedOrder for concatenating timepoints with setup filtering.
+     *
+     * @param sourcePaths     Absolute paths to source XML files, in order
+     * @param setupIdMapping  Map from filtered (output) setup ID to original (source) setup ID.
+     *                        If null, all setups are included.
+     * @return CombinedOrder configured for timepoint concatenation with filtering
+     */
+    public static CombinedOrder forTimepoints(List<String> sourcePaths, Map<Integer, Integer> setupIdMapping) {
+        return new CombinedOrder(sourcePaths, MappingMode.CONCATENATE_TIMEPOINTS, null, setupIdMapping);
     }
 
     /**
@@ -107,13 +125,29 @@ public class CombinedOrder implements ISetupOrder {
      * @return CombinedOrder configured for channel concatenation
      */
     public static CombinedOrder forChannels(List<String> sourcePaths, List<Integer> setupsPerSource) {
-        return new CombinedOrder(sourcePaths, MappingMode.CONCATENATE_CHANNELS, setupsPerSource);
+        return new CombinedOrder(sourcePaths, MappingMode.CONCATENATE_CHANNELS, setupsPerSource, null);
     }
 
-    private CombinedOrder(List<String> sourcePaths, MappingMode mode, List<Integer> setupsPerSource) {
+    /**
+     * Creates a CombinedOrder for concatenating channels with setup filtering.
+     *
+     * @param sourcePaths     Absolute paths to source XML files, in order
+     * @param setupsPerSource Number of setups in each source after filtering (needed for mapping)
+     * @param setupIdMapping  Map from filtered (output) setup ID to original (source) setup ID.
+     *                        If null, all setups are included.
+     * @return CombinedOrder configured for channel concatenation with filtering
+     */
+    public static CombinedOrder forChannels(List<String> sourcePaths, List<Integer> setupsPerSource,
+                                            Map<Integer, Integer> setupIdMapping) {
+        return new CombinedOrder(sourcePaths, MappingMode.CONCATENATE_CHANNELS, setupsPerSource, setupIdMapping);
+    }
+
+    private CombinedOrder(List<String> sourcePaths, MappingMode mode, List<Integer> setupsPerSource,
+                          Map<Integer, Integer> setupIdMapping) {
         this.sourcePaths = new ArrayList<>(sourcePaths);
         this.mode = mode;
         this.setupsPerSource = setupsPerSource != null ? new ArrayList<>(setupsPerSource) : null;
+        this.setupIdMapping = setupIdMapping != null ? new HashMap<>(setupIdMapping) : null;
     }
 
     @Override
@@ -170,7 +204,7 @@ public class CombinedOrder implements ISetupOrder {
     /**
      * Maps for CONCATENATE_TIMEPOINTS mode.
      * Target timepoint = source index
-     * Target setupId = source setupId (unchanged)
+     * Target setupId = source setupId (or mapped if filtering is applied)
      */
     private ReorderedImageLoader.SpimDataViewId mapForConcatenateTimepoints(ViewId viewId) {
         int targetTimepoint = viewId.getTimePointId();
@@ -184,10 +218,21 @@ public class CombinedOrder implements ISetupOrder {
                     "Timepoint " + targetTimepoint + " out of range. Only " + loadedSources.size() + " sources available.");
         }
 
+        // Map the setup ID if filtering is applied
+        int sourceSetupId = targetSetupId;
+        if (setupIdMapping != null) {
+            Integer mappedId = setupIdMapping.get(targetSetupId);
+            if (mappedId == null) {
+                throw new IllegalArgumentException(
+                        "Setup ID " + targetSetupId + " not found in setup ID mapping");
+            }
+            sourceSetupId = mappedId;
+        }
+
         ReorderedImageLoader.SpimDataViewId result = new ReorderedImageLoader.SpimDataViewId();
         result.asd = loadedSources.get(sourceIndex);
-        // All sources have timepoint 0, setupId unchanged
-        result.viewId = new ViewId(0, targetSetupId);
+        // All sources have timepoint 0
+        result.viewId = new ViewId(0, sourceSetupId);
 
         return result;
     }
@@ -201,24 +246,35 @@ public class CombinedOrder implements ISetupOrder {
         int targetTimepoint = viewId.getTimePointId();
         int targetSetupId = viewId.getViewSetupId();
 
+        // Map the setup ID if filtering is applied
+        int mappedSetupId = targetSetupId;
+        if (setupIdMapping != null) {
+            Integer mapped = setupIdMapping.get(targetSetupId);
+            if (mapped == null) {
+                throw new IllegalArgumentException(
+                        "Setup ID " + targetSetupId + " not found in setup ID mapping");
+            }
+            mappedSetupId = mapped;
+        }
+
         // Find which source this setupId belongs to
         int sourceIndex = 0;
         int setupOffset = 0;
 
         for (int i = 0; i < setupsPerSource.size(); i++) {
             int setupsInThisSource = setupsPerSource.get(i);
-            if (targetSetupId < setupOffset + setupsInThisSource) {
+            if (mappedSetupId < setupOffset + setupsInThisSource) {
                 sourceIndex = i;
                 break;
             }
             setupOffset += setupsInThisSource;
         }
 
-        int sourceSetupId = targetSetupId - setupOffset;
+        int sourceSetupId = mappedSetupId - setupOffset;
 
         if (sourceIndex >= loadedSources.size()) {
             throw new IndexOutOfBoundsException(
-                    "SetupId " + targetSetupId + " out of range for available sources.");
+                    "SetupId " + mappedSetupId + " out of range for available sources.");
         }
 
         ReorderedImageLoader.SpimDataViewId result = new ReorderedImageLoader.SpimDataViewId();
@@ -240,6 +296,10 @@ public class CombinedOrder implements ISetupOrder {
 
     public List<Integer> getSetupsPerSource() {
         return setupsPerSource != null ? new ArrayList<>(setupsPerSource) : null;
+    }
+
+    public Map<Integer, Integer> getSetupIdMapping() {
+        return setupIdMapping != null ? new HashMap<>(setupIdMapping) : null;
     }
 
     public int getNumSources() {

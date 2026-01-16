@@ -77,6 +77,21 @@ import java.util.stream.IntStream;
  * AbstractSpimData<?> reloaded = new XmlIoSpimData().load("/path/to/combined.xml");
  * }</pre>
  *
+ * <h3>Example: Creating a timelapse with setup filtering (e.g., selecting specific wells)</h3>
+ * <pre>{@code
+ * // Select only specific setup IDs (e.g., wells 5, 10, 15 from a multi-well plate)
+ * List<Integer> selectedSetups = Arrays.asList(5, 10, 15);
+ *
+ * List<String> files = Arrays.asList(
+ *     "/path/to/timepoint_0.xml",
+ *     "/path/to/timepoint_1.xml"
+ * );
+ *
+ * // Create combined dataset with only the selected setups
+ * // The resulting dataset will have setup IDs [0, 1, 2] corresponding to original IDs [5, 10, 15]
+ * AbstractSpimData<?> filtered = CombinedSpimData.fromTimepoints(files, selectedSetups);
+ * }</pre>
+ *
  * <p><b>Note:</b> Serialization uses {@link ch.epfl.biop.spimdata.reordered.XmlIoReorderedImgLoader}
  * which is automatically registered via the {@link mpicbg.spim.data.generic.sequence.ImgLoaderIo} annotation.
  */
@@ -98,18 +113,36 @@ public class CombinedSpimData {
      * @return Combined SpimData with concatenated timepoints
      */
     public static AbstractSpimData<?> fromTimepoints(List<String> xmlPaths) {
-        return fromTimepoints(xmlPaths, DEFAULT_NUM_FETCHER_THREADS, DEFAULT_NUM_PRIORITIES);
+        return fromTimepoints(xmlPaths, null, DEFAULT_NUM_FETCHER_THREADS, DEFAULT_NUM_PRIORITIES);
+    }
+
+    /**
+     * Creates a combined SpimData where each source file becomes a timepoint, with setup filtering.
+     * <p>
+     * All source files must have identical structure (same ViewSetups).
+     * Each source file is expected to have timepoint 0.
+     * The resulting dataset will have timepoints [0, 1, 2, ...] corresponding to the file order.
+     * Only the specified setup IDs will be included in the combined dataset.
+     *
+     * @param xmlPaths Absolute paths to source XML files, in temporal order
+     * @param setupIds List of setup IDs to include from each source. If null, all setups are included.
+     * @return Combined SpimData with concatenated timepoints and filtered setups
+     */
+    public static AbstractSpimData<?> fromTimepoints(List<String> xmlPaths, List<Integer> setupIds) {
+        return fromTimepoints(xmlPaths, setupIds, DEFAULT_NUM_FETCHER_THREADS, DEFAULT_NUM_PRIORITIES);
     }
 
     /**
      * Creates a combined SpimData where each source file becomes a timepoint.
      *
      * @param xmlPaths          Absolute paths to source XML files, in temporal order
+     * @param setupIds          List of setup IDs to include. If null, all setups are included.
      * @param numFetcherThreads Number of fetcher threads for the image loader
      * @param numPriorities     Number of priority levels for the cache
      * @return Combined SpimData with concatenated timepoints
      */
-    public static AbstractSpimData<?> fromTimepoints(List<String> xmlPaths, int numFetcherThreads, int numPriorities) {
+    public static AbstractSpimData<?> fromTimepoints(List<String> xmlPaths, List<Integer> setupIds,
+                                                     int numFetcherThreads, int numPriorities) {
         if (xmlPaths == null || xmlPaths.isEmpty()) {
             throw new IllegalArgumentException("At least one source path is required");
         }
@@ -119,19 +152,44 @@ public class CombinedSpimData {
         // Load first source to get structure
         AbstractSpimData<?> firstSource = loadSpimData(xmlPaths.get(0));
 
+        // Copy and optionally filter ViewSetups from first source
+        List<ViewSetup> viewSetups;
+        Map<Integer, Integer> setupIdMapping = null;
+
+        if (setupIds != null && !setupIds.isEmpty()) {
+            logger.info("Filtering to {} selected setups", setupIds.size());
+            viewSetups = new ArrayList<>();
+            setupIdMapping = new HashMap<>();
+
+            // Create filtered ViewSetups with new sequential IDs
+            int newSetupId = 0;
+            for (Integer originalSetupId : setupIds) {
+                BasicViewSetup bvs = firstSource.getSequenceDescription().getViewSetups().get(originalSetupId);
+                if (bvs == null) {
+                    logger.warn("Setup ID {} not found in source, skipping", originalSetupId);
+                    continue;
+                }
+
+                ViewSetup filteredSetup = createViewSetup(bvs, newSetupId);
+                viewSetups.add(filteredSetup);
+                setupIdMapping.put(newSetupId, originalSetupId);
+                newSetupId++;
+            }
+        } else {
+            viewSetups = copyViewSetups(firstSource);
+        }
+
         // Create CombinedOrder
-        CombinedOrder order = CombinedOrder.forTimepoints(xmlPaths);
+        CombinedOrder order = CombinedOrder.forTimepoints(xmlPaths, setupIdMapping);
         order.initialize();
 
         // Build unified TimePoints
         List<TimePoint> timePoints = new ArrayList<>();
         IntStream.range(0, xmlPaths.size()).forEach(tp -> timePoints.add(new TimePoint(tp)));
 
-        // Copy ViewSetups from first source
-        List<ViewSetup> viewSetups = copyViewSetups(firstSource);
-
         // Build ViewRegistrations from all sources
-        List<ViewRegistration> registrations = buildRegistrationsForTimepoints(order.getLoadedSources(), viewSetups);
+        List<ViewRegistration> registrations = buildRegistrationsForTimepoints(
+                order.getLoadedSources(), viewSetups, setupIdMapping);
 
         // Create SequenceDescription
         SequenceDescription sd = new SequenceDescription(
@@ -237,24 +295,28 @@ public class CombinedSpimData {
         }
     }
 
+    private static ViewSetup createViewSetup(BasicViewSetup bvs, int newSetupId) {
+        ViewSetup newViewSetup = new ViewSetup(
+                newSetupId,
+                bvs.getName(),
+                bvs.getSize(),
+                bvs.getVoxelSize(),
+                bvs.getAttribute(Channel.class),
+                bvs.getAttribute(Angle.class),
+                bvs.getAttribute(Illumination.class)
+        );
+
+        // Copy all attributes
+        bvs.getAttributes().forEach((name, entity) -> newViewSetup.setAttribute(entity));
+
+        return newViewSetup;
+    }
+
     private static List<ViewSetup> copyViewSetups(AbstractSpimData<?> source) {
         List<ViewSetup> viewSetups = new ArrayList<>();
 
         for (BasicViewSetup bvs : source.getSequenceDescription().getViewSetupsOrdered()) {
-            ViewSetup newViewSetup = new ViewSetup(
-                    bvs.getId(),
-                    bvs.getName(),
-                    bvs.getSize(),
-                    bvs.getVoxelSize(),
-                    bvs.getAttribute(Channel.class),
-                    bvs.getAttribute(Angle.class),
-                    bvs.getAttribute(Illumination.class)
-            );
-
-            // Copy all attributes
-            bvs.getAttributes().forEach((name, entity) -> newViewSetup.setAttribute(entity));
-
-            viewSetups.add(newViewSetup);
+            viewSetups.add(createViewSetup(bvs, bvs.getId()));
         }
 
         return viewSetups;
@@ -326,7 +388,8 @@ public class CombinedSpimData {
 
     private static List<ViewRegistration> buildRegistrationsForTimepoints(
             List<AbstractSpimData<?>> sources,
-            List<ViewSetup> viewSetups) {
+            List<ViewSetup> viewSetups,
+            Map<Integer, Integer> setupIdMapping) {
 
         List<ViewRegistration> registrations = new ArrayList<>();
 
@@ -336,14 +399,21 @@ public class CombinedSpimData {
 
             // For each setup, copy the registration from the source (at timepoint 0)
             for (ViewSetup vs : viewSetups) {
-                int setupId = vs.getId();
-                ViewId sourceViewId = new ViewId(0, setupId);
+                int newSetupId = vs.getId();
+
+                // Get the original setup ID (if filtering was applied)
+                int originalSetupId = newSetupId;
+                if (setupIdMapping != null) {
+                    originalSetupId = setupIdMapping.get(newSetupId);
+                }
+
+                ViewId sourceViewId = new ViewId(0, originalSetupId);
 
                 ViewRegistration sourceReg = source.getViewRegistrations().getViewRegistration(sourceViewId);
                 if (sourceReg != null) {
                     registrations.add(new ViewRegistration(
                             newTimepoint,
-                            setupId,
+                            newSetupId,
                             sourceReg.getModel()
                     ));
                 }
