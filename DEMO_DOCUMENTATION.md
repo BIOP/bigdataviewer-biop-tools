@@ -54,12 +54,38 @@ The generator will automatically:
 2. List the command parameters with their descriptions
 3. Generate equivalent Groovy scripting code
 
+### Manual Step Markers
+
+For steps that require user interaction (like drawing annotations, training classifiers, etc.), use `@doc-manual`:
+
+```java
+// @doc-step: Train a Classifier
+// Use Labkit's interactive tools to train a pixel classifier.
+// @doc-manual: Perform the following steps in Labkit:
+// 1. Select the "background" label in the Labels panel
+// 2. Use the brush tool to draw scribbles on background regions
+// 3. Select the "foreground" label
+// 4. Draw scribbles on the cells/structures you want to segment
+// 5. Click "Train Classifier" to see the segmentation result
+
+DemoHelper.pauseForUserAction("DemoLabkit_03_trained",
+        "Please train a classifier in Labkit:\n\n" +
+        "1. Select the 'background' label...\n" +
+        "...");
+```
+
+The `pauseForUserAction()` method:
+- Prints instructions to the console
+- Waits for the user to press Enter
+- Automatically captures screenshots after the user action
+
 ### Rules
 
 - `@doc-step:` must be at the start of a comment line (after `//`)
 - The text after `:` becomes the step title
 - Subsequent comment lines (until code or another marker) become the description
 - `@doc-command:` specifies the fully qualified class name of the command
+- `@doc-manual:` marks a step as requiring manual user action; subsequent lines become the instruction list
 - Step descriptions support multiple lines
 
 ## Generated Output for Commands
@@ -269,18 +295,29 @@ cmd.run("ch.epfl.biop.scijava.command.spimdata.LLS7OpenDatasetCommand", true,
 
 ## Tips
 
-1. **Wait times**: If windows aren't fully rendered, increase wait time:
+1. **Expand tree view**: Call this at the beginning of demos to show the full source hierarchy:
+   ```java
+   DemoHelper.expandTreeView(ij);  // Expands to depth 3 by default
+   ```
+
+2. **Wait times**: If windows aren't fully rendered, increase wait time:
    ```java
    DemoHelper.shot("prefix", 6000);  // Wait 6 seconds
    ```
 
-2. **Step numbering**: Use consistent two-digit numbering (01, 02, ...) to ensure correct ordering.
+3. **Step numbering**: Use consistent two-digit numbering (01, 02, ...) to ensure correct ordering.
 
-3. **Descriptive names**: Use meaningful step names for better screenshot filenames.
+4. **Descriptive names**: Use meaningful step names for better screenshot filenames.
 
-4. **One visual change per step**: Capture after each significant UI change for best documentation.
+5. **One visual change per step**: Capture after each significant UI change for best documentation.
 
-5. **Keep descriptions concise**: The description should explain what the step accomplishes, not repeat the code.
+6. **Keep descriptions concise**: The description should explain what the step accomplishes, not repeat the code.
+
+7. **Semi-interactive demos**: Use `pauseForUserAction()` for steps requiring manual input:
+   ```java
+   DemoHelper.pauseForUserAction("prefix_03_step",
+       "Instructions for the user...");
+   ```
 
 ## Troubleshooting
 

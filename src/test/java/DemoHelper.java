@@ -36,6 +36,7 @@ import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -43,8 +44,146 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 public class DemoHelper {
+
+    // ==================== SETUP METHODS ====================
+
+    /**
+     * Expands the SourceAndConverter tree view to a specified depth.
+     * Call this at the beginning of demos to make screenshots more informative.
+     *
+     * @param ij the ImageJ instance
+     * @param depth the depth to expand (typically 3)
+     */
+    public static void expandTreeView(ImageJ ij, int depth) {
+        SourceAndConverterService sacService = ij.get(SourceAndConverterService.class);
+        if (sacService != null && sacService.getUI() != null) {
+            sacService.getUI().expandToDepth(depth);
+        }
+    }
+
+    /**
+     * Expands the SourceAndConverter tree view to depth 3 (default).
+     *
+     * @param ij the ImageJ instance
+     */
+    public static void expandTreeView(ImageJ ij) {
+        expandTreeView(ij, 3);
+    }
+
+    // ==================== SEMI-INTERACTIVE METHODS ====================
+
+    /**
+     * Pauses the demo for manual user action, then captures screenshots.
+     * Shows a dialog with instructions and waits for the user to click "Done".
+     * After the user completes the action and clicks the button, screenshots are captured.
+     *
+     * <p>Example usage:</p>
+     * <pre>
+     * DemoHelper.pauseForUserAction("DemoLabkit_03_segmentation",
+     *     "Please perform the following steps in Labkit:\n" +
+     *     "1. Draw scribbles on the background (label 'background')\n" +
+     *     "2. Draw scribbles on the cells (label 'foreground')\n" +
+     *     "3. Click 'Train Classifier' to see the segmentation");
+     * </pre>
+     *
+     * @param prefix prefix for screenshot filenames
+     * @param instructions multi-line instructions for the user
+     */
+    public static void pauseForUserAction(String prefix, String instructions) {
+        pauseForUserAction(prefix, instructions, DEFAULT_WAIT_MS);
+    }
+
+    /**
+     * Pauses the demo for manual user action with custom wait time before screenshot.
+     *
+     * @param prefix prefix for screenshot filenames
+     * @param instructions multi-line instructions for the user
+     * @param waitMs milliseconds to wait after user clicks Done before capturing
+     */
+    public static void pauseForUserAction(String prefix, String instructions, long waitMs) {
+        showInstructionDialog("Manual Step Required", instructions, "Done - Capture Screenshots");
+        System.out.println("[Demo] Capturing screenshots...");
+        shot(prefix, waitMs);
+    }
+
+    /**
+     * Pauses the demo to display information without capturing screenshots.
+     * Useful for explaining what will happen next.
+     *
+     * @param message the message to display
+     */
+    public static void pause(String message) {
+        showInstructionDialog("Demo Paused", message, "Continue");
+    }
+
+    /**
+     * Shows a non-blocking instruction dialog and waits for the user to click the button.
+     *
+     * @param title the dialog title
+     * @param instructions the instructions to display
+     * @param buttonText the text for the action button
+     */
+    private static void showInstructionDialog(String title, String instructions, String buttonText) {
+        final CountDownLatch latch = new CountDownLatch(1);
+
+        SwingUtilities.invokeLater(() -> {
+            JFrame dialog = new JFrame(title);
+            dialog.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+            dialog.setAlwaysOnTop(true);
+
+            JPanel contentPanel = new JPanel(new BorderLayout(10, 10));
+            contentPanel.setBorder(new EmptyBorder(15, 15, 15, 15));
+
+            // Title label
+            JLabel titleLabel = new JLabel(title);
+            titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD, 16f));
+            contentPanel.add(titleLabel, BorderLayout.NORTH);
+
+            // Instructions text area
+            JTextArea textArea = new JTextArea(instructions);
+            textArea.setEditable(false);
+            textArea.setLineWrap(true);
+            textArea.setWrapStyleWord(true);
+            textArea.setBackground(contentPanel.getBackground());
+            textArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 13));
+            textArea.setBorder(new EmptyBorder(10, 0, 10, 0));
+
+            JScrollPane scrollPane = new JScrollPane(textArea);
+            scrollPane.setBorder(null);
+            scrollPane.setPreferredSize(new Dimension(450, 200));
+            contentPanel.add(scrollPane, BorderLayout.CENTER);
+
+            // Button panel
+            JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+            JButton doneButton = new JButton(buttonText);
+            doneButton.setFont(doneButton.getFont().deriveFont(Font.BOLD, 14f));
+            doneButton.setPreferredSize(new Dimension(220, 35));
+            doneButton.addActionListener(e -> {
+                dialog.dispose();
+                latch.countDown();
+            });
+            buttonPanel.add(doneButton);
+            contentPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+            dialog.setContentPane(contentPanel);
+            dialog.pack();
+            dialog.setLocationRelativeTo(null); // Center on screen
+            dialog.setVisible(true);
+
+            // Request focus on the button
+            doneButton.requestFocusInWindow();
+        });
+
+        // Wait for the user to click the button
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
 
     public static void closeFijiAndBdvs(ImageJ ij) {
         try {

@@ -152,22 +152,38 @@ public class DemoDocumentationGenerator {
                 DocStep step = new DocStep();
                 step.title = line.substring("// @doc-step:".length()).trim();
 
-                // Collect description lines
+                // Collect description lines and markers
                 StringBuilder description = new StringBuilder();
+                StringBuilder manualInstructions = new StringBuilder();
+                boolean inManualBlock = false;
                 i++;
                 while (i < lines.length) {
                     String descLine = lines[i].trim();
                     if (descLine.startsWith("// @doc-command:")) {
                         step.commandClass = descLine.substring("// @doc-command:".length()).trim();
                         i++;
+                    } else if (descLine.startsWith("// @doc-manual:")) {
+                        step.isManual = true;
+                        String manualText = descLine.substring("// @doc-manual:".length()).trim();
+                        if (!manualText.isEmpty()) {
+                            manualInstructions.append(manualText).append("\n");
+                        }
+                        inManualBlock = true;
+                        i++;
                     } else if (descLine.startsWith("//") && !descLine.startsWith("// @doc-")) {
-                        description.append(descLine.substring(2).trim()).append("\n");
+                        String text = descLine.substring(2).trim();
+                        if (inManualBlock) {
+                            manualInstructions.append(text).append("\n");
+                        } else {
+                            description.append(text).append("\n");
+                        }
                         i++;
                     } else {
                         break;
                     }
                 }
                 step.description = description.toString().trim();
+                step.manualInstructions = manualInstructions.toString().trim();
 
                 // Collect code until next @doc-step or end of method
                 StringBuilder code = new StringBuilder();
@@ -297,10 +313,24 @@ public class DemoDocumentationGenerator {
         // Steps
         int stepNumber = 1;
         for (DocStep step : steps) {
-            md.append("## Step ").append(stepNumber).append(": ").append(step.title).append("\n\n");
+            md.append("## Step ").append(stepNumber).append(": ").append(step.title);
+            if (step.isManual) {
+                md.append(" *(Manual)*");
+            }
+            md.append("\n\n");
 
             if (!step.description.isEmpty()) {
                 md.append(step.description).append("\n\n");
+            }
+
+            // If this is a manual step, add instructions callout
+            if (step.isManual && step.manualInstructions != null && !step.manualInstructions.isEmpty()) {
+                md.append("> **Manual Action Required**\n");
+                md.append(">\n");
+                for (String line : step.manualInstructions.split("\n")) {
+                    md.append("> ").append(line).append("\n");
+                }
+                md.append("\n");
             }
 
             // If this step has a command, add GUI and Groovy sections
@@ -464,6 +494,8 @@ public class DemoDocumentationGenerator {
         String description;
         String commandClass;
         String codeSnippet;
+        boolean isManual = false;
+        String manualInstructions;
     }
 
     private static class CommandInfo {
