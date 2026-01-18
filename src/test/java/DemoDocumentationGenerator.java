@@ -64,7 +64,7 @@ public class DemoDocumentationGenerator {
             System.exit(1);
         }*/
 
-        String demoClassName = "DemoLabKitIntegration";//args[0];
+        String demoClassName = "DemoLabKitSegmentation";//args[0];
         DemoDocumentationGenerator generator = new DemoDocumentationGenerator();
         generator.generate(demoClassName);
     }
