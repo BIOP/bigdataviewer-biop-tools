@@ -309,6 +309,7 @@ public class DemoDocumentationGenerator {
         md.append("## Prerequisites\n\n");
         md.append("- Fiji with BigDataViewer-Playground installed\n");
         md.append("- Internet connection (for downloading sample data)\n\n");
+        md.append("- Zeiss Quick Start CZI reader enabled (for proper CZI file handling)\n\n");
 
         // Steps
         int stepNumber = 1;

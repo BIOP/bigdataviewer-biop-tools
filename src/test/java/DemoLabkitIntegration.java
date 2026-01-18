@@ -24,15 +24,11 @@
  * #L%
  */
 
-import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.DatasetHelper;
-import ch.epfl.biop.labkit.SourcesInputImage;
-import ch.epfl.biop.scijava.command.spimdata.LLS7OpenDatasetCommand;
+import ch.epfl.biop.bdv.img.bioformats.command.CreateBdvDatasetBioFormatsCommand;
+import ch.epfl.biop.scijava.command.source.labkit.SourcesLabkitCommand;
 import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;
-import org.apache.commons.io.FilenameUtils;
-import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
-import sc.fiji.labkit.ui.LabkitFrame;
 
 import java.io.File;
 
@@ -57,7 +53,8 @@ public class DemoLabkitIntegration {
     public static void main(final String... args) throws Exception {
         // Create the ImageJ application context with all available services
         final ImageJ ij = new ImageJ();
-        ij.ui().showUI();
+        //ij.ui().showUI();
+        DemoHelper.startFiji(ij);
 
         demoLabkitWithSourceAndConverter(ij);
     }
@@ -78,57 +75,39 @@ public class DemoLabkitIntegration {
         // This dataset contains multi-channel Hela-Kyoto cells.
         // In your own workflow, you would use your local CZI files instead.
         File fileCZI = DatasetHelper
-                .getDataset("https://zenodo.org/records/14505724/files/Hela-Kyoto-1-Timepoint-LLS7.czi"); // Multi Channel
-                //.getDataset("https://zenodo.org/records/14903188/files/RBC_full_time_series.czi"); // Multi Timepoints
+                .getDataset("https://zenodo.org/records/14505724/files/Hela-Kyoto-1-Timepoint-LLS7.czi"); // Multi Channel, 1 timepoint
+                //.getDataset("https://zenodo.org/records/14903188/files/RBC_full_time_series.czi"); // Multi Timepoints, 1 channel
 
         // @doc-step: Open the LLS7 Dataset
-        // Load the CZI file using the LLS7 opener command.
-        // This command performs live deskewing of the lattice light sheet data
+        // Load the CZI file using the Bio-Formats opener command.
+        // This command performs live deskewing of the lattice light sheet data, if you are use the Zeiss Quick Start Reader
         // and registers the sources in BigDataViewer-Playground.
-        // @doc-command: ch.epfl.biop.scijava.command.spimdata.LLS7OpenDatasetCommand
-        ij.command().run(LLS7OpenDatasetCommand.class, true,
-                "czi_file", fileCZI,
-                "legacy_xy_mode", false).get();
+        // @doc-command: ch.epfl.biop.bdv.img.bioformats.command.CreateBdvDatasetBioFormatsCommand
+
+        String datasetName = fileCZI.getName();
+        ij.command().run(CreateBdvDatasetBioFormatsCommand.class, true,
+                "datasetname", datasetName,
+                "unit", "MICROMETER",
+                "files", new File[]{fileCZI},
+                "split_rgb_channels", false,
+                "auto_pyramidize", true,
+                "plane_origin_convention", "CENTER",
+                "disable_memo", false
+        ).get();
 
         DemoHelper.shot("DemoLabkitIntegration_02_dataset_loaded");
-
-        // @doc-step: Retrieve the Sources
-        // Get all SourceAndConverter objects from the service.
-        // These represent the image channels that were loaded.
-        String datasetName = FilenameUtils.removeExtension(fileCZI.getName());
-        SourceAndConverterService sacService = ij.context().getService(SourceAndConverterService.class);
-
-        // Get all sources under the dataset path (includes all channels)
-        SourceAndConverter[] sources = sacService.getSourceAndConverters().toArray(new SourceAndConverter[0]);
-
-        System.out.println("Loaded " + sources.length + " source(s) from dataset: " + datasetName);
-        for (int i = 0; i < sources.length; i++) {
-            System.out.println("  Channel " + i + ": " + sources[i].getSpimSource().getName());
-        }
-
-        // @doc-step: Create Labkit Input Image
-        // Wrap the sources in a SourcesInputImage, which adapts them
-        // for use with Labkit's segmentation interface.
-        // Using resolution level 0 (full resolution) and timepoint 0.
-        SourcesInputImage inputImage = new SourcesInputImage(sources, 0);
-
-        System.out.println("Created SourceAndConverterInputImage:");
-        System.out.println("  - Image dimensions: " + inputImage.imageForSegmentation().numDimensions() + "D");
-        System.out.println("  - Default labeling file: " + inputImage.getDefaultLabelingFilename());
 
         // @doc-step: Open in Labkit
         // Open Labkit with the input image for interactive segmentation.
         // You can now use Labkit's tools to create labels and train classifiers.
-        LabkitFrame labkitFrame = LabkitFrame.showForImage(ij.context(), inputImage);
+        // Sources can be selected thanks to their path in bigdataviewer-playground's treeview
+        // @doc-command: ch.epfl.biop.scijava.command.source.labkit.SourcesLabkitCommand
+        ij.command().run(SourcesLabkitCommand.class, true,
+                "sacs", datasetName,
+                "resolution_level", 0
+        ).get();
 
-        // Optional: Add a listener to handle when Labkit is closed
-        labkitFrame.onCloseListeners().addListener(() -> {
-            System.out.println("Labkit window closed");
-        });
-
-        System.out.println("Labkit opened successfully!");
-
-        DemoHelper.shot("DemoLabkitIntegration_05_labkit_open");
+        DemoHelper.shot("DemoLabkitIntegration_03_labkit_open");
 
         // @doc-step: Train a Classifier
         // Use Labkit's interactive tools to train a pixel classifier.
@@ -139,7 +118,7 @@ public class DemoLabkitIntegration {
         // 4. Draw scribbles on the cells/structures you want to segment
         // 5. Click "Train Classifier" to see the segmentation result
         // 6. Adjust scribbles as needed to improve the segmentation
-        DemoHelper.pauseForUserAction("DemoLabkitIntegration_06_classifier_trained",
+        DemoHelper.pauseForUserAction("DemoLabkitIntegration_04_classifier_trained",
                 "Please train a classifier in Labkit:\n\n" +
                 "1. Select the 'background' label in the Labels panel\n" +
                 "2. Use the brush tool (B) to draw scribbles on background regions\n" +
@@ -154,7 +133,7 @@ public class DemoLabkitIntegration {
         // 1. Go to Labkit menu: Segmentation > Save Classifier...
         // 2. Choose a location and filename (e.g., my_classifier.classifier)
         // 3. The classifier can be reloaded later or used in batch processing
-        DemoHelper.pauseForUserAction("DemoLabkitIntegration_07_classifier_saved",
+        DemoHelper.pauseForUserAction("DemoLabkitIntegration_05_classifier_saved",
                 "Please save your trained classifier:\n\n" +
                 "1. Go to Labkit menu: Segmentation > Save Classifier...\n" +
                 "2. Choose a location and filename (e.g., my_classifier.classifier)\n" +
