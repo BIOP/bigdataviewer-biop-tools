@@ -70,16 +70,28 @@ public class DemoLabkitIntegration {
      */
     public static void demoLabkitWithSourceAndConverter(ImageJ ij) throws Exception {
 
-        // Download and open the LLS7 dataset
+        // @doc-step: Download the Sample Dataset
+        // Download a sample LLS7 (Lattice Light Sheet 7) dataset from Zenodo.
+        // This dataset contains multi-channel Hela-Kyoto cells.
+        // In your own workflow, you would use your local CZI files instead.
         File fileCZI = DatasetHelper
                 .getDataset("https://zenodo.org/records/14505724/files/Hela-Kyoto-1-Timepoint-LLS7.czi"); // Multi Channel
                 //.getDataset("https://zenodo.org/records/14903188/files/RBC_full_time_series.czi"); // Multi Timepoints
 
+        // @doc-step: Open the LLS7 Dataset
+        // Load the CZI file using the LLS7 opener command.
+        // This command performs live deskewing of the lattice light sheet data
+        // and registers the sources in BigDataViewer-Playground.
+        // @doc-command: ch.epfl.biop.scijava.command.spimdata.LLS7OpenDatasetCommand
         ij.command().run(LLS7OpenDatasetCommand.class, true,
                 "czi_file", fileCZI,
                 "legacy_xy_mode", false).get();
 
-        // Get all sources from the SourceAndConverterService
+        DemoHelper.shot("DemoLabkitIntegration_01_dataset_loaded");
+
+        // @doc-step: Retrieve the Sources
+        // Get all SourceAndConverter objects from the service.
+        // These represent the image channels that were loaded.
         String datasetName = FilenameUtils.removeExtension(fileCZI.getName());
         SourceAndConverterService sacService = ij.context().getService(SourceAndConverterService.class);
 
@@ -91,15 +103,19 @@ public class DemoLabkitIntegration {
             System.out.println("  Channel " + i + ": " + sources[i].getSpimSource().getName());
         }
 
-        // Create the InputImage wrapper for Labkit
-        // Using resolution level 0 (full resolution) and timepoint 0
+        // @doc-step: Create Labkit Input Image
+        // Wrap the sources in a SourcesInputImage, which adapts them
+        // for use with Labkit's segmentation interface.
+        // Using resolution level 0 (full resolution) and timepoint 0.
         SourcesInputImage inputImage = new SourcesInputImage(sources, 0);
 
         System.out.println("Created SourceAndConverterInputImage:");
         System.out.println("  - Image dimensions: " + inputImage.imageForSegmentation().numDimensions() + "D");
         System.out.println("  - Default labeling file: " + inputImage.getDefaultLabelingFilename());
 
-        // Open Labkit with the input image
+        // @doc-step: Open in Labkit
+        // Open Labkit with the input image for interactive segmentation.
+        // You can now use Labkit's tools to create labels and train classifiers.
         LabkitFrame labkitFrame = LabkitFrame.showForImage(ij.context(), inputImage);
 
         // Optional: Add a listener to handle when Labkit is closed
@@ -108,5 +124,7 @@ public class DemoLabkitIntegration {
         });
 
         System.out.println("Labkit opened successfully!");
+
+        DemoHelper.shot("DemoLabkitIntegration_02_labkit_open");
     }
 }
