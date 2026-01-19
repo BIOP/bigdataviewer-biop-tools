@@ -99,7 +99,7 @@ public class FusedDemo {
                     .putMetadataFromSources(fused, UNITS.MICROMETER)
                     .defineWriteOptions()
                     //.savePath("C:\\Users\\chiarutt\\test.ome.tiff")
-                    .savePath("C:\\Users\\nicol\\Desktop\\test.ome.tiff")
+                    .savePath("C:\\Users\\nicolas\\Desktop\\test.ome.tiff")
                     .tileSize(128,128)
                     .nThreads(4)
                     .create().export();
