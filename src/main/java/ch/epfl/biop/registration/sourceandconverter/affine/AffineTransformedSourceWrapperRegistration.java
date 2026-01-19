@@ -33,6 +33,11 @@ public class AffineTransformedSourceWrapperRegistration extends AffineTransformS
         alreadyTransformedSources.keySet().forEach(sac -> SourceTransformHelper.set(at3d_in, new SourceAndConverterAndTimeRange<>(alreadyTransformedSources.get(sac), timePoint)));
     }
 
+    /**
+     * Returns a copy of the current affine transform.
+     *
+     * @return a copy of the affine transform
+     */
     public AffineTransform3D getAffineTransform() {
         return at3d.copy();
     }

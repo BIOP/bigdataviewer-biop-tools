@@ -84,6 +84,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * The first timepoint of each view setup is used to gather mipmap information etc.
  *
+ * @param <T> the type of setup image loader that extends AbstractViewerSetupImgLoader and MultiResolutionSetupImgLoader
  */
 
 public class  ReorderedImageLoader<T extends AbstractViewerSetupImgLoader & MultiResolutionSetupImgLoader> implements ViewerImgLoader,MultiResolutionImgLoader {

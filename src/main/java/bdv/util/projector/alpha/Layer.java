@@ -12,8 +12,9 @@ public interface Layer extends Comparable<Layer>{
     float getAlpha(); // 1 = fully opaque
 
     /**
+     * Returns the blending mode for this layer.
      *
-     * @return 0 if the
+     * @return 0 for SUM blending mode (currently only SUM is implemented)
      */
     int getBlendingMode(); // 0 = SUM, 1 = AVERAGE TODO , currently only sum
     boolean skip();

@@ -36,6 +36,8 @@ import static sc.fiji.bdvpg.scijava.services.ui.SourceAndConverterInspector.appe
  * Note: While input sources may have multiple resolution levels, this source
  * only provides a single resolution level (the one specified at construction).
  * </p>
+ *
+ * @param <T> the pixel type of the input sources
  */
 public class LabkitSource<T> implements Source<UnsignedByteType>, ISourceInspector {
 

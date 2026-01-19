@@ -41,6 +41,8 @@ import java.util.concurrent.atomic.AtomicLong;
  * each ImageProcessor when it is requested.
  * <p>
  * TODO : cache CZT key to make faster the duplication of identical frames
+ *
+ * @param <T> the pixel type of the source
  */
 
 public class SourceAndConverterVirtualStack<T extends NumericType<T> & NativeType<T>> extends VirtualStack {

@@ -9,6 +9,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
 
+/**
+ * Command to create a 3D affine transform from a 4x4 matrix specification.
+ */
 @Plugin(type = Command.class, initializer = "init",
         menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>New Affine Transform",
         description = "Creates an affine transform from a 4x4 matrix for use in other commands",
@@ -33,6 +36,12 @@ public class AffineTransformCreatorCommand implements Command {
         at3d.set(toDouble());
     }
 
+    /**
+     * Converts the input string matrix to a double array.
+     * Handles both comma-separated matrix values and AffineTransform3D toString() format.
+     *
+     * @return array of 16 doubles representing the 4x4 transformation matrix
+     */
     public double[] toDouble() {
         String inputString = string_matrix;
         // Test if the String is written using AffineTransform3D toString() method

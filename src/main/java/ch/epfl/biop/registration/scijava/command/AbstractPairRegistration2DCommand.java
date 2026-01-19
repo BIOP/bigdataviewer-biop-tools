@@ -18,6 +18,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Abstract base class for 2D registration commands that operate on registration pairs.
+ * Provides the common framework for executing pair-based registrations.
+ */
 abstract public class AbstractPairRegistration2DCommand implements Command {
 
     @Parameter
@@ -67,16 +71,48 @@ abstract public class AbstractPairRegistration2DCommand implements Command {
 
     }
 
+    /**
+     * Adds registration-specific parameters to the provided map.
+     *
+     * @param parameters the map to populate with registration parameters
+     */
     abstract protected void addRegistrationParameters(Map<String, Object> parameters);
 
+    /**
+     * Creates and returns the registration instance to be used.
+     *
+     * @return the registration object
+     */
     abstract Registration<SourceAndConverter<?>[]> getRegistration();
 
+    /**
+     * Returns the sources processor for the fixed image.
+     *
+     * @return the processor for fixed sources
+     */
     abstract protected SourcesProcessor getSourcesProcessorFixed();
 
+    /**
+     * Returns the sources processor for the moving image.
+     *
+     * @return the processor for moving sources
+     */
     abstract protected SourcesProcessor getSourcesProcessorMoving();
 
+    /**
+     * Validates the registration parameters and configuration.
+     *
+     * @return true if validation succeeds, false otherwise
+     */
     abstract protected boolean validate();
 
+    /**
+     * Converts a map of objects to a map of strings using the SciJava convert service.
+     *
+     * @param ctx the SciJava context
+     * @param params the map of parameters to convert
+     * @return a map with string values
+     */
     public static Map<String,String> convertToString(Context ctx, Map<String, Object> params) {
         Map<String,String> convertedParams = new HashMap<>();
 
@@ -87,6 +123,15 @@ abstract public class AbstractPairRegistration2DCommand implements Command {
         return convertedParams;
     }
 
+    /**
+     * Creates a channel selector from a CSV string of channel indices.
+     *
+     * @param channelsCsv comma-separated list of channel indices
+     * @param nChannels total number of available channels
+     * @return a SourcesChannelsSelect processor
+     * @throws NumberFormatException if the CSV contains non-numeric values
+     * @throws IndexOutOfBoundsException if channel indices are out of range
+     */
     protected static SourcesChannelsSelect getChannelProcessorFromCsv(String channelsCsv, int nChannels) throws NumberFormatException, IndexOutOfBoundsException {
         List<Integer> channels = Arrays.stream(channelsCsv.split(","))
                 .map(Integer::parseInt)

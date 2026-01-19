@@ -175,6 +175,11 @@ public interface Registration<T> {
       return this.getClass().getSimpleName();
     }
 
+    /**
+     * Sets the name of this registration instance.
+     *
+     * @param name the name to assign to this registration
+     */
     default void setRegistrationName(String name) {
 
     }

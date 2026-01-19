@@ -29,6 +29,8 @@ import java.util.stream.Collectors;
 
 /**
  * Reorients an ImagePlus in 3D
+ *
+ * @param <T> the pixel type of the image
  */
 
 @Plugin(type = BdvPlaygroundActionCommand.class,

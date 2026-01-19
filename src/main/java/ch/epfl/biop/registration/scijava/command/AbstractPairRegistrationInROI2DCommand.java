@@ -14,6 +14,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Abstract base class for 2D registration commands that operate within a region of interest.
+ * Extends the pair registration to allow defining an ROI for the registration area.
+ */
 abstract public class AbstractPairRegistrationInROI2DCommand extends AbstractPairRegistration2DCommand {
 
     @Parameter(label = "ROI Mode",
@@ -60,6 +64,11 @@ abstract public class AbstractPairRegistrationInROI2DCommand extends AbstractPai
         addRegistrationSpecificParametersExceptRoi(parameters);
     }
 
+    /**
+     * Adds registration-specific parameters excluding ROI parameters.
+     *
+     * @param parameters the map to populate with additional registration parameters
+     */
     abstract protected void addRegistrationSpecificParametersExceptRoi(Map<String, Object> parameters);
 
     void setIntersectionAsROI() {

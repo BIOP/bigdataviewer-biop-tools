@@ -60,8 +60,14 @@ import static bdv.util.source.alpha.AlphaSourceHelper.ALPHA_SOURCE_KEY;
 
 public class AlphaBdvSupplier implements IBdvSupplier {
 
+    /** Serializable BDV options for alpha blending configuration. */
     public final AlphaSerializableBdvOptions sOptions;
 
+    /**
+     * Creates a new AlphaBdvSupplier with the specified options.
+     *
+     * @param sOptions the serializable BDV options
+     */
     public AlphaBdvSupplier(AlphaSerializableBdvOptions sOptions) {
         this.sOptions = sOptions;
     }
@@ -189,6 +195,9 @@ public class AlphaBdvSupplier implements IBdvSupplier {
         return bdvh;
     }
 
+    /**
+     * Metadata manager for grouping sources into layers with alpha blending controls.
+     */
     public static class GroupLayerMetadata implements LayerMetadata, ViewerStateChangeListener {
 
         final ViewerPanel viewer;
@@ -200,6 +209,12 @@ public class AlphaBdvSupplier implements IBdvSupplier {
 
         final JLabel[] sliderLabels;
 
+        /**
+         * Creates metadata for managing source groups and layers.
+         *
+         * @param viewer the BDV viewer panel
+         * @param panel the card panel for UI components
+         */
         public GroupLayerMetadata(ViewerPanel viewer, CardPanel panel) {
             this.viewer = viewer;
             defaultLayer = new SourceGroupLayer(viewer, new SourceGroup(), -1, "Default");
@@ -216,6 +231,9 @@ public class AlphaBdvSupplier implements IBdvSupplier {
             SwingUtilities.invokeLater(() -> panel.addCard("Group Opacity", sliders, true));
         }
 
+        /**
+         * Builds layer objects for all source groups in the viewer.
+         */
         public void buildLayers() {
             List<SourceGroup> groups = viewer.state().getGroups();
             for (int i=0;i<groups.size();i++) {
@@ -228,6 +246,9 @@ public class AlphaBdvSupplier implements IBdvSupplier {
             }
         }
 
+        /**
+         * Builds the mapping from sources to their groups.
+         */
         public void buildMap() {
             // Issue : one source can belong to multiple groups, but only to one layer TODO
             sourceToGroup.clear();
@@ -272,6 +293,9 @@ public class AlphaBdvSupplier implements IBdvSupplier {
         }
     }
 
+    /**
+     * Represents a layer for a source group with alpha blending control.
+     */
     public static class SourceGroupLayer implements Layer {
 
         final ViewerPanel viewer;
@@ -282,6 +306,14 @@ public class AlphaBdvSupplier implements IBdvSupplier {
         final int id;
         String name;
 
+        /**
+         * Creates a new source group layer.
+         *
+         * @param viewer the BDV viewer panel
+         * @param group the source group
+         * @param id the layer ID
+         * @param name the layer name
+         */
         public SourceGroupLayer(ViewerPanel viewer, SourceGroup group, int id, String name) {
             this.name = name;
             this.viewer = viewer;
@@ -295,10 +327,20 @@ public class AlphaBdvSupplier implements IBdvSupplier {
             sliderPanel.add(slider);
         }
 
+        /**
+         * Returns the source group associated with this layer.
+         *
+         * @return the source group
+         */
         public SourceGroup getGroup() {
             return group;
         }
 
+        /**
+         * Returns the UI slider component for controlling layer opacity.
+         *
+         * @return the slider panel component
+         */
         public JComponent getSlider() {
             return sliderPanel;
         }
@@ -308,6 +350,11 @@ public class AlphaBdvSupplier implements IBdvSupplier {
             return alpha;
         }
 
+        /**
+         * Sets the alpha value for this layer and triggers a repaint.
+         *
+         * @param alpha the alpha value (0.0 to 1.0)
+         */
         public void setAlpha(float alpha) {
             if (alpha!=this.alpha) {
                 this.alpha = alpha;
@@ -315,6 +362,9 @@ public class AlphaBdvSupplier implements IBdvSupplier {
             }
         }
 
+        /**
+         * Updates the layer label to reflect the current group name.
+         */
         public void nameChanged() {
             label.setText(viewer.state().getGroupName(group));
         }
@@ -326,6 +376,11 @@ public class AlphaBdvSupplier implements IBdvSupplier {
 
         boolean active = true;
 
+        /**
+         * Sets whether this layer is active.
+         *
+         * @param active true to activate, false to deactivate
+         */
         public void setActive(boolean active) {
             this.active = active;
         }
@@ -342,10 +397,18 @@ public class AlphaBdvSupplier implements IBdvSupplier {
         }
     }
 
+    /**
+     * Synchronizes alpha sources with viewer state changes.
+     */
     public static class AlphaSourcesSynchronizer implements ViewerStateChangeListener {
 
         final BdvHandle bdvh;
 
+        /**
+         * Creates a new synchronizer for alpha sources.
+         *
+         * @param bdvh the BDV handle
+         */
         public AlphaSourcesSynchronizer(BdvHandle bdvh) {
             this.bdvh = bdvh;
         }

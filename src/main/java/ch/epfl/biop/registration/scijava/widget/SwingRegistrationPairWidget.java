@@ -42,6 +42,7 @@ import javax.swing.*;
 import java.util.List;
 
 /**
+ * Swing widget for selecting registration pairs in the user interface.
  *
  * @author Nicolas Chiaruttini
  */

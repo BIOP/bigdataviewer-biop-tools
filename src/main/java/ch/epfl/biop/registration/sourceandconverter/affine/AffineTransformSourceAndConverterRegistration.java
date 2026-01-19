@@ -12,10 +12,16 @@ import sc.fiji.persist.ScijavaGsonHelper;
 
 import java.util.ArrayList;
 
+/**
+ * Abstract base class for registrations that use affine transformations.
+ * Provides common functionality for affine-based source and converter registrations.
+ */
 abstract public class AffineTransformSourceAndConverterRegistration extends SourceAndConverterRegistration {
 
+    /** The affine transformation applied by this registration. */
     protected AffineTransform3D at3d = new AffineTransform3D();
 
+    /** The time point at which the registration is applied. */
     @SuppressWarnings("CanBeFinal")
     public int timePoint = 0;
 
