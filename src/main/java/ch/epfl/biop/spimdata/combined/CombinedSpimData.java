@@ -60,7 +60,7 @@ import java.util.stream.IntStream;
  *   <li>{@link #fromChannels(List)}: Combine multiple files as separate channels</li>
  * </ul>
  *
- * <h3>Example: Creating and saving a timelapse from multiple files</h3>
+ * <h2>Example: Creating and saving a timelapse from multiple files</h2>
  * <pre>{@code
  * // Create combined dataset
  * List<String> files = Arrays.asList(
@@ -77,7 +77,7 @@ import java.util.stream.IntStream;
  * AbstractSpimData<?> reloaded = new XmlIoSpimData().load("/path/to/combined.xml");
  * }</pre>
  *
- * <h3>Example: Creating a timelapse with setup filtering (e.g., selecting specific wells)</h3>
+ * <h2>Example: Creating a timelapse with setup filtering (e.g., selecting specific wells)</h2>
  * <pre>{@code
  * // Select only specific setup IDs (e.g., wells 5, 10, 15 from a multi-well plate)
  * List<Integer> selectedSetups = Arrays.asList(5, 10, 15);
