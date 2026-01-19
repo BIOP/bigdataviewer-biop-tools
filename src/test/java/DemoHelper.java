@@ -87,13 +87,21 @@ public class DemoHelper {
      *     "1. Draw scribbles on the background (label 'background')\n" +
      *     "2. Draw scribbles on the cells (label 'foreground')\n" +
      *     "3. Click 'Train Classifier' to see the segmentation");
+     *
+     * // With window filtering:
+     * DemoHelper.pauseForUserAction("DemoLabkit_03_segmentation",
+     *     "Instructions...",
+     *     "Labkit");  // Only capture Labkit windows
      * </pre>
      *
      * @param prefix prefix for screenshot filenames
      * @param instructions multi-line instructions for the user
+     * @param titleFilters optional filters - only windows whose title contains one of these strings will be captured
      */
-    public static void pauseForUserAction(String prefix, String instructions) {
-        pauseForUserAction(prefix, instructions, DEFAULT_WAIT_MS);
+    public static void pauseForUserAction(String prefix, String instructions, String... titleFilters) {
+        showInstructionDialog("Manual Step Required", instructions, "Done - Capture Screenshots");
+        System.out.println("[Demo] Capturing screenshots...");
+        shot(prefix, titleFilters);
     }
 
     /**
@@ -102,11 +110,12 @@ public class DemoHelper {
      * @param prefix prefix for screenshot filenames
      * @param instructions multi-line instructions for the user
      * @param waitMs milliseconds to wait after user clicks Done before capturing
+     * @param titleFilters optional filters - only windows whose title contains one of these strings will be captured
      */
-    public static void pauseForUserAction(String prefix, String instructions, long waitMs) {
+    public static void pauseForUserActionWithWait(String prefix, String instructions, long waitMs, String... titleFilters) {
         showInstructionDialog("Manual Step Required", instructions, "Done - Capture Screenshots");
         System.out.println("[Demo] Capturing screenshots...");
-        shot(prefix, waitMs);
+        shotWithWait(prefix, waitMs, titleFilters);
     }
 
     /**
@@ -247,41 +256,53 @@ public class DemoHelper {
     // ==================== ONE-LINER METHODS ====================
 
     /**
-     * One-liner to capture all visible windows with a prefix.
-     * Waits for rendering, captures all JFrames, and prints results.
+     * Captures all visible windows with a prefix.
+     * Waits for rendering, captures JFrames, and prints results.
      * <p>
-     * Example usage: {@code ScreenshotUtility.shot("MyDemo");}
+     * Example usage:
+     * <pre>
+     * DemoHelper.shot("MyDemo_01_step");                           // All windows
+     * DemoHelper.shot("MyDemo_01_step", "BDV", "Labkit");          // Only BDV and Labkit windows
+     * DemoHelper.shot("MyDemo_01_step", "ImageJ");                 // Only ImageJ window
+     * </pre>
      *
      * @param prefix prefix for screenshot filenames (e.g., demo class name)
+     * @param titleFilters optional filters - only windows whose title contains one of these strings will be captured.
+     *                     If empty, all visible windows are captured.
      */
-    public static void shot(String prefix) {
-        shot(prefix, DEFAULT_WAIT_MS);
+    public static void shot(String prefix, String... titleFilters) {
+        shot(DEFAULT_OUTPUT_DIR, prefix, DEFAULT_WAIT_MS, titleFilters);
     }
 
     /**
-     * One-liner to capture all visible windows with a prefix and custom wait time.
+     * Captures windows with a prefix and custom wait time.
      * <p>
-     * Example usage: {@code ScreenshotUtility.shot("MyDemo", 2000);}
+     * Example usage: {@code DemoHelper.shot("MyDemo", 2000, "BDV");}
      *
      * @param prefix prefix for screenshot filenames
      * @param waitMs milliseconds to wait before capturing
+     * @param titleFilters optional filters - only windows whose title contains one of these strings will be captured
      */
-    public static void shot(String prefix, long waitMs) {
-        shot(DEFAULT_OUTPUT_DIR, prefix, waitMs);
+    public static void shotWithWait(String prefix, long waitMs, String... titleFilters) {
+        shot(DEFAULT_OUTPUT_DIR, prefix, waitMs, titleFilters);
     }
 
     /**
-     * One-liner to capture all visible windows to a custom directory.
+     * Captures windows to a custom directory with filtering.
      *
      * @param outputDir directory to save screenshots
      * @param prefix prefix for screenshot filenames
      * @param waitMs milliseconds to wait before capturing
+     * @param titleFilters optional filters - only windows whose title contains one of these strings will be captured
      */
-    public static void shot(File outputDir, String prefix, long waitMs) {
+    public static void shot(File outputDir, String prefix, long waitMs, String... titleFilters) {
         try {
             waitFor(waitMs);
-            List<File> files = captureAllFramesOffscreen(outputDir, prefix);
-            System.out.println("[Screenshot] Captured " + files.size() + " frame(s) with prefix '" + prefix + "':");
+            List<File> files = captureAllFramesOffscreen(outputDir, prefix, titleFilters);
+            String filterInfo = (titleFilters.length > 0)
+                    ? " (filtered by: " + String.join(", ", titleFilters) + ")"
+                    : "";
+            System.out.println("[Screenshot] Captured " + files.size() + " frame(s) with prefix '" + prefix + "'" + filterInfo + ":");
             for (File f : files) {
                 System.out.println("  -> " + f.getPath());
             }
@@ -353,33 +374,72 @@ public class DemoHelper {
      * @return list of all visible JFrame instances
      */
     public static List<JFrame> getAllVisibleFrames() {
+        return getFilteredVisibleFrames();
+    }
+
+    /**
+     * Gets visible JFrames filtered by title.
+     * If no filters are provided, returns all visible frames.
+     *
+     * @param titleFilters optional filters - only frames whose title contains one of these strings are returned
+     * @return list of matching visible JFrame instances
+     */
+    public static List<JFrame> getFilteredVisibleFrames(String... titleFilters) {
         List<JFrame> frames = new ArrayList<>();
         for (Window window : Window.getWindows()) {
             if (window instanceof JFrame && window.isVisible()) {
-                frames.add((JFrame) window);
+                JFrame frame = (JFrame) window;
+                if (matchesTitleFilter(frame.getTitle(), titleFilters)) {
+                    frames.add(frame);
+                }
             }
         }
         return frames;
     }
 
     /**
-     * Captures screenshots of all visible JFrames and saves them to a directory.
+     * Checks if a window title matches any of the provided filters.
+     *
+     * @param title the window title to check
+     * @param filters the filters to match against (case-insensitive, partial match)
+     * @return true if filters is empty OR title contains any of the filter strings
+     */
+    private static boolean matchesTitleFilter(String title, String... filters) {
+        if (filters == null || filters.length == 0) {
+            return true; // No filters = match all
+        }
+        if (title == null) {
+            return false;
+        }
+        String lowerTitle = title.toLowerCase();
+        for (String filter : filters) {
+            if (filter != null && lowerTitle.contains(filter.toLowerCase())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Captures screenshots of visible JFrames and saves them to a directory.
      * Files are named based on the frame title or a generated index.
      *
      * @param outputDir the directory to save screenshots to
      * @param prefix optional prefix for filenames (can be null)
      * @param useRobot if true, uses Robot for screen capture; if false, uses offscreen painting
+     * @param titleFilters optional filters - only windows whose title contains one of these strings will be captured
      * @return list of files that were created
      * @throws AWTException if Robot capture is used and platform doesn't support it
      * @throws IOException if files cannot be written
      */
-    public static List<File> captureAllFrames(File outputDir, String prefix, boolean useRobot)
+    public static List<File> captureAllFrames(File outputDir, String prefix, boolean useRobot, String... titleFilters)
             throws AWTException, IOException {
         List<File> capturedFiles = new ArrayList<>();
-        List<JFrame> frames = getAllVisibleFrames();
+        List<JFrame> frames = getFilteredVisibleFrames(titleFilters);
 
         int index = 0;
         for (JFrame frame : frames) {
+            System.out.println(frame.getTitle());
             String filename = generateFilename(frame, prefix, index);
             File outputFile = new File(outputDir, filename);
 
@@ -397,17 +457,18 @@ public class DemoHelper {
     }
 
     /**
-     * Captures screenshots of all visible JFrames using offscreen painting.
+     * Captures screenshots of visible JFrames using offscreen painting.
      * This is the preferred method for CI/automated environments.
      *
      * @param outputDir the directory to save screenshots to
      * @param prefix optional prefix for filenames (can be null)
+     * @param titleFilters optional filters - only windows whose title contains one of these strings will be captured
      * @return list of files that were created
      * @throws IOException if files cannot be written
      */
-    public static List<File> captureAllFramesOffscreen(File outputDir, String prefix) throws IOException {
+    public static List<File> captureAllFramesOffscreen(File outputDir, String prefix, String... titleFilters) throws IOException {
         try {
-            return captureAllFrames(outputDir, prefix, false);
+            return captureAllFrames(outputDir, prefix, false, titleFilters);
         } catch (AWTException e) {
             // This shouldn't happen with offscreen capture, but just in case
             throw new IOException("Unexpected AWTException during offscreen capture", e);

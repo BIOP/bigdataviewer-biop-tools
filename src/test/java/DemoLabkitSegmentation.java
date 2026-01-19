@@ -72,16 +72,20 @@ public class DemoLabkitSegmentation {
      */
     public static void runSegmentationDemo(ImageJ ij) throws Exception {
         // Expand tree view for better screenshots
-        DemoHelper.expandTreeView(ij);
+        DemoHelper.expandTreeView(ij,5);
 
-        // Get services once for reuse
+        // @doc-step: Get services once for reuse
+        // You can also get the services at the beginning of scripts by
+        // using scjava parameters:
+        // #@SourceAndConverterService source_service
+        // #@SourceAndConverterBdvDisplayService display_service
         SourceAndConverterService sacService = ij.get(SourceAndConverterService.class);
         SourceAndConverterBdvDisplayService displayService = ij.get(SourceAndConverterBdvDisplayService.class);
 
         // @doc-step: Download the Sample Dataset
         // Download a sample LLS7 (Lattice Light Sheet 7) dataset from Zenodo.
         // This dataset contains multi-channel Hela-Kyoto cells.
-        // In your own workflow, you would use your local CZI files instead.
+        // In your own workflow, you would use your local file instead.
         File fileCZI = DatasetHelper
                 .getDataset("https://zenodo.org/records/14505724/files/Hela-Kyoto-1-Timepoint-LLS7.czi");
 
@@ -100,7 +104,7 @@ public class DemoLabkitSegmentation {
                 "disable_memo", false
         ).get();
 
-        DemoHelper.shot("DemoLabkitSegmentation_02_dataset_loaded");
+        DemoHelper.shot("DemoLabkitSegmentation_03_dataset_loaded", "BDV Sources");
 
         // @doc-step: Apply the Labkit Classifier
         // Apply a pre-trained Labkit classifier to the sources.
@@ -120,7 +124,7 @@ public class DemoLabkitSegmentation {
                 "use_gpu", true
         ).get().getOutput("sac_out");
 
-        DemoHelper.shot("DemoLabkitSegmentation_03_classifier_applied");
+        //DemoHelper.shot("DemoLabkitSegmentation_04_classifier_applied", "BigDataViewer");
 
         // @doc-step: Display Sources in BigDataViewer
         // Show both the original sources and the classified result in BDV.
@@ -139,9 +143,9 @@ public class DemoLabkitSegmentation {
         BdvHandle bdvHandle = displayService.getActiveBdv();
         new ViewerTransformAdjuster(bdvHandle, classifiedSource).run();
 
-        Thread.sleep(4000); // Wait for classification to occur before snapshoting
+        Thread.sleep(6000); // Wait for classification to occur before snapshoting
 
-        DemoHelper.shot("DemoLabkitSegmentation_04_bdv_display");
+        DemoHelper.shot("DemoLabkitSegmentation_05_bdv_display", "BigDataViewer");
 
         System.out.println("Demo completed! The segmentation is computed lazily as you navigate.");
     }
