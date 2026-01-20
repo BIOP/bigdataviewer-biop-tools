@@ -27,14 +27,14 @@ public class SourceTimeMapper implements Runnable, Function<SourceAndConverter, 
     }
 
     public SourceAndConverter apply(SourceAndConverter src) {
-        Source srcRsampled = new MappedTimeSource(src.asVolatile().getSpimSource(), this.name, timeMapper);
+        Source srcTimeMaoped = new MappedTimeSource(src.getSpimSource(), this.name, timeMapper);
         SourceAndConverter sac;
         if (src.asVolatile() != null) {
             MappedTimeSource vsrcRsampled = new MappedTimeSource(src.asVolatile().getSpimSource(), this.name, timeMapper);
             SourceAndConverter vsac = new SourceAndConverter((Source)vsrcRsampled, SourceAndConverterHelper.cloneConverter(src.asVolatile().getConverter(), src.asVolatile()));
-            sac = new SourceAndConverter(srcRsampled, SourceAndConverterHelper.cloneConverter(src.getConverter(), src), vsac);
+            sac = new SourceAndConverter(srcTimeMaoped, SourceAndConverterHelper.cloneConverter(src.getConverter(), src), vsac);
         } else {
-            sac = new SourceAndConverter(srcRsampled, SourceAndConverterHelper.cloneConverter(src.getConverter(), src));
+            sac = new SourceAndConverter(srcTimeMaoped, SourceAndConverterHelper.cloneConverter(src.getConverter(), src));
         }
         return sac;
     }

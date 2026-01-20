@@ -18,6 +18,9 @@ import java.util.Map;
 
 public class PairRegistrationSift2DAffineCommand extends AbstractPairRegistrationInROI2DCommand implements Command {
 
+    @Parameter(label = "Transformation model", choices = {"AFFINE", "TRANSLATION"})
+    String transformation_model;
+
     @Parameter(label = "Fixed Channels",
             description = "Channel indices of the fixed image to use for registration (comma separated, e.g., '0' or '0,1')")
     String channels_fixed_csv;
@@ -43,6 +46,7 @@ public class PairRegistrationSift2DAffineCommand extends AbstractPairRegistratio
         parameters.put(Registration.RESAMPLING_PX_SIZE, pixel_size_micrometer/1000.0);
         parameters.put(Sift2DAffineRegistration.INVERT_MOVING_KEY, invert_moving);
         parameters.put(Sift2DAffineRegistration.INVERT_FIXED_KEY, invert_fixed);
+        parameters.put(Sift2DAffineRegistration.TRANSFORMATION_MODEL, transformation_model);
     }
 
     @Override

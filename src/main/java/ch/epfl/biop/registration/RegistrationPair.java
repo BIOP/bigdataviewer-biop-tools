@@ -5,6 +5,7 @@ import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.registration.plugin.RegistrationPluginHelper;
 import ch.epfl.biop.sourceandconverter.processor.SourcesAffineTransformer;
 import ch.epfl.biop.sourceandconverter.processor.SourcesProcessor;
+import ch.epfl.biop.sourceandconverter.transform.SourceTimeMapper;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.realtransform.InvertibleRealTransform;
 import net.imglib2.realtransform.InvertibleRealTransformSequence;
@@ -19,16 +20,19 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class RegistrationPair implements Named, Closeable {
 
-    final SourceAndConverter<?>[] movingSourcesOrigin;
-    final SourceAndConverter<?>[] fixedSources;
+    SourceAndConverter<?>[] movingSourcesOrigin;
+    SourceAndConverter<?>[] fixedSources;
 
     final int timepointMoving;
     final int timepointFixed;
+
     final String name;
 
     SourceAndConverter<?>[] movingSourcesRegistered;
@@ -50,10 +54,21 @@ public class RegistrationPair implements Named, Closeable {
             this.movingSourcesOrigin = movingSources;
         }
 
+        // Remove t offsets
+        this.fixedSources = Arrays.stream(fixedSources)
+                .map(sac -> new SourceTimeMapper(sac, (t) -> t+timepointFixed, sac.getSpimSource().getName()+"-T"+timepointFixed).get())
+                .collect(Collectors.toList())
+                .toArray(new SourceAndConverter[0]);
+
+        this.movingSourcesOrigin = Arrays.stream(movingSourcesOrigin)
+                .map(sac -> new SourceTimeMapper(sac, (t) -> t+timepointMoving, sac.getSpimSource().getName()+"-T"+timepointMoving).get())
+                .collect(Collectors.toList())
+                .toArray(new SourceAndConverter[0]);
+
         this.movingSourcesRegistered = movingSourcesOrigin;
 
-        this.timepointFixed = timepointFixed;
-        this.timepointMoving = timepointMoving;
+        this.timepointFixed = 0;//timepointFixed;
+        this.timepointMoving = 0;//timepointMoving;
         this.name = name;
     }
 

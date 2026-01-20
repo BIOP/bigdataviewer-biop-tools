@@ -26,6 +26,9 @@ public class Sift2DAffineRegisterCommand extends Abstract2DRegistrationInRectang
 
     private static Logger logger = LoggerFactory.getLogger(Sift2DAffineRegisterCommand.class);
 
+    @Parameter(label = "Transformation model", choices = {"AFFINE", "TRANSLATION"})
+    String transformation_model;
+
     @Parameter(label = "Invert Moving",
             description = "When checked, inverts the intensity of the moving image for matching")
     boolean invert_moving;
@@ -43,6 +46,15 @@ public class Sift2DAffineRegisterCommand extends Abstract2DRegistrationInRectang
         FloatArray2DSIFT.Param param = new FloatArray2DSIFT.Param();
         param.maxOctaveSize = 2048;
 
+        SIFTRegister.MODEL model;
+
+        switch (transformation_model) {
+            case "AFFINE": model = SIFTRegister.MODEL.AFFINE;break;
+            case "TRANSLATION": model = SIFTRegister.MODEL.TRANSLATION; break;
+            default:
+                throw new RuntimeException("Unknown transformation model "+transformation_model);
+        }
+
         SIFTRegister reg = new SIFTRegister(
                 sacs_fixed, level_fixed_source, tp_fixed,invert_fixed,
                 sacs_moving, level_moving_source, tp_moving,invert_moving,
@@ -52,7 +64,8 @@ public class Sift2DAffineRegisterCommand extends Abstract2DRegistrationInRectang
                 0.92f,
                 25.0f,
                 0.05f,
-                7
+                7,
+                model
                 );
 
         reg.setInterpolate(interpolate);

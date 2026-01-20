@@ -12,17 +12,25 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
-        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Create time-shifted sources",
-        description = "Creates sources with shifted timepoints relative to the original")
-public class SourceTimeShiftCommand implements BdvPlaygroundActionCommand {
+        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Create copy of sources over time",
+        description = "Span sources over time")
+public class SourceCopyOverTimeCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(label = "Select Sources",
-            description = "The sources to time-shift")
+            description = "The sources to copy over time")
     SourceAndConverter[] sacs;
 
-    @Parameter(label = "Time Shift",
-            description = "Number of timepoints to shift (positive = forward, negative = backward)")
-    int timeshift = 0;
+    @Parameter(label = "Timepoint to copy",
+            description = "Timepoint to copy")
+    int timepoint_to_copy = 0;
+
+    @Parameter(label = "Timepoint start",
+            description = "Timepoint to start")
+    int t_start = 0;
+
+    @Parameter(label = "Timepoint end (excluded)",
+            description = "Timepoint to end")
+    int t_end = 0;
 
     @Parameter(label = "Output Name",
             description = "Suffix for the time-shifted source")
@@ -35,7 +43,7 @@ public class SourceTimeShiftCommand implements BdvPlaygroundActionCommand {
     @Override
     public void run() {
         sacs_out = Arrays.stream(sacs)
-                         .map(sac -> new SourceTimeMapper(sac, (t) -> t+timeshift, sac.getSpimSource().getName()+suffix).get())
+                         .map(sac -> new SourceTimeMapper(sac, (t) -> (t>=t_start)&&(t<t_end)?timepoint_to_copy:-1, sac.getSpimSource().getName()+suffix).get())
                          .collect(Collectors.toList())
                          .toArray(new SourceAndConverter[0]);
     }

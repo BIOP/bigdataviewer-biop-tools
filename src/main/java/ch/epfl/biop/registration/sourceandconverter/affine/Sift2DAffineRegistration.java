@@ -34,6 +34,7 @@ public class Sift2DAffineRegistration extends AffineTransformSourceAndConverterR
 
     public final static String INVERT_MOVING_KEY = "invert_moving";
     public final static String INVERT_FIXED_KEY = "invert_fixed";
+    public final static String TRANSFORMATION_MODEL = "transformation_model";
 
     @Override
     public void setFixedImage(SourceAndConverter[] fimg) {
@@ -98,7 +99,9 @@ public class Sift2DAffineRegistration extends AffineTransformSourceAndConverterR
                  // Tries to be clever for the moving source sampling
                  "level_moving_source", SourceAndConverterHelper.bestLevel(mimg[0], timePoint, voxSizeInMm),
                  "invert_moving", invert_moving,
-                 "invert_fixed", invert_fixed
+                 "invert_fixed", invert_fixed,
+                 // AFFINE or TRANSLATION
+                 "transformation_model", parameters.get(TRANSFORMATION_MODEL)
             );
 
             task = context

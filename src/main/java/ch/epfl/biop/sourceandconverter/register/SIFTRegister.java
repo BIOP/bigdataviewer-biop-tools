@@ -10,10 +10,7 @@ import mpicbg.ij.FeatureTransform;
 import mpicbg.ij.SIFT;
 import mpicbg.imagefeatures.Feature;
 import mpicbg.imagefeatures.FloatArray2DSIFT;
-import mpicbg.models.AffineModel2D;
-import mpicbg.models.NotEnoughDataPointsException;
-import mpicbg.models.Point;
-import mpicbg.models.PointMatch;
+import mpicbg.models.*;
 import net.imglib2.FinalRealInterval;
 import net.imglib2.RealPoint;
 import net.imglib2.realtransform.AffineTransform3D;
@@ -53,6 +50,11 @@ public class SIFTRegister<FT extends NativeType<FT> & NumericType<FT>,
     final double maxEpsilon;
     final double minInlierRatio;
     final int minNumInliers;
+    final MODEL transformationModel;
+
+    public enum MODEL {
+        AFFINE, TRANSLATION
+    }
 
     public SIFTRegister(SourceAndConverter<FT>[] sacs_fixed,
                                    int levelMipmapFixed,
@@ -70,9 +72,10 @@ public class SIFTRegister<FT extends NativeType<FT> & NumericType<FT>,
                                    double sy,
                                    FloatArray2DSIFT.Param paramSift,
                                    final float rod, // rod – Ratio of distances (closest/next closest match)
-                        final double maxEpsilon,
-                        final double minInlierRatio,
-                        final int minNumInliers
+                                   final double maxEpsilon,
+                                   final double minInlierRatio,
+                                   final int minNumInliers,
+                                   final MODEL transformationModel
                         ) {
         this.sacs_fixed = sacs_fixed;
         this.sacs_moving = sacs_moving;
@@ -93,6 +96,7 @@ public class SIFTRegister<FT extends NativeType<FT> & NumericType<FT>,
         this.minInlierRatio = minInlierRatio;
         this.invertFixed = invertFixed;
         this.invertMoving = invertMoving;
+        this.transformationModel = transformationModel;
     }
 
     public void setInterpolate(boolean interpolate) {
@@ -146,7 +150,14 @@ public class SIFTRegister<FT extends NativeType<FT> & NumericType<FT>,
         IJ.log( "Filtering correspondence candidates by geometric consensus ..." );
         ArrayList<PointMatch> inliers = new ArrayList<>();
 
-        AffineModel2D model = new AffineModel2D();
+        AbstractAffineModel2D model;
+
+        switch (transformationModel) {
+            case AFFINE:model = new AffineModel2D();break;
+            case TRANSLATION:model = new TranslationModel2D(); break;
+            default:
+                throw new RuntimeException("Unknown transformation model");
+        }
 
         try
         {

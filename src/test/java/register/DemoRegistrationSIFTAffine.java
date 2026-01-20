@@ -185,7 +185,8 @@ public class DemoRegistrationSIFTAffine {
                             "py",-10,
                             "pz",0,
                             "sx",250,
-                            "sy",250
+                            "sy",250,
+                            "transformation_model", "AFFINE"
                         );
 
                 Thread t = new Thread(() -> {
