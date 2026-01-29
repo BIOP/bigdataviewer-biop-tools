@@ -2,10 +2,21 @@ package bdv.util.source.level;
 
 import bdv.viewer.Interpolation;
 import bdv.viewer.Source;
+import bdv.viewer.SourceAndConverter;
 import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.RealRandomAccessible;
 import net.imglib2.realtransform.AffineTransform3D;
+import sc.fiji.bdvpg.scijava.services.ui.RenamableSourceAndConverter;
+import sc.fiji.bdvpg.scijava.services.ui.inspect.ISourceInspector;
+import sc.fiji.bdvpg.services.ISourceAndConverterService;
+import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
+
+import javax.swing.tree.DefaultMutableTreeNode;
+import java.util.HashSet;
+import java.util.Set;
+
+import static sc.fiji.bdvpg.scijava.services.ui.SourceAndConverterInspector.appendInspectorResult;
 
 /**
  * A source which exposes a subset of resolution levels from an origin source.
@@ -20,7 +31,7 @@ import net.imglib2.realtransform.AffineTransform3D;
  *
  * @param <T> the pixel type
  */
-public class MappedLevelSource<T> implements Source<T> {
+public class MappedLevelSource<T> implements Source<T>, ISourceInspector {
 
     private final Source<T> origin;
     private final int minLevel;
@@ -102,5 +113,71 @@ public class MappedLevelSource<T> implements Source<T> {
     @Override
     public int getNumMipmapLevels() {
         return maxLevel - minLevel + 1;
+    }
+
+    /**
+     * Returns the origin source that is being wrapped.
+     *
+     * @return the origin source
+     */
+    public Source<T> getOriginSource() {
+        return origin;
+    }
+
+    /**
+     * Returns the minimum level index from the origin source.
+     *
+     * @return the minimum level
+     */
+    public int getMinLevel() {
+        return minLevel;
+    }
+
+    /**
+     * Returns the maximum level index from the origin source.
+     *
+     * @return the maximum level
+     */
+    public int getMaxLevel() {
+        return maxLevel;
+    }
+
+    @Override
+    public Set<SourceAndConverter<?>> inspect(DefaultMutableTreeNode parent, SourceAndConverter<?> sac,
+                                               ISourceAndConverterService sourceAndConverterService,
+                                               boolean registerIntermediateSources) {
+        DefaultMutableTreeNode nameNode = new DefaultMutableTreeNode("Name: " + this.name);
+        parent.add(nameNode);
+
+        DefaultMutableTreeNode levelRangeNode = new DefaultMutableTreeNode(
+                "Level range: [" + minLevel + ", " + maxLevel + "] (of " + origin.getNumMipmapLevels() + " original levels)");
+        parent.add(levelRangeNode);
+
+        DefaultMutableTreeNode originalSource = new DefaultMutableTreeNode("Origin Source");
+        parent.add(originalSource);
+
+        HashSet<SourceAndConverter<?>> subSources = new HashSet<>();
+
+        if (!sourceAndConverterService.getSourceAndConvertersFromSource(getOriginSource()).isEmpty()) {
+            sourceAndConverterService.getSourceAndConvertersFromSource(getOriginSource()).forEach((src) -> {
+                DefaultMutableTreeNode wrappedSourceNode =
+                        new DefaultMutableTreeNode(new RenamableSourceAndConverter(src));
+                originalSource.add(wrappedSourceNode);
+                subSources.addAll(appendInspectorResult(wrappedSourceNode, src,
+                        sourceAndConverterService, registerIntermediateSources));
+            });
+        } else {
+            SourceAndConverter<?> src = SourceAndConverterHelper.createSourceAndConverter(origin);
+            if (registerIntermediateSources) {
+                sourceAndConverterService.register(src);
+            }
+            DefaultMutableTreeNode wrappedSourceNode = new DefaultMutableTreeNode(
+                    new RenamableSourceAndConverter(src));
+            originalSource.add(wrappedSourceNode);
+            subSources.addAll(appendInspectorResult(wrappedSourceNode, src,
+                    sourceAndConverterService, registerIntermediateSources));
+        }
+
+        return subSources;
     }
 }
