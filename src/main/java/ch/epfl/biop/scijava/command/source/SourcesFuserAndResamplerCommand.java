@@ -103,6 +103,7 @@ public class SourcesFuserAndResamplerCommand implements BdvPlaygroundActionComma
                         (float) vox_size_z_micrometer);
                 AlphaSourceHelper.setAlphaSource(source, alpha);
             }
+            blending_mode = "AVERAGE";
         }
 
         sac_out = new SourceFuserAndResampler(sacs_list, blending_mode,  model, name, reusemipmaps, cache, interpolate, defaultmipmaplevel, cache_x, cache_y, cache_z, cache_bounds, n_threads).get();
