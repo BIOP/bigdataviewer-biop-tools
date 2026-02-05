@@ -99,14 +99,14 @@
 
 		<!-- general imagej dependencies -->
 		<!-- bdv playground related dependencies -->
-		<bigdataviewer-playground.version>0.15.2</bigdataviewer-playground.version>
+		<bigdataviewer-playground.version>0.16.0</bigdataviewer-playground.version>
 		<bigdataviewer-playground-display.version>0.5.0</bigdataviewer-playground-display.version>
 		<image-transform-converters.version>0.2.0</image-transform-converters.version>
-		<bigdataviewer-image-loaders.version>0.12.2</bigdataviewer-image-loaders.version>
+		<bigdataviewer-image-loaders.version>0.12.3</bigdataviewer-image-loaders.version>
 
 		<!-- biop dependencies -->
 		<ijl-utilities-wrappers.version>0.12.1</ijl-utilities-wrappers.version>
-		<Operetta_Importer.version>0.6.1</Operetta_Importer.version>
+		<Operetta_Importer.version>0.7.0</Operetta_Importer.version>
 		<ijp-kheops.version>0.6.7</ijp-kheops.version>
 		<quick-start-czi-reader.version>0.3.0</quick-start-czi-reader.version>
 
@@ -317,7 +317,7 @@
 			<scope>test</scope>
 		</dependency>
 
-        <!--dependency>
+        <dependency>
 		  <groupId>net.preibisch</groupId>
 		  <artifactId>BigStitcher</artifactId>
 		  <version>2.6.0</version>
@@ -329,7 +329,7 @@
             <artifactId>multiview-reconstruction</artifactId>
             <version>8.1.1</version>
             <scope>test</scope>
-        </dependency-->
+        </dependency>
 	</dependencies>
 
 </project>
