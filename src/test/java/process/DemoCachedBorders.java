@@ -2,8 +2,8 @@ package process;
 
 import bdv.util.BdvHandle;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.sourceandconverter.SourceHelper;
-import ch.epfl.biop.sourceandconverter.SourceVoxelProcessor;
+import ch.epfl.biop.source.SourceHelper;
+import ch.epfl.biop.source.SourceVoxelProcessor;
 import loci.common.DebugTools;
 import net.imagej.ImageJ;
 import net.imglib2.type.numeric.ARGBType;

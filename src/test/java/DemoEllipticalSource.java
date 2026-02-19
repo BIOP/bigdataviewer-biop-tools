@@ -1,12 +1,11 @@
 import bdv.util.BdvHandle;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.scijava.command.transform.Elliptic3DTransformCreatorCommand;
-import ch.epfl.biop.scijava.command.source.register.SourcesRealTransformCommand;
+import ch.epfl.biop.command.source.transform.Elliptic3DTransformCreatorCommand;
+import ch.epfl.biop.command.source.register.SourcesRealTransformCommand;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;
 import net.imglib2.realtransform.RealTransform;
-import sc.fiji.bdvpg.command.source.display.SourceBrightnessAdjustCommand;
 import sc.fiji.bdvpg.services.SourceServices;
 import sc.fiji.bdvpg.source.display.BrightnessAdjuster;
 import sc.fiji.bdvpg.dataset.importer.SpimDataFromXmlImporter;

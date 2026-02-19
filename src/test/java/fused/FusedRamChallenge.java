@@ -1,10 +1,7 @@
 package fused;
 
-import bdv.util.source.fused.AlphaFusedResampledSource;
-import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.sourceandconverter.EmptyMultiResolutionSourceAndConverterCreator;
-import ch.epfl.biop.sourceandconverter.SourceFuserAndResampler;
+import ch.epfl.biop.source.EmptyMultiResolutionSourceAndConverterCreator;
 import ij.IJ;
 import loci.common.DebugTools;
 import mpicbg.spim.data.generic.AbstractSpimData;
@@ -15,7 +12,6 @@ import sc.fiji.bdvpg.services.SourceServices;
 import sc.fiji.bdvpg.dataset.importer.SpimDataFromXmlImporter;
 
 import javax.swing.tree.TreePath;
-import java.util.List;
 
 public class FusedRamChallenge {
 

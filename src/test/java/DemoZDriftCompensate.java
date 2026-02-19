@@ -1,6 +1,6 @@
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.scijava.command.spimdata.LLS7OpenDatasetCommand;
-import ch.epfl.biop.scijava.command.spimdata.LLS7ZDriftCompensationCommand;
+import ch.epfl.biop.command.dataset.lls7.LLS7OpenDatasetCommand;
+import ch.epfl.biop.command.dataset.lls7.LLS7ZDriftCompensationCommand;
 import net.imagej.ImageJ;
 import org.apache.commons.io.FilenameUtils;
 import sc.fiji.bdvpg.scijava.services.SourceService;

@@ -1,6 +1,6 @@
 import bdv.util.BdvHandle;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.scijava.command.bdv.BasicBdvViewToImagePlusExportCommand;
+import ch.epfl.biop.command.bdv.BasicBdvViewToImagePlusExportCommand;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;

@@ -1,6 +1,6 @@
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.sourceandconverter.exporter.CZTRange;
-import ch.epfl.biop.sourceandconverter.exporter.ImagePlusGetter;
+import ch.epfl.biop.source.exporter.CZTRange;
+import ch.epfl.biop.source.exporter.ImagePlusGetter;
 import loci.common.DebugTools;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imagej.ImageJ;

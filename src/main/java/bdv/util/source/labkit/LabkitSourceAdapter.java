@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
 import sc.fiji.bdvpg.scijava.adapter.source.ISourceAdapter;
 import sc.fiji.bdvpg.services.SourceAdapter;
 import sc.fiji.bdvpg.services.SourceServices;
-import sc.fiji.bdvpg.source.transform.SourceLabkitClassifier;
+import ch.epfl.biop.labkit.SourceLabkitClassifier;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;

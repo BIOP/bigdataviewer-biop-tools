@@ -36,7 +36,7 @@ Key command packages:
 
 ### Source Processing Pipeline
 
-The `SourcesProcessor` interface (`ch.epfl.biop.sourceandconverter.processor`) defines a functional pattern for chaining image operations:
+The `SourcesProcessor` interface (`ch.epfl.biop.source.processor`) defines a functional pattern for chaining image operations:
 
 ```
 SourceAndConverter[] → SourcesProcessor → SourceAndConverter[]

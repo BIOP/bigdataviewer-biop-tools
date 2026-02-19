@@ -30,7 +30,7 @@ package bdv.util.source.process;
 
 import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.sourceandconverter.SourceVoxelProcessor;
+import ch.epfl.biop.source.SourceVoxelProcessor;
 import com.google.gson.*;
 import net.imglib2.type.numeric.NumericType;
 import org.scijava.plugin.Plugin;

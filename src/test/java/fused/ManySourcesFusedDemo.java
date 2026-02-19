@@ -4,7 +4,7 @@ import bdv.util.BdvHandle;
 import bdv.util.source.fused.AlphaFusedResampledSource;
 import bdv.viewer.SourceAndConverter;
 import bdv.viewer.SourceGroup;
-import ch.epfl.biop.sourceandconverter.SourceFuserAndResampler;
+import ch.epfl.biop.source.SourceFuserAndResampler;
 import loci.common.DebugTools;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imagej.ImageJ;

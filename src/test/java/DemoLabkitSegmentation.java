@@ -28,7 +28,7 @@ import bdv.util.BdvHandle;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.DatasetHelper;
 import ch.epfl.biop.bdv.img.bioformats.command.CreateBdvDatasetBioFormatsCommand;
-import ch.epfl.biop.scijava.command.source.labkit.SourcesLabkitClassifierCommand;
+import ch.epfl.biop.command.source.labkit.SourcesLabkitClassifierCommand;
 import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;
 import sc.fiji.bdvpg.viewers.bdv.navigate.ViewerTransformAdjuster;

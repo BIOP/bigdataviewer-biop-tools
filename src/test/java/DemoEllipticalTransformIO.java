@@ -1,6 +1,6 @@
-import ch.epfl.biop.scijava.command.transform.Elliptic3DTransformExporterCommand;
-import ch.epfl.biop.scijava.command.transform.Elliptic3DTransformImporterCommand;
-import ch.epfl.biop.scijava.command.transform.Elliptic3DTransformCreatorCommand;
+import ch.epfl.biop.command.source.transform.Elliptic3DTransformExporterCommand;
+import ch.epfl.biop.command.source.transform.Elliptic3DTransformImporterCommand;
+import ch.epfl.biop.command.source.transform.Elliptic3DTransformCreatorCommand;
 import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;
 

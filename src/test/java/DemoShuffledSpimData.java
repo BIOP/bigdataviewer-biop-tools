@@ -1,6 +1,6 @@
 import bdv.util.BdvHandle;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.spimdata.reordered.LifReOrdered;
+import ch.epfl.biop.dataset.reordered.LifReOrdered;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;

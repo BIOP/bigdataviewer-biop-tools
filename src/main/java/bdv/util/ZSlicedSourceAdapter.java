@@ -30,7 +30,7 @@ package bdv.util;
 
 import bdv.viewer.Interpolation;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.sourceandconverter.transform.SourceMosaicZSlicer;
+import ch.epfl.biop.source.transform.SourceMosaicZSlicer;
 import com.google.gson.*;
 import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
