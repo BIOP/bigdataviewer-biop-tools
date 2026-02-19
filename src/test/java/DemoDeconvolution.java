@@ -114,7 +114,7 @@ public class DemoDeconvolution {
         result.get();
 
         // Get the deconvolved source from the service (it was registered by the command)
-        SourceAndConverter[] deconvolvedSources = sacService.getSourceAndConverters().stream()
+        SourceAndConverter[] deconvolvedSources = sacService.getSources().stream()
                 .filter(sac -> sac.getSpimSource().getName().contains("_deconvolved"))
                 .toArray(SourceAndConverter[]::new);
 

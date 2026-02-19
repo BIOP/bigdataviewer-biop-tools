@@ -40,7 +40,7 @@ public class ManySourcesFusedDemo {
 
         SourceAndConverter model = new EmptySourceCreator("Model", location, 8000,6000,1).get();
 
-        List<SourceAndConverter<?>> all_sources = SourceServices.getSourceService().getSourceAndConverters();
+        List<SourceAndConverter<?>> all_sources = SourceServices.getSourceService().getSources();
 
         SourceServices.getSourceService().register(model);
 

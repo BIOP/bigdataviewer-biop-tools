@@ -36,7 +36,7 @@ public class DemoZSlicedSource {
         // Import SpimData
         new SpimDataFromXmlImporter("src/test/resources/mri-stack.xml").run();
 
-        final List<SourceAndConverter<?>> sacs = SourceServices.getSourceService().getSourceAndConverters();
+        final List<SourceAndConverter<?>> sacs = SourceServices.getSourceService().getSources();
 
         sacs.forEach( sac -> {
             SourceServices.getBdvDisplayService().show( bdv, sac );

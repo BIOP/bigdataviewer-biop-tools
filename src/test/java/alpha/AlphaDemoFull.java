@@ -30,7 +30,7 @@ public class AlphaDemoFull {
 
         BdvHandle bdv = SourceServices.getBdvDisplayService().getNewBdv();
 
-        SourceAndConverter<?>[] sources = SourceServices.getSourceService().getSourceAndConverters().toArray(new SourceAndConverter[0]);
+        SourceAndConverter<?>[] sources = SourceServices.getSourceService().getSources().toArray(new SourceAndConverter[0]);
 
         SourceServices
                 .getBdvDisplayService()
