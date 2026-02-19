@@ -6,8 +6,8 @@ import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
 import com.amazonaws.services.kms.model.UnsupportedOperationException;
 import net.imglib2.type.numeric.real.FloatType;
-import sc.fiji.bdvpg.services.ISourceAndConverterService;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
+import sc.fiji.bdvpg.services.ISourceService;
+import sc.fiji.bdvpg.services.SourceServices;
 
 import java.util.List;
 import java.util.Optional;
@@ -15,7 +15,7 @@ import java.util.Optional;
 /**
  * Helper function which creates or retrieves {@link IAlphaSource} linked to potentially
  * any {@link Source}. This helper uses the weak keys cache of
- * bigdataviewer playground's {@link sc.fiji.bdvpg.scijava.services.SourceAndConverterService}
+ * bigdataviewer playground's {@link sc.fiji.bdvpg.scijava.services.SourceService}
  * to avoid re-creating multiple alpha sources.
  *
  * {@link WarpedSource} as well as TransformedSource {@link TransformedSource} are supported
@@ -32,9 +32,9 @@ public class AlphaSourceHelper {
         if (source instanceof IAlphaSource) {
             throw new UnsupportedOperationException("Error : you can't make an alpha source out of an alpha source "+source.getName());
         }
-        ISourceAndConverterService sacService = SourceAndConverterServices.getSourceAndConverterService();
+        ISourceService sacService = SourceServices.getSourceService();
 
-        List<SourceAndConverter<?>> sacList = sacService.getSourceAndConvertersFromSource(source);
+        List<SourceAndConverter<?>> sacList = sacService.getSourcesFromSpimSource(source);
 
         Optional<SourceAndConverter<?>> source_already_associated_with_alpha = sacList.stream().filter(src -> getExistingAlphaSource(src)!=null).findFirst();
 
@@ -62,18 +62,18 @@ public class AlphaSourceHelper {
         SourceAndConverter<FloatType> alpha_sac = new SourceAndConverter<>(alpha, new AlphaConverter());
 
         sacList.forEach(compatibleSac -> {
-            SourceAndConverterServices.getSourceAndConverterService().setMetadata(compatibleSac, ALPHA_SOURCE_KEY, alpha_sac);
+            SourceServices.getSourceService().setMetadata(compatibleSac, ALPHA_SOURCE_KEY, alpha_sac);
         });
 
         return alpha_sac;
     }
 
     public static synchronized void setAlphaSource(SourceAndConverter source, IAlphaSource alphaSource) {
-        SourceAndConverterServices.getSourceAndConverterService().setMetadata(source, ALPHA_SOURCE_KEY, new SourceAndConverter<>(alphaSource, new AlphaConverter()));
+        SourceServices.getSourceService().setMetadata(source, ALPHA_SOURCE_KEY, new SourceAndConverter<>(alphaSource, new AlphaConverter()));
     }
 
     public static synchronized void setAlphaSource(SourceAndConverter source, SourceAndConverter alphaSource) {
-        SourceAndConverterServices.getSourceAndConverterService().setMetadata(source, ALPHA_SOURCE_KEY, alphaSource);
+        SourceServices.getSourceService().setMetadata(source, ALPHA_SOURCE_KEY, alphaSource);
     }
 
     // synchronized recursive calls are legit in Java
@@ -82,7 +82,7 @@ public class AlphaSourceHelper {
     }
 
     static SourceAndConverter<FloatType> getExistingAlphaSource(SourceAndConverter sac) {
-        ISourceAndConverterService sacService = SourceAndConverterServices.getSourceAndConverterService();
+        ISourceService sacService = SourceServices.getSourceService();
         if (sacService.containsMetadata(sac, ALPHA_SOURCE_KEY)) {
             return (SourceAndConverter<FloatType>) sacService.getMetadata(sac, ALPHA_SOURCE_KEY);
         }

@@ -10,10 +10,10 @@ import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
-import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
-import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
-import sc.fiji.bdvpg.sourceandconverter.importer.EmptySourceAndConverterCreator;
+import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
+import sc.fiji.bdvpg.scijava.services.SourceService;
+import sc.fiji.bdvpg.services.SourceServices;
+import sc.fiji.bdvpg.source.importer.EmptySourceCreator;
 
 import java.util.*;
 import java.util.List;
@@ -107,10 +107,10 @@ public class SliceSourceCommand implements BdvPlaygroundActionCommand {
                 .collect(Collectors.toList());
 
         resampledSourceList.forEach(sac -> {
-            SourceAndConverterServices.getSourceAndConverterService().register(sac);
+            SourceServices.getSourceService().register(sac);
         });
 
-        SourceAndConverterServices.getSourceAndConverterService().register(model);
+        SourceServices.getSourceService().register(model);
 
         // Fetch the unit of the first source
         updateUnit();
@@ -149,7 +149,7 @@ public class SliceSourceCommand implements BdvPlaygroundActionCommand {
         if (nPx == 0) nPx = 1;
         if (nPy == 0) nPy = 1;
 
-        return new EmptySourceAndConverterCreator("SlicerModel", at3D.inverse(), nPx, nPy, nPz).get();
+        return new EmptySourceCreator("SlicerModel", at3D.inverse(), nPx, nPy, nPz).get();
     }
 
     /**
@@ -237,33 +237,33 @@ public class SliceSourceCommand implements BdvPlaygroundActionCommand {
         /*Set<AbstractSpimData> spimData = new HashSet<>();
         // Gets all SpimdataInfo
         sacs.forEach(sac -> {
-            if (SourceAndConverterServices
-                    .getSourceAndConverterService()
-                    .getMetadata(sac, SourceAndConverterService.SPIM_DATA_INFO)!=null) {
-                SourceAndConverterService.SpimDataInfo sdi = ((SourceAndConverterService.SpimDataInfo)(SourceAndConverterServices
-                        .getSourceAndConverterService()
-                        .getMetadata(sac, SourceAndConverterService.SPIM_DATA_INFO)));
+            if (SourceServices
+                    .getSourceService()
+                    .getMetadata(sac, SourceService.SPIM_DATA_INFO)!=null) {
+                SourceService.SpimDataInfo sdi = ((SourceService.SpimDataInfo)(SourceServices
+                        .getSourceService()
+                        .getMetadata(sac, SourceService.SPIM_DATA_INFO)));
                 spimData.add(sdi.asd);
             }
         });*/
 
         Comparator<SourceAndConverter> sacComparator = (s1, s2) -> {
             // Those who do not belong to spimdata are last:
-            SourceAndConverterService.SpimDataInfo sdi1 = null, sdi2 = null;
-            if (SourceAndConverterServices
-                    .getSourceAndConverterService()
-                    .getMetadata(s1, SourceAndConverterService.SPIM_DATA_INFO)!=null) {
-                sdi1 = ((SourceAndConverterService.SpimDataInfo)(SourceAndConverterServices
-                        .getSourceAndConverterService()
-                        .getMetadata(s1, SourceAndConverterService.SPIM_DATA_INFO)));
+            SourceService.SpimDataInfo sdi1 = null, sdi2 = null;
+            if (SourceServices
+                    .getSourceService()
+                    .getMetadata(s1, SourceService.SPIM_DATA_INFO)!=null) {
+                sdi1 = ((SourceService.SpimDataInfo)(SourceServices
+                        .getSourceService()
+                        .getMetadata(s1, SourceService.SPIM_DATA_INFO)));
             }
 
-            if (SourceAndConverterServices
-                    .getSourceAndConverterService()
-                    .getMetadata(s2, SourceAndConverterService.SPIM_DATA_INFO)!=null) {
-                sdi2 = ((SourceAndConverterService.SpimDataInfo)(SourceAndConverterServices
-                        .getSourceAndConverterService()
-                        .getMetadata(s2, SourceAndConverterService.SPIM_DATA_INFO)));
+            if (SourceServices
+                    .getSourceService()
+                    .getMetadata(s2, SourceService.SPIM_DATA_INFO)!=null) {
+                sdi2 = ((SourceService.SpimDataInfo)(SourceServices
+                        .getSourceService()
+                        .getMetadata(s2, SourceService.SPIM_DATA_INFO)));
             }
 
             if ((sdi1==null)&&(sdi2!=null)) {

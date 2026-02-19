@@ -36,8 +36,8 @@ import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sc.fiji.bdvpg.scijava.adapter.source.ISourceAdapter;
-import sc.fiji.bdvpg.services.SourceAndConverterAdapter;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
+import sc.fiji.bdvpg.services.SourceAdapter;
+import sc.fiji.bdvpg.services.SourceServices;
 
 import java.lang.reflect.Type;
 
@@ -46,10 +46,10 @@ public class ZSlicedSourceAdapter implements ISourceAdapter<ZSlicedSource> {
 
     private static Logger logger = LoggerFactory.getLogger(ZSlicedSourceAdapter.class);
 
-    SourceAndConverterAdapter sacSerializer;
+    SourceAdapter sacSerializer;
 
     @Override
-    public void setSacSerializer(SourceAndConverterAdapter sacSerializer) {
+    public void setSourceSerializer(SourceAdapter sacSerializer) {
         this.sacSerializer = sacSerializer;
     }
 
@@ -132,7 +132,7 @@ public class ZSlicedSourceAdapter implements ISourceAdapter<ZSlicedSource> {
 
         SourceAndConverter sac = new SourceMosaicZSlicer(originSac, modelSac, reuseMipMaps, cache, interpolation.equals(Interpolation.NLINEAR), () -> (long)1).get();
 
-        SourceAndConverterServices.getSourceAndConverterService()
+        SourceServices.getSourceService()
                 .register(sac);
 
         return sac;

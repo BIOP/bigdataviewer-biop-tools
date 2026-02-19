@@ -16,12 +16,12 @@ import net.imglib2.realtransform.inverse.WrappedIterativeInvertibleRealTransform
 import net.imglib2.type.numeric.real.FloatType;
 import org.junit.After;
 import org.junit.Test;
-import sc.fiji.bdvpg.bdv.navigate.ViewerTransformAdjuster;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
-import sc.fiji.bdvpg.sourceandconverter.display.BrightnessAutoAdjuster;
-import sc.fiji.bdvpg.sourceandconverter.importer.EmptySourceAndConverterCreator;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceAffineTransformer;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceRealTransformer;
+import sc.fiji.bdvpg.viewers.bdv.navigate.ViewerTransformAdjuster;
+import sc.fiji.bdvpg.services.SourceServices;
+import sc.fiji.bdvpg.source.display.BrightnessAutoAdjuster;
+import sc.fiji.bdvpg.source.importer.EmptySourceCreator;
+import sc.fiji.bdvpg.source.transform.SourceAffineTransformer;
+import sc.fiji.bdvpg.source.transform.SourceRealTransformer;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -41,15 +41,15 @@ public class ManyWarpedSourcesFusedDemo {
 
         List<SourceAndConverter<?>> all_sources = demo(nSourcesInX);
 
-        all_sources.forEach(SourceAndConverterServices.getSourceAndConverterService()::register);
+        all_sources.forEach(SourceServices.getSourceService()::register);
 
         AffineTransform3D location = new AffineTransform3D();
         location.scale(0.5);
         location.translate(0,0,0);
 
-        SourceAndConverter<?> model = new EmptySourceAndConverterCreator("Model", location, 400*nSourcesInX,300*nSourcesInX,1).get();
+        SourceAndConverter<?> model = new EmptySourceCreator("Model", location, 400*nSourcesInX,300*nSourcesInX,1).get();
 
-        SourceAndConverterServices.getSourceAndConverterService().register(model);
+        SourceServices.getSourceService().register(model);
 
         SourceAndConverter<?> fused = new SourceFuserAndResampler(all_sources,
                 AlphaFusedResampledSource.AVERAGE,
@@ -57,9 +57,9 @@ public class ManyWarpedSourcesFusedDemo {
                 true, true, false, 0,
                 256, 256, 1, -1,8).get();
 
-        BdvHandle bdvh = SourceAndConverterServices.getBdvDisplayService().getNewBdv();
+        BdvHandle bdvh = SourceServices.getBdvDisplayService().getNewBdv();
 
-        SourceAndConverterServices
+        SourceServices
                 .getBdvDisplayService().show(bdvh, fused);
 
         new ViewerTransformAdjuster(bdvh, fused).run();
@@ -79,7 +79,7 @@ public class ManyWarpedSourcesFusedDemo {
     public static List<SourceAndConverter<?>> demo(int numberOfSourcesInOneAxis) {
 
         // Creates a BdvHandle
-        BdvHandle bdvHandle = SourceAndConverterServices
+        BdvHandle bdvHandle = SourceServices
                 .getBdvDisplayService().getActiveBdv();
 
         String datasetName = "Icons";
@@ -99,18 +99,18 @@ public class ManyWarpedSourcesFusedDemo {
             exception.printStackTrace();
         }
 
-        SourceAndConverter sac0 = SourceAndConverterServices
-                .getSourceAndConverterService()
+        SourceAndConverter sac0 = SourceServices
+                .getSourceService()
                 .getSourceAndConverterFromSpimdata(spimdata)
                 .get(0);
 
-        SourceAndConverter sac1 = SourceAndConverterServices
-                .getSourceAndConverterService()
+        SourceAndConverter sac1 = SourceServices
+                .getSourceService()
                 .getSourceAndConverterFromSpimdata(spimdata)
                 .get(1);
 
-        SourceAndConverter sac2 = SourceAndConverterServices
-                .getSourceAndConverterService()
+        SourceAndConverter sac2 = SourceServices
+                .getSourceService()
                 .getSourceAndConverterFromSpimdata(spimdata)
                 .get(2);
 
@@ -165,8 +165,8 @@ public class ManyWarpedSourcesFusedDemo {
                     SourceAndConverter<FloatType> alphaSac = AlphaSourceHelper.getOrBuildAlphaSource(sac);
 
                     SourceAndConverter<?> warped_sac = new SourceRealTransformer(sac, rt3d).get();
-                    SourceAndConverterServices
-                            .getSourceAndConverterService()
+                    SourceServices
+                            .getSourceService()
                                     .register(warped_sac);
 
                     AlphaSourceHelper.setAlphaSource(warped_sac, alphaSac); // Keeps bounds
@@ -178,7 +178,7 @@ public class ManyWarpedSourcesFusedDemo {
             }
         }
 
-        /*SourceAndConverterServices
+        /*SourceServices
                 .getBdvDisplayService()
                 .show(bdvHandle, sacs.toArray(new SourceAndConverter[0]));*/
 

@@ -8,9 +8,9 @@ import ch.epfl.biop.scijava.command.source.register.Elastix2DAffineRegisterComma
 import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imagej.ImageJ;
 import org.scijava.command.CommandService;
-import sc.fiji.bdvpg.bdv.navigate.ViewerTransformAdjuster;
-import sc.fiji.bdvpg.scijava.services.SourceAndConverterBdvDisplayService;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
+import sc.fiji.bdvpg.viewers.bdv.navigate.ViewerTransformAdjuster;
+import sc.fiji.bdvpg.scijava.services.SourceBdvDisplayService;
+import sc.fiji.bdvpg.services.SourceServices;
 
 import java.util.List;
 
@@ -33,8 +33,8 @@ public class DemoRegistrationMultiChannelElastixAffine {
 
         AbstractSpimData<?> atlasDataset = OpenersToSpimData.getSpimData(atlasSettings);
 
-        SourceAndConverterServices.getSourceAndConverterService().register(atlasDataset);
-        List<SourceAndConverter<?>> atlasSources = SourceAndConverterServices.getSourceAndConverterService().getSourceAndConverterFromSpimdata(atlasDataset);
+        SourceServices.getSourceService().register(atlasDataset);
+        List<SourceAndConverter<?>> atlasSources = SourceServices.getSourceService().getSourceAndConverterFromSpimdata(atlasDataset);
 
         OpenerSettings sliceSettings = OpenerSettings.BioFormats()
                 .location("./src/test/resources/multichanreg/Slice.tif")
@@ -43,10 +43,10 @@ public class DemoRegistrationMultiChannelElastixAffine {
 
         AbstractSpimData<?> sliceDataset = OpenersToSpimData.getSpimData(sliceSettings);
 
-        SourceAndConverterServices.getSourceAndConverterService().register(sliceDataset);
-        List<SourceAndConverter<?>> sliceSources = SourceAndConverterServices.getSourceAndConverterService().getSourceAndConverterFromSpimdata(sliceDataset);
+        SourceServices.getSourceService().register(sliceDataset);
+        List<SourceAndConverter<?>> sliceSources = SourceServices.getSourceService().getSourceAndConverterFromSpimdata(sliceDataset);
 
-        SourceAndConverterBdvDisplayService displayService = SourceAndConverterServices.getBdvDisplayService();
+        SourceBdvDisplayService displayService = SourceServices.getBdvDisplayService();
         BdvHandle bdvh = displayService.getNewBdv();
         displayService.show(bdvh, atlasSources.toArray(new SourceAndConverter[0]));
         displayService.show(bdvh, sliceSources.toArray(new SourceAndConverter[0]));

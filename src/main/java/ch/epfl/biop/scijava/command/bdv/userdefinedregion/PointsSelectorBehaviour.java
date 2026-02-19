@@ -17,7 +17,7 @@ import org.scijava.ui.behaviour.DragBehaviour;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.util.Behaviours;
 import org.scijava.ui.behaviour.util.TriggerBehaviourBindings;
-import sc.fiji.bdvpg.bdv.BdvHandleHelper;
+import sc.fiji.bdvpg.viewers.bdv.BdvHandleHelper;
 
 import javax.swing.*;
 import java.awt.event.MouseEvent;

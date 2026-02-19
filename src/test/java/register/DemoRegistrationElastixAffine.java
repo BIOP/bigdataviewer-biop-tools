@@ -26,8 +26,8 @@ import org.scijava.command.CommandService;
 import org.scijava.ui.behaviour.ClickBehaviour;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.util.Behaviours;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterAndTimeRange;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceTransformHelper;
+import sc.fiji.bdvpg.source.SourceAndTimeRange;
+import sc.fiji.bdvpg.source.transform.SourceTransformHelper;
 
 import java.util.Collection;
 import java.util.List;
@@ -192,7 +192,7 @@ public class DemoRegistrationElastixAffine {
                 Thread t = new Thread(() -> {
                     try {
                         AffineTransform3D at3d = (AffineTransform3D) task.get().getOutput("at3d");
-                        SourceTransformHelper.mutate(at3d, new SourceAndConverterAndTimeRange(movingSource,0));
+                        SourceTransformHelper.mutate(at3d, new SourceAndTimeRange(movingSource,0));
                         bdvh.getViewerPanel().requestRepaint();
                     } catch (Exception e) {
                         e.printStackTrace();

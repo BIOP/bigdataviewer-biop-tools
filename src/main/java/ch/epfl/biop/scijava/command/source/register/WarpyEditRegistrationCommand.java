@@ -17,11 +17,11 @@ import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
-import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterAndTimeRange;
-import sc.fiji.bdvpg.sourceandconverter.register.BigWarpLauncher;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceTransformHelper;
+import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
+import sc.fiji.bdvpg.services.SourceServices;
+import sc.fiji.bdvpg.source.SourceAndTimeRange;
+import sc.fiji.bdvpg.source.register.BigWarpLauncher;
+import sc.fiji.bdvpg.source.transform.SourceTransformHelper;
 import sc.fiji.persist.ScijavaGsonHelper;
 
 
@@ -161,9 +161,9 @@ public class WarpyEditRegistrationCommand implements Command {
         if (remove_z_offsets) fixed_sources = removeZOffsets(fixed_sources);
         List<SourceAndConverter<?>> fixedSacs = Arrays.stream(fixed_sources).collect(Collectors.toList());
 
-        List<ConverterSetup> converterSetups = Arrays.stream(moving_sources).map(src -> SourceAndConverterServices.getSourceAndConverterService().getConverterSetup(src)).collect(Collectors.toList());
+        List<ConverterSetup> converterSetups = Arrays.stream(moving_sources).map(src -> SourceServices.getSourceService().getConverterSetup(src)).collect(Collectors.toList());
 
-        converterSetups.addAll(Arrays.stream(fixed_sources).map(src -> SourceAndConverterServices.getSourceAndConverterService().getConverterSetup(src)).collect(Collectors.toList()));
+        converterSetups.addAll(Arrays.stream(fixed_sources).map(src -> SourceServices.getSourceService().getConverterSetup(src)).collect(Collectors.toList()));
 
 
         BigWarpLauncher bwl = new BigWarpLauncher(movingSacs, fixedSacs, "Edit QuPath Registration", converterSetups);
@@ -174,7 +174,7 @@ public class WarpyEditRegistrationCommand implements Command {
         BdvHandle bdvhQ = bwl.getBdvHandleQ();
         BdvHandle bdvhP = bwl.getBdvHandleP();
 
-        SourceAndConverterServices.getBdvDisplayService().pairClosing(bdvhQ,bdvhP);
+        SourceServices.getBdvDisplayService().pairClosing(bdvhQ,bdvhP);
 
         bdvhP.getViewerPanel().requestRepaint();
         bdvhQ.getViewerPanel().requestRepaint();
@@ -209,7 +209,7 @@ public class WarpyEditRegistrationCommand implements Command {
         AffineTransform3D at3D = new AffineTransform3D();
         source.getSpimSource().getSourceTransform(0, 0, at3D);
         zOffsetTransform.translate(0, 0, -at3D.get(2, 3)); // Removes z offset
-        SourceAndConverter recenteredSource = SourceTransformHelper.createNewTransformedSourceAndConverter(zOffsetTransform, new SourceAndConverterAndTimeRange(source, 0));
+        SourceAndConverter recenteredSource = SourceTransformHelper.createNewTransformedSourceAndConverter(zOffsetTransform, new SourceAndTimeRange(source, 0));
         return recenteredSource;
     }
 

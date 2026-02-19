@@ -16,11 +16,11 @@ import net.imglib2.util.LinAlgHelpers;
 import org.scijava.ItemIO;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
-import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
-import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
-import sc.fiji.bdvpg.sourceandconverter.importer.EmptySourceAndConverterCreator;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceResampler;
+import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
+import sc.fiji.bdvpg.scijava.services.SourceService;
+import sc.fiji.bdvpg.services.SourceServices;
+import sc.fiji.bdvpg.source.importer.EmptySourceCreator;
+import sc.fiji.bdvpg.source.transform.SourceResampler;
 
 import java.util.HashMap;
 import java.util.List;
@@ -89,14 +89,14 @@ public class Rot3DReSampleCommand<T extends NumericType<T> & NativeType<T>> impl
     boolean interpolate;
 
     @Parameter
-    SourceAndConverterService sac_service;
+    SourceService sac_service;
 
     public void run() {
 
         AbstractSpimData asd = ImagePlusToSpimData.getSpimData(imp_in);
         sac_service.register(asd);
-        sac_service.setSpimDataName(asd, imp_in.getTitle());
-        List<SourceAndConverter<?>> sacs = SourceAndConverterServices.getSourceAndConverterService().getSourceAndConverterFromSpimdata(asd);
+        sac_service.setDatasetName(asd, imp_in.getTitle());
+        List<SourceAndConverter<?>> sacs = SourceServices.getSourceService().getSourcesFromDataset(asd);
 
         if (rm.getCount()<2) {
             System.err.println("Error : 2 point Rois should be present in the Roi Manager to reorient a stack");
@@ -215,7 +215,7 @@ public class Rot3DReSampleCommand<T extends NumericType<T> & NativeType<T>> impl
 
         SourceAndConverter model;
 
-        model = new EmptySourceAndConverterCreator("dummy", at3D, (long) nx,(long) ny,(long) nz).get();//SourceAndConverterHelper.createSourceAndConverter(src);
+        model = new EmptySourceCreator("dummy", at3D, (long) nx,(long) ny,(long) nz).get();//SourceHelper.createSourceAndConverter(src);
 
         if (model == null) {
             System.out.println("model is null");
@@ -227,8 +227,8 @@ public class Rot3DReSampleCommand<T extends NumericType<T> & NativeType<T>> impl
 
         /*Map<SourceAndConverter<T>, ConverterSetup> mapCS = new HashMap<>();
         reoriented_sources.forEach(sac -> mapCS.put(sac,
-                    SourceAndConverterServices
-                        .getSourceAndConverterService()
+                    SourceServices
+                        .getSourceService()
                         .getConverterSetup(sac)
                 ));*/
 

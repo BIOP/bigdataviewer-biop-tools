@@ -6,8 +6,8 @@ import mpicbg.spim.data.generic.AbstractSpimData;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
-import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
-import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
+import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
+import sc.fiji.bdvpg.scijava.services.SourceService;
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
         menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Import>Make BDVDataset from current IJ1 image",
@@ -24,12 +24,12 @@ public class SourceFromImagePlusCommand implements BdvPlaygroundActionCommand {
     // AbstractSpimData asd;
 
     @Parameter
-    SourceAndConverterService sac_service;
+    SourceService sac_service;
 
     public void run() {
         AbstractSpimData asd = ImagePlusToSpimData.getSpimData(image);
         sac_service.register(asd);
-        sac_service.setSpimDataName(asd, image.getTitle());
+        sac_service.setDatasetName(asd, image.getTitle());
     }
 
 }

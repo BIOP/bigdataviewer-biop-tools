@@ -7,9 +7,9 @@ import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.registration.plugin.IRegistrationPlugin;
 import ch.epfl.biop.registration.plugin.RegistrationTypeProperties;
 import org.scijava.plugin.Plugin;
-import sc.fiji.bdvpg.bdv.BdvHandleHelper;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
-import sc.fiji.bdvpg.sourceandconverter.register.BigWarpLauncher;
+import sc.fiji.bdvpg.viewers.bdv.BdvHandleHelper;
+import sc.fiji.bdvpg.services.SourceServices;
+import sc.fiji.bdvpg.source.register.BigWarpLauncher;
 
 import java.awt.*;
 import java.lang.reflect.InvocationTargetException;
@@ -81,9 +81,9 @@ public class PrecomputedSplineRegistration extends RealTransformSourceAndConvert
 
                 java.util.List<SourceAndConverter<?>> fixedSacs = Arrays.stream(fimg).collect(Collectors.toList());
 
-                List<ConverterSetup> converterSetups = Arrays.stream(mimg).map(src -> SourceAndConverterServices.getSourceAndConverterService().getConverterSetup(src)).collect(Collectors.toList());
+                List<ConverterSetup> converterSetups = Arrays.stream(mimg).map(src -> SourceServices.getSourceService().getConverterSetup(src)).collect(Collectors.toList());
 
-                converterSetups.addAll(Arrays.stream(fimg).map(src -> SourceAndConverterServices.getSourceAndConverterService().getConverterSetup(src)).collect(Collectors.toList()));
+                converterSetups.addAll(Arrays.stream(fimg).map(src -> SourceServices.getSourceService().getConverterSetup(src)).collect(Collectors.toList()));
 
                 // Launch BigWarp
                 bwl = new BigWarpLauncher(movingSacs, fixedSacs, "Big Warp", converterSetups);
@@ -100,7 +100,7 @@ public class PrecomputedSplineRegistration extends RealTransformSourceAndConvert
                 bdvhQ.getViewerPanel().state().setDisplayMode(bdv.viewer.DisplayMode.FUSED);
                 bdvhP.getViewerPanel().state().setDisplayMode(DisplayMode.FUSED);
 
-                SourceAndConverterServices.getBdvDisplayService().pairClosing(bdvhQ,bdvhP);
+                SourceServices.getBdvDisplayService().pairClosing(bdvhQ,bdvhP);
 
                 bdvhP.getViewerPanel().requestRepaint();
                 bdvhQ.getViewerPanel().requestRepaint();

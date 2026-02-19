@@ -20,20 +20,20 @@ import net.imglib2.img.basictypeaccess.array.ByteArray;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.integer.ByteType;
-import sc.fiji.bdvpg.bdv.BdvHandleHelper;
-import sc.fiji.bdvpg.bdv.navigate.RayCastPositionerSliderAdder;
-import sc.fiji.bdvpg.bdv.navigate.SourceNavigatorSliderAdder;
-import sc.fiji.bdvpg.bdv.navigate.TimepointAdapterAdder;
-import sc.fiji.bdvpg.bdv.overlay.SourceNameOverlayAdder;
+import sc.fiji.bdvpg.viewers.bdv.BdvHandleHelper;
+import sc.fiji.bdvpg.viewers.bdv.navigate.RayCastPositionerSliderAdder;
+import sc.fiji.bdvpg.viewers.bdv.navigate.SourceNavigatorSliderAdder;
+import sc.fiji.bdvpg.viewers.bdv.navigate.TimepointAdapterAdder;
+import sc.fiji.bdvpg.viewers.bdv.overlay.SourceNameOverlayAdder;
 import sc.fiji.bdvpg.bdv.supplier.BdvSupplierHelper;
-import sc.fiji.bdvpg.bdv.supplier.IBdvSupplier;
+import sc.fiji.bdvpg.viewers.bdv.supplier.IBdvSupplier;
 import sc.fiji.bdvpg.bdv.supplier.biop.BiopSerializableBdvOptions;
-import sc.fiji.bdvpg.scijava.services.ui.swingdnd.BdvTransferHandler;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterAndTimeRange;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceAffineTransformer;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceTransformHelper;
+import sc.fiji.bdvpg.scijava.services.tree.swingdnd.BdvTransferHandler;
+import sc.fiji.bdvpg.services.SourceServices;
+import sc.fiji.bdvpg.source.SourceAndTimeRange;
+import sc.fiji.bdvpg.source.SourceHelper;
+import sc.fiji.bdvpg.source.transform.SourceAffineTransformer;
+import sc.fiji.bdvpg.source.transform.SourceTransformHelper;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -216,7 +216,7 @@ public class GridBdvSupplier implements IBdvSupplier {
 		 * @param sacs list of source and converter to import
 		 */
 		@Override
-		public void importSourcesAndConverters(TransferSupport support, List<SourceAndConverter<?>> sacs) {
+		public void importSources(TransferSupport support, List<SourceAndConverter<?>> sacs) {
 			Optional<BdvHandle> bdvh_local = getBdvHandleFromViewerPanel(((bdv.viewer.ViewerPanel) support.getComponent()));
 			if (bdvh_local.isPresent()) {
 				//double slicingAxisPosition = iSliceNoStep * msp.sizePixX * (int) msp.getReslicedAtlas().getStep();
@@ -395,7 +395,7 @@ public class GridBdvSupplier implements IBdvSupplier {
 		private void updatePositions() {
 			sourceToCenter.forEach((source, cpxy) -> {
 				AffineTransform3D transform3D = new AffineTransform3D();
-				//RealPoint center = SourceAndConverterHelper.getSourceAndConverterCenterPoint(source,0);
+				//RealPoint center = SourceHelper.getSourceCenterPoint(source,0);
 				double[] coords =  cpxy.center.positionAsDoubleArray();
 				//double[] coords =  center.positionAsDoubleArray();
 				transform3D.translate(-coords[0], -coords[1], -coords[2]);
@@ -421,7 +421,7 @@ public class GridBdvSupplier implements IBdvSupplier {
 		}
 
 		public synchronized void addSources(List<SourceAndConverter<?>> sacs, int px, int py) {
-			RealPoint center = SourceAndConverterHelper.getSourceAndConverterCenterPoint(sacs.get(0),0);
+			RealPoint center = SourceHelper.getSourceCenterPoint(sacs.get(0),0);
 			AffineTransform3D transform3D = new AffineTransform3D();
 			double[] coords =  center.positionAsDoubleArray();
 			transform3D.translate(-coords[0], -coords[1], -coords[2]);
@@ -430,7 +430,7 @@ public class GridBdvSupplier implements IBdvSupplier {
 			for (SourceAndConverter<?> source: sacs) {
 				SourceAndConverter<?> transformed = sat.apply(source);
 				sourceToCenter.put(transformed, new CenterAndGridPosition(center, px, py));
-				SourceAndConverterServices
+				SourceServices
 						.getBdvDisplayService()
 						.show(bdvh, transformed);
 			}

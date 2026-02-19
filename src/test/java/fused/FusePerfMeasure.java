@@ -23,7 +23,7 @@ public class FusePerfMeasure {
 
         /*Context ctx = new Context(CommandService.class,
                 TaskService.class,
-                SourceAndConverterService.class,
+                SourceService.class,
                 ConvertService.class
         );*/
 

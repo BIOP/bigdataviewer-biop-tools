@@ -26,7 +26,7 @@ import java.util.stream.IntStream;
  * listeners are created which:
  * * synchronizes the display of alpha sources each time a new source is displayed in bdv
  * * in fact, this synchronization mechanism CREATES the alpha source when needed
- * * a caching mechanism using weak keys in {@link sc.fiji.bdvpg.services.SourceAndConverterServices} allows to reuse
+ * * a caching mechanism using weak keys in {@link sc.fiji.bdvpg.services.SourceServices} allows to reuse
  * alpha sources when needed ( in a different window for instance )
  *
  * Alpha sources {@link bdv.util.source.alpha.IAlphaSource} and {@link bdv.util.source.alpha.AlphaSource} are using

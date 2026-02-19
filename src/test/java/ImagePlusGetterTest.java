@@ -9,8 +9,8 @@ import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.NumericType;
 import org.scijava.task.Task;
 import org.scijava.task.TaskService;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
-import sc.fiji.bdvpg.spimdata.importer.SpimDataFromXmlImporter;
+import sc.fiji.bdvpg.services.SourceServices;
+import sc.fiji.bdvpg.dataset.importer.SpimDataFromXmlImporter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,14 +42,14 @@ public class ImagePlusGetterTest {
 
         final AbstractSpimData spimData = importer.get();
 
-        List<SourceAndConverter<?>> allSources = SourceAndConverterServices
-                .getSourceAndConverterService()
+        List<SourceAndConverter<?>> allSources = SourceServices
+                .getSourceService()
                 .getSourceAndConverterFromSpimdata(spimData);
 
         // Creates a BdvHandle
-        //BdvHandle bdvHandle = SourceAndConverterServices
+        //BdvHandle bdvHandle = SourceServices
         //        .getSourceAndConverterDisplayService().getActiveBdv();
-        /*SourceAndConverterServices
+        /*SourceServices
                 .getSourceAndConverterDisplayService()
                 .show(sac);*/
         ArrayList<SourceAndConverter<?>> sources = new ArrayList<>();

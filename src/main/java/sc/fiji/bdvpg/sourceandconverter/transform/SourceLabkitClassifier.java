@@ -27,7 +27,7 @@
  * #L%
  */
 
-package sc.fiji.bdvpg.sourceandconverter.transform;
+package sc.fiji.bdvpg.source.transform;
 
 import bdv.cache.SharedQueue;
 import bdv.util.source.labkit.LabkitSource;
@@ -159,7 +159,7 @@ public class SourceLabkitClassifier implements Runnable, Function<SourceAndConve
         // Create a simple grayscale converter for the segmentation result
         Converter<UnsignedByteType, ARGBType> converter
                 //createConverter();
-                //SourceAndConverterHelper.createConverter(labkitSource);
+                //SourceHelper.createConverter(labkitSource);
                 = RealARGBColorConverter.create(new UnsignedByteType(), 0, 255);
                 //converter.setColor(new ARGBType(0xffffffff));
 
@@ -186,7 +186,7 @@ public class SourceLabkitClassifier implements Runnable, Function<SourceAndConve
                     //createVolatileConverter();
             //Converter<UnsignedByteType, ARGBType> converter
                     //createConverter();
-                    //SourceAndConverterHelper.createConverter(labkitSource);
+                    //SourceHelper.createConverter(labkitSource);
                     RealARGBColorConverter.create(new VolatileUnsignedByteType(), 0, 255);
 
             SourceAndConverter<VolatileUnsignedByteType> vsac = new SourceAndConverter<>(volatileSource, volatileConverter);

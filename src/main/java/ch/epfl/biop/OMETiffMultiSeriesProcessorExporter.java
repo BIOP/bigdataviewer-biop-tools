@@ -19,11 +19,11 @@ import org.scijava.Context;
 import org.scijava.command.CommandService;
 import org.scijava.task.Task;
 import org.scijava.task.TaskService;
-import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
-import sc.fiji.bdvpg.scijava.services.ui.SourceAndConverterServiceUI;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterAndTimeRange;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceTransformHelper;
+import sc.fiji.bdvpg.scijava.services.SourceService;
+import sc.fiji.bdvpg.scijava.services.tree.SourceTree;
+import sc.fiji.bdvpg.source.SourceAndTimeRange;
+import sc.fiji.bdvpg.source.SourceHelper;
+import sc.fiji.bdvpg.source.transform.SourceTransformHelper;
 
 import java.io.File;
 import java.time.Duration;
@@ -48,7 +48,7 @@ public class OMETiffMultiSeriesProcessorExporter {
 
         task.setStatusMessage("Parsing file metadata...");
 
-        SourceAndConverterService sac_service = builder.ctx.getService(SourceAndConverterService.class);
+        SourceService sac_service = builder.ctx.getService(SourceService.class);
 
         CommandService command = builder.ctx.getService(CommandService.class);
 
@@ -76,19 +76,18 @@ public class OMETiffMultiSeriesProcessorExporter {
 
         if (builder.removeZOffset) {
             for (SourceAndConverter source: allSources) {
-                RealPoint center = SourceAndConverterHelper.getSourceAndConverterCenterPoint(source,0);
+                RealPoint center = SourceHelper.getSourceCenterPoint(source,0);
                 AffineTransform3D zOffset = new AffineTransform3D();
                 zOffset.translate(0,0,center.getDoublePosition(2));
-                int numFrames = SourceAndConverterHelper.getMaxTimepoint(source.getSpimSource())+1;
-                SourceTransformHelper.append(zOffset.inverse(), new SourceAndConverterAndTimeRange(source,0, numFrames));
+                int numFrames = SourceHelper.getMaxTimepoint(source.getSpimSource())+1;
+                SourceTransformHelper.append(zOffset.inverse(), new SourceAndTimeRange(source,0, numFrames));
             }
         }
 
-        SourceAndConverterServiceUI.Node seriesNode =
-                sac_service.getUI()
-                        .getRoot()
-                        .child(datasetName)
-                        .child(SeriesNumber.class.getSimpleName());
+        SourceTree.Node seriesNode = sac_service.tree()
+                .getRoot()
+                .child(datasetName)
+                .child(SeriesNumber.class.getSimpleName());
 
         System.out.println("nSeries = "+seriesNode.children().size());
 
@@ -111,7 +110,7 @@ public class OMETiffMultiSeriesProcessorExporter {
         Callable c = () -> {
 
         rangeSeries.parallelStream().forEach(index -> {
-                SourceAndConverterServiceUI.Node currentSeriesNode = seriesNode.child(index);
+            SourceTree.Node currentSeriesNode = seriesNode.child(index);
                 try {
                     List<ImagePlus> ij1_images = (List<ImagePlus>) command.run(ExportToMultipleImagePlusCommand.class, false,
                             "sacs", currentSeriesNode.sources(),

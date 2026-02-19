@@ -9,11 +9,11 @@ import net.imglib2.realtransform.RealTransform;
 import org.scijava.ItemIO;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
-import sc.fiji.bdvpg.bdv.BdvHandleHelper;
+import sc.fiji.bdvpg.viewers.bdv.BdvHandleHelper;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
-import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
-import sc.fiji.bdvpg.sourceandconverter.register.BigWarpLauncher;
+import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
+import sc.fiji.bdvpg.services.SourceServices;
+import sc.fiji.bdvpg.source.register.BigWarpLauncher;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,12 +59,12 @@ public class EditSourcesWarpingCommand implements BdvPlaygroundActionCommand {
 
         List<SourceAndConverter<?>> movingSacs = Arrays.stream(moving_sources).collect(Collectors.toList());
 
-        List<ConverterSetup> converterSetups = Arrays.stream(moving_sources).map(src -> SourceAndConverterServices.getSourceAndConverterService().getConverterSetup(src)).collect(Collectors.toList());
+        List<ConverterSetup> converterSetups = Arrays.stream(moving_sources).map(src -> SourceServices.getSourceService().getConverterSetup(src)).collect(Collectors.toList());
         List<SourceAndConverter<?>> fixedSacs;
 
         if (fixed_sources !=null) {
             fixedSacs = Arrays.stream(fixed_sources).collect(Collectors.toList());
-            converterSetups.addAll(Arrays.stream(fixed_sources).map(src -> SourceAndConverterServices.getSourceAndConverterService().getConverterSetup(src)).collect(Collectors.toList()));
+            converterSetups.addAll(Arrays.stream(fixed_sources).map(src -> SourceServices.getSourceService().getConverterSetup(src)).collect(Collectors.toList()));
         } else {
             fixedSacs = new ArrayList<>();
         }
@@ -81,7 +81,7 @@ public class EditSourcesWarpingCommand implements BdvPlaygroundActionCommand {
         bdvhP.getViewerPanel().state().setViewerTransform(BdvHandleHelper.getViewerTransformWithNewCenter(bdvhP, new double[]{0,0,0}));
         bdvhQ.getViewerPanel().state().setViewerTransform(BdvHandleHelper.getViewerTransformWithNewCenter(bdvhQ, new double[]{0,0,0}));
 
-        SourceAndConverterServices.getBdvDisplayService().pairClosing(bdvhQ,bdvhP);
+        SourceServices.getBdvDisplayService().pairClosing(bdvhQ,bdvhP);
 
         bdvhP.getViewerPanel().requestRepaint();
         bdvhQ.getViewerPanel().requestRepaint();

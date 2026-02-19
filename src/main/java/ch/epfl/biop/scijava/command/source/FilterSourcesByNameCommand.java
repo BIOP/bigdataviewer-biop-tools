@@ -3,9 +3,10 @@ package ch.epfl.biop.scijava.command.source;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
-import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
-import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
-import sc.fiji.bdvpg.scijava.services.ui.SourceFilterNode;
+import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
+import sc.fiji.bdvpg.scijava.services.SourceService;
+import sc.fiji.bdvpg.scijava.services.tree.FilterNode;
+import sc.fiji.bdvpg.scijava.services.tree.SourceTreeModel;
 
 
 @Plugin(type = BdvPlaygroundActionCommand.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Filter Sources Based on Name",
@@ -30,20 +31,18 @@ public class FilterSourcesByNameCommand implements BdvPlaygroundActionCommand {
         boolean show_sources;
 
         @Parameter
-        SourceAndConverterService sac_service;
+        SourceService source_service;
 
         @Override
         public void run() {
-            SourceFilterNode sfn = new SourceFilterNode(sac_service.getUI().getTreeModel(),
-                    filter_name,
-                    (sac) -> {
-                        if (match_case) {
-                            return sac.getSpimSource().getName().contains(string_filter);
-                        } else {
-                            return sac.getSpimSource().getName().toUpperCase().contains(string_filter.toUpperCase());
-                        }
-                    },
-                    show_sources);
-            sac_service.getUI().addNode(sfn);
+            FilterNode filterNode = new FilterNode(filter_name, (sac) -> {
+                if (match_case) {
+                    return sac.getSpimSource().getName().contains(string_filter);
+                } else {
+                    return sac.getSpimSource().getName().toUpperCase().contains(string_filter.toUpperCase());
+                }
+            }, show_sources);
+            SourceTreeModel model = source_service.tree().getSourceTreeModel();
+            model.addNode(model.getRoot(), filterNode);
         }
 }

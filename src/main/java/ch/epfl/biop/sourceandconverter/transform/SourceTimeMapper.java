@@ -5,7 +5,7 @@ import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
 
 import java.util.function.Function;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
+import sc.fiji.bdvpg.source.SourceHelper;
 
 public class SourceTimeMapper implements Runnable, Function<SourceAndConverter, SourceAndConverter> {
 
@@ -31,10 +31,10 @@ public class SourceTimeMapper implements Runnable, Function<SourceAndConverter, 
         SourceAndConverter sac;
         if (src.asVolatile() != null) {
             MappedTimeSource vsrcRsampled = new MappedTimeSource(src.asVolatile().getSpimSource(), this.name, timeMapper);
-            SourceAndConverter vsac = new SourceAndConverter((Source)vsrcRsampled, SourceAndConverterHelper.cloneConverter(src.asVolatile().getConverter(), src.asVolatile()));
-            sac = new SourceAndConverter(srcRsampled, SourceAndConverterHelper.cloneConverter(src.getConverter(), src), vsac);
+            SourceAndConverter vsac = new SourceAndConverter((Source)vsrcRsampled, SourceHelper.cloneConverter(src.asVolatile().getConverter(), src.asVolatile()));
+            sac = new SourceAndConverter(srcRsampled, SourceHelper.cloneConverter(src.getConverter(), src), vsac);
         } else {
-            sac = new SourceAndConverter(srcRsampled, SourceAndConverterHelper.cloneConverter(src.getConverter(), src));
+            sac = new SourceAndConverter(srcRsampled, SourceHelper.cloneConverter(src.getConverter(), src));
         }
         return sac;
     }

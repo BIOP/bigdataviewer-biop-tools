@@ -22,14 +22,14 @@ import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.integer.ByteType;
 import net.imglib2.type.numeric.real.FloatType;
 import org.jetbrains.annotations.NotNull;
-import sc.fiji.bdvpg.bdv.BdvHandleHelper;
-import sc.fiji.bdvpg.bdv.navigate.RayCastPositionerSliderAdder;
-import sc.fiji.bdvpg.bdv.navigate.SourceNavigatorSliderAdder;
-import sc.fiji.bdvpg.bdv.navigate.TimepointAdapterAdder;
-import sc.fiji.bdvpg.bdv.overlay.SourceNameOverlayAdder;
+import sc.fiji.bdvpg.viewers.bdv.BdvHandleHelper;
+import sc.fiji.bdvpg.viewers.bdv.navigate.RayCastPositionerSliderAdder;
+import sc.fiji.bdvpg.viewers.bdv.navigate.SourceNavigatorSliderAdder;
+import sc.fiji.bdvpg.viewers.bdv.navigate.TimepointAdapterAdder;
+import sc.fiji.bdvpg.viewers.bdv.overlay.SourceNameOverlayAdder;
 import sc.fiji.bdvpg.bdv.supplier.BdvSupplierHelper;
-import sc.fiji.bdvpg.bdv.supplier.IBdvSupplier;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
+import sc.fiji.bdvpg.viewers.bdv.supplier.IBdvSupplier;
+import sc.fiji.bdvpg.services.SourceServices;
 
 import javax.swing.*;
 import java.awt.Font;
@@ -74,7 +74,7 @@ public class AlphaBdvSupplier implements IBdvSupplier {
 
     /**
      * Sources Metadata (how to retrieve and when to create alpha sources) backed by a
-     * {@link sc.fiji.bdvpg.scijava.services.SourceAndConverterService}
+     * {@link sc.fiji.bdvpg.scijava.services.SourceService}
      */
     final public static SourcesMetadata sourcesMetadata = new SourcesMetadata() {
         @Override
@@ -84,12 +84,12 @@ public class AlphaBdvSupplier implements IBdvSupplier {
 
         @Override
         public boolean hasAlphaSource(SourceAndConverter<?> sac) {
-            return SourceAndConverterServices.getSourceAndConverterService().containsMetadata(sac, ALPHA_SOURCE_KEY);
+            return SourceServices.getSourceService().containsMetadata(sac, ALPHA_SOURCE_KEY);
         }
 
         @Override
         public SourceAndConverter<FloatType> getAlphaSource(SourceAndConverter<?> sac) {
-            return (SourceAndConverter<FloatType>) SourceAndConverterServices.getSourceAndConverterService().getMetadata(sac, ALPHA_SOURCE_KEY);
+            return (SourceAndConverter<FloatType>) SourceServices.getSourceService().getMetadata(sac, ALPHA_SOURCE_KEY);
         }
     };
 

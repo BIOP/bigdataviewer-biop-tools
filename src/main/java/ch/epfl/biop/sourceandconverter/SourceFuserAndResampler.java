@@ -7,7 +7,7 @@ import bdv.viewer.Interpolation;
 import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
 import net.imglib2.type.numeric.NumericType;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
+import sc.fiji.bdvpg.source.SourceHelper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -128,12 +128,12 @@ public class SourceFuserAndResampler<T extends NumericType<T>> implements Runnab
                         defaultMipMapLevel,cacheX,cacheY,cacheZ);
             }
             vsac = new SourceAndConverter(vsrcRsampled,
-                    SourceAndConverterHelper.cloneConverter(sacExample.asVolatile().getConverter(), sacExample.asVolatile()));
+                    SourceHelper.cloneConverter(sacExample.asVolatile().getConverter(), sacExample.asVolatile()));
             sac = new SourceAndConverter<>(srcRsampled,
-                    SourceAndConverterHelper.cloneConverter(sacExample.getConverter(), sacExample ),vsac);
+                    SourceHelper.cloneConverter(sacExample.getConverter(), sacExample ),vsac);
         } else {
             sac = new SourceAndConverter<>(srcRsampled,
-                    SourceAndConverterHelper.cloneConverter(sacExample.getConverter(), sacExample));
+                    SourceHelper.cloneConverter(sacExample.getConverter(), sacExample));
         }
 
         return sac;

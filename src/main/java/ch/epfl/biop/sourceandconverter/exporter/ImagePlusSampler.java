@@ -9,9 +9,9 @@ import net.imglib2.type.numeric.NumericType;
 import org.scijava.task.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceResampler;
+import sc.fiji.bdvpg.services.SourceServices;
+import sc.fiji.bdvpg.source.SourceHelper;
+import sc.fiji.bdvpg.source.transform.SourceResampler;
 
 import java.util.*;
 import java.util.function.Function;
@@ -52,13 +52,13 @@ public class ImagePlusSampler {
                 .map(sac -> new SourceResampler<>(sac,model,sac.getSpimSource().getName()+"_SampledLike_"+model.getSpimSource().getName(), automipmap, cache, interpolate, level).get())
                 .collect(Collectors.toList());
 
-        SourceAndConverterServices.getSourceAndConverterService().register(model);
+        SourceServices.getSourceService().register(model);
 
         /*int resolutionLevel = 0;
         Map<SourceAndConverter, Integer> mapMipmap = new HashMap<>();
         //sourceList.forEach(src -> {
         for (SourceAndConverter src:sourceList) {
-            int mipmapLevel = SourceAndConverterHelper.bestLevel(src, 0, builder.sizePixelY);
+            int mipmapLevel = SourceHelper.bestLevel(src, 0, builder.sizePixelY);
             logger.debug("Mipmap level chosen for source ["+src.getSpimSource().getName()+"] : "+mipmapLevel);
             mapMipmap.put(resampledSourceList.get(sourceList.indexOf(src)), mipmapLevel);
             resolutionLevel = mipmapLevel;
@@ -97,7 +97,7 @@ public class ImagePlusSampler {
         private int level = -1;
         private String unit;
         private CZTRange.Builder rangeBuilder = new CZTRange.Builder();
-        private Function<Collection<SourceAndConverter<?>>,List<SourceAndConverter<?>>> sorter = sacslist -> SourceAndConverterHelper.sortDefaultGeneric(sacslist);
+        private Function<Collection<SourceAndConverter<?>>,List<SourceAndConverter<?>>> sorter = sacslist -> SourceHelper.sortDefaultGeneric(sacslist);
 
         private boolean parallelC = false;
         private boolean parallelZ = false;
@@ -288,7 +288,7 @@ public class ImagePlusSampler {
          */
         public ImagePlus get() throws Exception{
 
-            int numFrames = SourceAndConverterHelper.getMaxTimepoint(sacs)+1;
+            int numFrames = SourceHelper.getMaxTimepoint(sacs)+1;
 
             //int maxZSlices = (int) sacs[0].getSpimSource().getSource(0,level).dimension(2);
             int numZSlices = (int) model.getSpimSource().getSource(0,level).dimension(2);

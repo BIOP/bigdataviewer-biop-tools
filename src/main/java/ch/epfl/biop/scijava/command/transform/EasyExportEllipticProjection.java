@@ -14,9 +14,9 @@ import org.scijava.command.CommandService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
-import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
-import sc.fiji.bdvpg.scijava.services.SourceAndConverterBdvDisplayService;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
+import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
+import sc.fiji.bdvpg.scijava.services.SourceBdvDisplayService;
+import sc.fiji.bdvpg.source.SourceHelper;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -46,7 +46,7 @@ public class EasyExportEllipticProjection implements Command {
     CommandService cs;
 
     @Parameter
-    SourceAndConverterBdvDisplayService displayService;
+    SourceBdvDisplayService displayService;
 
     @Override
     public void run() {
@@ -119,6 +119,6 @@ public class EasyExportEllipticProjection implements Command {
         }
     }
 
-    public Function<Collection<SourceAndConverter<?>>, List<SourceAndConverter<?>>> sorter = sacslist -> SourceAndConverterHelper.sortDefaultGeneric(sacslist);
+    public Function<Collection<SourceAndConverter<?>>, List<SourceAndConverter<?>>> sorter = sacslist -> SourceHelper.sortDefaultGeneric(sacslist);
 
 }

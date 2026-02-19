@@ -21,23 +21,24 @@ import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.util.Behaviours;
-import sc.fiji.bdvpg.bdv.BdvHandleHelper;
-import sc.fiji.bdvpg.behaviour.EditorBehaviourUnInstaller;
-import sc.fiji.bdvpg.behaviour.SourceAndConverterContextMenuClickBehaviour;
+import sc.fiji.bdvpg.command.source.display.SourceBrightnessAdjustInteractiveCommand;
+import sc.fiji.bdvpg.viewers.bdv.BdvHandleHelper;
+import sc.fiji.bdvpg.viewers.behaviour.EditorBehaviourUnInstaller;
+import sc.fiji.bdvpg.viewers.behaviour.SourceContextMenuClickBehaviour;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
-import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
-import sc.fiji.bdvpg.scijava.command.source.BrightnessAdjusterCommand;
-import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceAffineTransformer;
+import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
+import sc.fiji.bdvpg.scijava.services.SourceService;
+import sc.fiji.bdvpg.services.SourceServices;
+import sc.fiji.bdvpg.source.SourceHelper;
+import sc.fiji.bdvpg.source.transform.SourceAffineTransformer;
+import sc.fiji.bdvpg.viewers.behaviour.SourceContextMenuClickBehaviour;
 
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static sc.fiji.bdvpg.scijava.services.SourceAndConverterService.getCommandName;
-import static sc.fiji.bdvpg.services.ISourceAndConverterService.SPIM_DATA_INFO;
+import static sc.fiji.bdvpg.scijava.services.SourceService.getCommandName;
+import static sc.fiji.bdvpg.services.ISourceService.SPIM_DATA_INFO;
 import static sc.fiji.bdvpg.viewers.ViewerOrthoSyncStarter.MatrixApproxEquals;
 
 /**
@@ -137,8 +138,8 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
             long nPixX = 1, nPixY = 1, nPixZ = 1;
 
             if (!sacs.get(0).getSpimSource().isPresent(tp)) {
-                if (SourceAndConverterHelper.hasAValidTimepoint(sacs.get(0).getSpimSource())) {
-                    tp = SourceAndConverterHelper.getAValidTimepoint(sacs.get(0).getSpimSource());
+                if (SourceHelper.hasAValidTimepoint(sacs.get(0).getSpimSource())) {
+                    tp = SourceHelper.getAValidTimepoint(sacs.get(0).getSpimSource());
                 }
             }
 
@@ -164,16 +165,16 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
                     sacs.stream().map(sac -> {
                         SourceAndConverter<?> trSac = sat.apply(sac);
                         transformedToOriginal.put(trSac, sac);
-                        SourceAndConverterServices
-                                .getSourceAndConverterService()
+                        SourceServices
+                                .getSourceService()
                                 .register(trSac);
 
-                        ConverterSetup csOrigin = SourceAndConverterServices
-                                .getSourceAndConverterService()
+                        ConverterSetup csOrigin = SourceServices
+                                .getSourceService()
                                 .getConverterSetup(sac);
 
-                        ConverterSetup csDestination = SourceAndConverterServices
-                                .getSourceAndConverterService()
+                        ConverterSetup csDestination = SourceServices
+                                .getSourceService()
                                 .getConverterSetup(trSac);
 
                         // TODO : fix potential mem leak with listeners
@@ -208,8 +209,8 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
 
         //BdvHandle bdvh =
 
-        BdvHandle bdvh = SourceAndConverterServices.getBdvDisplayService().getNewBdv();
-        SourceAndConverterServices.getBdvDisplayService().show(bdvh, sacsToDisplay.toArray(new SourceAndConverter[0]));
+        BdvHandle bdvh = SourceServices.getBdvDisplayService().getNewBdv();
+        SourceServices.getBdvDisplayService().show(bdvh, sacsToDisplay.toArray(new SourceAndConverter[0]));
 
         AffineTransform3D currentViewLocation = new AffineTransform3D();
 
@@ -217,18 +218,18 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
         currentViewLocation.set(0,2,3);
         bdvh.getViewerPanel().state().setViewerTransform(currentViewLocation);
 
-        SourceSelectorBehaviour ssb = (SourceSelectorBehaviour) SourceAndConverterServices.getBdvDisplayService().getDisplayMetadata(
+        SourceSelectorBehaviour ssb = (SourceSelectorBehaviour) SourceServices.getBdvDisplayService().getDisplayMetadata(
                 bdvh, SourceSelectorBehaviour.class.getSimpleName());
 
         new EditorBehaviourUnInstaller(bdvh).run();
 
         addEditorBehaviours(bdvh, ssb);
 
-        bdvh.getViewerPanel().setNumTimepoints(SourceAndConverterHelper.getMaxTimepoint(sacs)+1);
+        bdvh.getViewerPanel().setNumTimepoints(SourceHelper.getMaxTimepoint(sacs)+1);
 
         // Close hook to try to release as many resources as possible -> proven avoiding mem leaks
         BdvHandleHelper.setBdvHandleCloseOperation(bdvh, ctx.getService(CacheService.class),
-                SourceAndConverterServices.getBdvDisplayService(), false,
+                SourceServices.getBdvDisplayService(), false,
                 () -> {
                     sacs = null; // free mem ?
                     transformedToOriginal = null;
@@ -243,12 +244,11 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
         Behaviours editor = new Behaviours(new InputTriggerConfig());
 
         // Act on the original sources
-        editor.behaviour(new SourceAndConverterContextMenuClickBehaviour( bdvh,
+        editor.behaviour(new SourceContextMenuClickBehaviour( bdvh,
                 () -> ssb.getSelectedSources()
                             .stream()
                             .map((sac) -> transformedToOriginal.get(sac))
-                            .collect(Collectors.toSet()),
-                getPopupActionsOnWrappedSource() ), "Sources Context Menu", "button3");
+                            .collect(Collectors.toSet())), "Sources Context Menu", "button3");
 
         // One way to chain the behaviour : install and uninstall on source selector toggling:
         // The delete key will act only when the source selection mode is on
@@ -274,7 +274,7 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
     public static String[] getPopupActionsOnWrappedSource() {
         String[] editorPopupActions = {
                 "Inspect Sources",
-                getCommandName(BrightnessAdjusterCommand.class),
+                getCommandName(SourceBrightnessAdjustInteractiveCommand.class),
                 getCommandName(ExportToMultipleImagePlusCommand.class)};
         return editorPopupActions;
     }
@@ -282,7 +282,7 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
     /**
      * Sorts sources according to their dataset and view id
      */
-    public Function<Collection<SourceAndConverter<?>>,List<SourceAndConverter<?>>> sorter = sacslist -> SourceAndConverterHelper.sortDefaultGeneric(sacslist);
+    public Function<Collection<SourceAndConverter<?>>,List<SourceAndConverter<?>>> sorter = sacslist -> SourceHelper.sortDefaultGeneric(sacslist);
 
     public static class SacProperties {
 
@@ -298,8 +298,8 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
         public SacProperties(SourceAndConverter sac) {
             location = new AffineTransform3D();
 
-            if (SourceAndConverterHelper.hasAValidTimepoint(sac.getSpimSource())) {
-                int tpvalid = SourceAndConverterHelper.getAValidTimepoint(sac.getSpimSource());
+            if (SourceHelper.hasAValidTimepoint(sac.getSpimSource())) {
+                int tpvalid = SourceHelper.getAValidTimepoint(sac.getSpimSource());
                 sac.getSpimSource().getSourceTransform(tpvalid, 0, location);
                 sac.getSpimSource().getSource(tpvalid, 0).dimensions(dims);
             }
@@ -352,8 +352,8 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
     }
 
     public static Entity getEntityFromSource(SourceAndConverter<?> source, Class<? extends Entity> entityClass) {
-        if (SourceAndConverterServices.getSourceAndConverterService().getMetadata(source, SPIM_DATA_INFO) != null) {
-            SourceAndConverterService.SpimDataInfo sdi = (SourceAndConverterService.SpimDataInfo) SourceAndConverterServices.getSourceAndConverterService().getMetadata(source, SPIM_DATA_INFO);
+        if (SourceServices.getSourceService().getMetadata(source, SPIM_DATA_INFO) != null) {
+            SourceService.SpimDataInfo sdi = (SourceService.SpimDataInfo) SourceServices.getSourceService().getMetadata(source, SPIM_DATA_INFO);
             AbstractSpimData<AbstractSequenceDescription<BasicViewSetup, ?, ?>> asd = (AbstractSpimData<AbstractSequenceDescription<BasicViewSetup, ?, ?>>) sdi.asd;
             BasicViewSetup bvs = asd.getSequenceDescription().getViewSetups().get(sdi.setupId);
             return bvs.getAttribute(entityClass);

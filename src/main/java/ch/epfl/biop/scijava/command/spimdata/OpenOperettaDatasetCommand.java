@@ -1,13 +1,10 @@
 package ch.epfl.biop.scijava.command.spimdata;
 
 import bdv.util.BdvHandle;
-import bdv.viewer.DisplayMode;
 import bdv.viewer.SourceAndConverter;
 import bdv.viewer.SourceGroup;
 import ch.epfl.biop.bdv.img.OpenersToSpimData;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsHelper;
-import ch.epfl.biop.bdv.img.bioformats.command.CreateBdvDatasetBioFormatsCommand;
-import ch.epfl.biop.bdv.img.legacy.bioformats.command.OpenFilesWithBigdataviewerBioformatsBridgeCommand;
 import ch.epfl.biop.bdv.img.opener.OpenerSettings;
 import ch.epfl.biop.operetta.OperettaManager;
 import ij.IJ;
@@ -21,21 +18,18 @@ import org.apache.commons.io.FileUtils;
 import org.scijava.Context;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
-import org.scijava.command.CommandService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
-import sc.fiji.bdvpg.bdv.BdvHandleHelper;
-import sc.fiji.bdvpg.bdv.navigate.ViewerTransformAdjuster;
-import sc.fiji.bdvpg.bdv.supplier.alpha.AlphaBdvSupplier;
+import sc.fiji.bdvpg.scijava.services.tree.FilterNode;
+import sc.fiji.bdvpg.scijava.services.tree.SourceTree;
+import sc.fiji.bdvpg.scijava.services.tree.SourceTreeModel;
+import sc.fiji.bdvpg.viewers.bdv.navigate.ViewerTransformAdjuster;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
-import sc.fiji.bdvpg.scijava.services.SourceAndConverterBdvDisplayService;
-import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
-import sc.fiji.bdvpg.scijava.services.ui.SourceAndConverterServiceUI;
-import sc.fiji.bdvpg.scijava.services.ui.SourceFilterNode;
-import sc.fiji.bdvpg.scijava.services.ui.SpimDataFilterNode;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterAndTimeRange;
-import sc.fiji.bdvpg.sourceandconverter.display.BrightnessAdjuster;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceTransformHelper;
+import sc.fiji.bdvpg.scijava.services.SourceBdvDisplayService;
+import sc.fiji.bdvpg.scijava.services.SourceService;
+import sc.fiji.bdvpg.source.SourceAndTimeRange;
+import sc.fiji.bdvpg.source.display.BrightnessAdjuster;
+import sc.fiji.bdvpg.source.transform.SourceTransformHelper;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultTreeModel;
@@ -46,7 +40,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -84,10 +77,10 @@ public class OpenOperettaDatasetCommand implements Command {
     Context ctx;
 
     @Parameter
-    SourceAndConverterService sourceService;
+    SourceService sourceService;
 
     @Parameter
-    SourceAndConverterBdvDisplayService sourceDisplayService;
+    SourceBdvDisplayService sourceDisplayService;
 
     @Parameter(label = "Min Display Value",
             description = "Minimum intensity value for display adjustment")
@@ -226,61 +219,61 @@ public class OpenOperettaDatasetCommand implements Command {
             }
             sourceService.setSpimDataName(asd, dataset_name);
 
-            Map<Well, SourceFilterNode> wellFilters = new LinkedHashMap<>();
-            Map<Integer, SourceFilterNode> fieldsFilters = new LinkedHashMap<>();
+            Map<Well, FilterNode> wellFilters = new LinkedHashMap<>();
+            Map<Integer, FilterNode> fieldsFilters = new LinkedHashMap<>();
 
-            DefaultTreeModel model = sourceService.getUI().getTreeModel();
+            DefaultTreeModel model = sourceService.tree().getTreeModel();
 
             opm.getWells().forEach(w -> {
                 int row = w.getRow().getValue() + 1;
                 int col = w.getColumn().getValue() + 1;
                 String name = getWellName(row, col);// "R" + row + "-C" + col;
                 //int idx = opm.getAvailableWells().indexOf(w)+1;
-                SourceFilterNode sfn = new SourceFilterNode(model,name,
+                FilterNode sfn = new FilterNode(name,
                         (source) -> source.getSpimSource().getName().startsWith("Well "+name+","),false);
                 wellFilters.put(w, sfn);
             });
 
             opm.getFieldIds().forEach(id -> {
                 fieldsFilters.put(id,
-                        new SourceFilterNode(model,"Field "+id,
+                        new FilterNode("Field "+id,
                         (source) -> source.getSpimSource().getName().contains(" Field "+id+"-"),false)
                );
             });
 
-            TreePath tp = sourceService.getUI().getTreePathFromString(opm.getPlateName());
-            SpimDataFilterNode datasetNode = (SpimDataFilterNode) tp.getLastPathComponent();
+            TreePath tp = sourceService.tree().getTreePathFromString(opm.getPlateName());
 
-            SourceFilterNode wellsNode = new SourceFilterNode(model, "Wells", (source)-> true, false);
-            SourceFilterNode fieldsNode = new SourceFilterNode(model, "Fields", (source)-> true, false);
-            sourceService.getUI().addNode(datasetNode,wellsNode);
-            sourceService.getUI().addNode(datasetNode,fieldsNode);
 
-            tp = sourceService.getUI().getTreePathFromString(opm.getPlateName()+">SeriesIndex");
-            sourceService.getUI().removeNode((SourceFilterNode) tp.getLastPathComponent());
+            FilterNode wellsNode = new FilterNode( "Wells", (source)-> true, false);
+            FilterNode fieldsNode = new FilterNode( "Fields", (source)-> true, false);
 
-            tp = sourceService.getUI().getTreePathFromString(opm.getPlateName()+">Illumination");
-            sourceService.getUI().removeNode((SourceFilterNode) tp.getLastPathComponent());
+            SourceTreeModel treeModel = sourceService.tree().getSourceTreeModel();
 
-            tp = sourceService.getUI().getTreePathFromString(opm.getPlateName()+">FileName");
-            sourceService.getUI().removeNode((SourceFilterNode) tp.getLastPathComponent());
+            tp = sourceService.tree().getTreePathFromString(opm.getPlateName()+">SeriesIndex");
+            treeModel.removeNode((FilterNode) tp.getLastPathComponent());
 
-            tp = sourceService.getUI().getTreePathFromString(opm.getPlateName()+">Displaysettings");
-            sourceService.getUI().removeNode((SourceFilterNode) tp.getLastPathComponent());
+            tp = sourceService.tree().getTreePathFromString(opm.getPlateName()+">Illumination");
+            treeModel.removeNode((FilterNode) tp.getLastPathComponent());
 
-            tp = sourceService.getUI().getTreePathFromString(opm.getPlateName()+">Angle");
-            sourceService.getUI().removeNode((SourceFilterNode) tp.getLastPathComponent());
+            tp = sourceService.tree().getTreePathFromString(opm.getPlateName()+">FileName");
+            treeModel.removeNode((FilterNode) tp.getLastPathComponent());
+
+            tp = sourceService.tree().getTreePathFromString(opm.getPlateName()+">Displaysettings");
+            treeModel.removeNode((FilterNode) tp.getLastPathComponent());
+
+            tp = sourceService.tree().getTreePathFromString(opm.getPlateName()+">Angle");
+            treeModel.removeNode((FilterNode) tp.getLastPathComponent());
 
             // Don't forget to clone the nodes...
-            wellFilters.values().forEach(wf -> {
+            /*wellFilters.values().forEach(wf -> {
                 try {
                     SwingUtilities.invokeAndWait(() -> {
-                        SourceFilterNode node = (SourceFilterNode) wf.clone();
-                        sourceService.getUI().addNode(wellsNode,node);
+                        FilterNode node = ((FilterNode) wf).clone();
+                        sourceService.tree().addNode(wellsNode,wf);
                         fieldsFilters.values().forEach(ff -> {
-                            SourceFilterNode ffc =(SourceFilterNode) ff.clone();
-                            sourceService.getUI().addNode(node,ffc);
-                            sourceService.getUI().addNode(ffc, new SourceFilterNode(model, "Sources",(source) -> true, true));
+                            FilterNode ffc =(FilterNode) ff.clone();
+                            treeModel.addNode(node,ffc);
+                            treeModel.addNode(ffc, new FilterNode( "Sources",(source) -> true, true));
                         });
                     });
                 } catch (InterruptedException e) {
@@ -294,12 +287,12 @@ public class OpenOperettaDatasetCommand implements Command {
             fieldsFilters.values().forEach(ff -> {
                 try {
                     SwingUtilities.invokeAndWait(() -> {
-                        SourceFilterNode node = (SourceFilterNode) ff.clone();
-                        sourceService.getUI().addNode(fieldsNode,node);
+                        FilterNode node = (FilterNode) ff.clone();
+                        treeModel.addNode(fieldsNode,node);
                         wellFilters.values().forEach(wf -> {
-                            SourceFilterNode wfc =(SourceFilterNode)wf.clone();
-                            sourceService.getUI().addNode(node,wfc);
-                            sourceService.getUI().addNode(wfc, new SourceFilterNode(model, "Sources",(source) -> true, true));
+                            FilterNode wfc = (FilterNode)wf.clone();
+                            treeModel.addNode(node,wfc);
+                            treeModel.addNode(wfc, new FilterNode(model, "Sources", (source) -> true, true));
                         });
                     });
                 } catch (InterruptedException e) {
@@ -307,7 +300,7 @@ public class OpenOperettaDatasetCommand implements Command {
                 } catch (InvocationTargetException e) {
                     e.printStackTrace();
                 }
-            });
+            });*/
 
             IJ.log("Setting location in space...");
 
@@ -330,9 +323,9 @@ public class OpenOperettaDatasetCommand implements Command {
             int row0 = w0.getRow().getValue() + 1;
             int col0 = w0.getColumn().getValue() + 1;
             String wellName0 =  getWellName(row0, col0); // "R" + row0 + "-C" + col0;
-            TreePath pathFirstWell = sourceService.getUI().getTreePathFromString(opm.getPlateName()+">Wells>"+wellName0);
+            TreePath pathFirstWell = sourceService.tree().getTreePathFromString(opm.getPlateName()+">Wells>"+wellName0);
 
-            for (SourceAndConverter source : sourceService.getUI().getSourceAndConvertersFromTreePath(pathFirstWell)) {
+            for (SourceAndConverter source : sourceService.tree().getSourceAndConvertersFromTreePath(pathFirstWell)) {
                 source.getSpimSource().getSourceTransform(0,0,at3d);
                 topLeft.setPosition(new double[]{0,0,0});
                 at3d.apply(topLeft,topLeft);
@@ -375,12 +368,12 @@ public class OpenOperettaDatasetCommand implements Command {
                 int col = w.getColumn().getValue() + 1;
                 String wellName =  getWellName(row, col);//"R" + row + "-C" + col;
 
-                TreePath p = sourceService.getUI().getTreePathFromString(opm.getPlateName()+">Wells>"+wellName);
+                TreePath p = sourceService.tree().getTreePathFromString(opm.getPlateName()+">Wells>"+wellName);
 
-                List<SourceAndConverter<?>> sources = sourceService.getUI().getSourceAndConvertersFromTreePath(p);
+                List<SourceAndConverter<?>> sources = sourceService.tree().getSourceAndConvertersFromTreePath(p);
                 sources.forEach(source -> new BrightnessAdjuster(source, min_display_value, max_display_value).run());
-                List<SourceAndConverterAndTimeRange> sourceAndTime = sources.stream().map(source ->
-                    new SourceAndConverterAndTimeRange(source,0,opm.getRange().getRangeT().size())
+                List<SourceAndTimeRange> sourceAndTime = sources.stream().map(source ->
+                    new SourceAndTimeRange(source,0,opm.getRange().getRangeT().size())
                 ).collect(Collectors.toList());
                 AffineTransform3D transform = new AffineTransform3D();
                 if ((col*sizeX-originX)<startX) {
@@ -410,7 +403,7 @@ public class OpenOperettaDatasetCommand implements Command {
 
                 for (int iCh = 0; iCh<maxChannels; iCh++) {
                     SourceGroup group = groups.get(iCh);
-                    SourceAndConverterServiceUI.Node chNode = sourceService.getUI().getRoot().child(opm.getPlateName()).child("Channel").child(iCh);
+                    SourceTree.Node chNode = sourceService.tree().getRoot().child(opm.getPlateName()).child("Channel").child(iCh);
                     List<SourceAndConverter<?>> sourcesInChannel =
                             Arrays.asList(chNode.sources());
                     List<SourceAndConverter<?>> sourcesCast = sourcesInChannel.stream().map(sac -> (SourceAndConverter<?>) sac).collect(Collectors.toList());

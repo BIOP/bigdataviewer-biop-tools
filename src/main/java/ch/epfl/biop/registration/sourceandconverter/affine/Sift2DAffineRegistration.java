@@ -11,7 +11,7 @@ import org.scijava.command.CommandService;
 import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
+import sc.fiji.bdvpg.source.SourceHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -92,11 +92,11 @@ public class Sift2DAffineRegistration extends AffineTransformSourceAndConverterR
                  // Atlas image : a single timepoint
                  "tp_fixed", 0,
                  // Level 2 for the atlas
-                 "level_fixed_source", SourceAndConverterHelper.bestLevel(fimg[0], timePoint, voxSizeInMm),
+                 "level_fixed_source", SourceHelper.bestLevel(fimg[0], timePoint, voxSizeInMm),
                  // Timepoint moving source (normally 0)
                  "tp_moving", timePoint,
                  // Tries to be clever for the moving source sampling
-                 "level_moving_source", SourceAndConverterHelper.bestLevel(mimg[0], timePoint, voxSizeInMm),
+                 "level_moving_source", SourceHelper.bestLevel(mimg[0], timePoint, voxSizeInMm),
                  "invert_moving", invert_moving,
                  "invert_fixed", invert_fixed
             );

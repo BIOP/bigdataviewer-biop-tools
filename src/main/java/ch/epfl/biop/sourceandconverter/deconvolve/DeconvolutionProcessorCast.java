@@ -50,10 +50,10 @@ import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;
 import sc.fiji.bdvpg.cache.GlobalLoaderCache;
-import sc.fiji.bdvpg.scijava.services.ui.RenamableSourceAndConverter;
-import sc.fiji.bdvpg.scijava.services.ui.inspect.ISourceInspector;
-import sc.fiji.bdvpg.services.ISourceAndConverterService;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
+import sc.fiji.bdvpg.scijava.services.RenamableSource;
+import sc.fiji.bdvpg.scijava.services.tree.inspect.ISourceInspector;
+import sc.fiji.bdvpg.services.ISourceService;
+import sc.fiji.bdvpg.source.SourceHelper;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.ArrayList;
@@ -63,7 +63,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static sc.fiji.bdvpg.scijava.services.ui.SourceAndConverterInspector.appendInspectorResult;
+import static sc.fiji.bdvpg.scijava.services.tree.inspect.SourceInspector.appendInspectorResult;
 
 /**
  * A named processor class for Richardson-Lucy deconvolution that casts the output
@@ -122,7 +122,7 @@ public class DeconvolutionProcessorCast<T extends RealType<T> & NativeType<T>> i
         this.ops = new ArrayList<>();
         this.cachedRAIs = new ConcurrentHashMap<>();
 
-        int numTimepoints = SourceAndConverterHelper.getMaxTimepoint(source) + 1;
+        int numTimepoints = SourceHelper.getMaxTimepoint(source) + 1;
 
         // Extract PSF RAI from the SourceAndConverter (timepoint 0, resolution level 0)
         RandomAccessibleInterval<? extends RealType<?>> psfRAI =
@@ -243,7 +243,7 @@ public class DeconvolutionProcessorCast<T extends RealType<T> & NativeType<T>> i
 
     @Override
     public Set<SourceAndConverter<?>> inspect(DefaultMutableTreeNode parent, SourceAndConverter<?> sac,
-                                               ISourceAndConverterService sourceAndConverterService,
+                                               ISourceService SourceService,
                                                boolean registerIntermediateSources) {
         parent.add(new DefaultMutableTreeNode("Cell Dimensions: " + Arrays.toString(cellDimensions)));
         parent.add(new DefaultMutableTreeNode("Overlap: " + Arrays.toString(overlap)));
@@ -254,9 +254,9 @@ public class DeconvolutionProcessorCast<T extends RealType<T> & NativeType<T>> i
         parent.add(new DefaultMutableTreeNode("Output Type: Original (cast)"));
 
         DefaultMutableTreeNode sourceNode = new DefaultMutableTreeNode(
-                new RenamableSourceAndConverter(psfSource));
+                new RenamableSource(psfSource));
         appendInspectorResult(sourceNode, psfSource,
-                sourceAndConverterService, registerIntermediateSources);
+                SourceService, registerIntermediateSources);
         parent.add(sourceNode);
 
         Set<SourceAndConverter<?>> subSources = new HashSet<>();

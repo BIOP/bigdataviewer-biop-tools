@@ -68,7 +68,7 @@ For LLS7 CZI files with proper deskewing:
 #@Context ctx
 // Load standard image file
 CommandService cs = ctx.getService(CommandService.class);
-SourceAndConverterService ss = ctx.getService(SourceAndConverterService.class);
+SourceService ss = ctx.getService(SourceService.class);
 
 File imageFile = new File("path/to/image.tif");
 
@@ -100,7 +100,7 @@ cs.run(LLS7OpenDatasetCommand.class, true,
 // Retrieve sources by dataset name
 String datasetName = FilenameUtils.removeExtension(lls7File.getName());
 SourceAndConverter<?>[] sources = ss.getUI()
-    .getSourceAndConvertersFromPath(datasetName)
+    .getSources(datasetName)
     .toArray(new SourceAndConverter[0]);
 ```
 
@@ -143,7 +143,7 @@ cs.run(LLS7OpenDatasetCommand.class, true,
 
 String datasetName = FilenameUtils.removeExtension(lls7File.getName());
 SourceAndConverter<?>[] channels = ss.getUI()
-    .getSourceAndConvertersFromPath(datasetName)
+    .getSources(datasetName)
     .toArray(new SourceAndConverter[0]);
 
 // 2. Load PSF

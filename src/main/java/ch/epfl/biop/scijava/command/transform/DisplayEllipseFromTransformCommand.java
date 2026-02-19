@@ -13,10 +13,10 @@ import net.imglib2.type.numeric.integer.UnsignedShortType;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
-import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
-import sc.fiji.bdvpg.sourceandconverter.display.BrightnessAdjuster;
+import sc.fiji.bdvpg.scijava.services.SourceService;
+import sc.fiji.bdvpg.services.SourceServices;
+import sc.fiji.bdvpg.source.SourceHelper;
+import sc.fiji.bdvpg.source.display.BrightnessAdjuster;
 
 
 //@Plugin(type = Command.class, menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>Create Ellipsoid Source",
@@ -44,7 +44,7 @@ public class DisplayEllipseFromTransformCommand implements Command {
     double r_max = 1.1;
 
     @Parameter
-    SourceAndConverterService sacService;
+    SourceService source_service;
 
     @Override
     public void run() {
@@ -74,12 +74,12 @@ public class DisplayEllipseFromTransformCommand implements Command {
         ws.updateTransform(e3dt.inverse());
         ws.setIsTransformed(true);
 
-        sac_out = SourceAndConverterHelper.createSourceAndConverter(ws);
-        sacService.register(sac_out);
+        sac_out = SourceHelper.createSourceAndConverter(ws);
+        source_service.register(sac_out);
 
         e3dt.updateNotifiers.add(() -> {
             ws.updateTransform(e3dt.inverse());
-            SourceAndConverterServices
+            SourceServices
                     .getBdvDisplayService()
                     .getDisplaysOf(sac_out).forEach(bdvHandle -> bdvHandle.getViewerPanel().requestRepaint());
         });

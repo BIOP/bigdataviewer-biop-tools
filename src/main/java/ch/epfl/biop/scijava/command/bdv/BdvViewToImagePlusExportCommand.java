@@ -17,8 +17,8 @@ import org.scijava.task.TaskService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
-import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
-import sc.fiji.bdvpg.sourceandconverter.importer.EmptySourceAndConverterCreator;
+import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
+import sc.fiji.bdvpg.source.importer.EmptySourceCreator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -269,7 +269,7 @@ public class BdvViewToImagePlusExportCommand implements BdvPlaygroundActionComma
         if (nPx == 0) nPx = 1;
         if (nPy == 0) nPy = 1;
 
-        return new EmptySourceAndConverterCreator(capturename, at3D.inverse(), nPx, nPy, nPz).get();
+        return new EmptySourceCreator(capturename, at3D.inverse(), nPx, nPy, nPz).get();
     }
 
     /**

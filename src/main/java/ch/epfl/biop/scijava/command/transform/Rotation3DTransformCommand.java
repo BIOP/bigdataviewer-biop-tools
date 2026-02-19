@@ -11,10 +11,10 @@ import org.scijava.command.InteractiveCommand;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
-import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceTransformHelper;
+import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
+import sc.fiji.bdvpg.services.SourceServices;
+import sc.fiji.bdvpg.source.SourceHelper;
+import sc.fiji.bdvpg.source.transform.SourceTransformHelper;
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
         menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>Rotation 3D Transform",
@@ -117,7 +117,7 @@ public class Rotation3DTransformCommand extends InteractiveCommand implements Bd
                 if (sac!=null) {
                     if (sac.getSpimSource() instanceof TransformedSource) {
                         ((TransformedSource) sac.getSpimSource()).setFixedTransform(at3D);
-                        SourceAndConverterServices.getBdvDisplayService().updateDisplays(sac);
+                        SourceServices.getBdvDisplayService().updateDisplays(sac);
                     } else {
                         IJ.log("Can't rotate a non transformed source, please use  BigDataViewer-Playground › Sources › Transform › Wrap as Transformed Source");
                     }

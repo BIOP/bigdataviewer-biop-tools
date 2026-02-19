@@ -34,23 +34,23 @@ import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.util.Behaviours;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sc.fiji.bdvpg.bdv.BdvHandleHelper;
-import sc.fiji.bdvpg.bdv.ManualRegistrationStarter;
-import sc.fiji.bdvpg.bdv.ManualRegistrationStopper;
-import sc.fiji.bdvpg.bdv.navigate.ViewerTransformAdjuster;
+import sc.fiji.bdvpg.viewers.bdv.BdvHandleHelper;
+import sc.fiji.bdvpg.viewers.bdv.ManualRegistrationStarter;
+import sc.fiji.bdvpg.viewers.bdv.ManualRegistrationStopper;
+import sc.fiji.bdvpg.viewers.bdv.navigate.ViewerTransformAdjuster;
 import sc.fiji.bdvpg.bdv.supplier.BdvSupplierHelper;
-import sc.fiji.bdvpg.bdv.supplier.IBdvSupplier;
+import sc.fiji.bdvpg.viewers.bdv.supplier.IBdvSupplier;
 import sc.fiji.bdvpg.bdv.supplier.biop.BiopSerializableBdvOptions;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
-import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
-import sc.fiji.bdvpg.scijava.services.SourceAndConverterBdvDisplayService;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterAndTimeRange;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
-import sc.fiji.bdvpg.sourceandconverter.display.BrightnessAutoAdjuster;
-import sc.fiji.bdvpg.sourceandconverter.register.BigWarpLauncher;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceRealTransformer;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceTransformHelper;
+import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
+import sc.fiji.bdvpg.scijava.services.SourceBdvDisplayService;
+import sc.fiji.bdvpg.services.SourceServices;
+import sc.fiji.bdvpg.source.SourceAndTimeRange;
+import sc.fiji.bdvpg.source.SourceHelper;
+import sc.fiji.bdvpg.source.display.BrightnessAutoAdjuster;
+import sc.fiji.bdvpg.source.register.BigWarpLauncher;
+import sc.fiji.bdvpg.source.transform.SourceRealTransformer;
+import sc.fiji.bdvpg.source.transform.SourceTransformHelper;
 
 import javax.swing.*;
 import java.util.*;
@@ -137,7 +137,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
     boolean verbose;
 
     @Parameter
-    SourceAndConverterBdvDisplayService sacbds;
+    SourceBdvDisplayService sacbds;
 
     @Parameter(type = ItemIO.OUTPUT)
     SourceAndConverter<?>[] transformed_sources;
@@ -169,7 +169,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
         precisePixelSize_mm = precise_pixel_size_um / 1000.00;
 
         bdvh = new WizardBdvSupplier().get(); //
-        SourceAndConverterServices.getBdvDisplayService().registerBdvHandle(bdvh);
+        SourceServices.getBdvDisplayService().registerBdvHandle(bdvh);
 
         if ((!manual_rigid_registration)&&(!automated_affine_registration)&&(!automated_spline_registration)&&(!manual_spline_registration)) {
             IJ.error("You need to select at least one sort of registration!");
@@ -185,8 +185,8 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
         }
 
         if (center_moving_image) {
-            RealPoint centerMoving = SourceAndConverterHelper.getSourceAndConverterCenterPoint(moving,0);
-            RealPoint centerFixed = SourceAndConverterHelper.getSourceAndConverterCenterPoint(fixed,0);
+            RealPoint centerMoving = SourceHelper.getSourceCenterPoint(moving,0);
+            RealPoint centerFixed = SourceHelper.getSourceCenterPoint(fixed,0);
             centeringTransform.translate(
                     centerFixed.getDoublePosition(0)-centerMoving.getDoublePosition(0),
                     centerFixed.getDoublePosition(1)-centerMoving.getDoublePosition(1),
@@ -194,13 +194,13 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
                     );
         }
 
-        SourceAndConverter newFixed = SourceTransformHelper.createNewTransformedSourceAndConverter(preTransformFixed, new SourceAndConverterAndTimeRange(fixed,0));
-        SourceAndConverter newMoving = SourceTransformHelper.createNewTransformedSourceAndConverter(centeringTransform, new SourceAndConverterAndTimeRange(moving,0));
+        SourceAndConverter newFixed = SourceTransformHelper.createNewTransformedSourceAndConverter(preTransformFixed, new SourceAndTimeRange(fixed,0));
+        SourceAndConverter newMoving = SourceTransformHelper.createNewTransformedSourceAndConverter(centeringTransform, new SourceAndTimeRange(moving,0));
 
-        SourceAndConverterServices.getBdvDisplayService().remove(bdvh, new SourceAndConverter[]{fixed, moving});
+        SourceServices.getBdvDisplayService().remove(bdvh, new SourceAndConverter[]{fixed, moving});
         moving = newMoving;
         fixed = newFixed;
-        SourceAndConverterServices.getBdvDisplayService().show(bdvh, new SourceAndConverter[]{fixed, moving});
+        SourceServices.getBdvDisplayService().show(bdvh, new SourceAndConverter[]{fixed, moving});
 
         // Make sure the relevant sources are displayed
         showImages();
@@ -267,7 +267,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
                     ptCoords += pt.getDoublePosition(0) + "," + pt.getDoublePosition(1) + ",";
                 }
             }
-            SourceAndConverterServices.getBdvDisplayService().closeBdv(bdvh);
+            SourceServices.getBdvDisplayService().closeBdv(bdvh);
             bdvh.close();
 
             IJ.log("Registration started...");
@@ -302,9 +302,9 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
 
                 List<SourceAndConverter<?>> fixedSacs = Arrays.stream(new SourceAndConverter<?>[]{fixed}).collect(Collectors.toList());
 
-                List<ConverterSetup> converterSetups = Arrays.stream(new SourceAndConverter<?>[]{moving}).map(src -> SourceAndConverterServices.getSourceAndConverterService().getConverterSetup(src)).collect(Collectors.toList());
+                List<ConverterSetup> converterSetups = Arrays.stream(new SourceAndConverter<?>[]{moving}).map(src -> SourceServices.getSourceService().getConverterSetup(src)).collect(Collectors.toList());
 
-                converterSetups.addAll(Arrays.stream(new SourceAndConverter<?>[]{fixed}).map(src -> SourceAndConverterServices.getSourceAndConverterService().getConverterSetup(src)).collect(Collectors.toList()));
+                converterSetups.addAll(Arrays.stream(new SourceAndConverter<?>[]{fixed}).map(src -> SourceServices.getSourceService().getConverterSetup(src)).collect(Collectors.toList()));
 
                 // Launch BigWarp
                 BigWarpLauncher bwl = new BigWarpLauncher(movingSacs, fixedSacs, "Big Warp", converterSetups);
@@ -318,7 +318,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
                 BdvHandleHelper.setWindowTitle(bdvhP, "Warpy Registration - 3 - BigWarp Registration");
                 BdvHandleHelper.setWindowTitle(bdvhQ, "Warpy Registration - 3 - BigWarp Registration");
 
-                SourceAndConverterServices.getBdvDisplayService().pairClosing(bdvhQ,bdvhP);
+                SourceServices.getBdvDisplayService().pairClosing(bdvhQ,bdvhP);
 
                 bdvhP.getViewerPanel().requestRepaint();
                 bdvhQ.getViewerPanel().requestRepaint();
@@ -358,8 +358,8 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
                     .toArray(SourceAndConverter<?>[]::new);
 
             // Cleaning temporary transformed working sources
-            SourceAndConverterServices
-                    .getSourceAndConverterService()
+            SourceServices
+                    .getSourceService()
                     .remove(moving, fixed);
 
             // Potentially releasing resources

@@ -2,8 +2,8 @@ package ch.epfl.biop.registration.sourceandconverter.affine;
 
 import bdv.viewer.SourceAndConverter;
 import net.imglib2.realtransform.AffineTransform3D;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterAndTimeRange;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceTransformHelper;
+import sc.fiji.bdvpg.source.SourceAndTimeRange;
+import sc.fiji.bdvpg.source.transform.SourceTransformHelper;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -30,7 +30,7 @@ public class AffineTransformedSourceWrapperRegistration extends AffineTransformS
      */
     public synchronized void setAffineTransform(AffineTransform3D at3d_in) {
         this.at3d = at3d_in;
-        alreadyTransformedSources.keySet().forEach(sac -> SourceTransformHelper.set(at3d_in, new SourceAndConverterAndTimeRange<>(alreadyTransformedSources.get(sac), timePoint)));
+        alreadyTransformedSources.keySet().forEach(sac -> SourceTransformHelper.set(at3d_in, new SourceAndTimeRange<>(alreadyTransformedSources.get(sac), timePoint)));
     }
 
     /**
@@ -57,9 +57,9 @@ public class AffineTransformedSourceWrapperRegistration extends AffineTransformS
         for (int idx = 0;idx<img.length;idx++) {
             if (alreadyTransformedSources.containsKey(img[idx])) {
                 out[idx] = alreadyTransformedSources.get(img[idx]);
-                SourceTransformHelper.set(at3d, new SourceAndConverterAndTimeRange<>(out[idx], timePoint));
+                SourceTransformHelper.set(at3d, new SourceAndTimeRange<>(out[idx], timePoint));
             } else {
-                out[idx] = SourceTransformHelper.createNewTransformedSourceAndConverter(at3d, new SourceAndConverterAndTimeRange<>(img[idx], timePoint));
+                out[idx] = SourceTransformHelper.createNewTransformedSourceAndConverter(at3d, new SourceAndTimeRange<>(img[idx], timePoint));
                 alreadyTransformedSources.put(img[idx], out[idx]);
             }
         }

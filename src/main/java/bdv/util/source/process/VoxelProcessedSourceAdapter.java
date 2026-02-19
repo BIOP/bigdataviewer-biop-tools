@@ -37,8 +37,8 @@ import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sc.fiji.bdvpg.scijava.adapter.source.ISourceAdapter;
-import sc.fiji.bdvpg.services.SourceAndConverterAdapter;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
+import sc.fiji.bdvpg.services.SourceAdapter;
+import sc.fiji.bdvpg.services.SourceServices;
 
 import java.lang.reflect.Type;
 
@@ -58,10 +58,10 @@ public class VoxelProcessedSourceAdapter implements ISourceAdapter<VoxelProcesse
 
     private static final Logger logger = LoggerFactory.getLogger(VoxelProcessedSourceAdapter.class);
 
-    SourceAndConverterAdapter sacSerializer;
+    SourceAdapter sacSerializer;
 
     @Override
-    public void setSacSerializer(SourceAndConverterAdapter sacSerializer) {
+    public void setSourceSerializer(SourceAdapter sacSerializer) {
         this.sacSerializer = sacSerializer;
     }
 
@@ -166,7 +166,7 @@ public class VoxelProcessedSourceAdapter implements ISourceAdapter<VoxelProcesse
 
         SourceAndConverter<?> sac = sourceVoxelProcessor.get();
 
-        SourceAndConverterServices.getSourceAndConverterService().register(sac);
+        SourceServices.getSourceService().register(sac);
 
         return sac;
     }

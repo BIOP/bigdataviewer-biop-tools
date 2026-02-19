@@ -11,12 +11,12 @@ import net.imagej.ImageJ;
 import net.imglib2.realtransform.AffineTransform3D;
 import org.junit.After;
 import org.junit.Test;
-import sc.fiji.bdvpg.bdv.navigate.ViewerTransformAdjuster;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
-import sc.fiji.bdvpg.sourceandconverter.display.BrightnessAutoAdjuster;
-import sc.fiji.bdvpg.sourceandconverter.importer.EmptySourceAndConverterCreator;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceAffineTransformer;
-import sc.fiji.bdvpg.spimdata.importer.SpimDataFromXmlImporter;
+import sc.fiji.bdvpg.viewers.bdv.navigate.ViewerTransformAdjuster;
+import sc.fiji.bdvpg.services.SourceServices;
+import sc.fiji.bdvpg.source.display.BrightnessAutoAdjuster;
+import sc.fiji.bdvpg.source.importer.EmptySourceCreator;
+import sc.fiji.bdvpg.source.transform.SourceAffineTransformer;
+import sc.fiji.bdvpg.dataset.importer.SpimDataFromXmlImporter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,11 +38,11 @@ public class ManySourcesFusedDemo {
         location.scale(0.5);
         location.translate(0,0,120);
 
-        SourceAndConverter model = new EmptySourceAndConverterCreator("Model", location, 8000,6000,1).get();
+        SourceAndConverter model = new EmptySourceCreator("Model", location, 8000,6000,1).get();
 
-        List<SourceAndConverter<?>> all_sources = SourceAndConverterServices.getSourceAndConverterService().getSourceAndConverters();
+        List<SourceAndConverter<?>> all_sources = SourceServices.getSourceService().getSourceAndConverters();
 
-        SourceAndConverterServices.getSourceAndConverterService().register(model);
+        SourceServices.getSourceService().register(model);
 
         SourceAndConverter<?> fused = new SourceFuserAndResampler(all_sources,
                 AlphaFusedResampledSource.AVERAGE,
@@ -50,9 +50,9 @@ public class ManySourcesFusedDemo {
                 true, true, false, 0,
                 64, 64, 64, 1000,8).get();
 
-        BdvHandle bdvh = SourceAndConverterServices.getBdvDisplayService().getNewBdv();
+        BdvHandle bdvh = SourceServices.getBdvDisplayService().getNewBdv();
 
-        SourceAndConverterServices
+        SourceServices
                 .getBdvDisplayService().show(bdvh, fused);
 
         new ViewerTransformAdjuster(bdvh, fused).run();
@@ -72,7 +72,7 @@ public class ManySourcesFusedDemo {
     public static void demo(int numberOfSourcesInOneAxis) {
 
         // Creates a BdvHandle
-        BdvHandle bdvHandle = SourceAndConverterServices
+        BdvHandle bdvHandle = SourceServices
                 .getBdvDisplayService().getActiveBdv();
 
         final String filePath = "src/test/resources/mri-stack.xml";
@@ -82,8 +82,8 @@ public class ManySourcesFusedDemo {
 
         final AbstractSpimData spimData = importer.get();
 
-        SourceAndConverter sac = SourceAndConverterServices
-                .getSourceAndConverterService()
+        SourceAndConverter sac = SourceServices
+                .getSourceService()
                 .getSourceAndConverterFromSpimdata(spimData)
                 .get(0);
 
@@ -108,7 +108,7 @@ public class ManySourcesFusedDemo {
             }
         }
 
-        SourceAndConverterServices
+        SourceServices
                 .getBdvDisplayService()
                 .show(bdvHandle, sacs.toArray(new SourceAndConverter[0]));
 

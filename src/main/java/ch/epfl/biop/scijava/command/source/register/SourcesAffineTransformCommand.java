@@ -5,10 +5,10 @@ import net.imglib2.realtransform.AffineTransform3D;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
-import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterAndTimeRange;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceTransformHelper;
+import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
+import sc.fiji.bdvpg.services.SourceServices;
+import sc.fiji.bdvpg.source.SourceAndTimeRange;
+import sc.fiji.bdvpg.source.transform.SourceTransformHelper;
 
 import java.util.Arrays;
 
@@ -43,15 +43,15 @@ public class SourcesAffineTransformCommand implements BdvPlaygroundActionCommand
         Arrays.stream(sources_in).forEach(sac -> {
             switch (mode) {
                 case "Mutate":
-                    SourceTransformHelper.mutate(at3d, new SourceAndConverterAndTimeRange(sac, timepoint_begin, timepoint_end));
+                    SourceTransformHelper.mutate(at3d, new SourceAndTimeRange(sac, timepoint_begin, timepoint_end));
                     break;
                 case "Append":
-                    SourceTransformHelper.append(at3d, new SourceAndConverterAndTimeRange(sac, timepoint_begin, timepoint_end));
+                    SourceTransformHelper.append(at3d, new SourceAndTimeRange(sac, timepoint_begin, timepoint_end));
                     break;
             }
         });
 
-        SourceAndConverterServices
+        SourceServices
                 .getBdvDisplayService()
                 .updateDisplays(sources_in);
     }

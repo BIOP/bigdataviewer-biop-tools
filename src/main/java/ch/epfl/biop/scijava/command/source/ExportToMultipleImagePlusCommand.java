@@ -16,8 +16,8 @@ import org.scijava.task.TaskService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
-import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
+import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
+import sc.fiji.bdvpg.source.SourceHelper;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -168,7 +168,7 @@ public class ExportToMultipleImagePlusCommand implements BdvPlaygroundActionComm
             List<SourceAndConverter<?>> sources = sacClasses.get(sacPropsKey);
 
             ImagePlus imp_out;
-            int numFrames = SourceAndConverterHelper.getMaxTimepoint(sources.toArray(new SourceAndConverter[0]))+1;
+            int numFrames = SourceHelper.getMaxTimepoint(sources.toArray(new SourceAndConverter[0]))+1;
 
             int maxZSlices = (int) sources.get(0).getSpimSource().getSource(0,level).dimension(2);
 
@@ -195,6 +195,6 @@ public class ExportToMultipleImagePlusCommand implements BdvPlaygroundActionComm
         sacs = null; // free mem ?
     }
 
-    public Function<Collection<SourceAndConverter<?>>,List<SourceAndConverter<?>>> sorter = sacslist -> SourceAndConverterHelper.sortDefaultGeneric(sacslist);
+    public Function<Collection<SourceAndConverter<?>>,List<SourceAndConverter<?>>> sorter = sacslist -> SourceHelper.sortDefaultGeneric(sacslist);
 
 }

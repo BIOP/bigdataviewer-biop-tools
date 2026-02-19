@@ -4,8 +4,8 @@ import ch.epfl.biop.spimdata.reordered.LifReOrdered;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;
-import sc.fiji.bdvpg.bdv.navigate.ViewerTransformAdjuster;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
+import sc.fiji.bdvpg.viewers.bdv.navigate.ViewerTransformAdjuster;
+import sc.fiji.bdvpg.services.SourceServices;
 
 import java.util.List;
 
@@ -30,16 +30,16 @@ public class DemoShuffledSpimData {
 
         System.out.println(LifReOrdered.class.getSimpleName());
         // load and convert the famous blobs image// Gets active BdvHandle instance
-        BdvHandle bdv = SourceAndConverterServices.getBdvDisplayService().getActiveBdv();
+        BdvHandle bdv = SourceServices.getBdvDisplayService().getActiveBdv();
         // Import SpimData
         //SpimDataFromXmlImporter importer = new SpimDataFromXmlImporter("N:\\Temp Oli\\Kunal\\lifkunal-nico_v3.xml");
         //importer.run();
         //AbstractSpimData asd = importer.get();
 
-        //final List<SourceAndConverter> sacs = SourceAndConverterServices.getSourceAndConverterService().getSourceAndConverters();
+        //final List<SourceAndConverter> sacs = SourceServices.getSourceService().getSourceAndConverters();
 
         /*sacs.forEach( sac -> {
-            SourceAndConverterServices.getBdvDisplayService().show( bdv, sac );
+            SourceServices.getBdvDisplayService().show( bdv, sac );
             //new ViewerTransformAdjuster( bdv, sac ).run();
             //new BrightnessAutoAdjuster( sac, 0 ).run();
         } );
@@ -52,25 +52,25 @@ public class DemoShuffledSpimData {
         AbstractSpimData reshuffled = kd.constructSpimData();
 
         System.out.println("Registering reordered dataset");
-        SourceAndConverterServices.getSourceAndConverterService().register(reshuffled);
+        SourceServices.getSourceService().register(reshuffled);
 
         System.out.println("Showing reordered dataset");
 
-        final List<SourceAndConverter<?>> sacsReordered = SourceAndConverterServices
-                .getSourceAndConverterService()
+        final List<SourceAndConverter<?>> sacsReordered = SourceServices
+                .getSourceService()
                 .getSourceAndConverterFromSpimdata(reshuffled);
 
         sacsReordered.forEach( sac -> {
             System.out.println(sac.getSpimSource().getName());
-            SourceAndConverterServices.getBdvDisplayService().show( bdv, sac );
+            SourceServices.getBdvDisplayService().show( bdv, sac );
             //new ViewerTransformAdjuster( bdv, sac ).run();
             //new BrightnessAutoAdjuster( sac, 0 ).run();
         } );
 
-        /*SourceAndConverterServices.getBdvDisplayService().show( bdv, sacsReordered.get(0) );
-        SourceAndConverterServices.getBdvDisplayService().show( bdv, sacsReordered.get(1) );
-        SourceAndConverterServices.getBdvDisplayService().show( bdv, sacsReordered.get(2) );
-        SourceAndConverterServices.getBdvDisplayService().show( bdv, sacsReordered.get(3) );*/
+        /*SourceServices.getBdvDisplayService().show( bdv, sacsReordered.get(0) );
+        SourceServices.getBdvDisplayService().show( bdv, sacsReordered.get(1) );
+        SourceServices.getBdvDisplayService().show( bdv, sacsReordered.get(2) );
+        SourceServices.getBdvDisplayService().show( bdv, sacsReordered.get(3) );*/
         new ViewerTransformAdjuster( bdv, sacsReordered.get(0) ).run();
 
         System.out.println("Showing reordered dataset - DONE");

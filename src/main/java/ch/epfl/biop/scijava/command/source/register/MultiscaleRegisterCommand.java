@@ -31,12 +31,12 @@ import org.scijava.task.TaskService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
-import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterAndTimeRange;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceRealTransformer;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceTransformHelper;
+import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
+import sc.fiji.bdvpg.services.SourceServices;
+import sc.fiji.bdvpg.source.SourceAndTimeRange;
+import sc.fiji.bdvpg.source.SourceHelper;
+import sc.fiji.bdvpg.source.transform.SourceRealTransformer;
+import sc.fiji.bdvpg.source.transform.SourceTransformHelper;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -124,8 +124,8 @@ public class MultiscaleRegisterCommand implements BdvPlaygroundActionCommand{
         }
 
         if (center_moving_image) {
-            RealPoint centerMoving = SourceAndConverterHelper.getSourceAndConverterCenterPoint(moving[0],0);
-            RealPoint centerFixed = SourceAndConverterHelper.getSourceAndConverterCenterPoint(fixed[0],0);
+            RealPoint centerMoving = SourceHelper.getSourceCenterPoint(moving[0],0);
+            RealPoint centerFixed = SourceHelper.getSourceCenterPoint(fixed[0],0);
             preTransformMoving.translate(
                     centerFixed.getDoublePosition(0)-centerMoving.getDoublePosition(0),
                     centerFixed.getDoublePosition(1)-centerMoving.getDoublePosition(1),
@@ -135,8 +135,8 @@ public class MultiscaleRegisterCommand implements BdvPlaygroundActionCommand{
 
         // Apply these pre transformations to all sources involved in the registration
         for (int i = 0; i< moving.length; i++) {
-            SourceAndConverter newFixed = SourceTransformHelper.createNewTransformedSourceAndConverter(preTransformFixed, new SourceAndConverterAndTimeRange(fixed[i],0));
-            SourceAndConverter newMoving = SourceTransformHelper.createNewTransformedSourceAndConverter(preTransformMoving, new SourceAndConverterAndTimeRange(moving[i],0));
+            SourceAndConverter newFixed = SourceTransformHelper.createNewTransformedSourceAndConverter(preTransformFixed, new SourceAndTimeRange(fixed[i],0));
+            SourceAndConverter newMoving = SourceTransformHelper.createNewTransformedSourceAndConverter(preTransformMoving, new SourceAndTimeRange(moving[i],0));
             moving[i] = newMoving;
             fixed[i] = newFixed;
         }
@@ -253,9 +253,9 @@ public class MultiscaleRegisterCommand implements BdvPlaygroundActionCommand{
                                 "sacs_fixed", fixed,
                                 "sacs_moving", transformedMoving,
                                 "tp_fixed", 0,
-                                "level_fixed_source", SourceAndConverterHelper.bestLevel(fixed[0], 0, pixelSizeBlockmm),
+                                "level_fixed_source", SourceHelper.bestLevel(fixed[0], 0, pixelSizeBlockmm),
                                 "tp_moving", 0,
-                                "level_moving_source", SourceAndConverterHelper.bestLevel(moving[0], 0, pixelSizeBlockmm),
+                                "level_moving_source", SourceHelper.bestLevel(moving[0], 0, pixelSizeBlockmm),
                                 "pt_list_coordinates", ptListCoordinates, // landmarksAtCurrentLevel
                                 "z_location", 0,
                                 "sx", blockSizeXmmPerScale.get(scale),
@@ -298,7 +298,7 @@ public class MultiscaleRegisterCommand implements BdvPlaygroundActionCommand{
                             .map(source -> new SourceRealTransformer(currentTransformation).apply(source))
                             .toArray(SourceAndConverter<?>[]::new);
                     for (SourceAndConverter<?> source : currentScaleSources ) {
-                        SourceAndConverterServices.getSourceAndConverterService().register(new RenamedSourceAndConverterAdapter(source, source.getSpimSource().getName()+"_Scale_"+scale));
+                        SourceServices.getSourceService().register(new RenamedSourceAndConverterAdapter(source, source.getSpimSource().getName()+"_Scale_"+scale));
                     }
                 }
 

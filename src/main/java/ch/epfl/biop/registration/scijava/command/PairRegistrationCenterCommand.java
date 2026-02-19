@@ -10,8 +10,8 @@ import net.imglib2.realtransform.AffineTransform3D;
 import org.scijava.command.Command;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
-import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
+import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
+import sc.fiji.bdvpg.source.SourceHelper;
 
 import java.util.Map;
 
@@ -23,8 +23,8 @@ public class PairRegistrationCenterCommand extends AbstractPairRegistration2DCom
     @Override
     protected void addRegistrationParameters(Map<String, Object> parameters) {
         AffineTransform3D affineTransform3D = new AffineTransform3D();
-        RealPoint centerFixed = SourceAndConverterHelper.getSourceAndConverterCenterPoint(registration_pair.getFixedSources()[0], registration_pair.getFixedTimepoint());
-        RealPoint centerMoving = SourceAndConverterHelper.getSourceAndConverterCenterPoint(registration_pair.getMovingSourcesRegistered()[0], registration_pair.getMovingTimepoint());
+        RealPoint centerFixed = SourceHelper.getSourceCenterPoint(registration_pair.getFixedSources()[0], registration_pair.getFixedTimepoint());
+        RealPoint centerMoving = SourceHelper.getSourceCenterPoint(registration_pair.getMovingSourcesRegistered()[0], registration_pair.getMovingTimepoint());
         double dx = centerFixed.getDoublePosition(0)-centerMoving.getDoublePosition(0);
         double dy = centerFixed.getDoublePosition(1)-centerMoving.getDoublePosition(1);
         double dz = centerFixed.getDoublePosition(2)-centerMoving.getDoublePosition(2);

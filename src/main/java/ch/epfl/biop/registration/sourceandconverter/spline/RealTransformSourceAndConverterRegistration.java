@@ -8,7 +8,7 @@ import net.imglib2.RealPoint;
 import net.imglib2.realtransform.RealTransform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceRealTransformer;
+import sc.fiji.bdvpg.source.transform.SourceRealTransformer;
 import sc.fiji.persist.ScijavaGsonHelper;
 
 import java.util.ArrayList;

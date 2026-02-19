@@ -21,10 +21,10 @@ import org.scijava.command.CommandService;
 import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sc.fiji.bdvpg.bdv.BdvHandleHelper;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
-import sc.fiji.bdvpg.sourceandconverter.register.BigWarpLauncher;
+import sc.fiji.bdvpg.viewers.bdv.BdvHandleHelper;
+import sc.fiji.bdvpg.services.SourceServices;
+import sc.fiji.bdvpg.source.SourceHelper;
+import sc.fiji.bdvpg.source.register.BigWarpLauncher;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -116,11 +116,11 @@ public class Elastix2DSplineRegistration extends RealTransformSourceAndConverter
                     // Atlas image : a single timepoint
                     "tp_fixed", 0,
                     // Level 2 for the atlas
-                    "level_fixed_source", SourceAndConverterHelper.bestLevel(fimg[0], timePoint, voxSizeInMm),
+                    "level_fixed_source", SourceHelper.bestLevel(fimg[0], timePoint, voxSizeInMm),
                     // Timepoint moving source (normally 0)
                     "tp_moving", timePoint,
                     // Tries to be clever for the moving source sampling
-                    "level_moving_source", SourceAndConverterHelper.bestLevel(mimg[0], timePoint, voxSizeInMm)
+                    "level_moving_source", SourceHelper.bestLevel(mimg[0], timePoint, voxSizeInMm)
                     );
 
              task = context
@@ -290,9 +290,9 @@ public class Elastix2DSplineRegistration extends RealTransformSourceAndConverter
 
                 List<SourceAndConverter<?>> fixedSacs = Arrays.stream(fimg).collect(Collectors.toList());
 
-                List<ConverterSetup> converterSetups = Arrays.stream(mimg).map(src -> SourceAndConverterServices.getSourceAndConverterService().getConverterSetup(src)).collect(Collectors.toList());
+                List<ConverterSetup> converterSetups = Arrays.stream(mimg).map(src -> SourceServices.getSourceService().getConverterSetup(src)).collect(Collectors.toList());
 
-                converterSetups.addAll(Arrays.stream(fimg).map(src -> SourceAndConverterServices.getSourceAndConverterService().getConverterSetup(src)).collect(Collectors.toList()));
+                converterSetups.addAll(Arrays.stream(fimg).map(src -> SourceServices.getSourceService().getConverterSetup(src)).collect(Collectors.toList()));
 
                 // Launch BigWarp
                 bwl = new BigWarpLauncher(movingSacs, fixedSacs, "Big Warp", converterSetups);
@@ -309,7 +309,7 @@ public class Elastix2DSplineRegistration extends RealTransformSourceAndConverter
                 bdvhQ.getViewerPanel().state().setDisplayMode(DisplayMode.FUSED);
                 bdvhP.getViewerPanel().state().setDisplayMode(DisplayMode.FUSED);
 
-                SourceAndConverterServices.getBdvDisplayService().pairClosing(bdvhQ,bdvhP);
+                SourceServices.getBdvDisplayService().pairClosing(bdvhQ,bdvhP);
 
                 bdvhP.getViewerPanel().requestRepaint();
                 bdvhQ.getViewerPanel().requestRepaint();

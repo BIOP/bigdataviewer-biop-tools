@@ -34,7 +34,7 @@ import net.haesleinhuepf.clij.CLIJ;
 import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;
 import org.apache.commons.io.FilenameUtils;
-import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
+import sc.fiji.bdvpg.scijava.services.SourceService;
 
 import java.io.File;
 import java.util.concurrent.Future;
@@ -86,12 +86,12 @@ public class DemoDeconvolution {
 
         // Get the source and PSF from the service
         String datasetName = FilenameUtils.removeExtension(helaKyotoLLS7.getName());
-        SourceAndConverterService sacService = ij.context().getService(SourceAndConverterService.class);
+        SourceService sacService = ij.context().getService(SourceService.class);
 
-        SourceAndConverter[] sources = sacService.getUI().getSourceAndConvertersFromPath(datasetName)
+        SourceAndConverter[] sources = sacService.tree().getSources(datasetName)
                 .toArray(new SourceAndConverter[0]);
 
-        SourceAndConverter psf = sacService.getUI().getSourceAndConvertersFromPath("psf_lls7_200nm")
+        SourceAndConverter psf = sacService.tree().getSources("psf_lls7_200nm")
                 .toArray(new SourceAndConverter[0])[0];
 
         // Run the deconvolution command

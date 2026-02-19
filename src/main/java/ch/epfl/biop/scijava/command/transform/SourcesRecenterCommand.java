@@ -6,10 +6,10 @@ import org.scijava.ItemIO;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
-import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterAndTimeRange;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceTransformHelper;
+import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
+import sc.fiji.bdvpg.services.SourceServices;
+import sc.fiji.bdvpg.source.SourceAndTimeRange;
+import sc.fiji.bdvpg.source.transform.SourceTransformHelper;
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
         menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>Recenter sources",
@@ -70,15 +70,15 @@ public class SourcesRecenterCommand implements BdvPlaygroundActionCommand {
 
             switch (mode) {
                 case "Mutate":
-                    SourceTransformHelper.mutate(at3DCenter, new SourceAndConverterAndTimeRange(sac, timepoint));
+                    SourceTransformHelper.mutate(at3DCenter, new SourceAndTimeRange(sac, timepoint));
                     break;
                 case "Append":
-                    SourceTransformHelper.append(at3DCenter, new SourceAndConverterAndTimeRange(sac, timepoint));
+                    SourceTransformHelper.append(at3DCenter, new SourceAndTimeRange(sac, timepoint));
                     break;
             }
         }
 
-        SourceAndConverterServices
+        SourceServices
                 .getBdvDisplayService()
                 .updateDisplays(sacs);
 

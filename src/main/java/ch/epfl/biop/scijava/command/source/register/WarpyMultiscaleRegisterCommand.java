@@ -19,8 +19,8 @@ import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
-import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
+import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
+import sc.fiji.bdvpg.services.SourceServices;
 import sc.fiji.persist.ScijavaGsonHelper;
 
 import java.io.File;
@@ -137,8 +137,8 @@ public class WarpyMultiscaleRegisterCommand implements Command {
             RealTransform rt = (RealTransform) module.getOutput("transformation");
 
             // We don't want to keep the transformed sources in memory
-            SourceAndConverterServices
-                    .getSourceAndConverterService()
+            SourceServices
+                    .getSourceService()
                     .remove((SourceAndConverter[]) module.getOutput("transformed_sources"));
 
             RealTransform transformSequence;

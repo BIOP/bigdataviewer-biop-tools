@@ -7,11 +7,11 @@ import org.scijava.ItemIO;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
-import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterAndTimeRange;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceTransformHelper;
+import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
+import sc.fiji.bdvpg.services.SourceServices;
+import sc.fiji.bdvpg.source.SourceAndTimeRange;
+import sc.fiji.bdvpg.source.SourceHelper;
+import sc.fiji.bdvpg.source.transform.SourceTransformHelper;
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
         menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Transform>Remove Z Offset",
@@ -41,7 +41,7 @@ public class RemoveZOffsetCommand implements BdvPlaygroundActionCommand {
         for (SourceAndConverter sac : sacs) {
             if (apply_to_all_timepoints) {
                 // Get the number of timepoints from the source
-                int maxTimepoint = SourceAndConverterHelper.getMaxTimepoint(sac);
+                int maxTimepoint = SourceHelper.getMaxTimepoint(sac);
                 int numTimepoints = maxTimepoint + 1;
 
                 // Apply transformation to each timepoint
@@ -54,7 +54,7 @@ public class RemoveZOffsetCommand implements BdvPlaygroundActionCommand {
             }
         }
 
-        SourceAndConverterServices
+        SourceServices
                 .getBdvDisplayService()
                 .updateDisplays(sacs);
     }
@@ -63,16 +63,16 @@ public class RemoveZOffsetCommand implements BdvPlaygroundActionCommand {
 
         switch (mode) {
             case "Mutate":
-                SourceTransformHelper.mutate(getZ0Transform(sac, tp), new SourceAndConverterAndTimeRange(sac, tp));
+                SourceTransformHelper.mutate(getZ0Transform(sac, tp), new SourceAndTimeRange(sac, tp));
                 break;
             case "Append":
-                SourceTransformHelper.append(getZ0Transform(sac, tp), new SourceAndConverterAndTimeRange(sac, tp));
+                SourceTransformHelper.append(getZ0Transform(sac, tp), new SourceAndTimeRange(sac, tp));
                 break;
         }
     }
 
     public static AffineTransform3D getZ0Transform(SourceAndConverter sac, int tp) {
-        RealPoint center = SourceAndConverterHelper.getSourceAndConverterCenterPoint(sac, tp);
+        RealPoint center = SourceHelper.getSourceCenterPoint(sac, tp);
         AffineTransform3D z0 = new AffineTransform3D();
         z0.set(-center.getDoublePosition(2),2,3);
         return z0;

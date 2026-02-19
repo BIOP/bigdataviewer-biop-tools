@@ -43,7 +43,7 @@ import net.imglib2.img.ImgView;
 import net.imglib2.img.cell.CellImgFactory;
 import net.imglib2.util.Cast;
 import net.imglib2.view.Views;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
+import sc.fiji.bdvpg.source.SourceHelper;
 
 import javax.swing.*;
 import java.util.*;
@@ -102,7 +102,7 @@ public class SourcesToImgPlus {
     private static <T> RandomAccessibleInterval<?> asRai(SourceAndConverter[] sources,
                                                          Integer level)
     {
-        int nTps = SourceAndConverterHelper.getMaxTimepoint(sources) + 1;
+        int nTps = SourceHelper.getMaxTimepoint(sources) + 1;
         List<TimePoint> timePoints = new ArrayList<>();
         for (int t = 0; t<nTps; t++) {
             timePoints.add(new TimePoint(t));
@@ -143,7 +143,7 @@ public class SourcesToImgPlus {
             list.add(new DefaultLinearAxis(Axes.Z, voxelSize.unit(), voxelSize.dimension(2)));
         if (sources.length> 1)
             list.add(new IdentityAxis(Axes.CHANNEL));
-        if (SourceAndConverterHelper.getMaxTimepoint(sources) > 0)
+        if (SourceHelper.getMaxTimepoint(sources) > 0)
             list.add(new DefaultLinearAxis(Axes.TIME));
         return list.toArray(new CalibratedAxis[0]);
     }

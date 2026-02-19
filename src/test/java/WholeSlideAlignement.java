@@ -5,9 +5,9 @@ import ch.epfl.biop.bdv.img.bioformats.command.CreateBdvDatasetBioFormatsCommand
 import loci.common.DebugTools;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imagej.ImageJ;
-import sc.fiji.bdvpg.bdv.navigate.ViewerTransformAdjuster;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
-import sc.fiji.bdvpg.sourceandconverter.display.BrightnessAutoAdjuster;
+import sc.fiji.bdvpg.viewers.bdv.navigate.ViewerTransformAdjuster;
+import sc.fiji.bdvpg.services.SourceServices;
+import sc.fiji.bdvpg.source.display.BrightnessAutoAdjuster;
 
 import java.io.File;
 
@@ -32,16 +32,16 @@ public class WholeSlideAlignement {
                        "unit",  "MILLIMETER"
                 ).get().getOutput("spimdata");
 
-        SourceAndConverter<?>[] sources = SourceAndConverterServices
-                .getSourceAndConverterService()
+        SourceAndConverter<?>[] sources = SourceServices
+                .getSourceService()
                 .getSourceAndConverterFromSpimdata(asd)
                 .toArray(new SourceAndConverter[0]);
 
-        SourceAndConverterServices
+        SourceServices
                 .getBdvDisplayService()
                 .show(sources);
 
-        BdvHandle bdvh = SourceAndConverterServices.getBdvDisplayService().getActiveBdv();
+        BdvHandle bdvh = SourceServices.getBdvDisplayService().getActiveBdv();
 
         for (SourceAndConverter<?> source : sources) {
             new BrightnessAutoAdjuster(source, 0).run();

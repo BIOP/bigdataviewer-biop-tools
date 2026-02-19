@@ -5,7 +5,7 @@ import bdv.util.WrapVolatileSource;
 import bdv.util.ZSlicedSource;
 import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
+import sc.fiji.bdvpg.source.SourceHelper;
 
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -82,12 +82,12 @@ public class SourceMosaicZSlicer implements Runnable, Function<SourceAndConverte
                             subSlicer);
             }
             vsac = new SourceAndConverter(vsrcRsampled,
-                    SourceAndConverterHelper.cloneConverter(src.asVolatile().getConverter(), src.asVolatile()));
+                    SourceHelper.cloneConverter(src.asVolatile().getConverter(), src.asVolatile()));
             sac = new SourceAndConverter<>(srcRsampled,
-                    SourceAndConverterHelper.cloneConverter(src.getConverter(), src),vsac);
+                    SourceHelper.cloneConverter(src.getConverter(), src),vsac);
         } else {
             sac = new SourceAndConverter<>(srcRsampled,
-                    SourceAndConverterHelper.cloneConverter(src.getConverter(), src));
+                    SourceHelper.cloneConverter(src.getConverter(), src));
         }
 
         return sac;

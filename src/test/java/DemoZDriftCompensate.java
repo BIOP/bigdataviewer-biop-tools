@@ -3,7 +3,7 @@ import ch.epfl.biop.scijava.command.spimdata.LLS7OpenDatasetCommand;
 import ch.epfl.biop.scijava.command.spimdata.LLS7ZDriftCompensationCommand;
 import net.imagej.ImageJ;
 import org.apache.commons.io.FilenameUtils;
-import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
+import sc.fiji.bdvpg.scijava.services.SourceService;
 
 import java.io.File;
 
@@ -21,7 +21,7 @@ public class DemoZDriftCompensate {
 
         String datasetNameLattice = FilenameUtils.removeExtension(f.getName());
 
-        SourceAndConverter[] sources = ij.context().getService(SourceAndConverterService.class).getUI().getSourceAndConvertersFromPath(datasetNameLattice)
+        SourceAndConverter[] sources = ij.context().getService(SourceService.class).tree().getSources(datasetNameLattice)
                 .toArray(new SourceAndConverter[0]);
 
         ij.command().run(LLS7ZDriftCompensationCommand.class, true,

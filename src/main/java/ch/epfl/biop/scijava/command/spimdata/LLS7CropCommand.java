@@ -12,13 +12,13 @@ import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
-import sc.fiji.bdvpg.bdv.BdvHandleHelper;
-import sc.fiji.bdvpg.bdv.navigate.ViewerTransformAdjuster;
+import sc.fiji.bdvpg.source.importer.EmptySourceCreator;
+import sc.fiji.bdvpg.viewers.bdv.BdvHandleHelper;
+import sc.fiji.bdvpg.viewers.bdv.navigate.ViewerTransformAdjuster;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
-import sc.fiji.bdvpg.scijava.services.SourceAndConverterBdvDisplayService;
-import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
-import sc.fiji.bdvpg.sourceandconverter.importer.EmptySourceAndConverterCreator;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceResampler;
+import sc.fiji.bdvpg.scijava.services.SourceBdvDisplayService;
+import sc.fiji.bdvpg.scijava.services.SourceService;
+import sc.fiji.bdvpg.source.transform.SourceResampler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -67,10 +67,10 @@ public class LLS7CropCommand implements Command {
     Boolean result;
 
     @Parameter
-    SourceAndConverterService sac_service;
+    SourceService source_service;
 
     @Parameter
-    SourceAndConverterBdvDisplayService sac_display_service;
+    SourceBdvDisplayService source_display_service;
 
     public void run() {
 
@@ -100,7 +100,7 @@ public class LLS7CropCommand implements Command {
             interval = result.getInterval();
             // Assert : crop in micrometer, 0.144 micron per pixel
 
-            SourceAndConverter<?> model = new EmptySourceAndConverterCreator(image_name, interval, 0.144,0.144,0.144).get();
+            SourceAndConverter<?> model = new EmptySourceCreator(image_name, interval, 0.144,0.144,0.144).get();
 
             List<SourceAndConverter<?>> generatedSources = new ArrayList<>();
 
@@ -108,13 +108,13 @@ public class LLS7CropCommand implements Command {
                 generatedSources.add(new SourceResampler<>((SourceAndConverter) sources[iCh], model, image_name + "_ch_"+iCh, false, true, false, 0).get());
             }
 
-            BdvHandle bdvHandle = sac_display_service.getNewBdv();
+            BdvHandle bdvHandle = source_display_service.getNewBdv();
 
             for (SourceAndConverter<?> source : generatedSources) {
-                sac_service.register(source);
+                source_service.register(source);
             }
 
-            sac_display_service.show(bdvHandle, true, generatedSources.toArray(new SourceAndConverter[0]));
+            source_display_service.show(bdvHandle, true, generatedSources.toArray(new SourceAndConverter[0]));
 
             new ViewerTransformAdjuster(bdvHandle, generatedSources.get(0)).run();
 

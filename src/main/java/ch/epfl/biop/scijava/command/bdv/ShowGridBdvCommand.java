@@ -22,16 +22,16 @@ import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.util.Behaviours;
-import sc.fiji.bdvpg.bdv.BdvHandleHelper;
-import sc.fiji.bdvpg.behaviour.EditorBehaviourUnInstaller;
-import sc.fiji.bdvpg.behaviour.SourceAndConverterContextMenuClickBehaviour;
+import sc.fiji.bdvpg.viewers.bdv.BdvHandleHelper;
+import sc.fiji.bdvpg.viewers.behaviour.EditorBehaviourUnInstaller;
+import sc.fiji.bdvpg.viewers.behaviour.SourceContextMenuClickBehaviour;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
-import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
-import sc.fiji.bdvpg.scijava.command.source.BrightnessAdjusterCommand;
-import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceAffineTransformer;
+import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
+import sc.fiji.bdvpg.command.source.display.SourceBrightnessAdjustCommand;
+import sc.fiji.bdvpg.scijava.services.SourceService;
+import sc.fiji.bdvpg.services.SourceServices;
+import sc.fiji.bdvpg.source.SourceHelper;
+import sc.fiji.bdvpg.source.transform.SourceAffineTransformer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,8 +42,8 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static sc.fiji.bdvpg.scijava.services.SourceAndConverterService.getCommandName;
-import static sc.fiji.bdvpg.services.ISourceAndConverterService.SPIM_DATA_INFO;
+import static sc.fiji.bdvpg.scijava.services.SourceService.getCommandName;
+import static sc.fiji.bdvpg.services.ISourceService.SPIM_DATA_INFO;
 import static sc.fiji.bdvpg.viewers.ViewerOrthoSyncStarter.MatrixApproxEquals;
 
 /**

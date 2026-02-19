@@ -35,9 +35,9 @@ import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sc.fiji.bdvpg.scijava.adapter.source.ISourceAdapter;
-import sc.fiji.bdvpg.services.SourceAndConverterAdapter;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceLabkitClassifier;
+import sc.fiji.bdvpg.services.SourceAdapter;
+import sc.fiji.bdvpg.services.SourceServices;
+import sc.fiji.bdvpg.source.transform.SourceLabkitClassifier;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -60,10 +60,10 @@ public class LabkitSourceAdapter implements ISourceAdapter<LabkitSource> {
 
     private static final Logger logger = LoggerFactory.getLogger(LabkitSourceAdapter.class);
 
-    SourceAndConverterAdapter sacSerializer;
+    SourceAdapter sacSerializer;
 
     @Override
-    public void setSacSerializer(SourceAndConverterAdapter sacSerializer) {
+    public void setSourceSerializer(SourceAdapter sacSerializer) {
         this.sacSerializer = sacSerializer;
     }
 
@@ -158,7 +158,7 @@ public class LabkitSourceAdapter implements ISourceAdapter<LabkitSource> {
 
         SourceAndConverter sac = classifier.get();
 
-        SourceAndConverterServices.getSourceAndConverterService().register(sac);
+        SourceServices.getSourceService().register(sac);
 
         return sac;
     }

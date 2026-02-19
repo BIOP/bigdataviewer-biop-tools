@@ -6,10 +6,10 @@ import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;
 import net.imglib2.realtransform.RealTransform;
-import sc.fiji.bdvpg.scijava.command.source.BrightnessAdjusterCommand;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
-import sc.fiji.bdvpg.sourceandconverter.display.BrightnessAdjuster;
-import sc.fiji.bdvpg.spimdata.importer.SpimDataFromXmlImporter;
+import sc.fiji.bdvpg.command.source.display.SourceBrightnessAdjustCommand;
+import sc.fiji.bdvpg.services.SourceServices;
+import sc.fiji.bdvpg.source.display.BrightnessAdjuster;
+import sc.fiji.bdvpg.dataset.importer.SpimDataFromXmlImporter;
 
 import java.util.concurrent.ExecutionException;
 
@@ -30,8 +30,8 @@ public class DemoEllipticalSource {
         SpimDataFromXmlImporter importer = new SpimDataFromXmlImporter(filePath);
         final AbstractSpimData spimData = importer.get();
 
-        SourceAndConverter sac = SourceAndConverterServices
-                .getSourceAndConverterService()
+        SourceAndConverter sac = SourceServices
+                .getSourceService()
                 .getSourceAndConverterFromSpimdata(spimData)
                 .get(0);
 
@@ -51,10 +51,10 @@ public class DemoEllipticalSource {
             SourceAndConverter transformed_source = ((SourceAndConverter[]) ij.command().run(SourcesRealTransformCommand.class, true,
                     "sources_in", new SourceAndConverter[]{sac},
                     "rt", rt).get().getOutput("sources_out"))[0];
-            BdvHandle bdvh = SourceAndConverterServices
+            BdvHandle bdvh = SourceServices
                     .getBdvDisplayService()
                     .getNewBdv();
-            SourceAndConverterServices
+            SourceServices
                     .getBdvDisplayService()
                     .show(bdvh, transformed_source);
         } catch (InterruptedException e) {

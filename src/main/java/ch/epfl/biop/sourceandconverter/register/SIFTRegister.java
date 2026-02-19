@@ -19,9 +19,9 @@ import net.imglib2.RealPoint;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.NumericType;
-import sc.fiji.bdvpg.sourceandconverter.importer.EmptySourceAndConverterCreator;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceAffineTransformer;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceResampler;
+import sc.fiji.bdvpg.source.importer.EmptySourceCreator;
+import sc.fiji.bdvpg.source.transform.SourceAffineTransformer;
+import sc.fiji.bdvpg.source.transform.SourceResampler;
 
 import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
@@ -286,7 +286,7 @@ public class SIFTRegister<FT extends NativeType<FT> & NumericType<FT>,
         // Fetch cropped images from source -> resample sources
         FinalRealInterval window = new FinalRealInterval(new double[]{px,py,pz}, new double[]{px+sx, py+sy, pz+pxSizeInCurrentUnit});
 
-        SourceAndConverter<?> model = new EmptySourceAndConverterCreator("model",window,pxSizeInCurrentUnit,pxSizeInCurrentUnit,pxSizeInCurrentUnit).get();
+        SourceAndConverter<?> model = new EmptySourceCreator("model",window,pxSizeInCurrentUnit,pxSizeInCurrentUnit,pxSizeInCurrentUnit).get();
 
         SourceResampler<T> resampler = new SourceResampler<>(null,
                 model,model.getSpimSource().getName(), false, false, interpolate, level

@@ -13,8 +13,8 @@ import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.view.Views;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
-import sc.fiji.bdvpg.spimdata.importer.SpimDataFromXmlImporter;
+import sc.fiji.bdvpg.services.SourceServices;
+import sc.fiji.bdvpg.dataset.importer.SpimDataFromXmlImporter;
 
 
 public class Resample3DAlongAxis {
@@ -36,15 +36,15 @@ public class Resample3DAlongAxis {
 
         final AbstractSpimData spimData = importer.get();
 
-        SourceAndConverter sac = SourceAndConverterServices
-                .getSourceAndConverterService()
+        SourceAndConverter sac = SourceServices
+                .getSourceService()
                 .getSourceAndConverterFromSpimdata(spimData)
                 .get(0);
 
         // Creates a BdvHandle
-        //BdvHandle bdvHandle = SourceAndConverterServices
+        //BdvHandle bdvHandle = SourceServices
         //        .getSourceAndConverterDisplayService().getActiveBdv();
-        /*SourceAndConverterServices
+        /*SourceServices
                 .getSourceAndConverterDisplayService()
                 .show(sac);*/
 

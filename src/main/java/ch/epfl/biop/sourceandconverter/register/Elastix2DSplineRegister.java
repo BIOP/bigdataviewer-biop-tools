@@ -20,9 +20,9 @@ import net.imglib2.realtransform.*;
 import net.imglib2.realtransform.inverse.WrappedIterativeInvertibleRealTransform;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.NumericType;
-import sc.fiji.bdvpg.sourceandconverter.importer.EmptySourceAndConverterCreator;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceRealTransformer;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceResampler;
+import sc.fiji.bdvpg.source.importer.EmptySourceCreator;
+import sc.fiji.bdvpg.source.transform.SourceRealTransformer;
+import sc.fiji.bdvpg.source.transform.SourceResampler;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -336,7 +336,7 @@ public class Elastix2DSplineRegister<FT extends NativeType<FT> & NumericType<FT>
         // Fetch cropped images from source -> resample sources
         FinalRealInterval window = new FinalRealInterval(new double[]{px,py,pz}, new double[]{px+sx, py+sy, pz+pxSizeInCurrentUnit});
 
-        SourceAndConverter model = new EmptySourceAndConverterCreator("model",window,pxSizeInCurrentUnit,pxSizeInCurrentUnit,pxSizeInCurrentUnit).get();
+        SourceAndConverter model = new EmptySourceCreator("model",window,pxSizeInCurrentUnit,pxSizeInCurrentUnit,pxSizeInCurrentUnit).get();
 
         SourceResampler<T> resampler = new SourceResampler<>(null,
                 model,model.getSpimSource().getName(), false, false, interpolate, level

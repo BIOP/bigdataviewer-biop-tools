@@ -16,10 +16,10 @@ import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
-import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
-import sc.fiji.bdvpg.scijava.command.bdv.BdvSourcesShowCommand;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceAffineTransformer;
+import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
+import sc.fiji.bdvpg.command.viewer.bdv.BdvSourcesShowCommand;
+import sc.fiji.bdvpg.source.SourceHelper;
+import sc.fiji.bdvpg.source.transform.SourceAffineTransformer;
 
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
@@ -102,10 +102,10 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
                 CommandModule cm = cs.run(Elastix2DAffineRegisterCommand.class, true,
                         "sacs_fixed", new SourceAndConverter[]{global_ref_source},
                         "tp_fixed", 0,
-                        "level_fixed_source", SourceAndConverterHelper.bestLevel(global_ref_source, 0, coarse_pixel_size_mm),
+                        "level_fixed_source", SourceHelper.bestLevel(global_ref_source, 0, coarse_pixel_size_mm),
                         "sacs_moving", new SourceAndConverter[]{current_ref_source},
                         "tp_moving", 0,
-                        "level_moving_source", SourceAndConverterHelper.bestLevel(current_ref_source, 0, coarse_pixel_size_mm),
+                        "level_moving_source", SourceHelper.bestLevel(current_ref_source, 0, coarse_pixel_size_mm),
                         "px", top_left_x,
                         "py", top_left_y,
                         "pz", 0,
@@ -136,9 +136,9 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
                                 "sacs_fixed", new SourceAndConverter[]{global_ref_source},
                                 "sacs_moving", new SourceAndConverter[]{firstRegSrc},
                                 "tp_fixed", 0,
-                                "level_fixed_source", SourceAndConverterHelper.bestLevel(global_ref_source, 0, precise_pixel_size_mm), //TODO does this make sense ? Shouldn't it be self pixel precise size ?
+                                "level_fixed_source", SourceHelper.bestLevel(global_ref_source, 0, precise_pixel_size_mm), //TODO does this make sense ? Shouldn't it be self pixel precise size ?
                                 "tp_moving", 0,
-                                "level_moving_source", SourceAndConverterHelper.bestLevel(firstRegSrc, 0, precise_pixel_size_mm),
+                                "level_moving_source", SourceHelper.bestLevel(firstRegSrc, 0, precise_pixel_size_mm),
                                 "pt_list_coordinates", pt_list_coordinates,
                                 "z_location", 0,
                                 "sx", patch_size_mm, // 500 microns

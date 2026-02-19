@@ -25,9 +25,9 @@ import org.scijava.task.Task;
 import org.scijava.task.TaskService;
 import org.scijava.widget.Button;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
-import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
-import sc.fiji.bdvpg.sourceandconverter.importer.EmptySourceAndConverterCreator;
+import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
+import sc.fiji.bdvpg.source.SourceHelper;
+import sc.fiji.bdvpg.source.importer.EmptySourceCreator;
 import sc.fiji.persist.ScijavaGsonHelper;
 
 import java.text.DecimalFormat;
@@ -263,17 +263,17 @@ public class ExportEllipticProjection implements Command {
         if ((dxy == 0)||(dz == 0)) {
             validate_message +="<font color=\"red\"> Error! Wrong step size. </font><br>";
         } else {
-            int levelXY = SourceAndConverterHelper.bestLevel(wrappedSource, 0, dxy);
+            int levelXY = SourceHelper.bestLevel(wrappedSource, 0, dxy);
             validate_message +="Equatorial pixel size (xy): "+df.format(dxy)+"<br>";
             validate_message +="Recommended Level:"+levelXY+"<br>";
-            int levelZ = SourceAndConverterHelper.bestLevel(wrappedSource, 0, dz);
+            int levelZ = SourceHelper.bestLevel(wrappedSource, 0, dz);
             validate_message +="Equatorial pixel size (z): "+df.format(dz)+"<br>";
             validate_message +="Recommended Level:"+levelZ+"<br>";
         }
 
-        maxTimepoint = SourceAndConverterHelper.getMaxTimepoint(sacs)+1;
+        maxTimepoint = SourceHelper.getMaxTimepoint(sacs)+1;
 
-        int maxTimeFrames = SourceAndConverterHelper.getMaxTimepoint(sacs)+1;
+        int maxTimeFrames = SourceHelper.getMaxTimepoint(sacs)+1;
 
         int maxZSlices;
 
@@ -338,7 +338,7 @@ public class ExportEllipticProjection implements Command {
         }
     }
 
-    public Function<Collection<SourceAndConverter<?>>, List<SourceAndConverter<?>>> sorter = sacslist -> SourceAndConverterHelper.sortDefaultGeneric(sacslist);
+    public Function<Collection<SourceAndConverter<?>>, List<SourceAndConverter<?>>> sorter = sacslist -> SourceHelper.sortDefaultGeneric(sacslist);
 
     private SourceAndConverter<?> createModelSource() {
         // Origin is in fact the point 0,0,0 of the image
@@ -369,7 +369,7 @@ public class ExportEllipticProjection implements Command {
         if (nPx == 0) nPx = 1;
         if (nPy == 0) nPy = 1;
 
-        return new EmptySourceAndConverterCreator(name+"_Model", at3D, nPx, nPy, nPz).get();
+        return new EmptySourceCreator(name+"_Model", at3D, nPx, nPy, nPz).get();
     }
 
 }

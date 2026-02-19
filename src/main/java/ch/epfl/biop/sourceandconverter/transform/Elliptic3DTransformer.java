@@ -4,7 +4,7 @@ import bdv.img.WarpedSource;
 import bdv.util.Elliptical3DTransform;
 import bdv.viewer.SourceAndConverter;
 import net.imglib2.realtransform.BoundingBoxEstimation;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
+import sc.fiji.bdvpg.services.SourceServices;
 
 import java.util.function.Function;
 
@@ -47,12 +47,12 @@ public class Elliptic3DTransformer implements Runnable, Function<SourceAndConver
             e3Dt.updateNotifiers.add(() -> {
                 ws.updateTransform(e3Dt);
                 vws.updateTransform(e3Dt);
-                SourceAndConverterServices
+                SourceServices
                         .getBdvDisplayService()
                         .getDisplaysOf(out).forEach(bdvHandle -> bdvHandle.getViewerPanel().requestRepaint());
             }); // TODO avoid memory leak...
 
-            SourceAndConverterServices.getSourceAndConverterService().register(out);
+            SourceServices.getSourceService().register(out);
             return out;
         } else {
 
@@ -60,12 +60,12 @@ public class Elliptic3DTransformer implements Runnable, Function<SourceAndConver
 
             e3Dt.updateNotifiers.add(() -> {
                 ws.updateTransform(e3Dt);
-                SourceAndConverterServices
+                SourceServices
                         .getBdvDisplayService()
                         .getDisplaysOf(out).forEach(bdvHandle -> bdvHandle.getViewerPanel().requestRepaint());
             }); // TODO avoid memory leak...
 
-            SourceAndConverterServices.getSourceAndConverterService().register(out);
+            SourceServices.getSourceService().register(out);
             return out;
         }
 

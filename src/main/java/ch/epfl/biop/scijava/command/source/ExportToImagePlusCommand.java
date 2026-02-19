@@ -14,8 +14,8 @@ import org.scijava.plugin.Plugin;
 import org.scijava.task.Task;
 import org.scijava.task.TaskService;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
-import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
+import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
+import sc.fiji.bdvpg.source.SourceHelper;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -106,7 +106,7 @@ public class ExportToImagePlusCommand implements BdvPlaygroundActionCommand {
 
         List<SourceAndConverter<?>> sources = sorter.apply(Arrays.asList(sacs));
 
-        int numFrames = SourceAndConverterHelper.getMaxTimepoint(sacs)+1;
+        int numFrames = SourceHelper.getMaxTimepoint(sacs)+1;
 
         int maxZSlices = (int) sacs[0].getSpimSource().getSource(0,level).dimension(2);
 
@@ -176,6 +176,6 @@ public class ExportToImagePlusCommand implements BdvPlaygroundActionCommand {
         }
     }
 
-    public Function<Collection<SourceAndConverter<?>>,List<SourceAndConverter<?>>> sorter = SourceAndConverterHelper::sortDefaultGeneric;
+    public Function<Collection<SourceAndConverter<?>>,List<SourceAndConverter<?>>> sorter = SourceHelper::sortDefaultGeneric;
 
 }

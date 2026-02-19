@@ -31,9 +31,8 @@ import org.scijava.plugin.Plugin;
 import org.scijava.task.Task;
 import org.scijava.task.TaskService;
 import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
-import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
-import sc.fiji.bdvpg.spimdata.importer.SpimDataFromXmlImporter;
+import sc.fiji.bdvpg.scijava.services.SourceService;
+import sc.fiji.bdvpg.dataset.importer.SpimDataFromXmlImporter;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -44,7 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static sc.fiji.bdvpg.services.ISourceAndConverterService.SPIM_DATA_INFO;
+import static sc.fiji.bdvpg.services.ISourceService.SPIM_DATA_INFO;
 
 @Plugin(type = Command.class,
         menuPath = ScijavaBdvDefaults.RootMenu+"BDVDataset>Fuse a BigStitcher dataset to OME-Tiff",
@@ -135,7 +134,7 @@ public class FuseBigStitcherDatasetIntoOMETiffCommand implements Command {
     double output_voxel_size_z_um = Double.NaN;
 
     @Parameter
-    SourceAndConverterService sac_service;
+    SourceService sac_service;
 
     @Parameter
     TaskService taskService;
@@ -203,7 +202,7 @@ public class FuseBigStitcherDatasetIntoOMETiffCommand implements Command {
             e.printStackTrace();
         }
 
-        List<SourceAndConverter<?>> allSources = sac_service.getSourceAndConverterFromSpimdata(asd);
+        List<SourceAndConverter<?>> allSources = sac_service.getSourcesFromDataset(asd);
 
         // Gets Z-ratio from the first source
 
@@ -242,7 +241,7 @@ public class FuseBigStitcherDatasetIntoOMETiffCommand implements Command {
 
         // Create a model source
         SourceAndConverter model = SourceHelper.getModelFusedMultiSources(allSources.toArray(new SourceAndConverter[0]),
-                0, SourceAndConverterHelper.getMaxTimepoint(allSources.toArray(new SourceAndConverter[0]))+1,
+                0, sc.fiji.bdvpg.source.SourceHelper.getMaxTimepoint(allSources.toArray(new SourceAndConverter[0]))+1,
                 1*x_downsample, 1*y_downsample, z_ratio*z_downsample,
                 1,
                 1,1,1, "Model");
@@ -259,7 +258,7 @@ public class FuseBigStitcherDatasetIntoOMETiffCommand implements Command {
         Map<Integer, List<SourceAndConverter<?>>> channelToSources = new HashMap<>();
 
         allSources.forEach(source -> {
-            SourceAndConverterService.SpimDataInfo sdi = (SourceAndConverterService.SpimDataInfo) sac_service.getMetadata(source, SPIM_DATA_INFO);
+            SourceService.SpimDataInfo sdi = (SourceService.SpimDataInfo) sac_service.getMetadata(source, SPIM_DATA_INFO);
             // source
             int channelId = ((BasicViewSetup)asd.getSequenceDescription().getViewSetups().get(sdi.setupId)).getAttribute(Channel.class).getId();
             if (!channelToSources.containsKey(channelId)) {
@@ -317,7 +316,7 @@ public class FuseBigStitcherDatasetIntoOMETiffCommand implements Command {
             } else {
                 int nC = fusedSources.length;
                 int nZ = (int) fusedSources[0].getSpimSource().getSource(0,0).realMax(2);
-                int nT = SourceAndConverterHelper.getMaxTimepoint(fusedSources)+1;
+                int nT = sc.fiji.bdvpg.source.SourceHelper.getMaxTimepoint(fusedSources)+1;
                 CZTSetIterator iterator = new CZTSetIterator(range_channels, range_slices, range_frames, split_channels, split_slices, split_frames, nC, nZ, nT);
 
                 List<CZTSet> sets = new ArrayList<>();

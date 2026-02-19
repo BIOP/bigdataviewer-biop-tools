@@ -3,9 +3,9 @@ package ch.epfl.biop.registration.sourceandconverter.affine;
 import bdv.viewer.SourceAndConverter;
 import net.imglib2.RealPoint;
 import net.imglib2.realtransform.AffineTransform3D;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterAndTimeRange;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceTransformHelper;
+import sc.fiji.bdvpg.source.SourceAndTimeRange;
+import sc.fiji.bdvpg.source.SourceHelper;
+import sc.fiji.bdvpg.source.transform.SourceTransformHelper;
 
 /**
  * Fake registration : simply centers the image in order to put its center
@@ -19,7 +19,7 @@ public class CenterZeroRegistration extends AffineTransformSourceAndConverterReg
 
         SourceAndConverter<?> sac = mimg[0];
 
-        RealPoint center = SourceAndConverterHelper.getSourceAndConverterCenterPoint(sac,0);
+        RealPoint center = SourceHelper.getSourceCenterPoint(sac,0);
 
         at3d = new AffineTransform3D();
 
@@ -41,7 +41,7 @@ public class CenterZeroRegistration extends AffineTransformSourceAndConverterReg
     public SourceAndConverter<?>[] getTransformedImageMovingToFixed(SourceAndConverter<?>[] img) {
         SourceAndConverter<?>[] out = new SourceAndConverter[img.length];
         for (int idx = 0;idx<img.length;idx++) {
-            out[idx] = SourceTransformHelper.createNewTransformedSourceAndConverter(at3d, new SourceAndConverterAndTimeRange<>(img[idx], timePoint));
+            out[idx] = SourceTransformHelper.createNewTransformedSourceAndConverter(at3d, new SourceAndTimeRange<>(img[idx], timePoint));
         }
         return out;
     }

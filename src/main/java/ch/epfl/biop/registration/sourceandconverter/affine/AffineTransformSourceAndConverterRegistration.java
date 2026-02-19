@@ -6,8 +6,8 @@ import ch.epfl.biop.registration.sourceandconverter.SourceAndConverterRegistrati
 import net.imglib2.RealPoint;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.realtransform.RealTransform;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterAndTimeRange;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceTransformHelper;
+import sc.fiji.bdvpg.source.SourceAndTimeRange;
+import sc.fiji.bdvpg.source.transform.SourceTransformHelper;
 import sc.fiji.persist.ScijavaGsonHelper;
 
 import java.util.ArrayList;
@@ -29,7 +29,7 @@ abstract public class AffineTransformSourceAndConverterRegistration extends Sour
     public SourceAndConverter<?>[] getTransformedImageMovingToFixed(SourceAndConverter<?>[] img) {
         SourceAndConverter<?>[] out = new SourceAndConverter[img.length];
         for (int idx = 0;idx<img.length;idx++) {
-            out[idx] = SourceTransformHelper.createNewTransformedSourceAndConverter(at3d, new SourceAndConverterAndTimeRange<>(img[idx],timePoint));
+            out[idx] = SourceTransformHelper.createNewTransformedSourceAndConverter(at3d, new SourceAndTimeRange<>(img[idx],timePoint));
         }
         return out;
     }

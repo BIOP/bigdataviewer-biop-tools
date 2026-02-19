@@ -10,9 +10,9 @@ import ch.epfl.biop.registration.plugin.RegistrationTypeProperties;
 import ch.epfl.biop.registration.sourceandconverter.spline.RealTransformSourceAndConverterRegistration;
 import ij.gui.WaitForUserDialog;
 import org.scijava.plugin.Plugin;
-import sc.fiji.bdvpg.bdv.BdvHandleHelper;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
-import sc.fiji.bdvpg.sourceandconverter.register.BigWarpLauncher;
+import sc.fiji.bdvpg.viewers.bdv.BdvHandleHelper;
+import sc.fiji.bdvpg.services.SourceServices;
+import sc.fiji.bdvpg.source.register.BigWarpLauncher;
 
 import java.awt.EventQueue;
 import java.lang.reflect.InvocationTargetException;
@@ -75,9 +75,9 @@ public class SacBigWarp2DRegistration extends RealTransformSourceAndConverterReg
 
                     List<SourceAndConverter<?>> fixedSacs = Arrays.stream(fimg).collect(Collectors.toList());
 
-                    List<ConverterSetup> converterSetups = Arrays.stream(mimg).map(src -> SourceAndConverterServices.getSourceAndConverterService().getConverterSetup(src)).collect(Collectors.toList());
+                    List<ConverterSetup> converterSetups = Arrays.stream(mimg).map(src -> SourceServices.getSourceService().getConverterSetup(src)).collect(Collectors.toList());
 
-                    converterSetups.addAll(Arrays.stream(fimg).map(src -> SourceAndConverterServices.getSourceAndConverterService().getConverterSetup(src)).collect(Collectors.toList()));
+                    converterSetups.addAll(Arrays.stream(fimg).map(src -> SourceServices.getSourceService().getConverterSetup(src)).collect(Collectors.toList()));
 
                     // Launch BigWarp
                     bwl = new BigWarpLauncher(movingSacs, fixedSacs, "Big Warp", converterSetups);
@@ -94,7 +94,7 @@ public class SacBigWarp2DRegistration extends RealTransformSourceAndConverterReg
                     bdvhP.getViewerPanel().state().setViewerTransform(BdvHandleHelper.getViewerTransformWithNewCenter(bdvhP, new double[]{0,0,0}));
                     bdvhQ.getViewerPanel().state().setViewerTransform(BdvHandleHelper.getViewerTransformWithNewCenter(bdvhQ, new double[]{0,0,0}));
 
-                    SourceAndConverterServices.getBdvDisplayService().pairClosing(bdvhQ,bdvhP);
+                    SourceServices.getBdvDisplayService().pairClosing(bdvhQ,bdvhP);
 
                     bdvhP.getViewerPanel().requestRepaint();
                     bdvhQ.getViewerPanel().requestRepaint();

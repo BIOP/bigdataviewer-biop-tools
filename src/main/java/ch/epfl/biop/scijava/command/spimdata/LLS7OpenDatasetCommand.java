@@ -11,10 +11,10 @@ import org.scijava.Context;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
-import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterAndTimeRange;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceTransformHelper;
+import sc.fiji.bdvpg.scijava.services.SourceService;
+import sc.fiji.bdvpg.source.SourceAndTimeRange;
+import sc.fiji.bdvpg.source.SourceHelper;
+import sc.fiji.bdvpg.source.transform.SourceTransformHelper;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -45,7 +45,7 @@ public class LLS7OpenDatasetCommand implements
     boolean legacy_xy_mode;
 
     @Parameter
-    SourceAndConverterService sac_service;
+    SourceService sac_service;
 
     public void run() {
         String bfOptions = "--bfOptions zeissczi.autostitch=false";
@@ -69,7 +69,7 @@ public class LLS7OpenDatasetCommand implements
 
         //SpimDataPostprocessor
         List<SourceAndConverter<?>> sources = sac_service.getSourceAndConverterFromSpimdata(spimdata);
-        int nTimepoints = SourceAndConverterHelper.getMaxTimepoint(sources.get(0))+1;
+        int nTimepoints = SourceHelper.getMaxTimepoint(sources.get(0))+1;
 
         // Now let's try to open the max proj, if it exists
 
@@ -128,7 +128,7 @@ public class LLS7OpenDatasetCommand implements
                     concatTr.preConcatenate(addOffset);
                     concatTr.concatenate(ori.inverse());
 
-                    SourceTransformHelper.append(concatTr, new SourceAndConverterAndTimeRange<>(source,0,nTimepoints));
+                    SourceTransformHelper.append(concatTr, new SourceAndTimeRange<>(source,0,nTimepoints));
                 }
             }
         }

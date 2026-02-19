@@ -6,9 +6,9 @@ import ch.epfl.biop.bdv.img.legacy.qupath.entity.QuPathEntryEntity;
 import ch.epfl.biop.bdv.img.opener.OpenerSettings;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import mpicbg.spim.data.generic.sequence.BasicViewSetup;
-import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
-import sc.fiji.bdvpg.scijava.services.ui.SourceAndConverterInspector;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
+import sc.fiji.bdvpg.scijava.services.SourceService;
+import sc.fiji.bdvpg.scijava.services.tree.inspect.SourceInspector;
+import sc.fiji.bdvpg.services.SourceServices;
 
 import java.io.File;
 
@@ -44,14 +44,14 @@ public class QuPathBdvHelper {
      * @throws IllegalArgumentException if the qupath file is not found
      */
     public static File getProjectFile(SourceAndConverter<?> source_in) throws IllegalArgumentException {
-        SourceAndConverter<?> rootSource = SourceAndConverterInspector.getRootSourceAndConverter(source_in);
+        SourceAndConverter<?> rootSource = SourceInspector.getRootSourceAndConverter(source_in);
         if (!isBoundToLegacyQuPathBDVDataset(rootSource)) {
             AbstractSpimData<?> asd =
-                    ((SourceAndConverterService.SpimDataInfo) SourceAndConverterServices.getSourceAndConverterService()
-                            .getMetadata(rootSource, SourceAndConverterService.SPIM_DATA_INFO)).asd;
+                    ((SourceService.SpimDataInfo) SourceServices.getSourceService()
+                            .getMetadata(rootSource, SourceService.SPIM_DATA_INFO)).asd;
 
-            int viewSetupId = ((SourceAndConverterService.SpimDataInfo) SourceAndConverterServices.getSourceAndConverterService()
-                    .getMetadata(rootSource, SourceAndConverterService.SPIM_DATA_INFO)).setupId;
+            int viewSetupId = ((SourceService.SpimDataInfo) SourceServices.getSourceService()
+                    .getMetadata(rootSource, SourceService.SPIM_DATA_INFO)).setupId;
 
             if (!asd.getSequenceDescription().getImgLoader().getClass().equals(OpenersImageLoader.class)) {
                 throw new IllegalArgumentException("The source "+source_in.getSpimSource().getName()+" is not associated to a QuPath Dataset");
@@ -85,15 +85,15 @@ public class QuPathBdvHelper {
     }
 
     public static int getEntryId(SourceAndConverter<?> source) throws IllegalArgumentException {
-        SourceAndConverter<?> rootSource = SourceAndConverterInspector.getRootSourceAndConverter(source);
+        SourceAndConverter<?> rootSource = SourceInspector.getRootSourceAndConverter(source);
         if (!isBoundToLegacyQuPathBDVDataset(rootSource)) {
 
             AbstractSpimData<?> asd =
-                    ((SourceAndConverterService.SpimDataInfo) SourceAndConverterServices.getSourceAndConverterService()
-                            .getMetadata(rootSource, SourceAndConverterService.SPIM_DATA_INFO)).asd;
+                    ((SourceService.SpimDataInfo) SourceServices.getSourceService()
+                            .getMetadata(rootSource, SourceService.SPIM_DATA_INFO)).asd;
 
-            int viewSetupId = ((SourceAndConverterService.SpimDataInfo) SourceAndConverterServices.getSourceAndConverterService()
-                    .getMetadata(rootSource, SourceAndConverterService.SPIM_DATA_INFO)).setupId;
+            int viewSetupId = ((SourceService.SpimDataInfo) SourceServices.getSourceService()
+                    .getMetadata(rootSource, SourceService.SPIM_DATA_INFO)).setupId;
 
             // BasicViewSetup bvs = (BasicViewSetup) asd.getSequenceDescription().getViewSetups().get(viewSetupId);
 
@@ -117,16 +117,16 @@ public class QuPathBdvHelper {
     }
 
     private static boolean isBoundToLegacyQuPathBDVDataset(SourceAndConverter<?> testSource) throws IllegalArgumentException{
-        if (SourceAndConverterServices.getSourceAndConverterService()
-                .getMetadata(testSource, SourceAndConverterService.SPIM_DATA_INFO)==null) {
+        if (SourceServices.getSourceService()
+                .getMetadata(testSource, SourceService.SPIM_DATA_INFO)==null) {
                 throw new IllegalArgumentException("No BDV dataset is associated with the source "+testSource.getSpimSource().getName());
         } else {
             AbstractSpimData<?> asd =
-                    ((SourceAndConverterService.SpimDataInfo) SourceAndConverterServices.getSourceAndConverterService()
-                            .getMetadata(testSource, SourceAndConverterService.SPIM_DATA_INFO)).asd;
+                    ((SourceService.SpimDataInfo) SourceServices.getSourceService()
+                            .getMetadata(testSource, SourceService.SPIM_DATA_INFO)).asd;
 
-            int viewSetupId = ((SourceAndConverterService.SpimDataInfo) SourceAndConverterServices.getSourceAndConverterService()
-                    .getMetadata(testSource, SourceAndConverterService.SPIM_DATA_INFO)).setupId;
+            int viewSetupId = ((SourceService.SpimDataInfo) SourceServices.getSourceService()
+                    .getMetadata(testSource, SourceService.SPIM_DATA_INFO)).setupId;
 
             BasicViewSetup bvs = asd.getSequenceDescription().getViewSetups().get(viewSetupId);
 
@@ -146,17 +146,17 @@ public class QuPathBdvHelper {
     @SuppressWarnings("DeprecatedIsStillUsed")
     @Deprecated
     private static QuPathEntryEntity getQuPathEntityFromSource(SourceAndConverter<?> source_in) {
-        SourceAndConverter<?> rootSource = SourceAndConverterInspector.getRootSourceAndConverter(source_in);
-        if (SourceAndConverterServices.getSourceAndConverterService()
-                .getMetadata(rootSource, SourceAndConverterService.SPIM_DATA_INFO)==null) {
+        SourceAndConverter<?> rootSource = SourceInspector.getRootSourceAndConverter(source_in);
+        if (SourceServices.getSourceService()
+                .getMetadata(rootSource, SourceService.SPIM_DATA_INFO)==null) {
             return null;
         } else {
             AbstractSpimData<?> asd =
-                    ((SourceAndConverterService.SpimDataInfo) SourceAndConverterServices.getSourceAndConverterService()
-                            .getMetadata(rootSource, SourceAndConverterService.SPIM_DATA_INFO)).asd;
+                    ((SourceService.SpimDataInfo) SourceServices.getSourceService()
+                            .getMetadata(rootSource, SourceService.SPIM_DATA_INFO)).asd;
 
-            int viewSetupId = ((SourceAndConverterService.SpimDataInfo) SourceAndConverterServices.getSourceAndConverterService()
-                    .getMetadata(rootSource, SourceAndConverterService.SPIM_DATA_INFO)).setupId;
+            int viewSetupId = ((SourceService.SpimDataInfo) SourceServices.getSourceService()
+                    .getMetadata(rootSource, SourceService.SPIM_DATA_INFO)).setupId;
 
             BasicViewSetup bvs = asd.getSequenceDescription().getViewSetups().get(viewSetupId);
 
