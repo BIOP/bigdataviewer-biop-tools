@@ -44,7 +44,7 @@ public class DemoCachedTransform {
 
         SourceAndConverter<?> sacFixed = SourceServices
                 .getSourceService()
-                .getSourceAndConverterFromSpimdata(spimData)
+                .getSourcesFromDataset(spimData)
                 .get(0);
 
         importer = new SpimDataFromXmlImporter(filePath);
@@ -53,7 +53,7 @@ public class DemoCachedTransform {
 
         SourceAndConverter<?> sacMoving = SourceServices
                 .getSourceService()
-                .getSourceAndConverterFromSpimdata(spimData)
+                .getSourcesFromDataset(spimData)
                 .get(0);
 
 

@@ -34,7 +34,7 @@ public class DemoRegistrationMultiChannelElastixAffine {
         AbstractSpimData<?> atlasDataset = OpenersToSpimData.getSpimData(atlasSettings);
 
         SourceServices.getSourceService().register(atlasDataset);
-        List<SourceAndConverter<?>> atlasSources = SourceServices.getSourceService().getSourceAndConverterFromSpimdata(atlasDataset);
+        List<SourceAndConverter<?>> atlasSources = SourceServices.getSourceService().getSourcesFromDataset(atlasDataset);
 
         OpenerSettings sliceSettings = OpenerSettings.BioFormats()
                 .location("./src/test/resources/multichanreg/Slice.tif")
@@ -44,7 +44,7 @@ public class DemoRegistrationMultiChannelElastixAffine {
         AbstractSpimData<?> sliceDataset = OpenersToSpimData.getSpimData(sliceSettings);
 
         SourceServices.getSourceService().register(sliceDataset);
-        List<SourceAndConverter<?>> sliceSources = SourceServices.getSourceService().getSourceAndConverterFromSpimdata(sliceDataset);
+        List<SourceAndConverter<?>> sliceSources = SourceServices.getSourceService().getSourcesFromDataset(sliceDataset);
 
         SourceBdvDisplayService displayService = SourceServices.getBdvDisplayService();
         BdvHandle bdvh = displayService.getNewBdv();

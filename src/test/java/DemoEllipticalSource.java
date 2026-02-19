@@ -32,7 +32,7 @@ public class DemoEllipticalSource {
 
         SourceAndConverter sac = SourceServices
                 .getSourceService()
-                .getSourceAndConverterFromSpimdata(spimData)
+                .getSourcesFromDataset(spimData)
                 .get(0);
 
         new BrightnessAdjuster(sac,0,250).run();

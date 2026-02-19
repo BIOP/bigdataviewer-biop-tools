@@ -188,7 +188,7 @@ public class IrinaWorkFlow {
         new XmlFromSpimDataExporter(spimdata, filePath, ctx).run();
 
         SourceService sac_service = ctx.getService(SourceService.class);
-        sac_service.remove(sac_service.getSourceAndConverterFromSpimdata(spimdata).toArray(new SourceAndConverter[0])); // Cleanup*/
+        sac_service.remove(sac_service.getSourcesFromDataset(spimdata).toArray(new SourceAndConverter[0])); // Cleanup*/
 
     }
 
@@ -266,7 +266,7 @@ public class IrinaWorkFlow {
                 }
             }
 
-            sac_service.remove(sac_service.getSourceAndConverterFromSpimdata(spimdata).toArray(new SourceAndConverter[0])); // Cleanup*/
+            sac_service.remove(sac_service.getSourcesFromDataset(spimdata).toArray(new SourceAndConverter[0])); // Cleanup*/
 
             List<Set<Integer>> components = new ArrayList<>();
 

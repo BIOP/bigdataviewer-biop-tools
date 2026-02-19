@@ -217,7 +217,7 @@ public class OpenOperettaDatasetCommand implements Command {
                 IJ.log("Error, could not find plate name!");
                 dataset_name = folder.getParentFile().getName();
             }
-            sourceService.setSpimDataName(asd, dataset_name);
+            sourceService.setDatasetName(asd, dataset_name);
 
             Map<Well, FilterNode> wellFilters = new LinkedHashMap<>();
             Map<Integer, FilterNode> fieldsFilters = new LinkedHashMap<>();
@@ -325,7 +325,7 @@ public class OpenOperettaDatasetCommand implements Command {
             String wellName0 =  getWellName(row0, col0); // "R" + row0 + "-C" + col0;
             TreePath pathFirstWell = sourceService.tree().getTreePathFromString(opm.getPlateName()+">Wells>"+wellName0);
 
-            for (SourceAndConverter source : sourceService.tree().getSourceAndConvertersFromTreePath(pathFirstWell)) {
+            for (SourceAndConverter source : sourceService.tree().getSourcesFromTreePath(pathFirstWell)) {
                 source.getSpimSource().getSourceTransform(0,0,at3d);
                 topLeft.setPosition(new double[]{0,0,0});
                 at3d.apply(topLeft,topLeft);
@@ -370,7 +370,7 @@ public class OpenOperettaDatasetCommand implements Command {
 
                 TreePath p = sourceService.tree().getTreePathFromString(opm.getPlateName()+">Wells>"+wellName);
 
-                List<SourceAndConverter<?>> sources = sourceService.tree().getSourceAndConvertersFromTreePath(p);
+                List<SourceAndConverter<?>> sources = sourceService.tree().getSourcesFromTreePath(p);
                 sources.forEach(source -> new BrightnessAdjuster(source, min_display_value, max_display_value).run());
                 List<SourceAndTimeRange> sourceAndTime = sources.stream().map(source ->
                     new SourceAndTimeRange(source,0,opm.getRange().getRangeT().size())
@@ -392,7 +392,7 @@ public class OpenOperettaDatasetCommand implements Command {
 
             if (show) {
                 BdvHandle bdvh = sourceDisplayService.getNewBdv();
-                SourceAndConverter[] sources = sourceService.getSourceAndConverterFromSpimdata(asd).toArray(new SourceAndConverter[0]);
+                SourceAndConverter[] sources = sourceService.getSourcesFromDataset(asd).toArray(new SourceAndConverter[0]);
                 sourceDisplayService.show(bdvh, sources);
 
                 new ViewerTransformAdjuster(bdvh, sources).run();

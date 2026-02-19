@@ -44,7 +44,7 @@ public class ImagePlusGetterTest {
 
         List<SourceAndConverter<?>> allSources = SourceServices
                 .getSourceService()
-                .getSourceAndConverterFromSpimdata(spimData);
+                .getSourcesFromDataset(spimData);
 
         // Creates a BdvHandle
         //BdvHandle bdvHandle = SourceServices

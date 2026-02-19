@@ -34,7 +34,7 @@ public class DemoImagePlusExport
 
         SourceAndConverter sac = SourceServices
                 .getSourceService()
-                .getSourceAndConverterFromSpimdata(spimData)
+                .getSourcesFromDataset(spimData)
                 .get(0);
 
         // Creates a BdvHandle

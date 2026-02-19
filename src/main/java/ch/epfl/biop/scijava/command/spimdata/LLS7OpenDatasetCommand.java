@@ -65,10 +65,10 @@ public class LLS7OpenDatasetCommand implements
         }
         AbstractSpimData<?> spimdata = OpenersToSpimData.getSpimData(openerSettings);
         sac_service.register(spimdata);
-        sac_service.setSpimDataName(spimdata, FilenameUtils.removeExtension(czi_file.getName()));
+        sac_service.setDatasetName(spimdata, FilenameUtils.removeExtension(czi_file.getName()));
 
         //SpimDataPostprocessor
-        List<SourceAndConverter<?>> sources = sac_service.getSourceAndConverterFromSpimdata(spimdata);
+        List<SourceAndConverter<?>> sources = sac_service.getSourcesFromDataset(spimdata);
         int nTimepoints = SourceHelper.getMaxTimepoint(sources.get(0))+1;
 
         // Now let's try to open the max proj, if it exists
@@ -95,9 +95,9 @@ public class LLS7OpenDatasetCommand implements
             }
             spimdata = OpenersToSpimData.getSpimData(openerSettings);
             sac_service.register(spimdata);
-            sac_service.setSpimDataName(spimdata, FilenameUtils.removeExtension(mipFile.getName()));
+            sac_service.setDatasetName(spimdata, FilenameUtils.removeExtension(mipFile.getName()));
 
-            sources = sac_service.getSourceAndConverterFromSpimdata(spimdata);
+            sources = sac_service.getSourcesFromDataset(spimdata);
 
             if (!legacy_xy_mode) {
                 for (SourceAndConverter<?> source : sources) {

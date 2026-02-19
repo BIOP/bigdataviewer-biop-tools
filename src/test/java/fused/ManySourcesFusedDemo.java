@@ -84,7 +84,7 @@ public class ManySourcesFusedDemo {
 
         SourceAndConverter sac = SourceServices
                 .getSourceService()
-                .getSourceAndConverterFromSpimdata(spimData)
+                .getSourcesFromDataset(spimData)
                 .get(0);
 
         new ViewerTransformAdjuster(bdvHandle, sac).run();

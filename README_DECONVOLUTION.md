@@ -84,7 +84,7 @@ AbstractSpimData<?> dataset = (AbstractSpimData<?>) cs.run(
 ).get().getOutput("spimdata");
 
 // Get the BDV sources
-SourceAndConverter<?>[] sources = ss.getSourceAndConverterFromSpimdata(dataset)
+SourceAndConverter<?>[] sources = ss.getSourcesFromDataset(dataset)
     .toArray(new SourceAndConverter<?>[0]);
 ```
 
@@ -159,7 +159,7 @@ AbstractSpimData<?> psfDataset = (AbstractSpimData<?>) cs.run(
     "disable_memo", false
 ).get().getOutput("spimdata");
 
-SourceAndConverter<?> psf = ss.getSourceAndConverterFromSpimdata(psfDataset)
+SourceAndConverter<?> psf = ss.getSourcesFromDataset(psfDataset)
     .toArray(new SourceAndConverter<?>[0])[0];
 
 // 3. Run deconvolution

@@ -101,17 +101,17 @@ public class ManyWarpedSourcesFusedDemo {
 
         SourceAndConverter sac0 = SourceServices
                 .getSourceService()
-                .getSourceAndConverterFromSpimdata(spimdata)
+                .getSourcesFromDataset(spimdata)
                 .get(0);
 
         SourceAndConverter sac1 = SourceServices
                 .getSourceService()
-                .getSourceAndConverterFromSpimdata(spimdata)
+                .getSourcesFromDataset(spimdata)
                 .get(1);
 
         SourceAndConverter sac2 = SourceServices
                 .getSourceService()
-                .getSourceAndConverterFromSpimdata(spimdata)
+                .getSourcesFromDataset(spimdata)
                 .get(2);
 
         new ViewerTransformAdjuster(bdvHandle, sac0).run();

@@ -58,7 +58,7 @@ public class DemoShuffledSpimData {
 
         final List<SourceAndConverter<?>> sacsReordered = SourceServices
                 .getSourceService()
-                .getSourceAndConverterFromSpimdata(reshuffled);
+                .getSourcesFromDataset(reshuffled);
 
         sacsReordered.forEach( sac -> {
             System.out.println(sac.getSpimSource().getName());

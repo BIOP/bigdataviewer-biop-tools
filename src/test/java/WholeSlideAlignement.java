@@ -34,7 +34,7 @@ public class WholeSlideAlignement {
 
         SourceAndConverter<?>[] sources = SourceServices
                 .getSourceService()
-                .getSourceAndConverterFromSpimdata(asd)
+                .getSourcesFromDataset(asd)
                 .toArray(new SourceAndConverter[0]);
 
         SourceServices

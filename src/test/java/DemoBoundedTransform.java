@@ -41,7 +41,7 @@ public class DemoBoundedTransform {
 
         SourceAndConverter<?> sacFixed = SourceServices
                 .getSourceService()
-                .getSourceAndConverterFromSpimdata(spimData)
+                .getSourcesFromDataset(spimData)
                 .get(0);
 
         importer = new SpimDataFromXmlImporter(filePath);
@@ -50,7 +50,7 @@ public class DemoBoundedTransform {
 
         SourceAndConverter<?> sacMoving = SourceServices
                 .getSourceService()
-                .getSourceAndConverterFromSpimdata(spimData)
+                .getSourcesFromDataset(spimData)
                 .get(0);
 
 

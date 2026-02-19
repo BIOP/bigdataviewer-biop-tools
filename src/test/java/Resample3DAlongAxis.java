@@ -38,7 +38,7 @@ public class Resample3DAlongAxis {
 
         SourceAndConverter sac = SourceServices
                 .getSourceService()
-                .getSourceAndConverterFromSpimdata(spimData)
+                .getSourcesFromDataset(spimData)
                 .get(0);
 
         // Creates a BdvHandle

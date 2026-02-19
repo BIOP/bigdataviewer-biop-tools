@@ -30,7 +30,7 @@ public class DemoLazyPyramid {
 
         SourceServices.getSourceService().register(dataset);
 
-        List<SourceAndConverter<?>> sources = SourceServices.getSourceService().getSourceAndConverterFromSpimdata(dataset);
+        List<SourceAndConverter<?>> sources = SourceServices.getSourceService().getSourcesFromDataset(dataset);
 
         SourceServices.getSourceService().register(SourceHelper.lazyPyramidizeXY2((SourceAndConverter)sources.get(0)));
 
