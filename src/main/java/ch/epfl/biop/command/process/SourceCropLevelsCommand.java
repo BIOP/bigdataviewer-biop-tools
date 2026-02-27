@@ -1,12 +1,13 @@
-package ch.epfl.biop.scijava.command.source;
+package ch.epfl.biop.command.process;
 
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.sourceandconverter.transform.SourceLevelMapper;
+import ch.epfl.biop.source.transform.SourceLevelMapper;
 import org.scijava.ItemIO;
+import org.scijava.plugin.Menu;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
-import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
-import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
+import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
+import sc.fiji.bdvpg.scijava.BdvPgMenus;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -19,8 +20,14 @@ import java.util.stream.Collectors;
  * the lowest resolution levels.
  */
 @Plugin(type = BdvPlaygroundActionCommand.class,
-        menuPath = ScijavaBdvDefaults.RootMenu + "Sources>Create level-cropped sources",
-        description = "Creates sources with only a subset of resolution levels from the original")
+        //menuPath = BdvPgMenus.RootMenu + "Sources>Create level-cropped sources",
+        menu = {
+                @Menu(label = BdvPgMenus.L1),
+                @Menu(label = BdvPgMenus.L2),
+                @Menu(label = BdvPgMenus.ProcessMenu, weight = BdvPgMenus.ProcessW),
+                @Menu(label = "Source - Crop Resolution Levels", weight = 2.2)
+        },
+        description = "Creates a new source with only a subset of resolution levels")
 public class SourceCropLevelsCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(label = "Select Sources",

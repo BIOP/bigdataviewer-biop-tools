@@ -13,6 +13,7 @@ import org.apache.commons.io.FileUtils;
 import org.scijava.Context;
 import org.scijava.Named;
 import sc.fiji.persist.ScijavaGsonHelper;
+import ch.epfl.biop.source.transform.SourceTimeMapper;
 
 import java.io.Closeable;
 import java.io.File;
@@ -26,8 +27,8 @@ import java.util.stream.Collectors;
 
 public class RegistrationPair implements Named, Closeable {
 
-    final SourceAndConverter<?>[] movingSourcesOrigin;
-    final SourceAndConverter<?>[] fixedSources;
+    SourceAndConverter<?>[] movingSourcesOrigin;
+    SourceAndConverter<?>[] fixedSources;
 
     final int timepointMoving;
     final int timepointFixed;

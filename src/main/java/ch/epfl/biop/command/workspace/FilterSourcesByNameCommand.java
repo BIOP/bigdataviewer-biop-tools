@@ -16,7 +16,7 @@ import sc.fiji.bdvpg.scijava.services.tree.SourceTreeModel;
                 @Menu(label = BdvPgMenus.L2),
                 @Menu(label = BdvPgMenus.WorkspaceMenu, weight = BdvPgMenus.WorkspaceW),
                 @Menu(label = "Tree"),
-                @Menu(label = "Tree - Filter Based On Name", weight = -4.5)
+                @Menu(label = "Tree - Filter By Name", weight = -4.5)
         },
         description = "Adds a node in the tree view which selects the sources based on their name")
 

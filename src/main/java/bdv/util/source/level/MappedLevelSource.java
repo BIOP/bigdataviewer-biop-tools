@@ -7,16 +7,17 @@ import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.RealRandomAccessible;
 import net.imglib2.realtransform.AffineTransform3D;
-import sc.fiji.bdvpg.scijava.services.ui.RenamableSourceAndConverter;
-import sc.fiji.bdvpg.scijava.services.ui.inspect.ISourceInspector;
-import sc.fiji.bdvpg.services.ISourceAndConverterService;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
+import sc.fiji.bdvpg.scijava.services.RenamableSource;
+import sc.fiji.bdvpg.scijava.services.tree.inspect.ISourceInspector;
+import sc.fiji.bdvpg.services.ISourceService;
+import sc.fiji.bdvpg.source.SourceHelper;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.HashSet;
 import java.util.Set;
 
-import static sc.fiji.bdvpg.scijava.services.ui.SourceAndConverterInspector.appendInspectorResult;
+import static sc.fiji.bdvpg.scijava.services.tree.inspect.SourceInspector.appendInspectorResult;
+
 
 /**
  * A source which exposes a subset of resolution levels from an origin source.
@@ -144,7 +145,7 @@ public class MappedLevelSource<T> implements Source<T>, ISourceInspector {
 
     @Override
     public Set<SourceAndConverter<?>> inspect(DefaultMutableTreeNode parent, SourceAndConverter<?> sac,
-                                               ISourceAndConverterService sourceAndConverterService,
+                                               ISourceService sourceAndConverterService,
                                                boolean registerIntermediateSources) {
         DefaultMutableTreeNode nameNode = new DefaultMutableTreeNode("Name: " + this.name);
         parent.add(nameNode);
@@ -158,21 +159,21 @@ public class MappedLevelSource<T> implements Source<T>, ISourceInspector {
 
         HashSet<SourceAndConverter<?>> subSources = new HashSet<>();
 
-        if (!sourceAndConverterService.getSourceAndConvertersFromSource(getOriginSource()).isEmpty()) {
-            sourceAndConverterService.getSourceAndConvertersFromSource(getOriginSource()).forEach((src) -> {
+        if (!sourceAndConverterService.getSourcesFromSpimSource(getOriginSource()).isEmpty()) {
+            sourceAndConverterService.getSourcesFromSpimSource(getOriginSource()).forEach((src) -> {
                 DefaultMutableTreeNode wrappedSourceNode =
-                        new DefaultMutableTreeNode(new RenamableSourceAndConverter(src));
+                        new DefaultMutableTreeNode(new RenamableSource(src));
                 originalSource.add(wrappedSourceNode);
                 subSources.addAll(appendInspectorResult(wrappedSourceNode, src,
                         sourceAndConverterService, registerIntermediateSources));
             });
         } else {
-            SourceAndConverter<?> src = SourceAndConverterHelper.createSourceAndConverter(origin);
+            SourceAndConverter<?> src = SourceHelper.createSourceAndConverter(origin);
             if (registerIntermediateSources) {
                 sourceAndConverterService.register(src);
             }
             DefaultMutableTreeNode wrappedSourceNode = new DefaultMutableTreeNode(
-                    new RenamableSourceAndConverter(src));
+                    new RenamableSource(src));
             originalSource.add(wrappedSourceNode);
             subSources.addAll(appendInspectorResult(wrappedSourceNode, src,
                     sourceAndConverterService, registerIntermediateSources));

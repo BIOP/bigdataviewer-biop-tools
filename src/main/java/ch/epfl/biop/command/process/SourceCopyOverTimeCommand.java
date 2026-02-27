@@ -1,24 +1,30 @@
-package ch.epfl.biop.scijava.command.source;
+package ch.epfl.biop.command.process;
 
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.source.transform.SourceTimeMapper;
 import org.scijava.ItemIO;
+import org.scijava.plugin.Menu;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
-import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
-import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
+import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
+import sc.fiji.bdvpg.scijava.BdvPgMenus;
 
 import java.util.Arrays;
-import java.util.stream.Collectors;
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
-        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Create copy of sources over time",
-        description = "Span sources over time")
+        //menuPath = BdvPgMenus.RootMenu+"Sources>Create copy of sources over time",
+        menu = {
+                @Menu(label = BdvPgMenus.L1),
+                @Menu(label = BdvPgMenus.L2),
+                @Menu(label = BdvPgMenus.ProcessMenu, weight = BdvPgMenus.ProcessW),
+                @Menu(label = "Source - Freeze Timepoint", weight = 2.2)
+        },
+        description = "Creates a new source showing a fixed timepoint across a time range")
 public class SourceCopyOverTimeCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(label = "Select Sources",
             description = "The sources to copy over time")
-    SourceAndConverter[] sacs;
+    SourceAndConverter<?>[] sources;
 
     @Parameter(label = "Timepoint to copy",
             description = "Timepoint to copy")
@@ -38,14 +44,13 @@ public class SourceCopyOverTimeCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(type = ItemIO.OUTPUT,
             description = "The resulting time-shifted source")
-    SourceAndConverter[] sacs_out;
+    SourceAndConverter[] sources_out;
 
     @Override
     public void run() {
-        sacs_out = Arrays.stream(sacs)
-                         .map(sac -> new SourceTimeMapper(sac, (t) -> (t>=t_start)&&(t<t_end)?timepoint_to_copy:-1, sac.getSpimSource().getName()+suffix).get())
-                         .collect(Collectors.toList())
-                         .toArray(new SourceAndConverter[0]);
+        sources_out = Arrays.stream(sources)
+                .map(sac -> new SourceTimeMapper(sac, (t) -> (t >= t_start) && (t < t_end) ? timepoint_to_copy : -1, sac.getSpimSource().getName() + suffix).get())
+                .toArray(SourceAndConverter[]::new);
     }
 
 }

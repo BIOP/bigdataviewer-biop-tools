@@ -1,19 +1,27 @@
-package ch.epfl.biop.registration.scijava.command;
+package ch.epfl.biop.command.register.warpy;
 
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.registration.RegistrationPair;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.object.ObjectService;
+import org.scijava.plugin.Menu;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
-import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
-import sc.fiji.bdvpg.scijava.command.BdvPlaygroundActionCommand;
+import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
+import sc.fiji.bdvpg.scijava.BdvPgMenus;
 
 import java.util.List;
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
-        menuPath = ScijavaBdvDefaults.RootMenu+"Sources>Register>Create registration pair (Advanced)",
+        //menuPath = BdvPgMenus.RootMenu+"Sources>Register>Create registration pair (Advanced)",
+        menu = {
+                @Menu(label = BdvPgMenus.L1),
+                @Menu(label = BdvPgMenus.L2),
+                @Menu(label = BdvPgMenus.RegisterMenu, weight = BdvPgMenus.RegisterW),
+                @Menu(label = "Warpy", weight = -2),
+                @Menu(label = "Create Registration Pair (Specify Timepoint)", weight = 1.1)
+        },
         description = "Creates a new registration pair from fixed and moving sources for the Warpy workflowq, specifying timepoint")
 public class PairRegistrationCreateAdvancedCommand implements Command {
 

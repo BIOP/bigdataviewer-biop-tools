@@ -1,4 +1,4 @@
-package ch.epfl.biop.sourceandconverter.transform;
+package ch.epfl.biop.source.transform;
 
 import bdv.util.source.level.MappedLevelSource;
 import bdv.viewer.Source;
@@ -6,7 +6,7 @@ import bdv.viewer.SourceAndConverter;
 
 import java.util.function.Function;
 
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
+import sc.fiji.bdvpg.source.SourceHelper;
 
 /**
  * Creates a new {@link SourceAndConverter} that exposes only a subset of resolution levels
@@ -59,15 +59,15 @@ public class SourceLevelMapper implements Runnable, Function<SourceAndConverter,
                     src.asVolatile().getSpimSource(), this.name, minLevel, maxLevel);
             SourceAndConverter vsac = new SourceAndConverter(
                     (Source) vsrcMapped,
-                    SourceAndConverterHelper.cloneConverter(src.asVolatile().getConverter(), src.asVolatile()));
+                    SourceHelper.cloneConverter(src.asVolatile().getConverter(), src.asVolatile()));
             sac = new SourceAndConverter(
                     srcMapped,
-                    SourceAndConverterHelper.cloneConverter(src.getConverter(), src),
+                    SourceHelper.cloneConverter(src.getConverter(), src),
                     vsac);
         } else {
             sac = new SourceAndConverter(
                     srcMapped,
-                    SourceAndConverterHelper.cloneConverter(src.getConverter(), src));
+                    SourceHelper.cloneConverter(src.getConverter(), src));
         }
         return sac;
     }

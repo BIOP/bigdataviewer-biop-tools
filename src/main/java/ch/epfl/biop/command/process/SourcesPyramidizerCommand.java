@@ -16,9 +16,9 @@ import sc.fiji.bdvpg.scijava.BdvPgMenus;
                 @Menu(label = BdvPgMenus.L1),
                 @Menu(label = BdvPgMenus.L2),
                 @Menu(label = BdvPgMenus.ProcessMenu, weight = BdvPgMenus.ProcessW),
-                @Menu(label = "Source - Duplicate With Resolution Levels (Pyramidize)", weight = 2.1)
+                @Menu(label = "Source - Pyramidize", weight = 2.1)
         },
-        description = "Generates multi-resolution pyramid levels for sources that lack them")
+        description = "Creates a new multi-resolution pyramid source by downsampling")
 public class SourcesPyramidizerCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(label = "Select Source(s)",

@@ -18,9 +18,9 @@ import java.util.stream.Collectors;
                 @Menu(label = BdvPgMenus.L1),
                 @Menu(label = BdvPgMenus.L2),
                 @Menu(label = BdvPgMenus.ProcessMenu, weight = BdvPgMenus.ProcessW),
-                @Menu(label = "Source - Duplicate With Time-Shift", weight = 2.2)
+                @Menu(label = "Source - Shift Timepoints", weight = 2.2)
         },
-        description = "Creates a source with shifted timepoints relative to the original")
+        description = "Creates a new source with timepoints offset by a fixed amount")
 public class SourceTimeShiftCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(label = "Select Sources",
