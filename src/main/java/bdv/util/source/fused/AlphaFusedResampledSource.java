@@ -37,7 +37,7 @@ import net.imglib2.view.Views;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sc.fiji.bdvpg.cache.GlobalLoaderCache;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
+import sc.fiji.bdvpg.source.SourceHelper;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -130,7 +130,7 @@ public class AlphaFusedResampledSource< T extends RealType<T> & NativeType<T>> i
      *  mipmap reuse tries to be clever by matching the voxel size between the model source and the origin source
      *  so for instance the model source mipmap level 0 will resample the origin mipmap level 2, if the voxel size
      *  of the origin is much smaller then the model (and provided that the origin is also a multiresolution source)
-     *  the way the matching is performed is specified in {@link SourceAndConverterHelper#bestLevel(Source, int, double)}.
+     *  the way the matching is performed is specified in {@link SourceHelper#bestLevel(Source, int, double)}.
      *  For more details and limitation, please read the documentation in the linked method above
      * @param cache specifies whether the result of the resampling should be cached.
      *  This allows for a fast access of resampled source after the first computation - but the synchronization with
@@ -211,8 +211,8 @@ public class AlphaFusedResampledSource< T extends RealType<T> & NativeType<T>> i
         for (int l=0;l<rootOrigin.getNumMipmapLevels();l++) {
             AffineTransform3D at3d = new AffineTransform3D();
             rootOrigin.getSourceTransform(0,l,at3d);
-            double mid = //SourceAndConverterHelper.getCharacteristicVoxelSize(at3d);
-            SourceAndConverterHelper.getCharacteristicVoxelSize(origin,0,l);
+            double mid = //SourceHelper.getCharacteristicVoxelSize(at3d);
+            SourceHelper.getCharacteristicVoxelSize(origin,0,l);
             originVoxSize.get(origin).add(mid);
         }
 
@@ -224,7 +224,7 @@ public class AlphaFusedResampledSource< T extends RealType<T> & NativeType<T>> i
         for (int l=0;l<resamplingModel.getNumMipmapLevels();l++) {
             if (reuseMipMaps) {
                 resamplingModel.getSourceTransform(0,l, at3D);
-                double middleDim = SourceAndConverterHelper.getCharacteristicVoxelSize(at3D);
+                double middleDim = SourceHelper.getCharacteristicVoxelSize(at3D);
                 int match = bestMatch(origin,middleDim);
                 mipmapModelToOrigin.get(origin).put(l, match);
             } else {
@@ -234,9 +234,9 @@ public class AlphaFusedResampledSource< T extends RealType<T> & NativeType<T>> i
             // For debugging resampling issues
             logger.info("Model mipmap level "+l+" correspond to origin mipmap level "+mipmapModelToOrigin.get(origin).get(l));
             logger.info("Model mipmap level "+l+" has a characteristic voxel size of "+
-                    SourceAndConverterHelper.getCharacteristicVoxelSize(resamplingModel,0,l));
+                    SourceHelper.getCharacteristicVoxelSize(resamplingModel,0,l));
             logger.info("Origin level "+mipmapModelToOrigin.get(origin).get(l)+" has a characteristic voxel size of "+
-                    SourceAndConverterHelper.getCharacteristicVoxelSize(origin,0,mipmapModelToOrigin.get(origin).get(l)));
+                    SourceHelper.getCharacteristicVoxelSize(origin,0,mipmapModelToOrigin.get(origin).get(l)));
 
         }
     }

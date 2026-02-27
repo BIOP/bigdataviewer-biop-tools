@@ -19,11 +19,11 @@ import net.imglib2.view.ExtendedRandomAccessibleInterval;
 import net.imglib2.view.Views;
 import org.junit.After;
 import org.junit.Test;
-import sc.fiji.bdvpg.bdv.supplier.IBdvSupplier;
+import sc.fiji.bdvpg.viewers.bdv.supplier.IBdvSupplier;
 import sc.fiji.bdvpg.bdv.supplier.alpha.AlphaBdvSupplier;
 import sc.fiji.bdvpg.bdv.supplier.alpha.AlphaSerializableBdvOptions;
-import sc.fiji.bdvpg.services.SourceAndConverterServiceLoader;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
+import sc.fiji.bdvpg.services.SourceServiceLoader;
+import sc.fiji.bdvpg.services.SourceServices;
 
 import java.util.function.Supplier;
 
@@ -35,16 +35,16 @@ public class AlphaDemoWarped {
     {
         ij = new ImageJ();
         ij.ui().showUI();
-        //new SourceAndConverterServiceLoader("src/test/resources/bdvplaygroundstate.json", "src/test/resources/", ij.context(), false).run();
-        new SourceAndConverterServiceLoader("src/test/resources/bdvplaygroundstate.json", "src/test/resources/", ij.context(), false).run();
+        //new SourceServiceLoader("src/test/resources/bdvplaygroundstate.json", "src/test/resources/", ij.context(), false).run();
+        new SourceServiceLoader("src/test/resources/bdvplaygroundstate.json", "src/test/resources/", ij.context(), false).run();
 
         IBdvSupplier bdvSupplier = new AlphaBdvSupplier(new AlphaSerializableBdvOptions());
 
-        SourceAndConverterServices.getBdvDisplayService().setDefaultBdvSupplier(bdvSupplier);
+        SourceServices.getBdvDisplayService().setDefaultBdvSupplier(bdvSupplier);
 
-        BdvHandle bdv = SourceAndConverterServices.getBdvDisplayService().getNewBdv();
+        BdvHandle bdv = SourceServices.getBdvDisplayService().getNewBdv();
 
-        SourceAndConverter<?>[] sources = SourceAndConverterServices.getSourceAndConverterService().getSourceAndConverters().toArray(new SourceAndConverter[0]);
+        SourceAndConverter<?>[] sources = SourceServices.getSourceService().getSources().toArray(new SourceAndConverter[0]);
 
         SourceAndConverter warpedSource = sources[2];
 
@@ -52,7 +52,7 @@ public class AlphaDemoWarped {
 
         AlphaSourceHelper.setAlphaSource(warpedSource, alpha);
 
-        SourceAndConverterServices
+        SourceServices
                 .getBdvDisplayService()
                 .show(bdv, warpedSource);
 

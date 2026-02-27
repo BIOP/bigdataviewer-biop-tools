@@ -26,7 +26,7 @@
 
 import ch.epfl.biop.DatasetHelper;
 import ch.epfl.biop.bdv.img.bioformats.command.CreateBdvDatasetBioFormatsCommand;
-import ch.epfl.biop.scijava.command.source.labkit.SourcesLabkitCommand;
+import ch.epfl.biop.command.process.labkit.SourcesLabkitCommand;
 import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;
 

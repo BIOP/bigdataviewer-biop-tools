@@ -4,8 +4,8 @@ import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.bdv.img.legacy.bioformats.command.BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand;
 import ch.epfl.biop.bdv.img.legacy.bioformats.command.BioformatsBigdataviewerBridgeDatasetCommand;
 import ch.epfl.biop.bdv.img.legacy.bioformats.entity.SeriesNumber;
-import ch.epfl.biop.scijava.command.source.ExportToMultipleImagePlusCommand;
-import ch.epfl.biop.sourceandconverter.exporter.IntRangeParser;
+import ch.epfl.biop.command.io.exporter.ExportToMultipleImagePlusCommand;
+import ch.epfl.biop.source.exporter.IntRangeParser;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.measure.Calibration;
@@ -19,11 +19,11 @@ import org.scijava.Context;
 import org.scijava.command.CommandService;
 import org.scijava.task.Task;
 import org.scijava.task.TaskService;
-import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
-import sc.fiji.bdvpg.scijava.services.ui.SourceAndConverterServiceUI;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterAndTimeRange;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceTransformHelper;
+import sc.fiji.bdvpg.scijava.services.SourceService;
+import sc.fiji.bdvpg.scijava.services.tree.SourceTree;
+import sc.fiji.bdvpg.source.SourceAndTimeRange;
+import sc.fiji.bdvpg.source.SourceHelper;
+import sc.fiji.bdvpg.source.transform.SourceTransformHelper;
 
 import java.io.File;
 import java.time.Duration;
@@ -48,7 +48,7 @@ public class OMETiffMultiSeriesProcessorExporter {
 
         task.setStatusMessage("Parsing file metadata...");
 
-        SourceAndConverterService sac_service = builder.ctx.getService(SourceAndConverterService.class);
+        SourceService sac_service = builder.ctx.getService(SourceService.class);
 
         CommandService command = builder.ctx.getService(CommandService.class);
 
@@ -72,23 +72,22 @@ public class OMETiffMultiSeriesProcessorExporter {
                     options
                 ).get().getOutput("spimdata");
 
-        List<SourceAndConverter<?>> allSources = sac_service.getSourceAndConverterFromSpimdata(spimdata);
+        List<SourceAndConverter<?>> allSources = sac_service.getSourcesFromDataset(spimdata);
 
         if (builder.removeZOffset) {
             for (SourceAndConverter source: allSources) {
-                RealPoint center = SourceAndConverterHelper.getSourceAndConverterCenterPoint(source,0);
+                RealPoint center = SourceHelper.getSourceCenterPoint(source,0);
                 AffineTransform3D zOffset = new AffineTransform3D();
                 zOffset.translate(0,0,center.getDoublePosition(2));
-                int numFrames = SourceAndConverterHelper.getMaxTimepoint(source.getSpimSource())+1;
-                SourceTransformHelper.append(zOffset.inverse(), new SourceAndConverterAndTimeRange(source,0, numFrames));
+                int numFrames = SourceHelper.getMaxTimepoint(source.getSpimSource())+1;
+                SourceTransformHelper.append(zOffset.inverse(), new SourceAndTimeRange(source,0, numFrames));
             }
         }
 
-        SourceAndConverterServiceUI.Node seriesNode =
-                sac_service.getUI()
-                        .getRoot()
-                        .child(datasetName)
-                        .child(SeriesNumber.class.getSimpleName());
+        SourceTree.Node seriesNode = sac_service.tree()
+                .getRoot()
+                .child(datasetName)
+                .child(SeriesNumber.class.getSimpleName());
 
         System.out.println("nSeries = "+seriesNode.children().size());
 
@@ -111,10 +110,10 @@ public class OMETiffMultiSeriesProcessorExporter {
         Callable c = () -> {
 
         rangeSeries.parallelStream().forEach(index -> {
-                SourceAndConverterServiceUI.Node currentSeriesNode = seriesNode.child(index);
+            SourceTree.Node currentSeriesNode = seriesNode.child(index);
                 try {
                     List<ImagePlus> ij1_images = (List<ImagePlus>) command.run(ExportToMultipleImagePlusCommand.class, false,
-                            "sacs", currentSeriesNode.sources(),
+                            "sources", currentSeriesNode.sources(),
                             "level", 0,
                             "range_frames", builder.rangeT,
                             "range_channels", builder.rangeC,

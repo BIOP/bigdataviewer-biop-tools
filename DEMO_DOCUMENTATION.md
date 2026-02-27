@@ -101,7 +101,7 @@ This performs live deskewing of the lattice light sheet data.
 
 #### Using the GUI
 
-**Menu:** `Plugins > BigDataViewer-Playground > BDVDataset > Create BDV Dataset [Zeiss LLS7]`
+**Menu:** `Plugins > BigDataViewer-Playground > XML Dataset > Create BDV Dataset [Zeiss LLS7]`
 
 | Parameter | Description |
 |-----------|-------------|
@@ -280,7 +280,7 @@ public class DemoFeatureX {
 For the "Open the Dataset" step above, the generator produces:
 
 **Using the GUI:**
-Navigate to `Plugins > BigDataViewer-Playground > BDVDataset > Create BDV Dataset [Zeiss LLS7]`
+Navigate to `Plugins > BigDataViewer-Playground > XML Dataset > Create BDV Dataset [Zeiss LLS7]`
 and fill in the parameters in the dialog.
 
 **Using Groovy Script:**

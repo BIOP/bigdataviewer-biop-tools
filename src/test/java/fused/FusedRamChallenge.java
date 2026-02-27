@@ -1,21 +1,17 @@
 package fused;
 
-import bdv.util.source.fused.AlphaFusedResampledSource;
-import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.sourceandconverter.EmptyMultiResolutionSourceAndConverterCreator;
-import ch.epfl.biop.sourceandconverter.SourceFuserAndResampler;
+import ch.epfl.biop.source.EmptyMultiResolutionSourceCreator;
 import ij.IJ;
 import loci.common.DebugTools;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imagej.ImageJ;
 import net.imglib2.realtransform.AffineTransform3D;
-import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
-import sc.fiji.bdvpg.spimdata.importer.SpimDataFromXmlImporter;
+import sc.fiji.bdvpg.scijava.services.SourceService;
+import sc.fiji.bdvpg.services.SourceServices;
+import sc.fiji.bdvpg.dataset.importer.SpimDataFromXmlImporter;
 
 import javax.swing.tree.TreePath;
-import java.util.List;
 
 public class FusedRamChallenge {
 
@@ -44,9 +40,9 @@ public class FusedRamChallenge {
         transform.scale(sx/nPx,sy/nPy,sz/nPz);
         transform.translate(oX,oY,oZ);
 
-        SourceAndConverter model = new EmptyMultiResolutionSourceAndConverterCreator("model", transform, nPx, nPy, nPz, 1, 2, 2, 2, 1).get();
+        SourceAndConverter model = new EmptyMultiResolutionSourceCreator("model", transform, nPx, nPy, nPz, 1, 2, 2, 2, 1).get();
 
-        SourceAndConverterServices.getSourceAndConverterService().register(model);
+        SourceServices.getSourceService().register(model);
 
         IJ.log(" Loading dataset ");
         AbstractSpimData asd = new SpimDataFromXmlImporter("C:\\Users\\nicol\\Downloads\\CompositeTiles\\CompositeTiles\\tiles.xml").get();
@@ -55,11 +51,11 @@ public class FusedRamChallenge {
 
         String sourcesPath = "tiles.xml>Channel>0";
 
-        SourceAndConverterService sac_service = ij.get(SourceAndConverterService.class);
+        SourceService sac_service = ij.get(SourceService.class);
 
         TreePath tp =
                 sac_service
-                .getUI()
+                .tree()
                 .getTreePathFromString(sourcesPath);
 
         //List<SourceAndConverter> sources = sac_service.getUI().getSourceAndConvertersFromTreePath(tp);

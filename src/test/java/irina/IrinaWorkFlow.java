@@ -6,12 +6,10 @@ import ch.epfl.biop.ImagePlusToOMETiff;
 import ch.epfl.biop.OMETiffMultiSeriesProcessorExporter;
 import ch.epfl.biop.bdv.img.bioformats.command.CreateBdvDatasetBioFormatsCommand;
 import ch.epfl.biop.bdv.img.bioformats.entity.FileName;
-import ch.epfl.biop.bdv.img.legacy.bioformats.command.BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand;
-import ch.epfl.biop.bdv.img.legacy.bioformats.entity.FileIndex;
 import ch.epfl.biop.kheops.KheopsHelper;
-import ch.epfl.biop.scijava.command.spimdata.DatasetToBigStitcherDatasetCommand;
-import ch.epfl.biop.sourceandconverter.exporter.CZTRange;
-import ch.epfl.biop.sourceandconverter.exporter.ImagePlusGetter;
+import ch.epfl.biop.command.dataset.DatasetToBigStitcherDatasetCommand;
+import ch.epfl.biop.source.exporter.CZTRange;
+import ch.epfl.biop.source.exporter.ImagePlusGetter;
 import ij.ImagePlus;
 import loci.common.DebugTools;
 import mpicbg.spim.data.generic.AbstractSpimData;
@@ -27,14 +25,14 @@ import net.imglib2.type.numeric.NumericType;
 import org.apache.commons.io.FilenameUtils;
 import org.scijava.Context;
 import org.scijava.command.CommandService;
-import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
-import sc.fiji.bdvpg.scijava.services.ui.SourceAndConverterServiceUI;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterAndTimeRange;
-import sc.fiji.bdvpg.sourceandconverter.importer.EmptySourceAndConverterCreator;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceRealTransformer;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceResampler;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceTransformHelper;
-import sc.fiji.bdvpg.spimdata.exporter.XmlFromSpimDataExporter;
+import sc.fiji.bdvpg.scijava.services.SourceService;
+import sc.fiji.bdvpg.scijava.services.tree.SourceTree;
+import sc.fiji.bdvpg.source.SourceAndTimeRange;
+import sc.fiji.bdvpg.source.importer.EmptySourceCreator;
+import sc.fiji.bdvpg.source.transform.SourceRealTransformer;
+import sc.fiji.bdvpg.source.transform.SourceResampler;
+import sc.fiji.bdvpg.source.transform.SourceTransformHelper;
+import sc.fiji.bdvpg.dataset.exporter.XmlFromSpimDataExporter;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -132,7 +130,7 @@ public class IrinaWorkFlow {
 
         Function<SourceAndConverter<?>,SourceAndConverter<?>>
                 physicalToPixel = source ->
-                SourceTransformHelper.createNewTransformedSourceAndConverter(transform.inverse(), new SourceAndConverterAndTimeRange(source,0));
+                SourceTransformHelper.createNewTransformedSourceAndConverter(transform.inverse(), new SourceAndTimeRange(source,0));
 
         SourceAndConverter uncroppedModel = physicalToPixel.apply(sources.get(0));
 
@@ -141,7 +139,7 @@ public class IrinaWorkFlow {
         long nPz = uncroppedModel.getSpimSource().getSource(0,0).max(2)+1; // Humpf
         AffineTransform3D location = new AffineTransform3D();
         location.translate(cropX, cropY, 0);
-        SourceAndConverter croppedModel = new EmptySourceAndConverterCreator("model", location, nPx, nPy, nPz).get();
+        SourceAndConverter croppedModel = new EmptySourceCreator("model", location, nPx, nPy, nPz).get();
 
         RealTransform realTransform = BigWarpHelper.realTransformFromBigWarpFile(new File(landmarkFileUnwarp), true);
 
@@ -151,7 +149,7 @@ public class IrinaWorkFlow {
 
         Function<SourceAndConverter<?>,SourceAndConverter<?>>
                 pixelToPhysical = source ->
-                SourceTransformHelper.createNewTransformedSourceAndConverter(transform, new SourceAndConverterAndTimeRange(source,0));
+                SourceTransformHelper.createNewTransformedSourceAndConverter(transform, new SourceAndTimeRange(source,0));
 
         List<SourceAndConverter<?>> correctedSources = sources.stream()
                 .map(src -> (SourceAndConverter<?>) src)
@@ -187,8 +185,8 @@ public class IrinaWorkFlow {
 
         new XmlFromSpimDataExporter(spimdata, filePath, ctx).run();
 
-        SourceAndConverterService sac_service = ctx.getService(SourceAndConverterService.class);
-        sac_service.remove(sac_service.getSourceAndConverterFromSpimdata(spimdata).toArray(new SourceAndConverter[0])); // Cleanup*/
+        SourceService sac_service = ctx.getService(SourceService.class);
+        sac_service.remove(sac_service.getSourcesFromDataset(spimdata).toArray(new SourceAndConverter[0])); // Cleanup*/
 
     }
 
@@ -235,13 +233,12 @@ public class IrinaWorkFlow {
                     "files", files,
                     "splitrgbchannels", false).get().getOutput("spimdata");
 
-            SourceAndConverterService sac_service = ctx.getService(SourceAndConverterService.class);
+            SourceService sac_service = ctx.getService(SourceService.class);
 
-            SourceAndConverterServiceUI.Node filesNode =
-                    sac_service.getUI()
-                            .getRoot()
-                            .child(datasetName)
-                            .child(FileName.class.getSimpleName());
+            SourceTree.Node filesNode = sac_service.tree()
+                    .getRoot()
+                    .child(datasetName)
+                    .child(FileName.class.getSimpleName());
 
             spimdata.setBasePath(parentPath);
 
@@ -267,7 +264,7 @@ public class IrinaWorkFlow {
                 }
             }
 
-            sac_service.remove(sac_service.getSourceAndConverterFromSpimdata(spimdata).toArray(new SourceAndConverter[0])); // Cleanup*/
+            sac_service.remove(sac_service.getSourcesFromDataset(spimdata).toArray(new SourceAndConverter[0])); // Cleanup*/
 
             List<Set<Integer>> components = new ArrayList<>();
 

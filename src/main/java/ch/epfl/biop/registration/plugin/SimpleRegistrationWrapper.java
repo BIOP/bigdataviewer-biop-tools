@@ -14,10 +14,10 @@ import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.NumericType;
 import org.scijava.Context;
 import org.scijava.command.Command;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
-import sc.fiji.bdvpg.sourceandconverter.importer.EmptySourceAndConverterCreator;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceRealTransformer;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceResampler;
+import sc.fiji.bdvpg.source.SourceHelper;
+import sc.fiji.bdvpg.source.importer.EmptySourceCreator;
+import sc.fiji.bdvpg.source.transform.SourceRealTransformer;
+import sc.fiji.bdvpg.source.transform.SourceResampler;
 import sc.fiji.persist.ScijavaGsonHelper;
 
 import java.util.HashMap;
@@ -265,7 +265,7 @@ public class SimpleRegistrationWrapper implements ExternalRegistrationPlugin {
 
             Map<SourceAndConverter<T>, Integer> mapMipmap = new HashMap<>();
             sourceList.forEach(src -> {
-                int mipmapLevel = SourceAndConverterHelper.bestLevel(src, timepoint, pixelSizeMillimeter);
+                int mipmapLevel = SourceHelper.bestLevel(src, timepoint, pixelSizeMillimeter);
                 //logger.debug("Mipmap level chosen for source ["+src.getSpimSource().getName()+"] : "+mipmapLevel);
                 mapMipmap.put(resampledSourceList.get(sourceList.indexOf(src)), mipmapLevel);
             });
@@ -284,7 +284,7 @@ public class SimpleRegistrationWrapper implements ExternalRegistrationPlugin {
 
         } else {
             SourceAndConverter source = resampledSourceList.get(0);
-            int mipmapLevel = SourceAndConverterHelper.bestLevel(sourceList.get(0), timepoint, pixelSizeMillimeter);
+            int mipmapLevel = SourceHelper.bestLevel(sourceList.get(0), timepoint, pixelSizeMillimeter);
             ImagePlus singleChannel = ImagePlusHelper.wrap(
                     source,
                     mipmapLevel,
@@ -326,7 +326,7 @@ public class SimpleRegistrationWrapper implements ExternalRegistrationPlugin {
 
         transform.set(at3D);
 
-        return new EmptySourceAndConverterCreator("model", at3D.inverse(), nPx, nPy, nPz).get();
+        return new EmptySourceCreator("model", at3D.inverse(), nPx, nPy, nPz).get();
     }
 
     @Override

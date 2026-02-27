@@ -25,7 +25,7 @@ public class DemoLLS7 {
                 "disable_memo", false
         ).get().getOutput("spimdata");
 
-        SourceAndConverter<?>[] eggChamberSources = ss.getSourceAndConverterFromSpimdata(dataset).toArray(new SourceAndConverter<?>[0]);
+        SourceAndConverter<?>[] eggChamberSources = ss.getSourcesFromDataset(dataset).toArray(new SourceAndConverter<?>[0]);
 
         BdvHandle bdvh = ds.getNewBdv();*/
 

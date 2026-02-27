@@ -4,7 +4,7 @@ import bdv.util.BdvHandle;
 import bdv.util.source.fused.AlphaFusedResampledSource;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.kheops.ometiff.OMETiffExporter;
-import ch.epfl.biop.sourceandconverter.SourceFuserAndResampler;
+import ch.epfl.biop.source.SourceFuserAndResampler;
 import ij.IJ;
 import loci.common.DebugTools;
 import net.imagej.ImageJ;
@@ -12,14 +12,14 @@ import net.imglib2.type.numeric.ARGBType;
 import ome.units.UNITS;
 import org.junit.After;
 import org.junit.Test;
-import sc.fiji.bdvpg.bdv.navigate.ViewerTransformAdjuster;
-import sc.fiji.bdvpg.bdv.supplier.IBdvSupplier;
+import sc.fiji.bdvpg.viewers.bdv.navigate.ViewerTransformAdjuster;
+import sc.fiji.bdvpg.viewers.bdv.supplier.IBdvSupplier;
 import sc.fiji.bdvpg.bdv.supplier.alpha.AlphaBdvSupplier;
 import sc.fiji.bdvpg.bdv.supplier.alpha.AlphaSerializableBdvOptions;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
-import sc.fiji.bdvpg.sourceandconverter.display.BrightnessAutoAdjuster;
-import sc.fiji.bdvpg.sourceandconverter.display.ColorChanger;
-import sc.fiji.bdvpg.spimdata.importer.SpimDataFromXmlImporter;
+import sc.fiji.bdvpg.services.SourceServices;
+import sc.fiji.bdvpg.source.display.BrightnessAutoAdjuster;
+import sc.fiji.bdvpg.source.display.ColorChanger;
+import sc.fiji.bdvpg.dataset.importer.SpimDataFromXmlImporter;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -31,7 +31,7 @@ public class FusedDemo {
 
     public static void main( String[] args ) throws ExecutionException, InterruptedException
     {
-        // Create the ImageJ application context with all available services; necessary for SourceAndConverterServices creation
+        // Create the ImageJ application context with all available services; necessary for SourceServices creation
         ij = new ImageJ();
         ij.ui().showUI();
         demo();
@@ -52,9 +52,9 @@ public class FusedDemo {
 
         IBdvSupplier bdvSupplier = new AlphaBdvSupplier(new AlphaSerializableBdvOptions());
 
-        //SourceAndConverterServices.getBdvDisplayService().setDefaultBdvSupplier(bdvSupplier);
+        //SourceServices.getBdvDisplayService().setDefaultBdvSupplier(bdvSupplier);
 
-        BdvHandle bdv = bdvSupplier.get(); //SourceAndConverterServices.getBdvDisplayService().getNewBdv();
+        BdvHandle bdv = bdvSupplier.get(); //SourceServices.getBdvDisplayService().getNewBdv();
 
         // Import SpimData
         new SpimDataFromXmlImporter( "src/test/resources/mri-stack.xml" ).run();
@@ -62,11 +62,11 @@ public class FusedDemo {
         new SpimDataFromXmlImporter( "src/test/resources/mri-stack-shiftedY.xml" ).run();
 
         // Get a handle on the sacs
-        final List<SourceAndConverter<?>> sacs = SourceAndConverterServices.getSourceAndConverterService().getSourceAndConverters();
+        final List<SourceAndConverter<?>> sacs = SourceServices.getSourceService().getSources();
 
         // Show all three sacs
         sacs.forEach( sac -> {
-            SourceAndConverterServices.getBdvDisplayService().show(bdv, sac);
+            SourceServices.getBdvDisplayService().show(bdv, sac);
             new ViewerTransformAdjuster(bdv, sac).run();
             new BrightnessAutoAdjuster(sac, 0).run();
         });
@@ -80,9 +80,9 @@ public class FusedDemo {
                 true, true, false, 0,
                 64, 64, 1, -1,4).get();
 
-        BdvHandle bdvh = SourceAndConverterServices.getBdvDisplayService().getNewBdv();
+        BdvHandle bdvh = SourceServices.getBdvDisplayService().getNewBdv();
 
-        SourceAndConverterServices
+        SourceServices
                 .getBdvDisplayService().show(bdvh, fused);
 
         new ViewerTransformAdjuster(bdvh, fused).run();

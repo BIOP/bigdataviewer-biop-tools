@@ -28,13 +28,13 @@ import bdv.util.BdvFunctions;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.DatasetHelper;
 import ch.epfl.biop.bdv.img.bioformats.command.CreateBdvDatasetBioFormatsCommand;
-import ch.epfl.biop.scijava.command.source.deconvolve.SourcesDeconvolverCommand;
-import ch.epfl.biop.scijava.command.spimdata.LLS7OpenDatasetCommand;
+import ch.epfl.biop.command.process.deconvolve.SourcesDeconvolverCommand;
+import ch.epfl.biop.command.workflow.lls7.LLS7OpenDatasetCommand;
 import net.haesleinhuepf.clij.CLIJ;
 import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;
 import org.apache.commons.io.FilenameUtils;
-import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
+import sc.fiji.bdvpg.scijava.services.SourceService;
 
 import java.io.File;
 import java.util.concurrent.Future;
@@ -86,17 +86,17 @@ public class DemoDeconvolution {
 
         // Get the source and PSF from the service
         String datasetName = FilenameUtils.removeExtension(helaKyotoLLS7.getName());
-        SourceAndConverterService sacService = ij.context().getService(SourceAndConverterService.class);
+        SourceService sacService = ij.context().getService(SourceService.class);
 
-        SourceAndConverter[] sources = sacService.getUI().getSourceAndConvertersFromPath(datasetName)
+        SourceAndConverter[] sources = sacService.tree().getSources(datasetName)
                 .toArray(new SourceAndConverter[0]);
 
-        SourceAndConverter psf = sacService.getUI().getSourceAndConvertersFromPath("psf_lls7_200nm")
+        SourceAndConverter psf = sacService.tree().getSources("psf_lls7_200nm")
                 .toArray(new SourceAndConverter[0])[0];
 
         // Run the deconvolution command
         Future<?> result = ij.command().run(SourcesDeconvolverCommand.class, true,
-                "sacs", new SourceAndConverter[]{sources[0]},
+                "sources", new SourceAndConverter[]{sources[0]},
                 "psf", psf,
                 "output_pixel_type", SourcesDeconvolverCommand.ORIGINAL,
                 "suffix", "_deconvolved",
@@ -114,7 +114,7 @@ public class DemoDeconvolution {
         result.get();
 
         // Get the deconvolved source from the service (it was registered by the command)
-        SourceAndConverter[] deconvolvedSources = sacService.getSourceAndConverters().stream()
+        SourceAndConverter[] deconvolvedSources = sacService.getSources().stream()
                 .filter(sac -> sac.getSpimSource().getName().contains("_deconvolved"))
                 .toArray(SourceAndConverter[]::new);
 

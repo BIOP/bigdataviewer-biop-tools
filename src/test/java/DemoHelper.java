@@ -31,8 +31,8 @@ import bdv.util.BdvHandle;
 import bdv.viewer.SourceAndConverter;
 import com.formdev.flatlaf.FlatDarkLaf;
 import net.imagej.ImageJ;
-import sc.fiji.bdvpg.scijava.services.SourceAndConverterBdvDisplayService;
-import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
+import sc.fiji.bdvpg.scijava.services.SourceBdvDisplayService;
+import sc.fiji.bdvpg.scijava.services.SourceService;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -58,9 +58,9 @@ public class DemoHelper {
      * @param depth the depth to expand (typically 3)
      */
     public static void expandTreeView(ImageJ ij, int depth) {
-        SourceAndConverterService sacService = ij.get(SourceAndConverterService.class);
-        if (sacService != null && sacService.getUI() != null) {
-            sacService.getUI().expandToDepth(depth);
+        SourceService sacService = ij.get(SourceService.class);
+        if (sacService != null && sacService.tree() != null) {
+            sacService.tree().expandToDepth(depth);
         }
     }
 
@@ -198,14 +198,14 @@ public class DemoHelper {
         try {
 
             // Closes bdv windows
-            SourceAndConverterBdvDisplayService sac_display_service =
-                    ij.context().getService(SourceAndConverterBdvDisplayService.class);
+            SourceBdvDisplayService sac_display_service =
+                    ij.context().getService(SourceBdvDisplayService.class);
             sac_display_service.getDisplays().forEach(BdvHandle::close);
 
             // Clears all sources
-            SourceAndConverterService sac_service =
-                    ij.context().getService(SourceAndConverterService.class);
-            sac_service.remove(sac_service.getSourceAndConverters().toArray(new SourceAndConverter[0]));
+            SourceService sac_service =
+                    ij.context().getService(SourceService.class);
+            sac_service.remove(sac_service.getSources().toArray(new SourceAndConverter[0]));
 
             // Closes ij context
             ij.context().close();

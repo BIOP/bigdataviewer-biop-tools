@@ -14,8 +14,8 @@ import org.scijava.service.AbstractService;
 import org.scijava.service.SciJavaService;
 import org.scijava.service.Service;
 import sc.fiji.bdvpg.bdv.supplier.biop.BdvSetBiopViewerSettingsCommand;
-import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
-import sc.fiji.bdvpg.scijava.services.ui.swingdnd.SourceAndConverterServiceUITransferHandler;
+import sc.fiji.bdvpg.scijava.services.SourceService;
+import sc.fiji.bdvpg.scijava.services.tree.swingdnd.SourceServiceTreeTransferHandler;
 
 import java.io.File;
 
@@ -29,18 +29,17 @@ public class RegisterBdvPlaygroundExtrasService extends AbstractService implemen
         SciJavaService {
 
     @Parameter
-    SourceAndConverterService sourceAndConverterService;
+    SourceService SourceService;
 
     @Parameter
     CommandService cs;
 
     public void initialize() {
-        sourceAndConverterService.registerScijavaCommand(BdvSetBiopViewerSettingsCommand.class);
-        sourceAndConverterService.registerScijavaCommand(OpenSampleCommand.class);
-        sourceAndConverterService.registerScijavaCommand(CreateBdvDatasetBioFormatsCommand.class);
-        sourceAndConverterService.registerScijavaCommand(CreateBdvDatasetOMEROCommand.class);
-        sourceAndConverterService.registerScijavaCommand(CreateBdvDatasetQuPathCommand.class);
-        sourceAndConverterService.registerScijavaCommand(KheopsExportSourcesCommand.class);
+        SourceService.registerScijavaCommand(OpenSampleCommand.class);
+        SourceService.registerScijavaCommand(CreateBdvDatasetBioFormatsCommand.class);
+        SourceService.registerScijavaCommand(CreateBdvDatasetOMEROCommand.class);
+        SourceService.registerScijavaCommand(CreateBdvDatasetQuPathCommand.class);
+        SourceService.registerScijavaCommand(KheopsExportSourcesCommand.class);
         // Adds transfer handler
 
         BdvPlaygroundFileHandler bfHandler = new BdvPlaygroundFileHandler() {
@@ -88,7 +87,7 @@ public class RegisterBdvPlaygroundExtrasService extends AbstractService implemen
     }
 
     private void addFileHandler(BdvPlaygroundFileHandler handler) {
-        SourceAndConverterServiceUITransferHandler.addFileHandler(
+        SourceServiceTreeTransferHandler.addFileHandler(
                 handler.getPriority(),
                 handler::acceptFile,
                 handler::loadFile);

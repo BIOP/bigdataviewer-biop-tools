@@ -1,14 +1,14 @@
 import bdv.util.BdvHandle;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.scijava.command.bdv.BasicBdvViewToImagePlusExportCommand;
+import ch.epfl.biop.command.io.exporter.BasicBdvViewToImagePlusCommand;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;
 import org.scijava.command.CommandService;
-import sc.fiji.bdvpg.bdv.navigate.ViewerTransformAdjuster;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
-import sc.fiji.bdvpg.sourceandconverter.display.BrightnessAutoAdjuster;
-import sc.fiji.bdvpg.spimdata.importer.SpimDataFromXmlImporter;
+import sc.fiji.bdvpg.viewers.bdv.navigate.ViewerTransformAdjuster;
+import sc.fiji.bdvpg.services.SourceServices;
+import sc.fiji.bdvpg.source.display.BrightnessAutoAdjuster;
+import sc.fiji.bdvpg.dataset.importer.SpimDataFromXmlImporter;
 
 public class DemoImagePlusExport
 {
@@ -32,23 +32,23 @@ public class DemoImagePlusExport
 
         AbstractSpimData spimData = importer.get();
 
-        SourceAndConverter sac = SourceAndConverterServices
-                .getSourceAndConverterService()
-                .getSourceAndConverterFromSpimdata(spimData)
+        SourceAndConverter sac = SourceServices
+                .getSourceService()
+                .getSourcesFromDataset(spimData)
                 .get(0);
 
         // Creates a BdvHandle
-        BdvHandle bdvHandle = SourceAndConverterServices.getBdvDisplayService().getActiveBdv();
+        BdvHandle bdvHandle = SourceServices.getBdvDisplayService().getActiveBdv();
 
         // Show the sourceandconverter
-        SourceAndConverterServices.getBdvDisplayService().show(bdvHandle, sac);
+        SourceServices.getBdvDisplayService().show(bdvHandle, sac);
         new BrightnessAutoAdjuster(sac, 0).run();
         new ViewerTransformAdjuster(bdvHandle, sac).run();
 
         // Export
         ij.context()
                 .getService( CommandService.class)
-                .run( BasicBdvViewToImagePlusExportCommand.class, true,
+                .run( BasicBdvViewToImagePlusCommand.class, true,
                         "bdv_h", bdvHandle,
                         "capturename", "image",
                         "zsize", 20,

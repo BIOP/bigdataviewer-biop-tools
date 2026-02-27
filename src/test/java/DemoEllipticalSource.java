@@ -1,15 +1,14 @@
 import bdv.util.BdvHandle;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.scijava.command.transform.Elliptic3DTransformCreatorCommand;
-import ch.epfl.biop.scijava.command.source.register.SourcesRealTransformCommand;
+import ch.epfl.biop.command.workflow.elliptic.Elliptic3DTransformCreatorCommand;
+import ch.epfl.biop.command.register.SourcesRealTransformCommand;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;
 import net.imglib2.realtransform.RealTransform;
-import sc.fiji.bdvpg.scijava.command.source.BrightnessAdjusterCommand;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
-import sc.fiji.bdvpg.sourceandconverter.display.BrightnessAdjuster;
-import sc.fiji.bdvpg.spimdata.importer.SpimDataFromXmlImporter;
+import sc.fiji.bdvpg.services.SourceServices;
+import sc.fiji.bdvpg.source.display.BrightnessAdjuster;
+import sc.fiji.bdvpg.dataset.importer.SpimDataFromXmlImporter;
 
 import java.util.concurrent.ExecutionException;
 
@@ -30,9 +29,9 @@ public class DemoEllipticalSource {
         SpimDataFromXmlImporter importer = new SpimDataFromXmlImporter(filePath);
         final AbstractSpimData spimData = importer.get();
 
-        SourceAndConverter sac = SourceAndConverterServices
-                .getSourceAndConverterService()
-                .getSourceAndConverterFromSpimdata(spimData)
+        SourceAndConverter sac = SourceServices
+                .getSourceService()
+                .getSourcesFromDataset(spimData)
                 .get(0);
 
         new BrightnessAdjuster(sac,0,250).run();
@@ -51,10 +50,10 @@ public class DemoEllipticalSource {
             SourceAndConverter transformed_source = ((SourceAndConverter[]) ij.command().run(SourcesRealTransformCommand.class, true,
                     "sources_in", new SourceAndConverter[]{sac},
                     "rt", rt).get().getOutput("sources_out"))[0];
-            BdvHandle bdvh = SourceAndConverterServices
+            BdvHandle bdvh = SourceServices
                     .getBdvDisplayService()
                     .getNewBdv();
-            SourceAndConverterServices
+            SourceServices
                     .getBdvDisplayService()
                     .show(bdvh, transformed_source);
         } catch (InterruptedException e) {

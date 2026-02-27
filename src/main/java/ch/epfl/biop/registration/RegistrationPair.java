@@ -3,9 +3,8 @@ package ch.epfl.biop.registration;
 import bdv.util.QuPathBdvHelper;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.registration.plugin.RegistrationPluginHelper;
-import ch.epfl.biop.sourceandconverter.processor.SourcesAffineTransformer;
-import ch.epfl.biop.sourceandconverter.processor.SourcesProcessor;
-import ch.epfl.biop.sourceandconverter.transform.SourceTimeMapper;
+import ch.epfl.biop.source.processor.SourcesAffineTransformer;
+import ch.epfl.biop.source.processor.SourcesProcessor;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.realtransform.InvertibleRealTransform;
 import net.imglib2.realtransform.InvertibleRealTransformSequence;
@@ -27,8 +26,8 @@ import java.util.stream.Collectors;
 
 public class RegistrationPair implements Named, Closeable {
 
-    SourceAndConverter<?>[] movingSourcesOrigin;
-    SourceAndConverter<?>[] fixedSources;
+    final SourceAndConverter<?>[] movingSourcesOrigin;
+    final SourceAndConverter<?>[] fixedSources;
 
     final int timepointMoving;
     final int timepointFixed;
@@ -143,7 +142,7 @@ public class RegistrationPair implements Named, Closeable {
         } else {
             RegistrationStep rs = registrationPairSteps.get(registrationPairSteps.size()-2);
             registrationPairSteps.remove(registrationPairSteps.size()-1);
-            this.movingSourcesRegistered = rs.sacs;
+            this.movingSourcesRegistered = rs.sources;
         }
         listeners.forEach(listener -> listener.newEvent(RegistrationEvents.STEP_REMOVED));
     }
@@ -336,7 +335,7 @@ public class RegistrationPair implements Named, Closeable {
     public synchronized List<SourceAndConverter<?>[]> getAllSourcesPerStep() {
         List<SourceAndConverter<?>[]> sourcesPerStep = new ArrayList<>();
         for (RegistrationStep rs: registrationPairSteps) {
-            sourcesPerStep.add(rs.sacs);
+            sourcesPerStep.add(rs.sources);
         }
         return sourcesPerStep;
     }
@@ -357,16 +356,16 @@ public class RegistrationPair implements Named, Closeable {
     private static class RegistrationStep {
 
         final Registration<SourceAndConverter<?>[]> reg;
-        final SourceAndConverter<?>[] sacs;
+        final SourceAndConverter<?>[] sources;
         final SourcesProcessor fixedProcessor;
         final SourcesProcessor movingProcessor;
 
         public RegistrationStep(Registration<SourceAndConverter<?>[]> reg,
-                                SourceAndConverter<?>[] sacs,
+                                SourceAndConverter<?>[] sources,
                                 SourcesProcessor fixedProcessor,
                                 SourcesProcessor movingProcessor) {
             this.reg = reg;
-            this.sacs = sacs;
+            this.sources = sources;
             this.fixedProcessor = fixedProcessor;
             this.movingProcessor = movingProcessor;
         }

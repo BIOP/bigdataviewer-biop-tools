@@ -7,12 +7,12 @@ import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;
 import net.imglib2.FinalRealInterval;
 import net.imglib2.type.numeric.ARGBType;
-import sc.fiji.bdvpg.bdv.navigate.ViewerTransformAdjuster;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
-import sc.fiji.bdvpg.sourceandconverter.display.BrightnessAutoAdjuster;
-import sc.fiji.bdvpg.sourceandconverter.register.BigWarpLauncher;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceRealTransformer;
-import sc.fiji.bdvpg.spimdata.importer.SpimDataFromXmlImporter;
+import sc.fiji.bdvpg.viewers.bdv.navigate.ViewerTransformAdjuster;
+import sc.fiji.bdvpg.services.SourceServices;
+import sc.fiji.bdvpg.source.display.BrightnessAutoAdjuster;
+import sc.fiji.bdvpg.source.register.BigWarpLauncher;
+import sc.fiji.bdvpg.source.transform.SourceRealTransformer;
+import sc.fiji.bdvpg.dataset.importer.SpimDataFromXmlImporter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,28 +39,28 @@ public class DemoBoundedTransform {
 
         AbstractSpimData<?> spimData = importer.get();
 
-        SourceAndConverter<?> sacFixed = SourceAndConverterServices
-                .getSourceAndConverterService()
-                .getSourceAndConverterFromSpimdata(spimData)
+        SourceAndConverter<?> sacFixed = SourceServices
+                .getSourceService()
+                .getSourcesFromDataset(spimData)
                 .get(0);
 
         importer = new SpimDataFromXmlImporter(filePath);
 
         spimData = importer.get();
 
-        SourceAndConverter<?> sacMoving = SourceAndConverterServices
-                .getSourceAndConverterService()
-                .getSourceAndConverterFromSpimdata(spimData)
+        SourceAndConverter<?> sacMoving = SourceServices
+                .getSourceService()
+                .getSourcesFromDataset(spimData)
                 .get(0);
 
 
         // Creates a BdvHandle
-        BdvHandle bdvHandle = SourceAndConverterServices.getBdvDisplayService().getActiveBdv();
+        BdvHandle bdvHandle = SourceServices.getBdvDisplayService().getActiveBdv();
 
         // Show the sourceandconverter
-        // SourceAndConverterServices.getBdvDisplayService().show(bdvHandle, sacFixed);
+        // SourceServices.getBdvDisplayService().show(bdvHandle, sacFixed);
 
-        SourceAndConverterServices.getSourceAndConverterService().getConverterSetup(sacMoving)
+        SourceServices.getSourceService().getConverterSetup(sacMoving)
                 .setColor(new ARGBType(ARGBType.rgba(0, 255, 255,0)));
 
         new BrightnessAutoAdjuster(sacFixed, 0).run();
@@ -75,8 +75,8 @@ public class DemoBoundedTransform {
         List<SourceAndConverter<?>> fixedSources = new ArrayList<>();
         fixedSources.add(sacFixed);
 
-        List<ConverterSetup> converterSetups = movingSources.stream().map(src -> SourceAndConverterServices.getSourceAndConverterService().getConverterSetup(src)).collect(Collectors.toList());
-        converterSetups.addAll(fixedSources.stream().map(src -> SourceAndConverterServices.getSourceAndConverterService().getConverterSetup(src)).collect(Collectors.toList()));
+        List<ConverterSetup> converterSetups = movingSources.stream().map(src -> SourceServices.getSourceService().getConverterSetup(src)).collect(Collectors.toList());
+        converterSetups.addAll(fixedSources.stream().map(src -> SourceServices.getSourceService().getConverterSetup(src)).collect(Collectors.toList()));
 
         BigWarpLauncher bwl = new BigWarpLauncher(movingSources, fixedSources, "BigWarp Demo", converterSetups);
         bwl.run();
@@ -87,14 +87,14 @@ public class DemoBoundedTransform {
         bwl.getBigWarp().matchActiveViewerPanelToOther();
 
         for (SourceAndConverter sac : bwl.getWarpedSources()) {
-            SourceAndConverterServices.getSourceAndConverterService()
+            SourceServices.getSourceService()
                     .register(sac);
         }
 
         BoundedRealTransform brt = new BoundedRealTransform(bwl.getBigWarp().getBwTransform().getTransformation(0), new FinalRealInterval(new double[]{20,20,20}, new double[]{150,150,550}));
 
         SourceAndConverter tr = new SourceRealTransformer(null,brt).apply(sacFixed);
-        SourceAndConverterServices.getBdvDisplayService()
+        SourceServices.getBdvDisplayService()
                 .show(bdvHandle, tr);
 
     }

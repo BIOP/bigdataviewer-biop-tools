@@ -35,14 +35,14 @@ import net.imagej.ImageJ;
 import net.imglib2.type.numeric.ARGBType;
 import org.junit.After;
 import org.junit.Test;
-import sc.fiji.bdvpg.bdv.navigate.ViewerTransformAdjuster;
-import sc.fiji.bdvpg.bdv.supplier.IBdvSupplier;
+import sc.fiji.bdvpg.viewers.bdv.navigate.ViewerTransformAdjuster;
+import sc.fiji.bdvpg.viewers.bdv.supplier.IBdvSupplier;
 import sc.fiji.bdvpg.bdv.supplier.alpha.AlphaBdvSupplier;
 import sc.fiji.bdvpg.bdv.supplier.alpha.AlphaSerializableBdvOptions;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
-import sc.fiji.bdvpg.sourceandconverter.display.BrightnessAutoAdjuster;
-import sc.fiji.bdvpg.sourceandconverter.display.ColorChanger;
-import sc.fiji.bdvpg.spimdata.importer.SpimDataFromXmlImporter;
+import sc.fiji.bdvpg.services.SourceServices;
+import sc.fiji.bdvpg.source.display.BrightnessAutoAdjuster;
+import sc.fiji.bdvpg.source.display.ColorChanger;
+import sc.fiji.bdvpg.dataset.importer.SpimDataFromXmlImporter;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -53,7 +53,7 @@ public class AlphaDemo
 
 	public static void main( String[] args ) throws ExecutionException, InterruptedException
 	{
-		// Create the ImageJ application context with all available services; necessary for SourceAndConverterServices creation
+		// Create the ImageJ application context with all available services; necessary for SourceServices creation
 		ij = new ImageJ();
 		ij.ui().showUI();
 		demo();
@@ -73,9 +73,9 @@ public class AlphaDemo
 	public static void demo() {
 		IBdvSupplier bdvSupplier = new AlphaBdvSupplier(new AlphaSerializableBdvOptions());
 
-		SourceAndConverterServices.getBdvDisplayService().setDefaultBdvSupplier(bdvSupplier);
+		SourceServices.getBdvDisplayService().setDefaultBdvSupplier(bdvSupplier);
 
-		BdvHandle bdv = SourceAndConverterServices.getBdvDisplayService().getNewBdv();
+		BdvHandle bdv = SourceServices.getBdvDisplayService().getNewBdv();
 
 		// Import SpimData
 		new SpimDataFromXmlImporter( "src/test/resources/mri-stack.xml" ).run();
@@ -83,11 +83,11 @@ public class AlphaDemo
 		new SpimDataFromXmlImporter( "src/test/resources/mri-stack-shiftedY.xml" ).run();
 
 		// Get a handle on the sacs
-		final List< SourceAndConverter<?>> sacs = SourceAndConverterServices.getSourceAndConverterService().getSourceAndConverters();
+		final List< SourceAndConverter<?>> sacs = SourceServices.getSourceService().getSources();
 
 		// Show all three sacs
 		sacs.forEach( sac -> {
-			SourceAndConverterServices.getBdvDisplayService().show(bdv, sac);
+			SourceServices.getBdvDisplayService().show(bdv, sac);
 			new ViewerTransformAdjuster(bdv, sac).run();
 			new BrightnessAutoAdjuster(sac, 0).run();
 		});

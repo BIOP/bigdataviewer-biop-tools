@@ -1,8 +1,8 @@
 package fused;
 
 import ch.epfl.biop.DatasetHelper;
-import ch.epfl.biop.scijava.command.spimdata.CreateCZIDatasetCommand;
-import ch.epfl.biop.scijava.command.spimdata.FuseBigStitcherDatasetIntoOMETiffCommand;
+import ch.epfl.biop.command.io.importer.DatasetFromCZICommand;
+import ch.epfl.biop.command.io.exporter.FuseBigStitcherDatasetIntoOMETiffCommand;
 import loci.common.DebugTools;
 import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;
@@ -23,7 +23,7 @@ public class FusePerfMeasure {
 
         /*Context ctx = new Context(CommandService.class,
                 TaskService.class,
-                SourceAndConverterService.class,
+                SourceService.class,
                 ConvertService.class
         );*/
 
@@ -43,7 +43,7 @@ public class FusePerfMeasure {
         System.out.println(xmlOutBfMemo);
         ij.command()
         //ctx.getService(CommandService.class)
-                .run(CreateCZIDatasetCommand.class, true,
+                .run(DatasetFromCZICommand.class, true,
                         "czi_file", cziTest,
                         "xml_out", xmlOut.getAbsolutePath(),
                         "erase_if_file_already_exists", true).get();

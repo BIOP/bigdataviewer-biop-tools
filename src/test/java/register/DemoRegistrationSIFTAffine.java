@@ -9,7 +9,7 @@ import ch.epfl.biop.bdv.img.imageplus.ImagePlusToSpimData;
 import ch.epfl.biop.bdv.select.SelectedSourcesListener;
 import ch.epfl.biop.bdv.select.SourceSelectorBehaviour;
 import ch.epfl.biop.bdv.select.ToggleListener;
-import ch.epfl.biop.scijava.command.source.register.Sift2DAffineRegisterCommand;
+import ch.epfl.biop.command.register.Sift2DAffineRegisterCommand;
 import ij.IJ;
 import ij.ImagePlus;
 import mpicbg.spim.data.SpimData;
@@ -26,8 +26,8 @@ import org.scijava.command.CommandService;
 import org.scijava.ui.behaviour.ClickBehaviour;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.util.Behaviours;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterAndTimeRange;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceTransformHelper;
+import sc.fiji.bdvpg.source.SourceAndTimeRange;
+import sc.fiji.bdvpg.source.transform.SourceTransformHelper;
 
 import java.util.Collection;
 import java.util.List;
@@ -192,7 +192,7 @@ public class DemoRegistrationSIFTAffine {
                 Thread t = new Thread(() -> {
                     try {
                         AffineTransform3D at3d = (AffineTransform3D) task.get().getOutput("at3d");
-                        SourceTransformHelper.mutate(at3d, new SourceAndConverterAndTimeRange(movingSource,0));
+                        SourceTransformHelper.mutate(at3d, new SourceAndTimeRange(movingSource,0));
                         bdvh.getViewerPanel().requestRepaint();
                     } catch (Exception e) {
                         e.printStackTrace();

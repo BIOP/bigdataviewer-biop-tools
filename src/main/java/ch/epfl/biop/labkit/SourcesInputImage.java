@@ -10,7 +10,7 @@ import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.NumericType;
 import net.imagej.ImgPlus;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
+import sc.fiji.bdvpg.source.SourceHelper;
 import sc.fiji.labkit.ui.bdv.BdvShowable;
 import sc.fiji.labkit.ui.inputimage.InputImage;
 
@@ -196,7 +196,7 @@ public class SourcesInputImage<T extends NumericType<T> & NativeType<T>> impleme
             for (SourceAndConverter source: sources) {
                 this.sources.add(source);
             }
-            numTimepoints = SourceAndConverterHelper.getMaxTimepoint(sources)+1;
+            numTimepoints = SourceHelper.getMaxTimepoint(sources)+1;
             this.resolutionLevel = resolutionLevel;
         }
 
