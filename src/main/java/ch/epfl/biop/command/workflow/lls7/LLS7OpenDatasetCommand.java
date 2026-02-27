@@ -1,4 +1,4 @@
-package ch.epfl.biop.command.dataset.lls7;
+package ch.epfl.biop.command.workflow.lls7;
 
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.bdv.img.OpenersToSpimData;
@@ -8,9 +8,11 @@ import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imglib2.realtransform.AffineTransform3D;
 import org.apache.commons.io.FilenameUtils;
 import org.scijava.Context;
-import org.scijava.command.Command;
+import org.scijava.plugin.Menu;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
+import sc.fiji.bdvpg.scijava.BdvPgMenus;
 import sc.fiji.bdvpg.scijava.services.SourceService;
 import sc.fiji.bdvpg.source.SourceAndTimeRange;
 import sc.fiji.bdvpg.source.SourceHelper;
@@ -20,11 +22,17 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-@Plugin(type = Command.class,
-        menuPath = "Plugins>BigDataViewer-Playground>BDVDataset>Create BDV Dataset [Zeiss LLS7]",
+@Plugin(type = BdvPlaygroundActionCommand.class,
+        menuPath = BdvPgMenus.RootMenu+"Import>Dataset - Create [CZI LLS7]",
+        menu = {
+                @Menu(label = BdvPgMenus.L1),
+                @Menu(label = BdvPgMenus.L2),
+                @Menu(label = BdvPgMenus.ImportMenu, weight = BdvPgMenus.ImportW),
+                @Menu(label = "Dataset - Create [CZI LLS7]", weight = 4.1)
+        },
         description = "Opens a Zeiss Lattice Light Sheet 7 dataset with live deskewing using Bio-Formats and BigDataViewer")
 public class LLS7OpenDatasetCommand implements
-        Command
+        BdvPlaygroundActionCommand
 {
 
     public String unit = "MICROMETER";
@@ -45,7 +53,7 @@ public class LLS7OpenDatasetCommand implements
     boolean legacy_xy_mode;
 
     @Parameter
-    SourceService sac_service;
+    SourceService source_service;
 
     public void run() {
         String bfOptions = "--bfOptions zeissczi.autostitch=false";
@@ -64,11 +72,11 @@ public class LLS7OpenDatasetCommand implements
                             .context(ctx));
         }
         AbstractSpimData<?> spimdata = OpenersToSpimData.getSpimData(openerSettings);
-        sac_service.register(spimdata);
-        sac_service.setDatasetName(spimdata, FilenameUtils.removeExtension(czi_file.getName()));
+        source_service.register(spimdata);
+        source_service.setDatasetName(spimdata, FilenameUtils.removeExtension(czi_file.getName()));
 
         //SpimDataPostprocessor
-        List<SourceAndConverter<?>> sources = sac_service.getSourcesFromDataset(spimdata);
+        List<SourceAndConverter<?>> sources = source_service.getSourcesFromDataset(spimdata);
         int nTimepoints = SourceHelper.getMaxTimepoint(sources.get(0))+1;
 
         // Now let's try to open the max proj, if it exists
@@ -94,10 +102,10 @@ public class LLS7OpenDatasetCommand implements
                                 .context(ctx));
             }
             spimdata = OpenersToSpimData.getSpimData(openerSettings);
-            sac_service.register(spimdata);
-            sac_service.setDatasetName(spimdata, FilenameUtils.removeExtension(mipFile.getName()));
+            source_service.register(spimdata);
+            source_service.setDatasetName(spimdata, FilenameUtils.removeExtension(mipFile.getName()));
 
-            sources = sac_service.getSourcesFromDataset(spimdata);
+            sources = source_service.getSourcesFromDataset(spimdata);
 
             if (!legacy_xy_mode) {
                 for (SourceAndConverter<?> source : sources) {

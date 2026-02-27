@@ -1,4 +1,4 @@
-package ch.epfl.biop.command.dataset.lls7;
+package ch.epfl.biop.command.workflow.lls7;
 
 import bdv.viewer.SourceAndConverter;
 import ij.ImagePlus;
@@ -11,7 +11,7 @@ import net.imglib2.view.Views;
 import org.scijava.ItemIO;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
-import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
+import sc.fiji.bdvpg.scijava.BdvPgMenus;
 import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
 import sc.fiji.bdvpg.services.SourceServices;
 import sc.fiji.bdvpg.source.SourceAndTimeRange;
@@ -31,7 +31,7 @@ import java.util.Arrays;
  * 5. Apply Z translation to compensate
  */
 @Plugin(type = BdvPlaygroundActionCommand.class,
-        menuPath = ScijavaBdvDefaults.RootMenu + "BDV>LLS7 - Compensate Z-drift",
+        menuPath = BdvPgMenus.RootMenu + "Specialized Workflows>LLS7>Source - LLS7 - Compensate Z-Drift",
         description = "Compensates Z-drift over time for LLS7 skewed acquisitions by tracking sample position")
 public class LLS7ZDriftCompensationCommand implements BdvPlaygroundActionCommand {
 

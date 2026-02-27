@@ -1,4 +1,4 @@
-package ch.epfl.biop.command.dataset.lls7;
+package ch.epfl.biop.command.workflow.lls7;
 
 import bdv.tools.boundingbox.BoxSelectionOptions;
 import bdv.tools.boundingbox.TransformedRealBoxSelectionDialog;
@@ -9,13 +9,13 @@ import net.imglib2.RealInterval;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.util.Intervals;
 import org.scijava.ItemIO;
-import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
 import sc.fiji.bdvpg.source.importer.EmptySourceCreator;
 import sc.fiji.bdvpg.viewers.bdv.BdvHandleHelper;
 import sc.fiji.bdvpg.viewers.bdv.navigate.ViewerTransformAdjuster;
-import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
+import sc.fiji.bdvpg.scijava.BdvPgMenus;
 import sc.fiji.bdvpg.scijava.services.SourceBdvDisplayService;
 import sc.fiji.bdvpg.scijava.services.SourceService;
 import sc.fiji.bdvpg.source.transform.SourceResampler;
@@ -23,10 +23,10 @@ import sc.fiji.bdvpg.source.transform.SourceResampler;
 import java.util.ArrayList;
 import java.util.List;
 
-@Plugin(type = Command.class,
-        menuPath = ScijavaBdvDefaults.RootMenu+"BDV>LLS7 - Crop 3D",
+@Plugin(type = BdvPlaygroundActionCommand.class,
+        menuPath = BdvPgMenus.RootMenu+"Specialized Workflows>LLS7>Source - LLS7 - Crop 3D",
         description = "Crops a 3D region from LLS7 sources using an interactive bounding box")
-public class LLS7CropCommand implements Command {
+public class LLS7CropCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(label = "Select BDV Window",
             description = "The BigDataViewer window containing the sources to crop")
