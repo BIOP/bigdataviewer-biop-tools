@@ -20,9 +20,9 @@ import java.util.function.Function;
 
 public class SourceFuserAndResampler<T extends NumericType<T>> implements Runnable, Function<List<SourceAndConverter<T>>, SourceAndConverter<T>> {
 
-    List<SourceAndConverter<T>> sacs_in;
+    List<SourceAndConverter<T>> sources_in;
 
-    SourceAndConverter model;
+    SourceAndConverter<?> model;
 
     boolean reuseMipMaps;
 
@@ -40,7 +40,7 @@ public class SourceFuserAndResampler<T extends NumericType<T>> implements Runnab
 
     private int nThreads;
 
-    public SourceFuserAndResampler(List<SourceAndConverter<T>> sacs_in,
+    public SourceFuserAndResampler(List<SourceAndConverter<T>> sources_in,
                                    String blendingMode,
                                    SourceAndConverter model,
                                    String name,
@@ -55,7 +55,7 @@ public class SourceFuserAndResampler<T extends NumericType<T>> implements Runnab
         this.name = name;
         this.reuseMipMaps = reuseMipmaps;
         this.model = model;
-        this.sacs_in = sacs_in;
+        this.sources_in = sources_in;
         this.interpolate = interpolate;
         this.cache = cache;
         this.defaultMipMapLevel = defaultMipMapLevel;
@@ -70,7 +70,7 @@ public class SourceFuserAndResampler<T extends NumericType<T>> implements Runnab
     }
 
     public SourceAndConverter<T> get() {
-        return apply(sacs_in);
+        return apply(sources_in);
     }
 
     @Override

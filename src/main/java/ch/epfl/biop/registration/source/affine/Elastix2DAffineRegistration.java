@@ -4,7 +4,7 @@ import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.registration.Registration;
 import ch.epfl.biop.registration.plugin.IRegistrationPlugin;
 import ch.epfl.biop.registration.plugin.RegistrationTypeProperties;
-import ch.epfl.biop.command.source.register.Elastix2DAffineRegisterCommand;
+import ch.epfl.biop.command.register.Elastix2DAffineRegisterCommand;
 import net.imglib2.realtransform.AffineTransform3D;
 import org.scijava.command.Command;
 import org.scijava.command.CommandModule;
@@ -74,9 +74,9 @@ public class Elastix2DAffineRegistration extends AffineTransformSourceRegistrati
 
             addToFlatParameters(flatParameters,
                 // Fixed image
-          "sacs_fixed", fimg,
+          "sources_fixed", fimg,
                 // Moving image
-                "sacs_moving", mimg,
+                "sources_moving", mimg,
                 // No interpolation in resampling
                 "interpolate", false,
                 // Start registration with a 4x4 pixel image

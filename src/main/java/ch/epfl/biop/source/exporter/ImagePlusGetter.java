@@ -60,7 +60,7 @@ public class ImagePlusGetter {
         final AtomicLong bytesCounter = new AtomicLong();
         if (!cache) task = null;
 
-        SourceAndConverterVirtualStack vStack = new SourceAndConverterVirtualStack(sources, resolutionLevel, range, bytesCounter, cache, task);
+        SourceVirtualStack vStack = new SourceVirtualStack(sources, resolutionLevel, range, bytesCounter, cache, task);
         vStack.getProcessor(1); // Avoid annoying race condition annoying with hyperstack converter
         ImagePlus out = new ImagePlus(name, vStack);
         int[] czt = range.getCZTDimensions( );

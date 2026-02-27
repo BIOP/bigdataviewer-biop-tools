@@ -19,7 +19,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
-import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
+import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
 import spimdata.SpimDataHelper;
 import spimdata.util.Displaysettings;
 
@@ -31,10 +31,10 @@ import java.io.File;
  */
 @SuppressWarnings("deprecation")
 @Deprecated
-@Plugin(type = Command.class,
-        menuPath = ScijavaBdvDefaults.RootMenu+"BDVDataset>Edit>(Legacy) Reorder BDV Dataset",
-        description = "Reorders a LIF dataset for BigStitcher compatibility (legacy command)")
-public class ReorderDatasetCommand implements Command {
+/*@Plugin(type = BdvPlaygroundActionCommand.class,
+        menuPath = BdvPgMenus.RootMenu+"XML Dataset>Edit>Dataset - (Legacy) Reorder Dataset",
+        description = "Reorders a LIF dataset for BigStitcher compatibility (legacy command)")*/
+public class ReorderDatasetCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(label = "LIF Input File",
             description = "The LIF file to reorder",

@@ -4,7 +4,7 @@ import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.bdv.img.legacy.bioformats.command.BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand;
 import ch.epfl.biop.bdv.img.legacy.bioformats.command.BioformatsBigdataviewerBridgeDatasetCommand;
 import ch.epfl.biop.bdv.img.legacy.bioformats.entity.SeriesNumber;
-import ch.epfl.biop.command.source.ExportToMultipleImagePlusCommand;
+import ch.epfl.biop.command.io.exporter.ExportToMultipleImagePlusCommand;
 import ch.epfl.biop.source.exporter.IntRangeParser;
 import ij.IJ;
 import ij.ImagePlus;
@@ -113,7 +113,7 @@ public class OMETiffMultiSeriesProcessorExporter {
             SourceTree.Node currentSeriesNode = seriesNode.child(index);
                 try {
                     List<ImagePlus> ij1_images = (List<ImagePlus>) command.run(ExportToMultipleImagePlusCommand.class, false,
-                            "sacs", currentSeriesNode.sources(),
+                            "sources", currentSeriesNode.sources(),
                             "level", 0,
                             "range_frames", builder.rangeT,
                             "range_channels", builder.rangeC,

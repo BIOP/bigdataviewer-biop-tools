@@ -99,15 +99,15 @@
 
 		<!-- general imagej dependencies -->
 		<!-- bdv playground related dependencies -->
-		<bigdataviewer-playground.version>0.17.0-SNAPSHOT</bigdataviewer-playground.version>
-		<bigdataviewer-playground-display.version>0.5.0</bigdataviewer-playground-display.version>
+		<bigdataviewer-playground.version>0.18.0-SNAPSHOT</bigdataviewer-playground.version>
+		<bigdataviewer-playground-display.version>0.5.1-SNAPSHOT-TEST</bigdataviewer-playground-display.version>
 		<image-transform-converters.version>0.2.0</image-transform-converters.version>
-		<bigdataviewer-image-loaders.version>0.12.2</bigdataviewer-image-loaders.version>
+		<bigdataviewer-image-loaders.version>0.12.999-SNAPSHOT</bigdataviewer-image-loaders.version>
 
 		<!-- biop dependencies -->
 		<ijl-utilities-wrappers.version>0.12.1</ijl-utilities-wrappers.version>
 		<Operetta_Importer.version>0.6.1</Operetta_Importer.version>
-		<ijp-kheops.version>0.6.7</ijp-kheops.version>
+		<ijp-kheops.version>0.6.8-SNAPSHOT</ijp-kheops.version>
 		<quick-start-czi-reader.version>0.3.0</quick-start-czi-reader.version>
 
 		<!-- mastodon -->

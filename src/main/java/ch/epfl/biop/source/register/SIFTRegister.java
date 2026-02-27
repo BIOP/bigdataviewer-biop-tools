@@ -32,8 +32,8 @@ import java.util.stream.Collectors;
 public class SIFTRegister<FT extends NativeType<FT> & NumericType<FT>,
         MT extends NativeType<MT> & NumericType<MT>> {
 
-    SourceAndConverter<FT>[] sacs_fixed;
-    SourceAndConverter<MT>[] sacs_moving;
+    SourceAndConverter<FT>[] sources_fixed;
+    SourceAndConverter<MT>[] sources_moving;
     int levelMipmapFixed, levelMipmapMoving;
     final boolean invertFixed, invertMoving;
     int tpMoving,tpFixed;
@@ -54,11 +54,11 @@ public class SIFTRegister<FT extends NativeType<FT> & NumericType<FT>,
     final double minInlierRatio;
     final int minNumInliers;
 
-    public SIFTRegister(SourceAndConverter<FT>[] sacs_fixed,
+    public SIFTRegister(SourceAndConverter<FT>[] sources_fixed,
                                    int levelMipmapFixed,
                                    int tpFixed,
                                    boolean invertFixed,
-                                   SourceAndConverter<MT>[] sacs_moving,
+                                   SourceAndConverter<MT>[] sources_moving,
                                    int levelMipmapMoving,
                                    int tpMoving,
                                    boolean invertMoving,
@@ -74,8 +74,8 @@ public class SIFTRegister<FT extends NativeType<FT> & NumericType<FT>,
                         final double minInlierRatio,
                         final int minNumInliers
                         ) {
-        this.sacs_fixed = sacs_fixed;
-        this.sacs_moving = sacs_moving;
+        this.sources_fixed = sources_fixed;
+        this.sources_moving = sources_moving;
         this.pxSizeInCurrentUnit = pxSizeInCurrentUnit;
         this.px = px;
         this.py = py;
@@ -102,14 +102,14 @@ public class SIFTRegister<FT extends NativeType<FT> & NumericType<FT>,
     public boolean run() {
 
         // Check mipmap level
-        levelMipmapFixed = Math.min(levelMipmapFixed, sacs_fixed[0].getSpimSource().getNumMipmapLevels()-1);
-        levelMipmapMoving = Math.min(levelMipmapMoving, sacs_moving[0].getSpimSource().getNumMipmapLevels()-1);
+        levelMipmapFixed = Math.min(levelMipmapFixed, sources_fixed[0].getSpimSource().getNumMipmapLevels()-1);
+        levelMipmapMoving = Math.min(levelMipmapMoving, sources_moving[0].getSpimSource().getNumMipmapLevels()-1);
 
-        ImagePlus croppedMoving = getCroppedImage("Moving", sacs_moving, tpMoving, levelMipmapMoving);
-        ImagePlus croppedFixed = getCroppedImage("Fixed", sacs_fixed, tpFixed, levelMipmapFixed);
+        ImagePlus croppedMoving = getCroppedImage("Moving", sources_moving, tpMoving, levelMipmapMoving);
+        ImagePlus croppedFixed = getCroppedImage("Fixed", sources_fixed, tpFixed, levelMipmapFixed);
 
-        Source<MT> sMoving = sacs_moving[0].getSpimSource();
-        Source<FT> sFixed = sacs_fixed[0].getSpimSource();
+        Source<MT> sMoving = sources_moving[0].getSpimSource();
+        Source<FT> sFixed = sources_fixed[0].getSpimSource();
 
         AffineTransform3D at3D = new AffineTransform3D();
         at3D.identity();
@@ -281,7 +281,7 @@ public class SIFTRegister<FT extends NativeType<FT> & NumericType<FT>,
         return true;
     }
 
-    private <T extends NativeType<T> & NumericType<T>> ImagePlus getCroppedImage(String name, SourceAndConverter<T>[] sacs, int tp, int level) {
+    private <T extends NativeType<T> & NumericType<T>> ImagePlus getCroppedImage(String name, SourceAndConverter<T>[] sources, int tp, int level) {
 
         // Fetch cropped images from source -> resample sources
         FinalRealInterval window = new FinalRealInterval(new double[]{px,py,pz}, new double[]{px+sx, py+sy, pz+pxSizeInCurrentUnit});
@@ -293,12 +293,12 @@ public class SIFTRegister<FT extends NativeType<FT> & NumericType<FT>,
         );
 
         List<SourceAndConverter<T>> resampled =
-                Arrays.stream(sacs)
+                Arrays.stream(sources)
                         .map(resampler)
                         .collect(Collectors.toList());
 
-        List<Integer> channels = new ArrayList<>(sacs.length);
-        for (int i = 0; i< sacs.length;i++) {
+        List<Integer> channels = new ArrayList<>(sources.length);
+        for (int i = 0; i< sources.length;i++) {
             channels.add(i);
         }
         List<Integer> slices = new ArrayList<>();
@@ -327,10 +327,10 @@ public class SIFTRegister<FT extends NativeType<FT> & NumericType<FT>,
     }
 
     public SourceAndConverter[] getRegisteredSacs() {
-        SourceAndConverter[] out = new SourceAndConverter[sacs_moving.length];
+        SourceAndConverter[] out = new SourceAndConverter[sources_moving.length];
         SourceAffineTransformer sat = new SourceAffineTransformer(null, affineTransformOut);
-        for (int iCh=0;iCh< sacs_moving.length;iCh++) {
-            out[iCh] = sat.apply(sacs_moving[iCh]);
+        for (int iCh = 0; iCh< sources_moving.length; iCh++) {
+            out[iCh] = sat.apply(sources_moving[iCh]);
         }
         return out;
     }

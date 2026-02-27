@@ -9,7 +9,7 @@ import net.imagej.ImageJ;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.real.FloatType;
-import sc.fiji.bdvpg.command.source.SourceDuplicateWithLUTCommand;
+import sc.fiji.bdvpg.command.process.SourceDuplicateWithLUTCommand;
 import sc.fiji.bdvpg.services.SourceServices;
 import sc.fiji.bdvpg.source.importer.VoronoiSourceGetter;
 

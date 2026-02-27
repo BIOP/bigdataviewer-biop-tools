@@ -88,7 +88,7 @@ public class ImagePlusSampler {
     public static class Builder {
 
         private String imageName = "Image";
-        private SourceAndConverter[] sacs = new SourceAndConverter[0];
+        private SourceAndConverter[] sources = new SourceAndConverter[0];
         private SourceAndConverter<?> model;
         private boolean interpolate;
         private boolean cache = true;
@@ -97,7 +97,6 @@ public class ImagePlusSampler {
         private int level = -1;
         private String unit;
         private CZTRange.Builder rangeBuilder = new CZTRange.Builder();
-        private Function<Collection<SourceAndConverter<?>>,List<SourceAndConverter<?>>> sorter = sacslist -> SourceHelper.sortDefaultGeneric(sacslist);
 
         private boolean parallelC = false;
         private boolean parallelZ = false;
@@ -105,20 +104,11 @@ public class ImagePlusSampler {
         transient Task task = null;
 
         /**
-         * @param sacs sources used for the sampling
+         * @param sources sources used for the sampling
          * @return the builder
          */
-        public Builder sources(SourceAndConverter[] sacs) {
-            this.sacs = sacs;
-            return this;
-        }
-
-        /**
-         * @param sorter which sorts the sources before sampling them
-         * @return the builder
-         */
-        public Builder sort(Function<Collection<SourceAndConverter<?>>,List<SourceAndConverter<?>>> sorter) {
-            this.sorter = sorter;
+        public Builder sources(SourceAndConverter[] sources) {
+            this.sources = sources;
             return this;
         }
 
@@ -288,15 +278,15 @@ public class ImagePlusSampler {
          */
         public ImagePlus get() throws Exception{
 
-            int numFrames = SourceHelper.getMaxTimepoint(sacs)+1;
+            int numFrames = SourceHelper.getMaxTimepoint(sources)+1;
 
             //int maxZSlices = (int) sacs[0].getSpimSource().getSource(0,level).dimension(2);
             int numZSlices = (int) model.getSpimSource().getSource(0,level).dimension(2);
 
-            CZTRange range = rangeBuilder.get(sacs.length, numZSlices, numFrames);
+            CZTRange range = rangeBuilder.get(sources.length, numZSlices, numFrames);
 
             return ImagePlusSampler.get(imageName,
-                    Arrays.asList(sacs),
+                    Arrays.asList(sources),
                     model,
                     level==-1,
                     level,

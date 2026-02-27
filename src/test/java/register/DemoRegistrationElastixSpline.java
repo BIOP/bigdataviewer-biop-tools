@@ -8,7 +8,7 @@ import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.bdv.select.SelectedSourcesListener;
 import ch.epfl.biop.bdv.select.SourceSelectorBehaviour;
 import ch.epfl.biop.bdv.select.ToggleListener;
-import ch.epfl.biop.command.source.register.Elastix2DSplineRegisterCommand;
+import ch.epfl.biop.command.register.Elastix2DSplineRegisterCommand;
 import ij.IJ;
 import ij.ImagePlus;
 import mpicbg.spim.data.SpimData;

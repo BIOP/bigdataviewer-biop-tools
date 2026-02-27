@@ -13,10 +13,11 @@ import mpicbg.spim.data.generic.sequence.BasicImgLoader;
 import mpicbg.spim.data.sequence.MultiResolutionSetupImgLoader;
 import mpicbg.spim.data.sequence.VoxelDimensions;
 import org.scijava.command.Command;
+import org.scijava.plugin.Menu;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
-import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
+import sc.fiji.bdvpg.scijava.BdvPgMenus;
 import spimdata.SpimDataHelper;
 import spimdata.util.Displaysettings;
 
@@ -27,7 +28,13 @@ import java.io.File;
  *
  */
 @Plugin(type = BdvPlaygroundActionCommand.class,
-        menuPath = ScijavaBdvDefaults.RootMenu+"BDVDataset>Edit>Make BDVDataset BigStitcher Compatible",
+        //menuPath = BdvPgMenus.RootMenu+"Dataset>Dataset - Make BigStitcher Compatible",
+        menu = {
+                @Menu(label = BdvPgMenus.L1),
+                @Menu(label = BdvPgMenus.L2),
+                @Menu(label = BdvPgMenus.DatasetMenu, weight = BdvPgMenus.DatasetW),
+                @Menu(label = "Dataset - Make BigStitcher Compatible", weight = 3)
+        },
         description = "Converts a BDV dataset to BigStitcher format by removing incompatible attributes and rescaling")
 public class DatasetToBigStitcherDatasetCommand implements BdvPlaygroundActionCommand {
 

@@ -37,8 +37,8 @@ import java.util.stream.Collectors;
 public class Elastix2DAffineRegister<FT extends NativeType<FT> & NumericType<FT>,
         MT extends NativeType<MT> & NumericType<MT>> {
 
-    SourceAndConverter<FT>[] sacs_fixed;
-    SourceAndConverter<MT>[] sacs_moving;
+    SourceAndConverter<FT>[] sources_fixed;
+    SourceAndConverter<MT>[] sources_moving;
     int levelMipmapFixed, levelMipmapMoving;
     int tpMoving,tpFixed;
 
@@ -64,10 +64,10 @@ public class Elastix2DAffineRegister<FT extends NativeType<FT> & NumericType<FT>
 
     String errorMessage = "";
 
-    public Elastix2DAffineRegister(SourceAndConverter<FT>[] sacs_fixed,
+    public Elastix2DAffineRegister(SourceAndConverter<FT>[] sources_fixed,
                                    int levelMipmapFixed,
                                    int tpFixed,
-                                   SourceAndConverter<MT>[] sacs_moving,
+                                   SourceAndConverter<MT>[] sources_moving,
                                    int levelMipmapMoving,
                                    int tpMoving,
                                    RegisterHelper rh,
@@ -81,8 +81,8 @@ public class Elastix2DAffineRegister<FT extends NativeType<FT> & NumericType<FT>
                                    double background_offset_value_fixed,
                                    boolean showResultIJ1) {
         this.rh = rh;
-        this.sacs_fixed = sacs_fixed;
-        this.sacs_moving = sacs_moving;
+        this.sources_fixed = sources_fixed;
+        this.sources_moving = sources_moving;
         this.pxSizeInCurrentUnit = pxSizeInCurrentUnit;
         this.px = px;
         this.py = py;
@@ -105,14 +105,14 @@ public class Elastix2DAffineRegister<FT extends NativeType<FT> & NumericType<FT>
     public boolean run() {
 
         // Check mipmap level
-        levelMipmapFixed = Math.min(levelMipmapFixed, sacs_fixed[0].getSpimSource().getNumMipmapLevels()-1);
-        levelMipmapMoving = Math.min(levelMipmapMoving, sacs_moving[0].getSpimSource().getNumMipmapLevels()-1);
+        levelMipmapFixed = Math.min(levelMipmapFixed, sources_fixed[0].getSpimSource().getNumMipmapLevels()-1);
+        levelMipmapMoving = Math.min(levelMipmapMoving, sources_moving[0].getSpimSource().getNumMipmapLevels()-1);
 
-        ImagePlus croppedMoving = getCroppedImage("Moving", sacs_moving, tpMoving, levelMipmapMoving);
-        ImagePlus croppedFixed = getCroppedImage("Fixed", sacs_fixed, tpFixed, levelMipmapFixed);
+        ImagePlus croppedMoving = getCroppedImage("Moving", sources_moving, tpMoving, levelMipmapMoving);
+        ImagePlus croppedFixed = getCroppedImage("Fixed", sources_fixed, tpFixed, levelMipmapFixed);
 
-        Source<MT> sMoving = sacs_moving[0].getSpimSource();
-        Source<FT> sFixed = sacs_fixed[0].getSpimSource();
+        Source<MT> sMoving = sources_moving[0].getSpimSource();
+        Source<FT> sFixed = sources_fixed[0].getSpimSource();
 
         AffineTransform3D at3D = new AffineTransform3D();
         at3D.identity();
@@ -349,10 +349,10 @@ public class Elastix2DAffineRegister<FT extends NativeType<FT> & NumericType<FT>
     }
 
     public SourceAndConverter[] getRegisteredSacs() {
-        SourceAndConverter[] out = new SourceAndConverter[sacs_moving.length];
+        SourceAndConverter[] out = new SourceAndConverter[sources_moving.length];
         SourceAffineTransformer sat = new SourceAffineTransformer(null, affineTransformOut);
-        for (int iCh=0;iCh< sacs_moving.length;iCh++) {
-            out[iCh] = sat.apply(sacs_moving[iCh]);
+        for (int iCh = 0; iCh< sources_moving.length; iCh++) {
+            out[iCh] = sat.apply(sources_moving[iCh]);
         }
         return out;
     }

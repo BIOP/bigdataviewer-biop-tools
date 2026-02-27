@@ -28,8 +28,8 @@ import bdv.util.BdvFunctions;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.DatasetHelper;
 import ch.epfl.biop.bdv.img.bioformats.command.CreateBdvDatasetBioFormatsCommand;
-import ch.epfl.biop.command.source.deconvolve.SourcesDeconvolverCommand;
-import ch.epfl.biop.command.dataset.lls7.LLS7OpenDatasetCommand;
+import ch.epfl.biop.command.process.deconvolve.SourcesDeconvolverCommand;
+import ch.epfl.biop.command.workflow.lls7.LLS7OpenDatasetCommand;
 import net.haesleinhuepf.clij.CLIJ;
 import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;
@@ -96,7 +96,7 @@ public class DemoDeconvolution {
 
         // Run the deconvolution command
         Future<?> result = ij.command().run(SourcesDeconvolverCommand.class, true,
-                "sacs", new SourceAndConverter[]{sources[0]},
+                "sources", new SourceAndConverter[]{sources[0]},
                 "psf", psf,
                 "output_pixel_type", SourcesDeconvolverCommand.ORIGINAL,
                 "suffix", "_deconvolved",

@@ -1,6 +1,6 @@
 import bdv.util.BdvHandle;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.command.bdv.BasicBdvViewToImagePlusExportCommand;
+import ch.epfl.biop.command.io.exporter.BasicBdvViewToImagePlusCommand;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;
@@ -48,7 +48,7 @@ public class DemoImagePlusExport
         // Export
         ij.context()
                 .getService( CommandService.class)
-                .run( BasicBdvViewToImagePlusExportCommand.class, true,
+                .run( BasicBdvViewToImagePlusCommand.class, true,
                         "bdv_h", bdvHandle,
                         "capturename", "image",
                         "zsize", 20,

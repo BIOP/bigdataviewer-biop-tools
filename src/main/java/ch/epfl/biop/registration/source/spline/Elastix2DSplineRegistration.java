@@ -7,7 +7,7 @@ import bdv.viewer.Interpolation;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.registration.plugin.IRegistrationPlugin;
 import ch.epfl.biop.registration.plugin.RegistrationTypeProperties;
-import ch.epfl.biop.command.source.register.Elastix2DSplineRegisterCommand;
+import ch.epfl.biop.command.register.Elastix2DSplineRegisterCommand;
 import jitk.spline.ThinPlateR2LogRSplineKernelTransform;
 import net.imglib2.RealPoint;
 import net.imglib2.RealRandomAccessible;
@@ -97,9 +97,9 @@ public class Elastix2DSplineRegistration extends RealTransformSourceRegistration
 
             addToFlatParameters(flatParameters,
                     // Fixed image
-                    "sacs_fixed",fimg,
+                    "sources_fixed",fimg,
                     // Moving image
-                    "sacs_moving", mimg,
+                    "sources_moving", mimg,
                     // Interpolation in resampling
                     "interpolate", true,
                     // Start registration with a 32x32 pixel image

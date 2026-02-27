@@ -4,7 +4,7 @@ import bdv.util.BdvHandle;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.bdv.img.OpenersToSpimData;
 import ch.epfl.biop.bdv.img.opener.OpenerSettings;
-import ch.epfl.biop.command.source.register.Elastix2DAffineRegisterCommand;
+import ch.epfl.biop.command.register.Elastix2DAffineRegisterCommand;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imagej.ImageJ;
 import org.scijava.command.CommandService;

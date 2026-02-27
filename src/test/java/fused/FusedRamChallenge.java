@@ -1,7 +1,7 @@
 package fused;
 
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.source.EmptyMultiResolutionSourceAndConverterCreator;
+import ch.epfl.biop.source.EmptyMultiResolutionSourceCreator;
 import ij.IJ;
 import loci.common.DebugTools;
 import mpicbg.spim.data.generic.AbstractSpimData;
@@ -40,7 +40,7 @@ public class FusedRamChallenge {
         transform.scale(sx/nPx,sy/nPy,sz/nPz);
         transform.translate(oX,oY,oZ);
 
-        SourceAndConverter model = new EmptyMultiResolutionSourceAndConverterCreator("model", transform, nPx, nPy, nPz, 1, 2, 2, 2, 1).get();
+        SourceAndConverter model = new EmptyMultiResolutionSourceCreator("model", transform, nPx, nPy, nPz, 1, 2, 2, 2, 1).get();
 
         SourceServices.getSourceService().register(model);
 

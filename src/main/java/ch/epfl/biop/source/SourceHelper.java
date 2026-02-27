@@ -207,7 +207,7 @@ public class SourceHelper {
         long nPy = (long)Math.ceil(sizeY/pixSizeY);
         long nPz = (long)Math.ceil(sizeZ/pixSizeZ);
 
-        return new EmptyMultiResolutionSourceAndConverterCreator(
+        return new EmptyMultiResolutionSourceCreator(
                 model_name,
                 at3D, nPx, nPy, nPz,
                 nTimepoints,

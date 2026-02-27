@@ -38,11 +38,11 @@ import ij.IJ;
 import mpicbg.spim.data.XmlIoSpimData;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import org.scijava.ItemIO;
-import org.scijava.command.Command;
+import org.scijava.plugin.Menu;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
-import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
+import sc.fiji.bdvpg.scijava.BdvPgMenus;
 
 import java.io.File;
 import java.util.Arrays;
@@ -71,7 +71,13 @@ import java.util.stream.Collectors;
  * </ul>
  */
 @Plugin(type = BdvPlaygroundActionCommand.class,
-        menuPath = ScijavaBdvDefaults.RootMenu + "BDVDataset>Dataset - Combine BDV Dataset",
+        //menuPath = BdvPgMenus.RootMenu + "Dataset>Dataset - Combine XML Datasets",
+        menu = {
+                @Menu(label = BdvPgMenus.L1),
+                @Menu(label = BdvPgMenus.L2),
+                @Menu(label = BdvPgMenus.DatasetMenu, weight = BdvPgMenus.DatasetW),
+                @Menu(label = "Dataset - Combine XML Datasets", weight = 2.5)
+        },
         description = "Combines multiple BDV XML datasets into a single dataset by concatenating timepoints or channels")
 public class DatasetCombineCommand implements BdvPlaygroundActionCommand {
 

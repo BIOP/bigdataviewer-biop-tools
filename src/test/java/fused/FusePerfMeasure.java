@@ -1,8 +1,8 @@
 package fused;
 
 import ch.epfl.biop.DatasetHelper;
-import ch.epfl.biop.command.dataset.DatasetFromCZICommand;
-import ch.epfl.biop.command.dataset.FuseBigStitcherDatasetIntoOMETiffCommand;
+import ch.epfl.biop.command.io.importer.DatasetFromCZICommand;
+import ch.epfl.biop.command.io.exporter.FuseBigStitcherDatasetIntoOMETiffCommand;
 import loci.common.DebugTools;
 import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;

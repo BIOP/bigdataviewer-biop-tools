@@ -128,7 +128,7 @@ public class RegistrationPair implements Named, Closeable {
         } else {
             RegistrationStep rs = registrationPairSteps.get(registrationPairSteps.size()-2);
             registrationPairSteps.remove(registrationPairSteps.size()-1);
-            this.movingSourcesRegistered = rs.sacs;
+            this.movingSourcesRegistered = rs.sources;
         }
         listeners.forEach(listener -> listener.newEvent(RegistrationEvents.STEP_REMOVED));
     }
@@ -321,7 +321,7 @@ public class RegistrationPair implements Named, Closeable {
     public synchronized List<SourceAndConverter<?>[]> getAllSourcesPerStep() {
         List<SourceAndConverter<?>[]> sourcesPerStep = new ArrayList<>();
         for (RegistrationStep rs: registrationPairSteps) {
-            sourcesPerStep.add(rs.sacs);
+            sourcesPerStep.add(rs.sources);
         }
         return sourcesPerStep;
     }
@@ -342,16 +342,16 @@ public class RegistrationPair implements Named, Closeable {
     private static class RegistrationStep {
 
         final Registration<SourceAndConverter<?>[]> reg;
-        final SourceAndConverter<?>[] sacs;
+        final SourceAndConverter<?>[] sources;
         final SourcesProcessor fixedProcessor;
         final SourcesProcessor movingProcessor;
 
         public RegistrationStep(Registration<SourceAndConverter<?>[]> reg,
-                                SourceAndConverter<?>[] sacs,
+                                SourceAndConverter<?>[] sources,
                                 SourcesProcessor fixedProcessor,
                                 SourcesProcessor movingProcessor) {
             this.reg = reg;
-            this.sacs = sacs;
+            this.sources = sources;
             this.fixedProcessor = fixedProcessor;
             this.movingProcessor = movingProcessor;
         }

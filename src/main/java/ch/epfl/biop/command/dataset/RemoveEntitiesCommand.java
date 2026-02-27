@@ -5,9 +5,11 @@ import mpicbg.spim.data.SpimData;
 import mpicbg.spim.data.XmlIoSpimData;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import org.scijava.command.Command;
+import org.scijava.plugin.Menu;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
-import sc.fiji.bdvpg.scijava.ScijavaBdvDefaults;
+import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
+import sc.fiji.bdvpg.scijava.BdvPgMenus;
 import spimdata.SpimDataHelper;
 
 import java.io.File;
@@ -16,10 +18,16 @@ import java.io.File;
  * Extra attributes like DisplaySettings break BigStitcher because the grouping is not correct...
  *
  */
-@Plugin(type = Command.class,
-        menuPath = ScijavaBdvDefaults.RootMenu+"BDVDataset>Edit>Remove Entities from BDVDataset",
+@Plugin(type = BdvPlaygroundActionCommand.class,
+        //menuPath = BdvPgMenus.RootMenu+"Dataset>Dataset - Remove Entities",
+        menu = {
+                @Menu(label = BdvPgMenus.L1),
+                @Menu(label = BdvPgMenus.L2),
+                @Menu(label = BdvPgMenus.DatasetMenu, weight = BdvPgMenus.DatasetW),
+                @Menu(label = "Dataset - Remove Entities", weight = 4)
+        },
         description = "Removes specified entity types from a BDV dataset for compatibility with other tools")
-public class RemoveEntitiesCommand implements Command {
+public class RemoveEntitiesCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(label = "Input XML File",
             description = "The BDV XML dataset file to modify",

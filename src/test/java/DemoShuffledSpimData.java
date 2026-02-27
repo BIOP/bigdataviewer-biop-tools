@@ -36,12 +36,12 @@ public class DemoShuffledSpimData {
         //importer.run();
         //AbstractSpimData asd = importer.get();
 
-        //final List<SourceAndConverter> sacs = SourceServices.getSourceService().getSourceAndConverters();
+        //final List<SourceAndConverter> sources = SourceServices.getSourceService().getSourceAndConverters();
 
-        /*sacs.forEach( sac -> {
-            SourceServices.getBdvDisplayService().show( bdv, sac );
-            //new ViewerTransformAdjuster( bdv, sac ).run();
-            //new BrightnessAutoAdjuster( sac, 0 ).run();
+        /*sources.forEach( source -> {
+            SourceServices.getBdvDisplayService().show( bdv, source );
+            //new ViewerTransformAdjuster( bdv, source ).run();
+            //new BrightnessAutoAdjuster( source, 0 ).run();
         } );
 
         new ViewerTransformAdjuster( bdv, sacs.get(0) ).run();*/

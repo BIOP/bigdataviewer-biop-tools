@@ -6,7 +6,7 @@ import bdv.util.source.fused.AlphaFusedResampledSource;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.DatasetHelper;
 import ch.epfl.biop.bdv.img.bioformats.command.CreateBdvDatasetBioFormatsCommand;
-import ch.epfl.biop.source.EmptyMultiResolutionSourceAndConverterCreator;
+import ch.epfl.biop.source.EmptyMultiResolutionSourceCreator;
 import ch.epfl.biop.source.SourceFuserAndResampler;
 import ij.IJ;
 import loci.common.DebugTools;
@@ -105,7 +105,7 @@ public class CrazyMultireWarpedSourcesFusedDemo {
         IJ.log("Making a virtual ["+nPixX+"x"+nPixY+"] Image");
 
         SourceAndConverter<?> model =
-                new EmptyMultiResolutionSourceAndConverterCreator(
+                new EmptyMultiResolutionSourceCreator(
                         "Model",
                         location,
                         nPixX,
