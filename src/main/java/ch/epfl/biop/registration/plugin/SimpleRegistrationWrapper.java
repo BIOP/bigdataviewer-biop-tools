@@ -258,7 +258,7 @@ public class SimpleRegistrationWrapper implements ExternalRegistrationPlugin {
 
         List<SourceAndConverter<T>> resampledSourceList = sourceList
                 .stream()
-                .map(sac -> (SourceAndConverter<T>) (new SourceResampler(sac,model,sac.getSpimSource().getName()+"_ResampledLike_"+model.getSpimSource().getName(), true, false, interpolate,0).get()))
+                .map(source -> (SourceAndConverter<T>) (new SourceResampler(source,model,source.getSpimSource().getName()+"_ResampledLike_"+model.getSpimSource().getName(), true, false, interpolate,0).get()))
                 .collect(Collectors.toList());
 
         if ((sourceList.size()>1)) {

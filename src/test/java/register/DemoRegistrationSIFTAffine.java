@@ -173,10 +173,10 @@ public class DemoRegistrationSIFTAffine {
                 Future<CommandModule> task = ij.context()
                         .getService(CommandService.class)
                         .run(Sift2DAffineRegisterCommand.class, true,
-                            "sacs_fixed", new SourceAndConverter[]{fixedSource},
+                            "sources_fixed", new SourceAndConverter[]{fixedSource},
                             "tp_fixed", 0,
                             "level_fixed_source", 0,
-                            "sacs_moving", new SourceAndConverter[]{movingSource},
+                            "sources_moving", new SourceAndConverter[]{movingSource},
                             "tp_moving", 0,
                             "level_moving_source", 0,
                             "px_size_in_current_unit", 1,

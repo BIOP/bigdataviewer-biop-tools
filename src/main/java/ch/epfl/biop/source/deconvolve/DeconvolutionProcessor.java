@@ -191,7 +191,7 @@ public class DeconvolutionProcessor<T extends RealType<T>> implements VoxelProce
     }
 
     @Override
-    public Set<SourceAndConverter<?>> inspect(DefaultMutableTreeNode parent, SourceAndConverter<?> sac,
+    public Set<SourceAndConverter<?>> inspect(DefaultMutableTreeNode parent, SourceAndConverter<?> source,
                                                ISourceService SourceService,
                                                boolean registerIntermediateSources) {
         parent.add(new DefaultMutableTreeNode("Cell Dimensions: " + Arrays.toString(cellDimensions)));

@@ -41,17 +41,17 @@ public class AlphaProjectorHelper {
     public static SourcesMetadata getDefaultSourcesMetadata() {
         return new SourcesMetadata() {
             @Override
-            public boolean isAlphaSource(SourceAndConverter<?> sac) {
+            public boolean isAlphaSource(SourceAndConverter<?> source) {
                 return false;
             }
 
             @Override
-            public boolean hasAlphaSource(SourceAndConverter<?> sac) {
+            public boolean hasAlphaSource(SourceAndConverter<?> source) {
                 return false;
             }
 
             @Override
-            public SourceAndConverter<FloatType> getAlphaSource(SourceAndConverter<?> sac) {
+            public SourceAndConverter<FloatType> getAlphaSource(SourceAndConverter<?> source) {
                 return null;
             };
         };

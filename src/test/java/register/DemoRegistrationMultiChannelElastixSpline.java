@@ -57,10 +57,10 @@ public class DemoRegistrationMultiChannelElastixSpline {
         ij.context()
                 .getService(CommandService.class)
                 .run(Elastix2DSplineRegisterCommand.class, true,
-                        "sacs_fixed", atlasSources.toArray(new SourceAndConverter[0]),//new SourceAndConverter[]{fixedSource},//atlasSources.toArray(new SourceAndConverter[0]),//new SourceAndConverter[]{fixedSource},
+                        "sources_fixed", atlasSources.toArray(new SourceAndConverter[0]),//new SourceAndConverter[]{fixedSource},//atlasSources.toArray(new SourceAndConverter[0]),//new SourceAndConverter[]{fixedSource},
                         "tp_fixed", 0,
                         "level_fixed_source", 0,
-                        "sacs_moving", sliceSources.toArray(new SourceAndConverter[0]),//new SourceAndConverter[]{movingSource},
+                        "sources_moving", sliceSources.toArray(new SourceAndConverter[0]),//new SourceAndConverter[]{movingSource},
                         "tp_moving", 0,
                         "level_moving_source", 0,
                         "px_size_in_current_unit", 0.02,

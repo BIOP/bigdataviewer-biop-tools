@@ -233,7 +233,7 @@ public class WarpyExportRegisteredImageCommand implements Command {
             }
             scijavaCtx.getService(CommandService.class)
                     .run(KheopsExportSourcesCommand.class, true,
-                            "sacs",  exportedSources.toArray(new SourceAndConverter[0]),
+                            "sources",  exportedSources.toArray(new SourceAndConverter[0]),
                             "range_channels", "",
                             //"unit","MILLIMETER",
                             "override_voxel_size",false,

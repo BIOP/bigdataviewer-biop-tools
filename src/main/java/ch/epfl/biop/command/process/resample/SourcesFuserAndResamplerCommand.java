@@ -24,11 +24,11 @@ public class SourcesFuserAndResamplerCommand implements BdvPlaygroundActionComma
 
     @Parameter(label = "Select Source(s)",
             description = "The sources to fuse together")
-    SourceAndConverter[] sources;
+    SourceAndConverter<?>[] sources;
 
     @Parameter(label = "Model Source",
             description = "The source whose grid defines the output resolution and dimensions")
-    SourceAndConverter model;
+    SourceAndConverter<?> model;
 
     @Parameter(label = "Re-use MipMaps",
             description = "When checked, uses existing pyramid levels for efficiency")
@@ -73,7 +73,7 @@ public class SourcesFuserAndResamplerCommand implements BdvPlaygroundActionComma
     @Parameter(type = ItemIO.OUTPUT,
             label = "Fused Source",
             description = "The resulting fused and resampled source")
-    SourceAndConverter sac_out;
+    SourceAndConverter<?> source_out;
 
     @Parameter(label = "Blending Mode",
             description = "Method used to combine overlapping sources",
@@ -86,7 +86,7 @@ public class SourcesFuserAndResamplerCommand implements BdvPlaygroundActionComma
     public void run() {
 
         // Should not be parallel
-        List<SourceAndConverter> sacs_list = Arrays.asList(sources);
+        List<SourceAndConverter<?>> sources_list = Arrays.asList(sources);
         if (blending_mode.equals("SMOOTH "+AlphaFusedResampledSource.AVERAGE)) {
 
             VoxelDimensions voxelDimensions = model.getSpimSource().getVoxelDimensions();
@@ -106,7 +106,7 @@ public class SourcesFuserAndResamplerCommand implements BdvPlaygroundActionComma
             blending_mode = "AVERAGE";
         }
 
-        sac_out = new SourceFuserAndResampler(sacs_list, blending_mode,  model, name, reusemipmaps, cache, interpolate, defaultmipmaplevel, cache_x, cache_y, cache_z, cache_bounds, n_threads).get();
+        source_out = new SourceFuserAndResampler(sources_list, blending_mode,  model, name, reusemipmaps, cache, interpolate, defaultmipmaplevel, cache_x, cache_y, cache_z, cache_bounds, n_threads).get();
     }
 
 }

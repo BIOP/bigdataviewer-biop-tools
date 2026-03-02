@@ -296,7 +296,7 @@ public class Elastix2DAffineRegister<FT extends NativeType<FT> & NumericType<FT>
         return true;
     }
 
-    private <T extends NativeType<T> & NumericType<T>> ImagePlus getCroppedImage(String name, SourceAndConverter<T>[] sacs, int tp, int level) {
+    private <T extends NativeType<T> & NumericType<T>> ImagePlus getCroppedImage(String name, SourceAndConverter<T>[] sources, int tp, int level) {
 
         // Fetch cropped images from source -> resample sources
         FinalRealInterval window = new FinalRealInterval(new double[]{px,py,pz}, new double[]{px+sx, py+sy, pz+pxSizeInCurrentUnit});
@@ -308,12 +308,12 @@ public class Elastix2DAffineRegister<FT extends NativeType<FT> & NumericType<FT>
         );
 
         List<SourceAndConverter<T>> resampled =
-                Arrays.stream(sacs)
+                Arrays.stream(sources)
                         .map(resampler)
                         .collect(Collectors.toList());
 
-        List<Integer> channels = new ArrayList<>(sacs.length);
-        for (int i = 0; i< sacs.length;i++) {
+        List<Integer> channels = new ArrayList<>(sources.length);
+        for (int i = 0; i< sources.length;i++) {
             channels.add(i);
         }
         List<Integer> slices = new ArrayList<>();

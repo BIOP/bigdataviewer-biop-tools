@@ -73,54 +73,54 @@ public class SourceVoxelProcessor<I extends NumericType<I>,O extends NumericType
     }
 
     @Override
-    public SourceAndConverter<O> apply(final SourceAndConverter<I> sac) {
+    public SourceAndConverter<O> apply(final SourceAndConverter<I> source) {
 
-        Source<O> srcProcessed = new VoxelProcessedSource<I,O>(name, sac.getSpimSource(), processor, pixel);
+        Source<O> srcProcessed = new VoxelProcessedSource<I,O>(name, source.getSpimSource(), processor, pixel);
 
-        SourceAndConverter<O> sac_out;
+        SourceAndConverter<O> source_out;
 
-        SourceAndConverter<?> vsac;
+        SourceAndConverter<?> vsource;
         Source<?> vsrcRsampled;
 
         vsrcRsampled = new WrapVolatileSource<>(srcProcessed, queue);
         Converter< ?, ARGBType> volatileConverter = BigDataViewer.createConverterToARGB((NumericType) vsrcRsampled.getType());
         Converter< ?, ARGBType> converter = BigDataViewer.createConverterToARGB(srcProcessed.getType());
 
-        if ((sac.getConverter() instanceof ColorConverter)&&(volatileConverter instanceof ColorConverter)) {
+        if ((source.getConverter() instanceof ColorConverter)&&(volatileConverter instanceof ColorConverter)) {
             ((ColorConverter) volatileConverter).setColor(
-                    ((ColorConverter) sac.getConverter()).getColor().copy()
+                    ((ColorConverter) source.getConverter()).getColor().copy()
             );
         }
 
-        if ((sac.getConverter() instanceof ColorConverter)&&(converter instanceof ColorConverter)) {
+        if ((source.getConverter() instanceof ColorConverter)&&(converter instanceof ColorConverter)) {
             ((ColorConverter) converter).setColor(
-                    ((ColorConverter) sac.getConverter()).getColor().copy()
+                    ((ColorConverter) source.getConverter()).getColor().copy()
             );
         }
 
-        if ((sac.getConverter() instanceof LinearRange)&&(volatileConverter instanceof LinearRange)) {
+        if ((source.getConverter() instanceof LinearRange)&&(volatileConverter instanceof LinearRange)) {
             ((LinearRange) volatileConverter).setMin(
-                    ((LinearRange) sac.getConverter()).getMin()
+                    ((LinearRange) source.getConverter()).getMin()
             );
             ((LinearRange) volatileConverter).setMax(
-                    ((LinearRange) sac.getConverter()).getMax()
+                    ((LinearRange) source.getConverter()).getMax()
             );
         }
 
-        if ((sac.getConverter() instanceof LinearRange)&&(converter instanceof LinearRange)) {
+        if ((source.getConverter() instanceof LinearRange)&&(converter instanceof LinearRange)) {
             ((LinearRange) converter).setMin(
-                    ((LinearRange) sac.getConverter()).getMin()
+                    ((LinearRange) source.getConverter()).getMin()
             );
             ((LinearRange) converter).setMax(
-                    ((LinearRange) sac.getConverter()).getMax()
+                    ((LinearRange) source.getConverter()).getMax()
             );
         }
 
 
-        vsac = new SourceAndConverter(vsrcRsampled,volatileConverter);
-        sac_out = new SourceAndConverter(srcProcessed, converter,vsac);
+        vsource = new SourceAndConverter(vsrcRsampled,volatileConverter);
+        source_out = new SourceAndConverter(srcProcessed, converter,vsource);
 
-        return sac_out;
+        return source_out;
     }
 
     public static <T extends NumericType<T>> SourceAndConverter<UnsignedByteType> getBorders(final SourceAndConverter<T> source) {

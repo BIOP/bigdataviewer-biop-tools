@@ -192,7 +192,7 @@ public class BdvViewToImagePlusCommand implements BdvPlaygroundActionCommand {
         images = new ArrayList<>();
 
         List<SourceAndConverter<?>> sourceList = new ArrayList<>();
-        Arrays.asList(sources).forEach(sac -> sourceList.add(sac));
+        Arrays.asList(sources).forEach(sourceList::add);
 
         Map<Class<net.imglib2.type.Type>, List<SourceAndConverter<?>>>
                 typeToSources = sourceList.stream().collect(Collectors.groupingBy(src -> (Class<net.imglib2.type.Type>)(src.getSpimSource().getType().getClass())));

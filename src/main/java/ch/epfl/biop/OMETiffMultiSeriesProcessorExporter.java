@@ -20,6 +20,7 @@ import org.scijava.command.CommandService;
 import org.scijava.task.Task;
 import org.scijava.task.TaskService;
 import sc.fiji.bdvpg.scijava.services.SourceService;
+import sc.fiji.bdvpg.scijava.services.tree.FilterNode;
 import sc.fiji.bdvpg.scijava.services.tree.SourceTree;
 import sc.fiji.bdvpg.source.SourceAndTimeRange;
 import sc.fiji.bdvpg.source.SourceHelper;
@@ -48,7 +49,7 @@ public class OMETiffMultiSeriesProcessorExporter {
 
         task.setStatusMessage("Parsing file metadata...");
 
-        SourceService sac_service = builder.ctx.getService(SourceService.class);
+        SourceService source_service = builder.ctx.getService(SourceService.class);
 
         CommandService command = builder.ctx.getService(CommandService.class);
 
@@ -72,7 +73,7 @@ public class OMETiffMultiSeriesProcessorExporter {
                     options
                 ).get().getOutput("spimdata");
 
-        List<SourceAndConverter<?>> allSources = sac_service.getSourcesFromDataset(spimdata);
+        List<SourceAndConverter<?>> allSources = source_service.getSourcesFromDataset(spimdata);
 
         if (builder.removeZOffset) {
             for (SourceAndConverter source: allSources) {
@@ -84,14 +85,14 @@ public class OMETiffMultiSeriesProcessorExporter {
             }
         }
 
-        SourceTree.Node seriesNode = sac_service.tree()
-                .getRoot()
+        FilterNode seriesNode = source_service.tree()
+                .root()
                 .child(datasetName)
                 .child(SeriesNumber.class.getSimpleName());
 
-        System.out.println("nSeries = "+seriesNode.children().size());
+        System.out.println("nSeries = "+seriesNode.childCount());//.size());
 
-        List<Integer> rangeSeries = new IntRangeParser(builder.rangeS).get(seriesNode.children().size());
+        List<Integer> rangeSeries = new IntRangeParser(builder.rangeS).get(seriesNode.childCount());
 
         int number_of_series = rangeSeries.size();
 
@@ -110,7 +111,7 @@ public class OMETiffMultiSeriesProcessorExporter {
         Callable c = () -> {
 
         rangeSeries.parallelStream().forEach(index -> {
-            SourceTree.Node currentSeriesNode = seriesNode.child(index);
+            FilterNode currentSeriesNode = seriesNode.child(index);
                 try {
                     List<ImagePlus> ij1_images = (List<ImagePlus>) command.run(ExportToMultipleImagePlusCommand.class, false,
                             "sources", currentSeriesNode.sources(),
@@ -223,7 +224,7 @@ public class OMETiffMultiSeriesProcessorExporter {
         }
 
         // Cleanup
-        sac_service.remove(allSources.toArray(new SourceAndConverter[0])); // Maybe an issue if no projection TODO : check that all files are written
+        source_service.remove(allSources.toArray(new SourceAndConverter[0])); // Maybe an issue if no projection TODO : check that all files are written
         return outputMap;
     }
 

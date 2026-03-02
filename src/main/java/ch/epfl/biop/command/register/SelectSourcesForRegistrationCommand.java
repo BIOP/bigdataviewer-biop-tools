@@ -8,7 +8,7 @@ abstract public class SelectSourcesForRegistrationCommand implements Command {
 
     @Parameter(label = "Fixed Source(s)",
             description = "Reference source(s) that remain stationary during registration")
-    SourceAndConverter<?>[] sacs_fixed;
+    SourceAndConverter<?>[] sources_fixed;
 
     @Parameter(label = "Fixed Timepoint",
             description = "Timepoint of the fixed source to use for registration")
@@ -20,7 +20,7 @@ abstract public class SelectSourcesForRegistrationCommand implements Command {
 
     @Parameter(label = "Moving Source(s)",
             description = "Source(s) to be aligned to the fixed reference")
-    SourceAndConverter[] sacs_moving;
+    SourceAndConverter<?>[] sources_moving;
 
     @Parameter(label = "Moving Timepoint",
             description = "Timepoint of the moving source to use for registration")

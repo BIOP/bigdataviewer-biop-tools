@@ -4,14 +4,13 @@ import bdv.util.EmptyMultiresolutionSource;
 import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
 import net.imglib2.realtransform.AffineTransform3D;
+import net.imglib2.type.numeric.integer.UnsignedShortType;
 import sc.fiji.bdvpg.source.SourceHelper;
 import sc.fiji.bdvpg.source.importer.EmptySourceCreator;
 
 import java.util.function.Supplier;
 
-public class EmptyMultiResolutionSourceCreator implements Runnable, Supplier<SourceAndConverter> {
-    EmptySourceCreator c;
-
+public class EmptyMultiResolutionSourceCreator implements Runnable, Supplier<SourceAndConverter<?>> {
 
     AffineTransform3D at3D;
 
@@ -61,13 +60,13 @@ public class EmptyMultiResolutionSourceCreator implements Runnable, Supplier<Sou
     }
 
     @Override
-    public SourceAndConverter get() {
-        Source src = new EmptyMultiresolutionSource(nx,ny,nz,nt,at3D,name, scalex, scaley, scalez, numberOfResolutions);
+    public SourceAndConverter<?> get() {
+        Source<UnsignedShortType> src = new EmptyMultiresolutionSource(nx,ny,nz,nt,at3D,name, scalex, scaley, scalez, numberOfResolutions);
 
-        SourceAndConverter sac;
+        SourceAndConverter<?> source;
 
-        sac = SourceHelper.createSourceAndConverter(src);
+        source = SourceHelper.createSourceAndConverter(src);
 
-        return sac;
+        return source;
     }
 }

@@ -36,15 +36,15 @@ public class DemoZSlicedSource {
         // Import SpimData
         new SpimDataFromXmlImporter("src/test/resources/mri-stack.xml").run();
 
-        final List<SourceAndConverter<?>> sacs = SourceServices.getSourceService().getSources();
+        final List<SourceAndConverter<?>> sources = SourceServices.getSourceService().getSources();
 
-        sacs.forEach( sac -> {
-            SourceServices.getBdvDisplayService().show( bdv, sac );
-            new ViewerTransformAdjuster( bdv, sac ).run();
-            new BrightnessAutoAdjuster<>( sac, 0 ).run();
+        sources.forEach( source -> {
+            SourceServices.getBdvDisplayService().show( bdv, source );
+            new ViewerTransformAdjuster( bdv, source ).run();
+            new BrightnessAutoAdjuster<>( source, 0 ).run();
         } );
 
-        RandomAccessibleInterval<?> nonResliced = sacs.get(0).getSpimSource().getSource(0,0);
+        RandomAccessibleInterval<?> nonResliced = sources.get(0).getSpimSource().getSource(0,0);
 
         ExtendedRandomAccessibleInterval rai = SlicerViews.extendSlicer(nonResliced,2,0);
 

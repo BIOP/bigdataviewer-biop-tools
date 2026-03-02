@@ -104,7 +104,7 @@ public class SourcesDeconvolverCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(type = ItemIO.OUTPUT,
             description = "The deconvolved sources")
-    SourceAndConverter<?>[] sacs_out;
+    SourceAndConverter<?>[] sources_out;
 
     @Override
     public void run() {
@@ -127,7 +127,7 @@ public class SourcesDeconvolverCommand implements BdvPlaygroundActionCommand {
             return;
         }
 
-        sacs_out = new SourceAndConverter[sources.length];
+        sources_out = new SourceAndConverter[sources.length];
 
         int nMipmapLevels = sources[0].getSpimSource().getNumMipmapLevels();
 
@@ -137,7 +137,7 @@ public class SourcesDeconvolverCommand implements BdvPlaygroundActionCommand {
         switch (output_pixel_type) {
             case FLOAT:
                 for (int i = 0; i < sources.length; i++) {
-                    sacs_out[i] = Deconvolver.getDeconvolved(
+                    sources_out[i] = Deconvolver.getDeconvolved(
                             (SourceAndConverter) sources[i],
                             sources[i].getSpimSource().getName() + suffix,
                             cellDimensions,
@@ -152,7 +152,7 @@ public class SourcesDeconvolverCommand implements BdvPlaygroundActionCommand {
                 break;
             case ORIGINAL:
                 for (int i = 0; i < sources.length; i++) {
-                    sacs_out[i] = Deconvolver.getDeconvolvedCast(
+                    sources_out[i] = Deconvolver.getDeconvolvedCast(
                             (SourceAndConverter) sources[i],
                             sources[i].getSpimSource().getName() + suffix,
                             cellDimensions,
@@ -173,7 +173,7 @@ public class SourcesDeconvolverCommand implements BdvPlaygroundActionCommand {
         if (nMipmapLevels>1) {
             System.out.println("The original image has multiresolution levels, all resolution levels will be discarded and recomputed");
             for (int i = 0; i< sources.length; i++) {
-                sacs_out[i] = SourceHelper.lazyPyramidizeXY2((SourceAndConverter) sacs_out[i]);
+                sources_out[i] = SourceHelper.lazyPyramidizeXY2((SourceAndConverter) sources_out[i]);
             }
         }
 

@@ -28,8 +28,8 @@ public class DemoCachedBorders {
 
         SourceAndConverter<?>[] reColoredVoronoi = (SourceAndConverter<?>[])
                 ij.module().run(ij.command().getCommand(SourceDuplicateWithLUTCommand.class), true,
-                        "sacs", new SourceAndConverter[]{voronoi}
-                ).get().getOutput("sacs_out");
+                        "sources", new SourceAndConverter[]{voronoi}
+                ).get().getOutput("sources_out");
 
         SourceServices.getBdvDisplayService().show(bdvh, reColoredVoronoi[0]);
         SourceServices

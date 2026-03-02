@@ -99,29 +99,29 @@ public class ManyWarpedSourcesFusedDemo {
             exception.printStackTrace();
         }
 
-        SourceAndConverter sac0 = SourceServices
+        SourceAndConverter source0 = SourceServices
                 .getSourceService()
                 .getSourcesFromDataset(spimdata)
                 .get(0);
 
-        SourceAndConverter sac1 = SourceServices
+        SourceAndConverter source1 = SourceServices
                 .getSourceService()
                 .getSourcesFromDataset(spimdata)
                 .get(1);
 
-        SourceAndConverter sac2 = SourceServices
+        SourceAndConverter source2 = SourceServices
                 .getSourceService()
                 .getSourcesFromDataset(spimdata)
                 .get(2);
 
-        new ViewerTransformAdjuster(bdvHandle, sac0).run();
-        new BrightnessAutoAdjuster(sac0, 0).run();
+        new ViewerTransformAdjuster(bdvHandle, source0).run();
+        new BrightnessAutoAdjuster(source0, 0).run();
 
-        new ViewerTransformAdjuster(bdvHandle, sac1).run();
-        new BrightnessAutoAdjuster(sac1, 0).run();
+        new ViewerTransformAdjuster(bdvHandle, source1).run();
+        new BrightnessAutoAdjuster(source1, 0).run();
 
-        new ViewerTransformAdjuster(bdvHandle, sac2).run();
-        new BrightnessAutoAdjuster(sac2, 0).run();
+        new ViewerTransformAdjuster(bdvHandle, source2).run();
+        new BrightnessAutoAdjuster(source2, 0).run();
 
         double[][] origin = new double[2][4];
         double[][] target = new double[2][4];
@@ -139,7 +139,7 @@ public class ManyWarpedSourcesFusedDemo {
         WrappedIterativeInvertibleRealTransform invertibleRealTransform = new WrappedIterativeInvertibleRealTransform(rt);
         InvertibleWrapped2DTransformAs3D rt3d = new InvertibleWrapped2DTransformAs3D(invertibleRealTransform);
 
-        ArrayList<SourceAndConverter<?>> sacs = new ArrayList<>();
+        ArrayList<SourceAndConverter<?>> sources = new ArrayList<>();
         for (int x = 0; x < numberOfSourcesInOneAxis;x++) {
             for (int y = 0; y < numberOfSourcesInOneAxis; y++) {
 
@@ -151,40 +151,40 @@ public class ManyWarpedSourcesFusedDemo {
                     at3d.scale((0.5 + Math.random() / 3.0)/2.5, (0.5 + Math.random() / 2.0)/2.5, 1);
                     at3d.translate(200 * x, 200 * y, 0.5);
 
-                    SourceAndConverter<?> sac;
+                    SourceAndConverter<?> source;
 
                     double test = Math.random();
                     if (test<0.33) {
-                        sac = sac0;
+                        source = source0;
                     } else if (test<0.66) {
-                        sac = sac1;
+                        source = source1;
                     } else {
-                        sac = sac2;
+                        source = source2;
                     }
 
-                    SourceAndConverter<FloatType> alphaSac = AlphaSourceHelper.getOrBuildAlphaSource(sac);
+                    SourceAndConverter<FloatType> alphaSac = AlphaSourceHelper.getOrBuildAlphaSource(source);
 
-                    SourceAndConverter<?> warped_sac = new SourceRealTransformer(sac, rt3d).get();
+                    SourceAndConverter<?> warped_source = new SourceRealTransformer(source, rt3d).get();
                     SourceServices
                             .getSourceService()
-                                    .register(warped_sac);
+                                    .register(warped_source);
 
-                    AlphaSourceHelper.setAlphaSource(warped_sac, alphaSac); // Keeps bounds
+                    AlphaSourceHelper.setAlphaSource(warped_source, alphaSac); // Keeps bounds
 
-                    SourceAndConverter<?> transformedSac = new SourceAffineTransformer(warped_sac, at3d).get();
+                    SourceAndConverter<?> transformedSac = new SourceAffineTransformer(warped_source, at3d).get();
 
-                    sacs.add(transformedSac);
+                    sources.add(transformedSac);
                 }
             }
         }
 
         /*SourceServices
                 .getBdvDisplayService()
-                .show(bdvHandle, sacs.toArray(new SourceAndConverter[0]));*/
+                .show(bdvHandle, sources.toArray(new SourceAndConverter[0]));*/
 
         //SourceGroup sg = bdvHandle.getViewerPanel().state().getGroups().get(1);
 
-        //bdvHandle.getViewerPanel().state().addSourcesToGroup(sacs, sg);
-        return sacs;
+        //bdvHandle.getViewerPanel().state().addSourcesToGroup(sources, sg);
+        return sources;
     }
 }

@@ -211,7 +211,7 @@ public class CrazyMultireWarpedSourcesFusedDemo {
 
     public static List<SourceAndConverter<?>> demo(List<SourceAndConverter<?>> sources, int numberOfSourcesInOneAxis) {
 
-        ArrayList<SourceAndConverter<?>> sacs = new ArrayList<>();
+        ArrayList<SourceAndConverter<?>> sources_ = new ArrayList<>();
         //ini++;
         Random generator = new Random(200+ini);
 
@@ -220,9 +220,9 @@ public class CrazyMultireWarpedSourcesFusedDemo {
             for (int y = 0; y < numberOfSourcesInOneAxis; y++) {
                 // For each source
 
-                SourceAndConverter<?> sac = sources.get(sourceIndex);
-                SourceAndConverter<FloatType> alphaSac = AlphaSourceHelper.getOrBuildAlphaSource(sac);
-                RealPoint center = SourceHelper.getSourceCenterPoint(sac, 0);
+                SourceAndConverter<?> source = sources.get(sourceIndex);
+                SourceAndConverter<FloatType> alphaSac = AlphaSourceHelper.getOrBuildAlphaSource(source);
+                RealPoint center = SourceHelper.getSourceCenterPoint(source, 0);
                 AffineTransform3D at3d = new AffineTransform3D();
 
                 //at3d.rotate(2, generator.nextDouble()*6.0); // Rotate along Z
@@ -230,7 +230,7 @@ public class CrazyMultireWarpedSourcesFusedDemo {
                 at3d.translate(8 * (x+1)-center.getDoublePosition(0),
                         6 * (y+1)-center.getDoublePosition(1), -center.getDoublePosition(2)); // random translation
 
-                RealPoint ptC = SourceHelper.getSourceCenterPoint(sac,0);
+                RealPoint ptC = SourceHelper.getSourceCenterPoint(source,0);
                 double r = 1;
                 double xc = ptC.getDoublePosition(0);
                 double yc = ptC.getDoublePosition(1);
@@ -270,20 +270,20 @@ public class CrazyMultireWarpedSourcesFusedDemo {
                 WrappedIterativeInvertibleRealTransform invertibleRealTransform = new WrappedIterativeInvertibleRealTransform(rt);
                 InvertibleWrapped2DTransformAs3D rt3d = new InvertibleWrapped2DTransformAs3D(invertibleRealTransform);
 
-                SourceAndConverter<?> warped_sac = new SourceRealTransformer<>(sac, rt3d).get();
+                SourceAndConverter<?> warped_source = new SourceRealTransformer<>(source, rt3d).get();
                 SourceServices
                         .getSourceService()
-                                .register(warped_sac);
+                                .register(warped_source);
 
-                AlphaSourceHelper.setAlphaSource(warped_sac, alphaSac); // Keeps bounds
-                SourceAndConverter<?> transformedSac = new SourceAffineTransformer<>(warped_sac, at3d).get();
+                AlphaSourceHelper.setAlphaSource(warped_source, alphaSac); // Keeps bounds
+                SourceAndConverter<?> transformedSac = new SourceAffineTransformer<>(warped_source, at3d).get();
 
-                sacs.add(transformedSac);
+                sources_.add(transformedSac);
                 sourceIndex++;
                 sourceIndex = sourceIndex % sources.size();
             }
         }
 
-        return sacs;
+        return sources_;
     }
 }

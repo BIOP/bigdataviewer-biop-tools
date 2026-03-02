@@ -10,7 +10,6 @@ import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
 import sc.fiji.bdvpg.scijava.BdvPgMenus;
 
 import java.util.Arrays;
-import java.util.stream.Collectors;
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
         //menuPath = BdvPgMenus.RootMenu+"Process>Source - Duplicate With Time-Shift",
@@ -25,7 +24,7 @@ public class SourceTimeShiftCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(label = "Select Sources",
             description = "The sources to time-shift")
-    SourceAndConverter[] sources;
+    SourceAndConverter<?>[] sources;
 
     @Parameter(label = "Time Shift",
             description = "Number of timepoints to shift (positive = forward, negative = backward)")
@@ -37,14 +36,13 @@ public class SourceTimeShiftCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(type = ItemIO.OUTPUT,
             description = "The resulting time-shifted source")
-    SourceAndConverter[] sacs_out;
+    SourceAndConverter<?>[] sources_out;
 
     @Override
     public void run() {
-        sacs_out = Arrays.stream(sources)
-                         .map(sac -> new SourceTimeMapper(sac, (t) -> t+timeshift, sac.getSpimSource().getName()+suffix).get())
-                         .collect(Collectors.toList())
-                         .toArray(new SourceAndConverter[0]);
+        sources_out = Arrays.stream(sources)
+                .map(source -> new SourceTimeMapper(source, (t) -> t + timeshift, source.getSpimSource().getName() + suffix).get())
+                .toArray(SourceAndConverter[]::new);
     }
 
 }

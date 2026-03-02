@@ -250,8 +250,8 @@ public class MultiscaleRegisterCommand implements BdvPlaygroundActionCommand{
                 // Let's run the registration
                 RealTransform currentLevelTransform =
                         (RealTransform) cs.run(Elastix2DSparsePointsRegisterCommand.class, true,
-                                "sacs_fixed", fixed,
-                                "sacs_moving", transformedMoving,
+                                "sources_fixed", fixed,
+                                "sources_moving", transformedMoving,
                                 "tp_fixed", 0,
                                 "level_fixed_source", SourceHelper.bestLevel(fixed[0], 0, pixelSizeBlockmm),
                                 "tp_moving", 0,

@@ -7,7 +7,6 @@ import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sc.fiji.bdvpg.scijava.BdvPgMenus;
 import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
 
 /**
@@ -56,8 +55,8 @@ public class Sift2DAffineRegisterCommand extends Abstract2DRegistrationInRectang
         }
 
         SIFTRegister reg = new SIFTRegister(
-                sacs_fixed, level_fixed_source, tp_fixed,invert_fixed,
-                sacs_moving, level_moving_source, tp_moving,invert_moving,
+                sources_fixed, level_fixed_source, tp_fixed,invert_fixed,
+                sources_moving, level_moving_source, tp_moving,invert_moving,
                 px_size_in_current_unit,
                 px,py,pz,sx,sy,
                 param,

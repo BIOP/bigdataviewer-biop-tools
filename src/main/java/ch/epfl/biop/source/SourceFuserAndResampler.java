@@ -6,7 +6,9 @@ import bdv.cache.SharedQueue;
 import bdv.viewer.Interpolation;
 import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
+import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.NumericType;
+import net.imglib2.type.numeric.RealType;
 import sc.fiji.bdvpg.source.SourceHelper;
 
 import java.util.ArrayList;
@@ -18,7 +20,7 @@ import java.util.function.Function;
 // TODO : check that at least a source is there
 // TODO : Make volatile source if possible
 
-public class SourceFuserAndResampler<T extends NumericType<T>> implements Runnable, Function<List<SourceAndConverter<T>>, SourceAndConverter<T>> {
+public class SourceFuserAndResampler<T extends NumericType<T> & RealType<T> & NativeType<T>> implements Runnable, Function<List<SourceAndConverter<T>>, SourceAndConverter<T>> {
 
     List<SourceAndConverter<T>> sources_in;
 
@@ -42,7 +44,7 @@ public class SourceFuserAndResampler<T extends NumericType<T>> implements Runnab
 
     public SourceFuserAndResampler(List<SourceAndConverter<T>> sources_in,
                                    String blendingMode,
-                                   SourceAndConverter model,
+                                   SourceAndConverter<?> model,
                                    String name,
                                    boolean reuseMipmaps,
                                    boolean cache,
@@ -75,22 +77,22 @@ public class SourceFuserAndResampler<T extends NumericType<T>> implements Runnab
 
     @Override
     public SourceAndConverter<T> apply(List<SourceAndConverter<T>> srcs) {
-        SourceAndConverter sacExample = srcs.get(0);
+        SourceAndConverter<?> sourceExample = srcs.get(0);
         // TODO : check all types are ok
 
-        List<Source> sources = new ArrayList<>();
-        Map<Source, Interpolation> interpolationMap = new HashMap<>();
+        List<Source<T>> sources = new ArrayList<>();
+        Map<Source<T>, Interpolation> interpolationMap = new HashMap<>();
 
         boolean volatileIsPossible = true;
 
-        for (SourceAndConverter sac:srcs) {
-            sources.add(sac.getSpimSource());
-            volatileIsPossible = volatileIsPossible&&(sac.asVolatile()!=null);
-            interpolationMap.put(sac.getSpimSource(), interpolate?Interpolation.NLINEAR:Interpolation.NEARESTNEIGHBOR);
+        for (SourceAndConverter<T> source:srcs) {
+            sources.add(source.getSpimSource());
+            volatileIsPossible = volatileIsPossible&&(source.asVolatile()!=null);
+            interpolationMap.put(source.getSpimSource(), interpolate?Interpolation.NLINEAR:Interpolation.NEARESTNEIGHBOR);
         }
 
-        Source srcRsampled =
-                new AlphaFusedResampledSource(
+        Source<?> srcRsampled =
+                new AlphaFusedResampledSource<T>(
                         sources,
                         blendingMode,
                         model.getSpimSource(),
@@ -100,10 +102,10 @@ public class SourceFuserAndResampler<T extends NumericType<T>> implements Runnab
                         interpolationMap,
                         defaultMipMapLevel,cacheX,cacheY,cacheZ);
 
-        SourceAndConverter sac;
+        SourceAndConverter<T> source;
 
         if (volatileIsPossible) {
-            SourceAndConverter vsac;
+            SourceAndConverter vsource;
             Source vsrcRsampled;
             if (cache) {
                 vsrcRsampled = new WrapVolatileSource(srcRsampled, new SharedQueue(nThreads));
@@ -112,9 +114,9 @@ public class SourceFuserAndResampler<T extends NumericType<T>> implements Runnab
                 sources = new ArrayList<>();
                 interpolationMap = new HashMap<>();
 
-                for (SourceAndConverter sac_in:srcs) {
-                    sources.add(sac_in.asVolatile().getSpimSource());
-                    interpolationMap.put(sac_in.asVolatile().getSpimSource(), interpolate?Interpolation.NLINEAR:Interpolation.NEARESTNEIGHBOR);
+                for (SourceAndConverter source_in:srcs) {
+                    sources.add(source_in.asVolatile().getSpimSource());
+                    interpolationMap.put(source_in.asVolatile().getSpimSource(), interpolate?Interpolation.NLINEAR:Interpolation.NEARESTNEIGHBOR);
                 }
 
                 vsrcRsampled = new AlphaFusedResampledSource(
@@ -127,15 +129,15 @@ public class SourceFuserAndResampler<T extends NumericType<T>> implements Runnab
                         interpolationMap,
                         defaultMipMapLevel,cacheX,cacheY,cacheZ);
             }
-            vsac = new SourceAndConverter(vsrcRsampled,
-                    SourceHelper.cloneConverter(sacExample.asVolatile().getConverter(), sacExample.asVolatile()));
-            sac = new SourceAndConverter<>(srcRsampled,
-                    SourceHelper.cloneConverter(sacExample.getConverter(), sacExample ),vsac);
+            vsource = new SourceAndConverter(vsrcRsampled,
+                    SourceHelper.cloneConverter(sourceExample.asVolatile().getConverter(), sourceExample.asVolatile()));
+            source = new SourceAndConverter(srcRsampled,
+                    SourceHelper.cloneConverter(sourceExample.getConverter(), sourceExample ),vsource);
         } else {
-            sac = new SourceAndConverter<>(srcRsampled,
-                    SourceHelper.cloneConverter(sacExample.getConverter(), sacExample));
+            source = new SourceAndConverter(srcRsampled,
+                    SourceHelper.cloneConverter(sourceExample.getConverter(), sourceExample));
         }
 
-        return sac;
+        return source;
     }
 }

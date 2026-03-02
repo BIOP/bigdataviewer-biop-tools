@@ -58,11 +58,11 @@ public class VoxelProcessedSourceAdapter implements ISourceAdapter<VoxelProcesse
 
     private static final Logger logger = LoggerFactory.getLogger(VoxelProcessedSourceAdapter.class);
 
-    SourceAdapter sacSerializer;
+    SourceAdapter sourceSerializer;
 
     @Override
-    public void setSourceSerializer(SourceAdapter sacSerializer) {
-        this.sacSerializer = sacSerializer;
+    public void setSourceSerializer(SourceAdapter sourceSerializer) {
+        this.sourceSerializer = sourceSerializer;
     }
 
     @Override
@@ -71,17 +71,17 @@ public class VoxelProcessedSourceAdapter implements ISourceAdapter<VoxelProcesse
     }
 
     @Override
-    public JsonElement serialize(SourceAndConverter sac, Type type, JsonSerializationContext jsonSerializationContext) {
+    public JsonElement serialize(SourceAndConverter src, Type type, JsonSerializationContext jsonSerializationContext) {
         JsonObject obj = new JsonObject();
 
-        VoxelProcessedSource<?, ?> source = (VoxelProcessedSource<?, ?>) sac.getSpimSource();
+        VoxelProcessedSource<?, ?> source = (VoxelProcessedSource<?, ?>) src.getSpimSource();
 
         obj.addProperty("type", VoxelProcessedSource.class.getSimpleName());
         obj.addProperty("name", source.getName());
 
         // Serialize the origin source ID
         Source<?> originSource = source.getOriginSource();
-        Integer originId = sacSerializer.getSourceToId().get(originSource);
+        Integer originId = sourceSerializer.getSourceToId().get(originSource);
         if (originId == null) {
             logger.error("Cannot serialize VoxelProcessedSource '{}': origin source '{}' not identified",
                     source.getName(), originSource.getName());
@@ -118,11 +118,11 @@ public class VoxelProcessedSourceAdapter implements ISourceAdapter<VoxelProcesse
 
         // Deserialize the origin source
         SourceAndConverter<?> originSac;
-        if (sacSerializer.getIdToSac().containsKey(originSourceId)) {
-            originSac = sacSerializer.getIdToSac().get(originSourceId);
+        if (sourceSerializer.getIdToSac().containsKey(originSourceId)) {
+            originSac = sourceSerializer.getIdToSac().get(originSourceId);
         } else {
-            JsonElement element = sacSerializer.idToJsonElement.get(originSourceId);
-            originSac = sacSerializer.getGson().fromJson(element, SourceAndConverter.class);
+            JsonElement element = sourceSerializer.idToJsonElement.get(originSourceId);
+            originSac = sourceSerializer.getGson().fromJson(element, SourceAndConverter.class);
         }
 
         if (originSac == null) {
@@ -164,10 +164,10 @@ public class VoxelProcessedSourceAdapter implements ISourceAdapter<VoxelProcesse
                 Runtime.getRuntime().availableProcessors()
         );
 
-        SourceAndConverter<?> sac = sourceVoxelProcessor.get();
+        SourceAndConverter<?> source = sourceVoxelProcessor.get();
 
-        SourceServices.getSourceService().register(sac);
+        SourceServices.getSourceService().register(source);
 
-        return sac;
+        return source;
     }
 }

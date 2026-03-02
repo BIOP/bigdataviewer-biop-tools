@@ -75,13 +75,13 @@ public class BdvAlphaViewerSetCommand implements BdvPlaygroundActionCommand{
     Context ctx;
 
     @Parameter
-    SourceBdvDisplayService sacDisplayService;
+    SourceBdvDisplayService sourceDisplayService;
 
     @Override
     public void run() {
         if (resetToDefault) {
             IBdvSupplier bdvSupplier = new AlphaBdvSupplier(new AlphaSerializableBdvOptions());
-            sacDisplayService.setDefaultBdvSupplier(bdvSupplier);
+            sourceDisplayService.setDefaultBdvSupplier(bdvSupplier);
         } else {
             AlphaSerializableBdvOptions options = new AlphaSerializableBdvOptions();
             options.frameTitle = frametitle;
@@ -96,7 +96,7 @@ public class BdvAlphaViewerSetCommand implements BdvPlaygroundActionCommand{
             options.useAlphaCompositing = usealphalayer;
             options.white_bg = white_background;
             IBdvSupplier bdvSupplier = new AlphaBdvSupplier(options);
-            sacDisplayService.setDefaultBdvSupplier(bdvSupplier);
+            sourceDisplayService.setDefaultBdvSupplier(bdvSupplier);
         }
 
     }

@@ -30,7 +30,7 @@ public class AffineTransformedSourceWrapperRegistration extends AffineTransformS
      */
     public synchronized void setAffineTransform(AffineTransform3D at3d_in) {
         this.at3d = at3d_in;
-        alreadyTransformedSources.keySet().forEach(sac -> SourceTransformHelper.set(at3d_in, new SourceAndTimeRange<>(alreadyTransformedSources.get(sac), timePoint)));
+        alreadyTransformedSources.keySet().forEach(source -> SourceTransformHelper.set(at3d_in, new SourceAndTimeRange<>(alreadyTransformedSources.get(source), timePoint)));
     }
 
     /**

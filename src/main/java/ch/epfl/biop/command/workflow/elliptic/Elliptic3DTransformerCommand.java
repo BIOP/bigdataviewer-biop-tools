@@ -21,13 +21,13 @@ public class Elliptic3DTransformerCommand implements BdvPlaygroundActionCommand 
 
     @Parameter(label = "Select Source(s)",
             description = "The sources to transform")
-    SourceAndConverter[] sacs_in;
+    SourceAndConverter<?>[] sources_in;
 
     @Override
     public void run() {
 
         Elliptic3DTransformer et = new Elliptic3DTransformer(null, e3dt);
-        Arrays.stream(sacs_in).map(et::apply);//.collect(Collectors.toList());
+        Arrays.stream(sources_in).map(et::apply);//.collect(Collectors.toList());
 
     }
 }

@@ -92,12 +92,12 @@ public class ImagePlusGetter {
             // Needs conversion to hyperstack
             LUT[] luts = new LUT[range.getRangeC().size()];
             int iC = 0;
-            for (Integer sourceIndex : range.getRangeC()) { //SourceAndConverter sac:sources) {
-                SourceAndConverter<?> sac = sources.get(sourceIndex);
-                if (!(sac.getSpimSource().getType() instanceof ARGBType)) {
+            for (Integer sourceIndex : range.getRangeC()) {
+                SourceAndConverter<?> source = sources.get(sourceIndex);
+                if (!(source.getSpimSource().getType() instanceof ARGBType)) {
                     LUT lut;
-                    if (sac.getConverter() instanceof ColorConverter) {
-                        ColorConverter converter = (ColorConverter) sac.getConverter();
+                    if (source.getConverter() instanceof ColorConverter) {
+                        ColorConverter converter = (ColorConverter) source.getConverter();
                         ARGBType c = converter.getColor();
                         lut = LUT.createLutFromColor(new Color(ARGBType.red(c.get()), ARGBType.green(c.get()), ARGBType.blue(c.get())));
                     } else {
@@ -108,8 +108,8 @@ public class ImagePlusGetter {
                     out.setC(iC+1);
                     out.getProcessor().setLut(lut);
 
-                    if (sac.getConverter() instanceof LinearRange) {
-                        LinearRange converter = (LinearRange) sac.getConverter();
+                    if (source.getConverter() instanceof LinearRange) {
+                        LinearRange converter = (LinearRange) source.getConverter();
                         out.setDisplayRange(converter.getMin(), converter.getMax());
                     }
                 }
@@ -221,12 +221,12 @@ public class ImagePlusGetter {
             // Needs conversion to hyperstack
             LUT[] luts = new LUT[range.getRangeC().size()];
             int iC = 0;
-            for (Integer sourceIndex : range.getRangeC()) { //SourceAndConverter sac:sources) {
-                SourceAndConverter<?> sac = sources.get(sourceIndex);
-                if (!(sac.getSpimSource().getType() instanceof ARGBType)) {
+            for (Integer sourceIndex : range.getRangeC()) {
+                SourceAndConverter<?> source = sources.get(sourceIndex);
+                if (!(source.getSpimSource().getType() instanceof ARGBType)) {
                     LUT lut;
-                    if (sac.getConverter() instanceof ColorConverter) {
-                        ColorConverter converter = (ColorConverter) sac.getConverter();
+                    if (source.getConverter() instanceof ColorConverter) {
+                        ColorConverter converter = (ColorConverter) source.getConverter();
                         ARGBType c = converter.getColor();
                         lut = LUT.createLutFromColor(new Color(ARGBType.red(c.get()), ARGBType.green(c.get()), ARGBType.blue(c.get())));
                     } else {
@@ -237,8 +237,8 @@ public class ImagePlusGetter {
                     imp.setC(iC+1);
                     imp.getProcessor().setLut(lut);
 
-                    if (sac.getConverter() instanceof LinearRange) {
-                        LinearRange converter = (LinearRange) sac.getConverter();
+                    if (source.getConverter() instanceof LinearRange) {
+                        LinearRange converter = (LinearRange) source.getConverter();
                         imp.setDisplayRange(converter.getMin(), converter.getMax());
                     }
                 }

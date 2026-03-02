@@ -241,7 +241,7 @@ public class DeconvolutionProcessorCast<T extends RealType<T> & NativeType<T>> i
     }
 
     @Override
-    public Set<SourceAndConverter<?>> inspect(DefaultMutableTreeNode parent, SourceAndConverter<?> sac,
+    public Set<SourceAndConverter<?>> inspect(DefaultMutableTreeNode parent, SourceAndConverter<?> source,
                                                ISourceService SourceService,
                                                boolean registerIntermediateSources) {
         parent.add(new DefaultMutableTreeNode("Cell Dimensions: " + Arrays.toString(cellDimensions)));

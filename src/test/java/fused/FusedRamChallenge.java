@@ -51,19 +51,19 @@ public class FusedRamChallenge {
 
         String sourcesPath = "tiles.xml>Channel>0";
 
-        SourceService sac_service = ij.get(SourceService.class);
+        SourceService source_service = ij.get(SourceService.class);
 
         TreePath tp =
-                sac_service
+                source_service
                 .tree()
                 .getTreePathFromString(sourcesPath);
 
-        //List<SourceAndConverter> sources = sac_service.getUI().getSourceAndConvertersFromTreePath(tp);
+        //List<SourceAndConverter> sources = source_service.getUI().getSourceAndConvertersFromTreePath(tp);
 
         //IJ.log("Now fusing "+sources.size()+" sources");
 
         //SourceAndConverter fused = new SourceFuserAndResampler(sources, AlphaFusedResampledSource.AVERAGE, model, "Fused_ch0", true, true, false, 0, 1024,1024,1,10).get();
 
-        //sac_service.register(fused);
+        //source_service.register(fused);
     }
 }

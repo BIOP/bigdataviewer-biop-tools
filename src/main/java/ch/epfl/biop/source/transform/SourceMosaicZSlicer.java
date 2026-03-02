@@ -11,7 +11,7 @@ import java.util.function.Supplier;
 
 public class SourceMosaicZSlicer implements Runnable, Function<SourceAndConverter, SourceAndConverter> {
 
-    SourceAndConverter sac_in;
+    SourceAndConverter source_in;
 
     SourceAndConverter model;
 
@@ -23,7 +23,7 @@ public class SourceMosaicZSlicer implements Runnable, Function<SourceAndConverte
 
     Supplier<Long> subSlicer;
 
-    public SourceMosaicZSlicer(SourceAndConverter sac_in,
+    public SourceMosaicZSlicer(SourceAndConverter source_in,
                                SourceAndConverter model,
                                boolean reuseMipmaps,
                                boolean cache,
@@ -31,7 +31,7 @@ public class SourceMosaicZSlicer implements Runnable, Function<SourceAndConverte
                                Supplier<Long> subSlicer) {
         this.reuseMipMaps = reuseMipmaps;
         this.model = model;
-        this.sac_in = sac_in;
+        this.source_in = source_in;
         this.interpolate = interpolate;
         this.cache = cache;
         this.subSlicer = subSlicer;
@@ -43,7 +43,7 @@ public class SourceMosaicZSlicer implements Runnable, Function<SourceAndConverte
     }
 
     public SourceAndConverter get() {
-        return apply(sac_in);
+        return apply(source_in);
     }
 
     @Override
@@ -58,9 +58,9 @@ public class SourceMosaicZSlicer implements Runnable, Function<SourceAndConverte
                         interpolate,
                         subSlicer);
 
-        SourceAndConverter sac;
+        SourceAndConverter source;
         if (src.asVolatile()!=null) {
-            SourceAndConverter vsac;
+            SourceAndConverter vsource;
             Source vsrcRsampled;
             if (cache) {
                 vsrcRsampled =
@@ -80,15 +80,15 @@ public class SourceMosaicZSlicer implements Runnable, Function<SourceAndConverte
                             interpolate,
                             subSlicer);
             }
-            vsac = new SourceAndConverter(vsrcRsampled,
+            vsource = new SourceAndConverter(vsrcRsampled,
                     SourceHelper.cloneConverter(src.asVolatile().getConverter(), src.asVolatile()));
-            sac = new SourceAndConverter<>(srcRsampled,
-                    SourceHelper.cloneConverter(src.getConverter(), src),vsac);
+            source = new SourceAndConverter<>(srcRsampled,
+                    SourceHelper.cloneConverter(src.getConverter(), src),vsource);
         } else {
-            sac = new SourceAndConverter<>(srcRsampled,
+            source = new SourceAndConverter<>(srcRsampled,
                     SourceHelper.cloneConverter(src.getConverter(), src));
         }
 
-        return sac;
+        return source;
     }
 }

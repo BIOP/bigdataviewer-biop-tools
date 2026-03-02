@@ -1,20 +1,16 @@
 package ch.epfl.biop.command.process.transform;
 
-import bdv.AbstractSpimSource;
 import bdv.tools.transformation.TransformedSource;
 import bdv.viewer.SourceAndConverter;
 import ij.IJ;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.util.LinAlgHelpers;
-import org.scijava.command.Command;
 import org.scijava.command.InteractiveCommand;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
 import sc.fiji.bdvpg.scijava.BdvPgMenus;
 import sc.fiji.bdvpg.services.SourceServices;
-import sc.fiji.bdvpg.source.SourceHelper;
-import sc.fiji.bdvpg.source.transform.SourceTransformHelper;
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
         menuPath = BdvPgMenus.RootMenu+"Process>Transform>Source - 3D Rotation",
@@ -23,7 +19,7 @@ public class Rotation3DTransformCommand extends InteractiveCommand implements Bd
 
     @Parameter(label = "Select Source(s)",
             description = "The sources to rotate (must be wrapped as TransformedSource)")
-    SourceAndConverter[] sacs;
+    SourceAndConverter<?>[] sources;
 
     @Parameter(label = "Rotation X",
             style = "slider,format:0.#####E0",
@@ -112,12 +108,12 @@ public class Rotation3DTransformCommand extends InteractiveCommand implements Bd
 
         at3D.preConcatenate(rotMatrix);
 
-        if (sacs!=null) {
-            for (SourceAndConverter sac:sacs) {
-                if (sac!=null) {
-                    if (sac.getSpimSource() instanceof TransformedSource) {
-                        ((TransformedSource) sac.getSpimSource()).setFixedTransform(at3D);
-                        SourceServices.getBdvDisplayService().updateDisplays(sac);
+        if (sources !=null) {
+            for (SourceAndConverter<?> source: sources) {
+                if (source!=null) {
+                    if (source.getSpimSource() instanceof TransformedSource) {
+                        ((TransformedSource<?>) source.getSpimSource()).setFixedTransform(at3D);
+                        SourceServices.getBdvDisplayService().updateDisplays(source);
                     } else {
                         IJ.log("Can't rotate a non transformed source, please use  BigDataViewer-Playground › Process › Duplicate As Transformed Source");
                     }

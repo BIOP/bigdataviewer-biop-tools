@@ -17,7 +17,6 @@ import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
-import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
 import sc.fiji.bdvpg.scijava.services.SourceService;
 import sc.fiji.bdvpg.services.SourceServices;
 import sc.fiji.bdvpg.source.importer.EmptySourceCreator;
@@ -90,14 +89,14 @@ public class Rot3DReSampleCommand<T extends NumericType<T> & NativeType<T>> impl
     boolean interpolate;
 
     @Parameter
-    SourceService sac_service;
+    SourceService source_service;
 
     public void run() {
 
-        AbstractSpimData asd = ImagePlusToSpimData.getSpimData(imp_in);
-        sac_service.register(asd);
-        sac_service.setDatasetName(asd, imp_in.getTitle());
-        List<SourceAndConverter<?>> sacs = SourceServices.getSourceService().getSourcesFromDataset(asd);
+        AbstractSpimData<?> asd = ImagePlusToSpimData.getSpimData(imp_in);
+        source_service.register(asd);
+        source_service.setDatasetName(asd, imp_in.getTitle());
+        List<SourceAndConverter<?>> sources = SourceServices.getSourceService().getSourcesFromDataset(asd);
 
         if (rm.getCount()<2) {
             System.err.println("Error : 2 point Rois should be present in the Roi Manager to reorient a stack");
@@ -214,7 +213,7 @@ public class Rot3DReSampleCommand<T extends NumericType<T> & NativeType<T>> impl
 
         at3D.concatenate(translateCenterBwd);
 
-        SourceAndConverter model;
+        SourceAndConverter<?> model;
 
         model = new EmptySourceCreator("dummy", at3D, (long) nx,(long) ny,(long) nz).get();//SourceHelper.createSourceAndConverter(src);
 
@@ -222,19 +221,12 @@ public class Rot3DReSampleCommand<T extends NumericType<T> & NativeType<T>> impl
             System.out.println("model is null");
         }
 
-        SourceResampler<T> sampler = new SourceResampler(null, model, "Sampler", false, false, interpolate,0);
+        SourceResampler<T> sampler = new SourceResampler<>(null, model, "Sampler", false, false, interpolate,0);
 
-        List<SourceAndConverter<T>> reoriented_sources = sacs.stream().map(source -> sampler.apply((SourceAndConverter<T>) source)).collect(Collectors.toList());
-
-        /*Map<SourceAndConverter<T>, ConverterSetup> mapCS = new HashMap<>();
-        reoriented_sources.forEach(sac -> mapCS.put(sac,
-                    SourceServices
-                        .getSourceService()
-                        .getConverterSetup(sac)
-                ));*/
+        List<SourceAndConverter<T>> reoriented_sources = sources.stream().map(source -> sampler.apply((SourceAndConverter<T>) source)).collect(Collectors.toList());
 
         Map<SourceAndConverter<T>, Integer> mapMipmap = new HashMap<>();
-        reoriented_sources.forEach(sac -> mapMipmap.put(sac, 0)); // Only one resolution exists
+        reoriented_sources.forEach(source -> mapMipmap.put(source, 0)); // Only one resolution exists
 
         imp_out = ImagePlusHelper.wrap(
                 reoriented_sources,

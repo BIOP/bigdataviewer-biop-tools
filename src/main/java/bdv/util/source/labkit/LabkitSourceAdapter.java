@@ -60,11 +60,11 @@ public class LabkitSourceAdapter implements ISourceAdapter<LabkitSource> {
 
     private static final Logger logger = LoggerFactory.getLogger(LabkitSourceAdapter.class);
 
-    SourceAdapter sacSerializer;
+    SourceAdapter sourceSerializer;
 
     @Override
-    public void setSourceSerializer(SourceAdapter sacSerializer) {
-        this.sacSerializer = sacSerializer;
+    public void setSourceSerializer(SourceAdapter sourceSerializer) {
+        this.sourceSerializer = sourceSerializer;
     }
 
     @Override
@@ -73,10 +73,10 @@ public class LabkitSourceAdapter implements ISourceAdapter<LabkitSource> {
     }
 
     @Override
-    public JsonElement serialize(SourceAndConverter sac, Type type, JsonSerializationContext jsonSerializationContext) {
+    public JsonElement serialize(SourceAndConverter src, Type type, JsonSerializationContext jsonSerializationContext) {
         JsonObject obj = new JsonObject();
 
-        LabkitSource<?> source = (LabkitSource<?>) sac.getSpimSource();
+        LabkitSource<?> source = (LabkitSource<?>) src.getSpimSource();
 
         obj.addProperty("type", LabkitSource.class.getSimpleName());
         obj.addProperty("name", source.getName());
@@ -94,7 +94,7 @@ public class LabkitSourceAdapter implements ISourceAdapter<LabkitSource> {
         SourceAndConverter<?>[] inputSources = source.getInputSources();
         JsonArray sourceIds = new JsonArray();
         for (SourceAndConverter<?> inputSource : inputSources) {
-            Integer id = sacSerializer.getSourceToId().get(inputSource.getSpimSource());
+            Integer id = sourceSerializer.getSourceToId().get(inputSource.getSpimSource());
             if (id == null) {
                 logger.error("Cannot serialize LabkitSource '{}': input source '{}' not identified",
                         source.getName(), inputSource.getSpimSource().getName());
@@ -124,13 +124,13 @@ public class LabkitSourceAdapter implements ISourceAdapter<LabkitSource> {
             int sourceId = idElement.getAsInt();
             SourceAndConverter<?> inputSac;
 
-            if (sacSerializer.getIdToSac().containsKey(sourceId)) {
+            if (sourceSerializer.getIdToSac().containsKey(sourceId)) {
                 // Already deserialized
-                inputSac = sacSerializer.getIdToSac().get(sourceId);
+                inputSac = sourceSerializer.getIdToSac().get(sourceId);
             } else {
                 // Should be deserialized first
-                JsonElement element = sacSerializer.idToJsonElement.get(sourceId);
-                inputSac = sacSerializer.getGson().fromJson(element, SourceAndConverter.class);
+                JsonElement element = sourceSerializer.idToJsonElement.get(sourceId);
+                inputSac = sourceSerializer.getGson().fromJson(element, SourceAndConverter.class);
             }
 
             if (inputSac == null) {
@@ -144,7 +144,7 @@ public class LabkitSourceAdapter implements ISourceAdapter<LabkitSource> {
         SourceAndConverter<?>[] inputSources = inputSourcesList.toArray(new SourceAndConverter[0]);
 
         // Get the SciJava context
-        Context context = sacSerializer.getScijavaContext();
+        Context context = sourceSerializer.getScijavaContext();
 
         // Create the LabkitSource using SourceLabkitClassifier
         SourceLabkitClassifier classifier = new SourceLabkitClassifier(
@@ -156,10 +156,10 @@ public class LabkitSourceAdapter implements ISourceAdapter<LabkitSource> {
                 useGpu
         );
 
-        SourceAndConverter sac = classifier.get();
+        SourceAndConverter source = classifier.get();
 
-        SourceServices.getSourceService().register(sac);
+        SourceServices.getSourceService().register(source);
 
-        return sac;
+        return source;
     }
 }

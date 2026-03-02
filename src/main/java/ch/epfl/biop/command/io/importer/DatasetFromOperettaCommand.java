@@ -408,10 +408,10 @@ public class DatasetFromOperettaCommand implements BdvPlaygroundActionCommand {
 
                 for (int iCh = 0; iCh<maxChannels; iCh++) {
                     SourceGroup group = groups.get(iCh);
-                    SourceTree.Node chNode = sourceService.tree().getRoot().child(opm.getPlateName()).child("Channel").child(iCh);
+                    FilterNode chNode = sourceService.tree().root().child(opm.getPlateName()).child("Channel").child(iCh);
                     List<SourceAndConverter<?>> sourcesInChannel =
                             Arrays.asList(chNode.sources());
-                    List<SourceAndConverter<?>> sourcesCast = sourcesInChannel.stream().map(sac -> (SourceAndConverter<?>) sac).collect(Collectors.toList());
+                    List<SourceAndConverter<?>> sourcesCast = sourcesInChannel.stream().map(source -> (SourceAndConverter<?>) source).collect(Collectors.toList());
                     bdvh.getViewerPanel().state().addSourcesToGroup(sourcesCast, group);
                     bdvh.getViewerPanel().state().setGroupName(group, chNode.name());
                 }

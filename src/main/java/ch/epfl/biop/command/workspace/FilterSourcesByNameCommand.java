@@ -43,11 +43,11 @@ public class FilterSourcesByNameCommand implements BdvPlaygroundActionCommand {
 
         @Override
         public void run() {
-            FilterNode filterNode = new FilterNode(filter_name, (sac) -> {
+            FilterNode filterNode = new FilterNode(filter_name, (source) -> {
                 if (match_case) {
-                    return sac.getSpimSource().getName().contains(string_filter);
+                    return source.getSpimSource().getName().contains(string_filter);
                 } else {
-                    return sac.getSpimSource().getName().toUpperCase().contains(string_filter.toUpperCase());
+                    return source.getSpimSource().getName().toUpperCase().contains(string_filter.toUpperCase());
                 }
             }, show_sources);
             SourceTreeModel model = source_service.tree().getSourceTreeModel();

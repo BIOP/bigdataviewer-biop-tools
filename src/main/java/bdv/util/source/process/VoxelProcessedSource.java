@@ -116,7 +116,7 @@ public class VoxelProcessedSource<I,O extends NumericType<O>> implements Source<
     }
 
     @Override
-    public Set<SourceAndConverter<?>> inspect(DefaultMutableTreeNode parent, SourceAndConverter<?> sac, ISourceService SourceService, boolean registerIntermediateSources) {
+    public Set<SourceAndConverter<?>> inspect(DefaultMutableTreeNode parent, SourceAndConverter<?> source, ISourceService SourceService, boolean registerIntermediateSources) {
         DefaultMutableTreeNode nameNode = new DefaultMutableTreeNode(
                 "Name: " + this.name);
         parent.add(nameNode);

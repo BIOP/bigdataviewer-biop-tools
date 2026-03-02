@@ -34,7 +34,7 @@ public class Resample3DAlongAxis {
 
         final AbstractSpimData spimData = importer.get();
 
-        SourceAndConverter sac = SourceServices
+        SourceAndConverter source = SourceServices
                 .getSourceService()
                 .getSourcesFromDataset(spimData)
                 .get(0);
@@ -44,17 +44,17 @@ public class Resample3DAlongAxis {
         //        .getSourceAndConverterDisplayService().getActiveBdv();
         /*SourceServices
                 .getSourceAndConverterDisplayService()
-                .show(sac);*/
+                .show(source);*/
 
         AffineTransform3D m = new AffineTransform3D();
 
-        sac.getSpimSource().getSourceTransform(0,0,m);
+        source.getSpimSource().getSourceTransform(0,0,m);
 
         RandomAccessibleIntervalSource<UnsignedShortType> rais;
 
         // DO NOT WORK
          rais = new RandomAccessibleIntervalSource<UnsignedShortType>(
-                Views.expandZero(sac.getSpimSource().getSource(0,0),0,0,0), // even though we don't care about the size of the border, this helps set the dimension
+                Views.expandZero(source.getSpimSource().getSource(0,0),0,0,0), // even though we don't care about the size of the border, this helps set the dimension
                 new UnsignedShortType(),
                 m,
                 "RAIS"

@@ -17,9 +17,9 @@ public class CenterZeroRegistration extends AffineTransformSourceRegistration {
     @Override
     public boolean register() {
 
-        SourceAndConverter<?> sac = mimg[0];
+        SourceAndConverter<?> source = mimg[0];
 
-        RealPoint center = SourceHelper.getSourceCenterPoint(sac,0);
+        RealPoint center = SourceHelper.getSourceCenterPoint(source,0);
 
         at3d = new AffineTransform3D();
 

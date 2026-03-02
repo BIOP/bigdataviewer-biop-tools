@@ -70,16 +70,16 @@ public class BigWarpSource2DRegistration extends RealTransformSourceRegistration
 
             try {
                 EventQueue.invokeAndWait(() -> {
-                    List<SourceAndConverter<?>> movingSacs = Arrays.stream(mimg).collect(Collectors.toList());
+                    List<SourceAndConverter<?>> movingSources = Arrays.stream(mimg).collect(Collectors.toList());
 
-                    List<SourceAndConverter<?>> fixedSacs = Arrays.stream(fimg).collect(Collectors.toList());
+                    List<SourceAndConverter<?>> fixedSources = Arrays.stream(fimg).collect(Collectors.toList());
 
                     List<ConverterSetup> converterSetups = Arrays.stream(mimg).map(src -> SourceServices.getSourceService().getConverterSetup(src)).collect(Collectors.toList());
 
                     converterSetups.addAll(Arrays.stream(fimg).map(src -> SourceServices.getSourceService().getConverterSetup(src)).collect(Collectors.toList()));
 
                     // Launch BigWarp
-                    bwl = new BigWarpLauncher(movingSacs, fixedSacs, "Big Warp", converterSetups);
+                    bwl = new BigWarpLauncher(movingSources, fixedSources, "Big Warp", converterSetups);
                     bwl.set2d();
                     bwl.run();
 

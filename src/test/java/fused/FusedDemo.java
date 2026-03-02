@@ -61,22 +61,22 @@ public class FusedDemo {
         new SpimDataFromXmlImporter("src/test/resources/mri-stack-shiftedX.xml").run();
         new SpimDataFromXmlImporter( "src/test/resources/mri-stack-shiftedY.xml" ).run();
 
-        // Get a handle on the sacs
-        final List<SourceAndConverter<?>> sacs = SourceServices.getSourceService().getSources();
+        // Get a handle on the sources
+        final List<SourceAndConverter<?>> sources = SourceServices.getSourceService().getSources();
 
-        // Show all three sacs
-        sacs.forEach( sac -> {
-            SourceServices.getBdvDisplayService().show(bdv, sac);
-            new ViewerTransformAdjuster(bdv, sac).run();
-            new BrightnessAutoAdjuster(sac, 0).run();
+        // Show all three sources
+        sources.forEach( source -> {
+            SourceServices.getBdvDisplayService().show(bdv, source);
+            new ViewerTransformAdjuster(bdv, source).run();
+            new BrightnessAutoAdjuster<>(source, 0).run();
         });
 
         // Change color of third one
-        new ColorChanger( sacs.get( 2 ), new ARGBType( ARGBType.rgba( 0, 255, 0, 255 ) ) ).run();
+        new ColorChanger( sources.get( 2 ), new ARGBType( ARGBType.rgba( 0, 255, 0, 255 ) ) ).run();
 
-        SourceAndConverter fused = new SourceFuserAndResampler(sacs,
+        SourceAndConverter<?> fused = new SourceFuserAndResampler(sources,
                 AlphaFusedResampledSource.AVERAGE,
-                sacs.get(0), "Fused source",
+                sources.get(0), "Fused source",
                 true, true, false, 0,
                 64, 64, 1, -1,4).get();
 

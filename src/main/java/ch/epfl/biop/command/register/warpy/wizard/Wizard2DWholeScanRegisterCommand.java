@@ -137,7 +137,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
     boolean verbose;
 
     @Parameter
-    SourceBdvDisplayService sacbds;
+    SourceBdvDisplayService source_display_service;
 
     @Parameter(type = ItemIO.OUTPUT)
     SourceAndConverter<?>[] transformed_sources;
@@ -672,7 +672,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
     }
 
     private void showImages() {
-        sacbds.show(bdvh,fixed, moving);
+        source_display_service.show(bdvh,fixed, moving);
         new ViewerTransformAdjuster(bdvh, new SourceAndConverter[]{fixed, moving}).run();
 
         // Set Z to zero anyway

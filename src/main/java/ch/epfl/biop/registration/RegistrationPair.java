@@ -56,14 +56,10 @@ public class RegistrationPair implements Named, Closeable {
 
         // Remove t offsets
         this.fixedSources = Arrays.stream(fixedSources)
-                .map(sac -> new SourceTimeMapper(sac, (t) -> t+timepointFixed, sac.getSpimSource().getName()+"-T"+timepointFixed).get())
-                .collect(Collectors.toList())
-                .toArray(new SourceAndConverter[0]);
+                .map(source -> new SourceTimeMapper(source, (t) -> t + timepointFixed, source.getSpimSource().getName() + "-T" + timepointFixed).get()).toArray(SourceAndConverter[]::new);
 
         this.movingSourcesOrigin = Arrays.stream(movingSourcesOrigin)
-                .map(sac -> new SourceTimeMapper(sac, (t) -> t+timepointMoving, sac.getSpimSource().getName()+"-T"+timepointMoving).get())
-                .collect(Collectors.toList())
-                .toArray(new SourceAndConverter[0]);
+                .map(sour -> new SourceTimeMapper(sour, (t) -> t + timepointMoving, sour.getSpimSource().getName() + "-T" + timepointMoving).get()).toArray(SourceAndConverter[]::new);
 
         this.movingSourcesRegistered = movingSourcesOrigin;
 

@@ -10,7 +10,6 @@ import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
 import sc.fiji.bdvpg.scijava.BdvPgMenus;
 
 import java.util.Arrays;
-import java.util.stream.Collectors;
 
 /**
  * Command to create sources with a cropped range of resolution levels.
@@ -32,7 +31,7 @@ public class SourceCropLevelsCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(label = "Select Sources",
             description = "The sources to crop resolution levels from")
-    SourceAndConverter[] sacs;
+    SourceAndConverter<?>[] sources;
 
     @Parameter(label = "Min Level",
             description = "Minimum resolution level to keep (0 = highest resolution)")
@@ -48,17 +47,16 @@ public class SourceCropLevelsCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(type = ItemIO.OUTPUT,
             description = "The resulting sources with cropped resolution levels")
-    SourceAndConverter[] sacs_out;
+    SourceAndConverter<?>[] sources_out;
 
     @Override
     public void run() {
-        sacs_out = Arrays.stream(sacs)
-                .map(sac -> new SourceLevelMapper(
-                        sac,
+        sources_out = Arrays.stream(sources)
+                .map(source -> new SourceLevelMapper(
+                        source,
                         minLevel,
                         maxLevel,
-                        sac.getSpimSource().getName() + suffix).get())
-                .collect(Collectors.toList())
-                .toArray(new SourceAndConverter[0]);
+                        source.getSpimSource().getName() + suffix).get())
+                .toArray(SourceAndConverter[]::new);
     }
 }

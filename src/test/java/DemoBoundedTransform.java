@@ -39,7 +39,7 @@ public class DemoBoundedTransform {
 
         AbstractSpimData<?> spimData = importer.get();
 
-        SourceAndConverter<?> sacFixed = SourceServices
+        SourceAndConverter<?> sourceFixed = SourceServices
                 .getSourceService()
                 .getSourcesFromDataset(spimData)
                 .get(0);
@@ -48,7 +48,7 @@ public class DemoBoundedTransform {
 
         spimData = importer.get();
 
-        SourceAndConverter<?> sacMoving = SourceServices
+        SourceAndConverter<?> sourceMoving = SourceServices
                 .getSourceService()
                 .getSourcesFromDataset(spimData)
                 .get(0);
@@ -58,22 +58,22 @@ public class DemoBoundedTransform {
         BdvHandle bdvHandle = SourceServices.getBdvDisplayService().getActiveBdv();
 
         // Show the sourceandconverter
-        // SourceServices.getBdvDisplayService().show(bdvHandle, sacFixed);
+        // SourceServices.getBdvDisplayService().show(bdvHandle, sourceFixed);
 
-        SourceServices.getSourceService().getConverterSetup(sacMoving)
+        SourceServices.getSourceService().getConverterSetup(sourceMoving)
                 .setColor(new ARGBType(ARGBType.rgba(0, 255, 255,0)));
 
-        new BrightnessAutoAdjuster(sacFixed, 0).run();
+        new BrightnessAutoAdjuster(sourceFixed, 0).run();
 
-        new BrightnessAutoAdjuster(sacMoving, 0).run();
+        new BrightnessAutoAdjuster(sourceMoving, 0).run();
 
-        new ViewerTransformAdjuster(bdvHandle, sacFixed).run();
+        new ViewerTransformAdjuster(bdvHandle, sourceFixed).run();
 
         List<SourceAndConverter<?>> movingSources = new ArrayList<>();
-        movingSources.add(sacMoving);
+        movingSources.add(sourceMoving);
 
         List<SourceAndConverter<?>> fixedSources = new ArrayList<>();
-        fixedSources.add(sacFixed);
+        fixedSources.add(sourceFixed);
 
         List<ConverterSetup> converterSetups = movingSources.stream().map(src -> SourceServices.getSourceService().getConverterSetup(src)).collect(Collectors.toList());
         converterSetups.addAll(fixedSources.stream().map(src -> SourceServices.getSourceService().getConverterSetup(src)).collect(Collectors.toList()));
@@ -86,14 +86,14 @@ public class DemoBoundedTransform {
         bwl.getBigWarp().toggleMovingImageDisplay();
         bwl.getBigWarp().matchActiveViewerPanelToOther();
 
-        for (SourceAndConverter sac : bwl.getWarpedSources()) {
+        for (SourceAndConverter<?> source : bwl.getWarpedSources()) {
             SourceServices.getSourceService()
-                    .register(sac);
+                    .register(source);
         }
 
         BoundedRealTransform brt = new BoundedRealTransform(bwl.getBigWarp().getBwTransform().getTransformation(0), new FinalRealInterval(new double[]{20,20,20}, new double[]{150,150,550}));
 
-        SourceAndConverter tr = new SourceRealTransformer(null,brt).apply(sacFixed);
+        SourceAndConverter<?> tr = new SourceRealTransformer(null,brt).apply(sourceFixed);
         SourceServices.getBdvDisplayService()
                 .show(bdvHandle, tr);
 

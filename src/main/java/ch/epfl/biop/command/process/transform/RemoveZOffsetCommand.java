@@ -59,20 +59,20 @@ public class RemoveZOffsetCommand implements BdvPlaygroundActionCommand {
                 .updateDisplays(sources);
     }
 
-    private void removeZOffsetForTimepoint(SourceAndConverter sac, int tp) {
+    private void removeZOffsetForTimepoint(SourceAndConverter<?> source, int tp) {
 
         switch (mode) {
             case "Mutate":
-                SourceTransformHelper.mutate(getZ0Transform(sac, tp), new SourceAndTimeRange(sac, tp));
+                SourceTransformHelper.mutate(getZ0Transform(source, tp), new SourceAndTimeRange(source, tp));
                 break;
             case "Append":
-                SourceTransformHelper.append(getZ0Transform(sac, tp), new SourceAndTimeRange(sac, tp));
+                SourceTransformHelper.append(getZ0Transform(source, tp), new SourceAndTimeRange(source, tp));
                 break;
         }
     }
 
-    public static AffineTransform3D getZ0Transform(SourceAndConverter sac, int tp) {
-        RealPoint center = SourceHelper.getSourceCenterPoint(sac, tp);
+    public static AffineTransform3D getZ0Transform(SourceAndConverter<?> source, int tp) {
+        RealPoint center = SourceHelper.getSourceCenterPoint(source, tp);
         AffineTransform3D z0 = new AffineTransform3D();
         z0.set(-center.getDoublePosition(2),2,3);
         return z0;

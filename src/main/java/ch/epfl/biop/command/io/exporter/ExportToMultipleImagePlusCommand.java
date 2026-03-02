@@ -131,17 +131,17 @@ public class ExportToMultipleImagePlusCommand implements BdvPlaygroundActionComm
 
         List<SourceAndConverter<?>> sourceList = sorter.apply(Arrays.asList(sources));
 
-        Map<OverviewerCommand.SacProperties, List<SourceAndConverter<?>>> sacClasses = sourceList
+        Map<OverviewerCommand.SacProperties, List<SourceAndConverter<?>>> sourceClasses = sourceList
                 .stream()
-                .collect(Collectors.groupingBy(sac -> {
-                    OverviewerCommand.SacProperties props = new OverviewerCommand.SacProperties(sac);
+                .collect(Collectors.groupingBy(source -> {
+                    OverviewerCommand.SacProperties props = new OverviewerCommand.SacProperties(source);
                     for (Class<? extends Entity> entityClass : entSplit) {
                         props.splitByEntity(entityClass);
                     }
                     return props;
                 }));
 
-        Map<SourceAndConverter<?>, List<OverviewerCommand.SacProperties>> keySetSac = sacClasses.keySet().stream().collect(Collectors.groupingBy(p -> p.getSource()));
+        Map<SourceAndConverter<?>, List<OverviewerCommand.SacProperties>> keySetSac = sourceClasses.keySet().stream().collect(Collectors.groupingBy(p -> p.getSource()));
 
         List<SourceAndConverter<?>> sortedSacs = sorter.apply(keySetSac.keySet());
         Stream<SourceAndConverter<?>> sortedSacsStream;
@@ -158,21 +158,21 @@ public class ExportToMultipleImagePlusCommand implements BdvPlaygroundActionComm
 
         AtomicInteger iImage = new AtomicInteger();
 
-        sortedSacsStream.forEach(sacKey -> {
+        sortedSacsStream.forEach(sourceKey -> {
 
             Task task = null;
-            String name = sacKey.getSpimSource().getName();
+            String name = sourceKey.getSpimSource().getName();
 
             if (monitor) {
                 task = taskService.createTask(name+" export");
-                task.setStatusMessage("Reading first plane of ("+iImage.incrementAndGet()+"/"+nImages+") - "+sacKey.getSpimSource().getName());
+                task.setStatusMessage("Reading first plane of ("+iImage.incrementAndGet()+"/"+nImages+") - "+sourceKey.getSpimSource().getName());
             }
 
             AffineTransform3D at3d = new AffineTransform3D();
-            sacKey.getSpimSource().getSourceTransform(timepointbegin, level, at3d);
+            sourceKey.getSpimSource().getSourceTransform(timepointbegin, level, at3d);
 
-            OverviewerCommand.SacProperties sacPropsKey = keySetSac.get(sacKey).get(0);
-            List<SourceAndConverter<?>> sources = sacClasses.get(sacPropsKey);
+            OverviewerCommand.SacProperties sourcePropsKey = keySetSac.get(sourceKey).get(0);
+            List<SourceAndConverter<?>> sources = sourceClasses.get(sourcePropsKey);
 
             ImagePlus imp_out;
             int numFrames = SourceHelper.getMaxTimepoint(sources.toArray(new SourceAndConverter[0]))+1;
@@ -189,7 +189,7 @@ public class ExportToMultipleImagePlusCommand implements BdvPlaygroundActionComm
                         .setT(range_frames)
                         .get(sources.size(), maxZSlices, numFrames);
 
-                temporaryImageArray[sortedSacs.indexOf(sacKey)] =
+                temporaryImageArray[sortedSacs.indexOf(sourceKey)] =
                         ExportToImagePlusCommand.computeImage(sources, task, range, name, level, parallel_c, parallel_z, parallel_t, export_mode);
 
             } catch (Exception e) {

@@ -29,12 +29,12 @@ public class DemoEllipticalSource {
         SpimDataFromXmlImporter importer = new SpimDataFromXmlImporter(filePath);
         final AbstractSpimData spimData = importer.get();
 
-        SourceAndConverter sac = SourceServices
+        SourceAndConverter source = SourceServices
                 .getSourceService()
                 .getSourcesFromDataset(spimData)
                 .get(0);
 
-        new BrightnessAdjuster(sac,0,250).run();
+        new BrightnessAdjuster(source,0,250).run();
 
         try {
             RealTransform rt = (RealTransform) ij.command().run(Elliptic3DTransformCreatorCommand.class, true,
@@ -48,7 +48,7 @@ public class DemoEllipticalSource {
                     "center_y",120,
                     "center_z",120).get().getOutput("e3dt");
             SourceAndConverter transformed_source = ((SourceAndConverter[]) ij.command().run(SourcesRealTransformCommand.class, true,
-                    "sources_in", new SourceAndConverter[]{sac},
+                    "sources_in", new SourceAndConverter[]{source},
                     "rt", rt).get().getOutput("sources_out"))[0];
             BdvHandle bdvh = SourceServices
                     .getBdvDisplayService()

@@ -207,7 +207,7 @@ public class LabkitSource<T> implements Source<UnsignedByteType>, ISourceInspect
     }
 
     @Override
-    public Set<SourceAndConverter<?>> inspect(DefaultMutableTreeNode parent, SourceAndConverter<?> sac, ISourceService SourceService, boolean registerIntermediateSources) {
+    public Set<SourceAndConverter<?>> inspect(DefaultMutableTreeNode parent, SourceAndConverter<?> src, ISourceService SourceService, boolean registerIntermediateSources) {
         DefaultMutableTreeNode nameNode = new DefaultMutableTreeNode(
                 "Name: " + this.name);
         parent.add(nameNode);

@@ -26,6 +26,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.scijava.Context;
 import org.scijava.command.CommandService;
 import sc.fiji.bdvpg.scijava.services.SourceService;
+import sc.fiji.bdvpg.scijava.services.tree.FilterNode;
 import sc.fiji.bdvpg.scijava.services.tree.SourceTree;
 import sc.fiji.bdvpg.source.SourceAndTimeRange;
 import sc.fiji.bdvpg.source.importer.EmptySourceCreator;
@@ -185,8 +186,8 @@ public class IrinaWorkFlow {
 
         new XmlFromSpimDataExporter(spimdata, filePath, ctx).run();
 
-        SourceService sac_service = ctx.getService(SourceService.class);
-        sac_service.remove(sac_service.getSourcesFromDataset(spimdata).toArray(new SourceAndConverter[0])); // Cleanup*/
+        SourceService source_service = ctx.getService(SourceService.class);
+        source_service.remove(source_service.getSourcesFromDataset(spimdata).toArray(new SourceAndConverter[0])); // Cleanup*/
 
     }
 
@@ -233,16 +234,16 @@ public class IrinaWorkFlow {
                     "files", files,
                     "splitrgbchannels", false).get().getOutput("spimdata");
 
-            SourceService sac_service = ctx.getService(SourceService.class);
+            SourceService source_service = ctx.getService(SourceService.class);
 
-            SourceTree.Node filesNode = sac_service.tree()
-                    .getRoot()
+            FilterNode filesNode = source_service.tree()
+                    .root()
                     .child(datasetName)
                     .child(FileName.class.getSimpleName());
 
             spimdata.setBasePath(parentPath);
 
-            Map<Integer, SourceAndConverter> fileIndexToSource = new HashMap<>();
+            Map<Integer, SourceAndConverter<?>> fileIndexToSource = new HashMap<>();
             Map<Integer, Set<Integer>> links = new HashMap<>();
             Set<Integer> allNodes = new HashSet<>();
 
@@ -255,8 +256,8 @@ public class IrinaWorkFlow {
 
             for (int i = 0; i<filePaths.size()-1; i++) {
                 for (int j = i+1; j<filePaths.size();j++) {
-                    SourceAndConverter srci = fileIndexToSource.get(i);
-                    SourceAndConverter srcj = fileIndexToSource.get(j);
+                    SourceAndConverter<?> srci = fileIndexToSource.get(i);
+                    SourceAndConverter<?> srcj = fileIndexToSource.get(j);
                     if (intersect2D(srci, srcj)) {
                         links.get(i).add(j);
                         links.get(j).add(i);
@@ -264,7 +265,7 @@ public class IrinaWorkFlow {
                 }
             }
 
-            sac_service.remove(sac_service.getSourcesFromDataset(spimdata).toArray(new SourceAndConverter[0])); // Cleanup*/
+            source_service.remove(source_service.getSourcesFromDataset(spimdata).toArray(new SourceAndConverter[0])); // Cleanup*/
 
             List<Set<Integer>> components = new ArrayList<>();
 
@@ -273,7 +274,7 @@ public class IrinaWorkFlow {
                 LinkedList<Integer> unvisitedNodes = new LinkedList<>();
                 Set<Integer> visitedNodes = new HashSet<>();
                 unvisitedNodes.add(startIndex);
-                while (unvisitedNodes.size() != 0) {
+                while (!unvisitedNodes.isEmpty()) {
                     Integer cNode = unvisitedNodes.getFirst();
                     allNodes.remove(cNode);
                     visitedNodes.add(cNode);

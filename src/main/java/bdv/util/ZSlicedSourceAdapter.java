@@ -46,11 +46,11 @@ public class ZSlicedSourceAdapter implements ISourceAdapter<ZSlicedSource> {
 
     private static Logger logger = LoggerFactory.getLogger(ZSlicedSourceAdapter.class);
 
-    SourceAdapter sacSerializer;
+    SourceAdapter sourceSerializer;
 
     @Override
-    public void setSourceSerializer(SourceAdapter sacSerializer) {
-        this.sacSerializer = sacSerializer;
+    public void setSourceSerializer(SourceAdapter sourceSerializer) {
+        this.sourceSerializer = sourceSerializer;
     }
 
     @Override
@@ -59,10 +59,10 @@ public class ZSlicedSourceAdapter implements ISourceAdapter<ZSlicedSource> {
     }
 
     @Override
-    public JsonElement serialize(SourceAndConverter sac, Type type, JsonSerializationContext jsonSerializationContext) {
+    public JsonElement serialize(SourceAndConverter src, Type type, JsonSerializationContext jsonSerializationContext) {
         JsonObject obj = new JsonObject();
 
-        ZSlicedSource source = (ZSlicedSource) sac.getSpimSource();
+        ZSlicedSource source = (ZSlicedSource) src.getSpimSource();
 
         obj.addProperty("type", ZSlicedSource.class.getSimpleName());
 
@@ -70,8 +70,8 @@ public class ZSlicedSourceAdapter implements ISourceAdapter<ZSlicedSource> {
         obj.addProperty("cache", source.isCached());
         obj.addProperty("mipmaps_reused", source.areMipmapsReused());
 
-        Integer idOrigin = sacSerializer.getSourceToId().get(source.getOriginalSource());
-        Integer idModel = sacSerializer.getSourceToId().get(source.getModelResamplerSource());
+        Integer idOrigin = sourceSerializer.getSourceToId().get(source.getOriginalSource());
+        Integer idModel = sourceSerializer.getSourceToId().get(source.getModelResamplerSource());
 
         if (idOrigin==null) {
             logger.error("The resampled source "+source.getOriginalSource().getName()+" couldn't be serialized : origin source not identified.");
@@ -102,22 +102,22 @@ public class ZSlicedSourceAdapter implements ISourceAdapter<ZSlicedSource> {
         SourceAndConverter originSac;
         SourceAndConverter modelSac;
 
-        if (sacSerializer.getIdToSac().containsKey(origin_source_id)) {
+        if (sourceSerializer.getIdToSac().containsKey(origin_source_id)) {
             // Already deserialized
-            originSac = sacSerializer.getIdToSac().get(origin_source_id);
+            originSac = sourceSerializer.getIdToSac().get(origin_source_id);
         } else {
             // Should be deserialized first
-            JsonElement element = sacSerializer.idToJsonElement.get(origin_source_id);
-            originSac = sacSerializer.getGson().fromJson(element, SourceAndConverter.class);
+            JsonElement element = sourceSerializer.idToJsonElement.get(origin_source_id);
+            originSac = sourceSerializer.getGson().fromJson(element, SourceAndConverter.class);
         }
 
-        if (sacSerializer.getIdToSac().containsKey(model_source_id)) {
+        if (sourceSerializer.getIdToSac().containsKey(model_source_id)) {
             // Already deserialized
-            modelSac = sacSerializer.getIdToSac().get(model_source_id);
+            modelSac = sourceSerializer.getIdToSac().get(model_source_id);
         } else {
             // Should be deserialized first
-            JsonElement element = sacSerializer.idToJsonElement.get(model_source_id);
-            modelSac = sacSerializer.getGson().fromJson(element, SourceAndConverter.class);
+            JsonElement element = sourceSerializer.idToJsonElement.get(model_source_id);
+            modelSac = sourceSerializer.getGson().fromJson(element, SourceAndConverter.class);
         }
 
         if (originSac == null) {
@@ -130,11 +130,11 @@ public class ZSlicedSourceAdapter implements ISourceAdapter<ZSlicedSource> {
             return null;
         }
 
-        SourceAndConverter sac = new SourceMosaicZSlicer(originSac, modelSac, reuseMipMaps, cache, interpolation.equals(Interpolation.NLINEAR), () -> (long)1).get();
+        SourceAndConverter source = new SourceMosaicZSlicer(originSac, modelSac, reuseMipMaps, cache, interpolation.equals(Interpolation.NLINEAR), () -> (long)1).get();
 
         SourceServices.getSourceService()
-                .register(sac);
+                .register(source);
 
-        return sac;
+        return source;
     }
 }

@@ -17,7 +17,7 @@ import java.util.Optional;
  * any {@link Source}. This helper uses the weak keys cache of
  * bigdataviewer playground's {@link sc.fiji.bdvpg.scijava.services.SourceService}
  * to avoid re-creating multiple alpha sources.
- *
+ * <p>
  * {@link WarpedSource} as well as TransformedSource {@link TransformedSource} are supported
  *
  * @author Nicolas Chiaruttini, EPFL, 2021
@@ -27,16 +27,16 @@ public class AlphaSourceHelper {
 
     final public static String ALPHA_SOURCE_KEY = "ALPHA_SOURCE";
 
-    public static synchronized SourceAndConverter<FloatType> getOrBuildAlphaSource(Source source) {
+    public static synchronized SourceAndConverter<FloatType> getOrBuildAlphaSource(Source<?> source) {
 
         if (source instanceof IAlphaSource) {
             throw new UnsupportedOperationException("Error : you can't make an alpha source out of an alpha source "+source.getName());
         }
-        ISourceService sacService = SourceServices.getSourceService();
+        ISourceService sourceService = SourceServices.getSourceService();
 
-        List<SourceAndConverter<?>> sacList = sacService.getSourcesFromSpimSource(source);
+        List<SourceAndConverter<?>> sourceList = sourceService.getSourcesFromSpimSource(source);
 
-        Optional<SourceAndConverter<?>> source_already_associated_with_alpha = sacList.stream().filter(src -> getExistingAlphaSource(src)!=null).findFirst();
+        Optional<SourceAndConverter<?>> source_already_associated_with_alpha = sourceList.stream().filter(src -> getExistingAlphaSource(src)!=null).findFirst();
 
         // Deal done
         if (source_already_associated_with_alpha.isPresent()) {
@@ -59,32 +59,30 @@ public class AlphaSourceHelper {
         } else {
             alpha = new AlphaSourceRAI(source, 1f);
         }
-        SourceAndConverter<FloatType> alpha_sac = new SourceAndConverter<>(alpha, new AlphaConverter());
+        SourceAndConverter<FloatType> alpha_source = new SourceAndConverter<>(alpha, new AlphaConverter());
 
-        sacList.forEach(compatibleSac -> {
-            SourceServices.getSourceService().setMetadata(compatibleSac, ALPHA_SOURCE_KEY, alpha_sac);
-        });
+        sourceList.forEach(compatibleSac -> SourceServices.getSourceService().setMetadata(compatibleSac, ALPHA_SOURCE_KEY, alpha_source));
 
-        return alpha_sac;
+        return alpha_source;
     }
 
-    public static synchronized void setAlphaSource(SourceAndConverter source, IAlphaSource alphaSource) {
+    public static synchronized void setAlphaSource(SourceAndConverter<?> source, IAlphaSource alphaSource) {
         SourceServices.getSourceService().setMetadata(source, ALPHA_SOURCE_KEY, new SourceAndConverter<>(alphaSource, new AlphaConverter()));
     }
 
-    public static synchronized void setAlphaSource(SourceAndConverter source, SourceAndConverter alphaSource) {
+    public static synchronized void setAlphaSource(SourceAndConverter<?> source, SourceAndConverter<FloatType> alphaSource) {
         SourceServices.getSourceService().setMetadata(source, ALPHA_SOURCE_KEY, alphaSource);
     }
 
     // synchronized recursive calls are legit in Java
-    public static synchronized SourceAndConverter<FloatType> getOrBuildAlphaSource(SourceAndConverter sac) {
-        return getOrBuildAlphaSource(sac.getSpimSource());
+    public static synchronized SourceAndConverter<FloatType> getOrBuildAlphaSource(SourceAndConverter<?> source) {
+        return getOrBuildAlphaSource(source.getSpimSource());
     }
 
-    static SourceAndConverter<FloatType> getExistingAlphaSource(SourceAndConverter sac) {
-        ISourceService sacService = SourceServices.getSourceService();
-        if (sacService.containsMetadata(sac, ALPHA_SOURCE_KEY)) {
-            return (SourceAndConverter<FloatType>) sacService.getMetadata(sac, ALPHA_SOURCE_KEY);
+    static SourceAndConverter<FloatType> getExistingAlphaSource(SourceAndConverter<?> source) {
+        ISourceService sourceService = SourceServices.getSourceService();
+        if (sourceService.containsMetadata(source, ALPHA_SOURCE_KEY)) {
+            return (SourceAndConverter<FloatType>) sourceService.getMetadata(source, ALPHA_SOURCE_KEY);
         }
         return null;
     }

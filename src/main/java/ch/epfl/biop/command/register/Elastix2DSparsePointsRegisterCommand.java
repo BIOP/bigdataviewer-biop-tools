@@ -15,7 +15,6 @@ import org.scijava.task.Task;
 import org.scijava.task.TaskService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sc.fiji.bdvpg.scijava.BdvPgMenus;
 import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
 
 import java.util.ArrayList;
@@ -101,7 +100,7 @@ public class Elastix2DSparsePointsRegisterCommand extends SelectSourcesForRegist
         boolean innerTask = false;
 
         if (task==null) {
-            task = taskService.createTask("Registration "+sacs_moving[0].getSpimSource().getName()+" vs "+sacs_fixed[0].getSpimSource().getName());
+            task = taskService.createTask("Registration "+ sources_moving[0].getSpimSource().getName()+" vs "+ sources_fixed[0].getSpimSource().getName());
             task.setProgressMaximum(pts_Fixed.size());
             innerTask = true;
         }
@@ -122,10 +121,10 @@ public class Elastix2DSparsePointsRegisterCommand extends SelectSourcesForRegist
                 if (!task.isCanceled()) {
                     try {
                         AffineTransform3D at = (AffineTransform3D) cs.run(Elastix2DAffineRegisterCommand.class, true,
-                                "sacs_fixed", sacs_fixed,
+                                "sources_fixed", sources_fixed,
                                 "tp_fixed", tp_fixed,
                                 "level_fixed_source", level_fixed_source,
-                                "sacs_moving", sacs_moving,
+                                "sources_moving", sources_moving,
                                 "tp_moving", tp_moving,
                                 "level_moving_source", level_moving_source,
                                 "px", pt.getDoublePosition(0) - sx / 2.0,

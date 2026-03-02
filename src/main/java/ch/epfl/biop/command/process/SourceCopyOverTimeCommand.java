@@ -49,7 +49,7 @@ public class SourceCopyOverTimeCommand implements BdvPlaygroundActionCommand {
     @Override
     public void run() {
         sources_out = Arrays.stream(sources)
-                .map(sac -> new SourceTimeMapper(sac, (t) -> (t >= t_start) && (t < t_end) ? timepoint_to_copy : -1, sac.getSpimSource().getName() + suffix).get())
+                .map(source -> new SourceTimeMapper(source, (t) -> (t >= t_start) && (t < t_end) ? timepoint_to_copy : -1, source.getSpimSource().getName() + suffix).get())
                 .toArray(SourceAndConverter[]::new);
     }
 

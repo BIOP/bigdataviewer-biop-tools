@@ -86,7 +86,7 @@ public class SourcesLabkitClassifierCommand implements BdvPlaygroundActionComman
 
     @Parameter(type = ItemIO.OUTPUT,
             description = "The classified source")
-    SourceAndConverter<UnsignedByteType> sac_out;
+    SourceAndConverter<UnsignedByteType> source_out;
 
     @Override
     public void run() {
@@ -121,8 +121,8 @@ public class SourcesLabkitClassifierCommand implements BdvPlaygroundActionComman
                 use_gpu
         );
 
-        sac_out = classifier.get();
+        source_out = classifier.get();
 
-        System.out.println("Created classified source: " + sac_out.getSpimSource().getName());
+        System.out.println("Created classified source: " + source_out.getSpimSource().getName());
     }
 }

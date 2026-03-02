@@ -36,7 +36,7 @@ public class EasyExportEllipticProjection implements Command {
     @Parameter(label = "Select Source(s)",
             callback = "validateMessage",
             description = "Elliptically-transformed sources to export")
-    SourceAndConverter<?>[] sacs;
+    SourceAndConverter<?>[] sources;
 
     @Parameter(type = ItemIO.OUTPUT,
             description = "The exported image")
@@ -52,7 +52,7 @@ public class EasyExportEllipticProjection implements Command {
     public void run() {
         try {
 
-            List<SourceAndConverter<?>> sources = sorter.apply(Arrays.asList(sacs));
+            List<SourceAndConverter<?>> sources = sorter.apply(Arrays.asList(this.sources));
 
             BdvHandle bdvh = displayService.getNewBdv();
             displayService.show(bdvh, sources.toArray(new SourceAndConverter[0]));
@@ -70,7 +70,7 @@ public class EasyExportEllipticProjection implements Command {
             bdvh.getViewerPanel().state().setViewerTransform(view);
 
             // At least one source
-            if ((sacs==null)||(sacs.length==0)) {
+            if ((this.sources ==null)||(this.sources.length==0)) {
                 IJ.log("No selected source. Abort command.");
                 return;
             }
@@ -98,7 +98,7 @@ public class EasyExportEllipticProjection implements Command {
                 RealInterval interval = (RealInterval) boxSelector.getOutput("interval");
                 Future<CommandModule> imageGetter =
                         cs.run(ExportEllipticProjection.class, true,
-                                "sacs", sacs,
+                                "sources", this.sources,
                                 "r_min", interval.realMin(0),
                                 "r_max", interval.realMax(0),
                                 "theta_min", interval.realMin(1)*180.0/Math.PI,
@@ -119,6 +119,6 @@ public class EasyExportEllipticProjection implements Command {
         }
     }
 
-    public Function<Collection<SourceAndConverter<?>>, List<SourceAndConverter<?>>> sorter = sacslist -> SourceHelper.sortDefaultGeneric(sacslist);
+    public Function<Collection<SourceAndConverter<?>>, List<SourceAndConverter<?>>> sorter = SourceHelper::sortDefaultGeneric;
 
 }

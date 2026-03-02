@@ -215,59 +215,59 @@ public class SourceHelper {
                 nResolutionLevels).get();
     }
 
-    public static<T extends RealType<T> & NativeType<T>> SourceAndConverter<T> lazyPyramidizeXY2(SourceAndConverter<T> sac) {
-        return lazyPyramidizeXY2(sac, new SharedQueue(Runtime.getRuntime().availableProcessors()-1, 5));
+    public static<T extends RealType<T> & NativeType<T>> SourceAndConverter<T> lazyPyramidizeXY2(SourceAndConverter<T> source) {
+        return lazyPyramidizeXY2(source, new SharedQueue(Runtime.getRuntime().availableProcessors()-1, 5));
     }
 
-    public static<T extends RealType<T> & NativeType<T>> SourceAndConverter<T> lazyPyramidizeXY2(SourceAndConverter<T> sac, SharedQueue queue) {
+    public static<T extends RealType<T> & NativeType<T>> SourceAndConverter<T> lazyPyramidizeXY2(SourceAndConverter<T> source, SharedQueue queue) {
 
-            Source<T> srcLazyDownscaled = new LazyDownscaledXY2Source<>(sac.getSpimSource().getName()+"_pyramid", sac.getSpimSource());
+            Source<T> srcLazyDownscaled = new LazyDownscaledXY2Source<>(source.getSpimSource().getName()+"_pyramid", source.getSpimSource());
 
-            SourceAndConverter<T> sac_out;
+            SourceAndConverter<T> source_out;
 
-            SourceAndConverter<?> vsac;
+            SourceAndConverter<?> vsource;
             Source<?> vsrcRsampled;
 
             vsrcRsampled = new WrapVolatileSource<>(srcLazyDownscaled, queue);
-            if (sac.asVolatile()==null) throw new UnsupportedOperationException("Can't lazy downscale non cached source");
-            ((WrapVolatileSource) vsrcRsampled).setVolatileSourceForHighestResolution(sac.asVolatile().getSpimSource());
+            if (source.asVolatile()==null) throw new UnsupportedOperationException("Can't lazy downscale non cached source");
+            ((WrapVolatileSource) vsrcRsampled).setVolatileSourceForHighestResolution(source.asVolatile().getSpimSource());
             Converter< ?, ARGBType> volatileConverter = BigDataViewer.createConverterToARGB((NumericType) vsrcRsampled.getType());
             Converter< ?, ARGBType> converter = BigDataViewer.createConverterToARGB(srcLazyDownscaled.getType());
 
-            if ((sac.getConverter() instanceof ColorConverter)&&(volatileConverter instanceof ColorConverter)) {
+            if ((source.getConverter() instanceof ColorConverter)&&(volatileConverter instanceof ColorConverter)) {
                 ((ColorConverter) volatileConverter).setColor(
-                        ((ColorConverter) sac.getConverter()).getColor().copy()
+                        ((ColorConverter) source.getConverter()).getColor().copy()
                 );
             }
 
-            if ((sac.getConverter() instanceof ColorConverter)&&(converter instanceof ColorConverter)) {
+            if ((source.getConverter() instanceof ColorConverter)&&(converter instanceof ColorConverter)) {
                 ((ColorConverter) converter).setColor(
-                        ((ColorConverter) sac.getConverter()).getColor().copy()
+                        ((ColorConverter) source.getConverter()).getColor().copy()
                 );
             }
 
-            if ((sac.getConverter() instanceof LinearRange)&&(volatileConverter instanceof LinearRange)) {
+            if ((source.getConverter() instanceof LinearRange)&&(volatileConverter instanceof LinearRange)) {
                 ((LinearRange) volatileConverter).setMin(
-                        ((LinearRange) sac.getConverter()).getMin()
+                        ((LinearRange) source.getConverter()).getMin()
                 );
                 ((LinearRange) volatileConverter).setMax(
-                        ((LinearRange) sac.getConverter()).getMax()
+                        ((LinearRange) source.getConverter()).getMax()
                 );
             }
 
-            if ((sac.getConverter() instanceof LinearRange)&&(converter instanceof LinearRange)) {
+            if ((source.getConverter() instanceof LinearRange)&&(converter instanceof LinearRange)) {
                 ((LinearRange) converter).setMin(
-                        ((LinearRange) sac.getConverter()).getMin()
+                        ((LinearRange) source.getConverter()).getMin()
                 );
                 ((LinearRange) converter).setMax(
-                        ((LinearRange) sac.getConverter()).getMax()
+                        ((LinearRange) source.getConverter()).getMax()
                 );
             }
 
-            vsac = new SourceAndConverter(vsrcRsampled,volatileConverter);
-            sac_out = new SourceAndConverter(srcLazyDownscaled, converter,vsac);
+            vsource = new SourceAndConverter(vsrcRsampled,volatileConverter);
+            source_out = new SourceAndConverter(srcLazyDownscaled, converter,vsource);
 
-            return sac_out;
+            return source_out;
     }
 
 }

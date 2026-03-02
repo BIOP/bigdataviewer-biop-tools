@@ -42,14 +42,14 @@ public class ImagePlusSampler {
             throw  new UnsupportedOperationException("No input sources");
         }
 
-        if (sourceList.stream().map(sac -> sac.getSpimSource().getType().getClass()).distinct().count()>1) {
+        if (sourceList.stream().map(source -> source.getSpimSource().getType().getClass()).distinct().count()>1) {
             throw new UnsupportedOperationException("Cannot make composite because all sources are not of the same type");
         }
 
         // The core of it : resampling each source with the model
         List<SourceAndConverter<T>> resampledSourceList = sourceList
                 .stream()
-                .map(sac -> new SourceResampler<>(sac,model,sac.getSpimSource().getName()+"_SampledLike_"+model.getSpimSource().getName(), automipmap, cache, interpolate, level).get())
+                .map(source -> new SourceResampler<>(source,model,source.getSpimSource().getName()+"_SampledLike_"+model.getSpimSource().getName(), automipmap, cache, interpolate, level).get())
                 .collect(Collectors.toList());
 
         SourceServices.getSourceService().register(model);
@@ -280,7 +280,6 @@ public class ImagePlusSampler {
 
             int numFrames = SourceHelper.getMaxTimepoint(sources)+1;
 
-            //int maxZSlices = (int) sacs[0].getSpimSource().getSource(0,level).dimension(2);
             int numZSlices = (int) model.getSpimSource().getSource(0,level).dimension(2);
 
             CZTRange range = rangeBuilder.get(sources.length, numZSlices, numFrames);

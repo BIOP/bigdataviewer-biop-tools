@@ -10,7 +10,6 @@ import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sc.fiji.bdvpg.scijava.BdvPgMenus;
 import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
 
 /**
@@ -45,10 +44,10 @@ public class Elastix2DAffineRegisterCommand extends AbstractElastix2DRegistratio
 
         RegistrationParameters rp;
 
-        if (sacs_fixed.length>1) {
-            if (sacs_fixed.length==sacs_moving.length) {
-                RegistrationParameters[] rps = new RegistrationParameters[sacs_fixed.length];
-                for (int iCh = 0; iCh<sacs_fixed.length;iCh++) {
+        if (sources_fixed.length>1) {
+            if (sources_fixed.length== sources_moving.length) {
+                RegistrationParameters[] rps = new RegistrationParameters[sources_fixed.length];
+                for (int iCh = 0; iCh< sources_fixed.length; iCh++) {
                     rps[iCh] = getRegistrationParameters();
                 }
                 rp = RegistrationParameters.combineRegistrationParameters(rps);
@@ -63,8 +62,8 @@ public class Elastix2DAffineRegisterCommand extends AbstractElastix2DRegistratio
         rh.addTransform(rp);
 
         Elastix2DAffineRegister reg = new Elastix2DAffineRegister(
-                sacs_fixed, level_fixed_source, tp_fixed,
-                sacs_moving, level_moving_source, tp_moving,
+                sources_fixed, level_fixed_source, tp_fixed,
+                sources_moving, level_moving_source, tp_moving,
                 rh,
                 px_size_in_current_unit,
                 px,py,pz,sx,sy,

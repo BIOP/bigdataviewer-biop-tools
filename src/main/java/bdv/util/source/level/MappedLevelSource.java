@@ -144,7 +144,7 @@ public class MappedLevelSource<T> implements Source<T>, ISourceInspector {
     }
 
     @Override
-    public Set<SourceAndConverter<?>> inspect(DefaultMutableTreeNode parent, SourceAndConverter<?> sac,
+    public Set<SourceAndConverter<?>> inspect(DefaultMutableTreeNode parent, SourceAndConverter<?> source,
                                                ISourceService sourceAndConverterService,
                                                boolean registerIntermediateSources) {
         DefaultMutableTreeNode nameNode = new DefaultMutableTreeNode("Name: " + this.name);

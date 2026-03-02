@@ -58,9 +58,9 @@ public class DemoHelper {
      * @param depth the depth to expand (typically 3)
      */
     public static void expandTreeView(ImageJ ij, int depth) {
-        SourceService sacService = ij.get(SourceService.class);
-        if (sacService != null && sacService.tree() != null) {
-            sacService.tree().expandToDepth(depth);
+        SourceService sourceService = ij.get(SourceService.class);
+        if (sourceService != null && sourceService.tree() != null) {
+            sourceService.tree().expandToDepth(depth);
         }
     }
 
@@ -191,27 +191,6 @@ public class DemoHelper {
             latch.await();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-        }
-    }
-
-    public static void closeFijiAndBdvs(ImageJ ij) {
-        try {
-
-            // Closes bdv windows
-            SourceBdvDisplayService sac_display_service =
-                    ij.context().getService(SourceBdvDisplayService.class);
-            sac_display_service.getDisplays().forEach(BdvHandle::close);
-
-            // Clears all sources
-            SourceService sac_service =
-                    ij.context().getService(SourceService.class);
-            sac_service.remove(sac_service.getSources().toArray(new SourceAndConverter[0]));
-
-            // Closes ij context
-            ij.context().close();
-
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 

@@ -39,14 +39,14 @@ public class TestHelper {
         try {
 
             // Closes bdv windows
-            SourceBdvDisplayService sac_display_service =
+            SourceBdvDisplayService source_display_service =
                     ij.context().getService(SourceBdvDisplayService.class);
-            sac_display_service.getDisplays().forEach(BdvHandle::close);
+            source_display_service.getDisplays().forEach(BdvHandle::close);
 
             // Clears all sources
-            SourceService sac_service =
+            SourceService source_service =
                     ij.context().getService(SourceService.class);
-            sac_service.remove(sac_service.getSources().toArray(new SourceAndConverter[0]));
+            source_service.remove(source_service.getSources().toArray(new SourceAndConverter[0]));
 
             // Closes ij context
             ij.context().close();

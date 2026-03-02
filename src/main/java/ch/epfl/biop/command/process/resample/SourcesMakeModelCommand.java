@@ -59,11 +59,11 @@ public class SourcesMakeModelCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(type = ItemIO.OUTPUT,
             description = "The resulting model source spanning all input sources")
-    SourceAndConverter<?> sac_out;
+    SourceAndConverter<?> source_out;
 
     @Override
     public void run() {
-        sac_out = SourceHelper.getModelFusedMultiSources(sources,
+        source_out = SourceHelper.getModelFusedMultiSources(sources,
                 timepoint, n_timepoints,
                 vox_size_x, vox_size_y, vox_size_z,
                 n_resolution_levels,

@@ -141,7 +141,7 @@ public class FuseBigStitcherDatasetIntoOMETiffCommand implements BdvPlaygroundAc
     double output_voxel_size_z_um = Double.NaN;
 
     @Parameter
-    SourceService sac_service;
+    SourceService source_service;
 
     @Parameter
     TaskService taskService;
@@ -209,7 +209,7 @@ public class FuseBigStitcherDatasetIntoOMETiffCommand implements BdvPlaygroundAc
             e.printStackTrace();
         }
 
-        List<SourceAndConverter<?>> allSources = sac_service.getSourcesFromDataset(asd);
+        List<SourceAndConverter<?>> allSources = source_service.getSourcesFromDataset(asd);
 
         // Gets Z-ratio from the first source
 
@@ -265,7 +265,7 @@ public class FuseBigStitcherDatasetIntoOMETiffCommand implements BdvPlaygroundAc
         Map<Integer, List<SourceAndConverter<?>>> channelToSources = new HashMap<>();
 
         allSources.forEach(source -> {
-            SourceService.SpimDataInfo sdi = (SourceService.SpimDataInfo) sac_service.getMetadata(source, SPIM_DATA_INFO);
+            SourceService.SpimDataInfo sdi = (SourceService.SpimDataInfo) source_service.getMetadata(source, SPIM_DATA_INFO);
             // source
             int channelId = ((BasicViewSetup)asd.getSequenceDescription().getViewSetups().get(sdi.setupId)).getAttribute(Channel.class).getId();
             if (!channelToSources.containsKey(channelId)) {
@@ -360,7 +360,7 @@ public class FuseBigStitcherDatasetIntoOMETiffCommand implements BdvPlaygroundAc
             e.printStackTrace();
         }
         // Cleanup
-        sac_service.remove(allSources.toArray(new SourceAndConverter[0]));
+        source_service.remove(allSources.toArray(new SourceAndConverter[0]));
     }
 
     static class CZTSet {

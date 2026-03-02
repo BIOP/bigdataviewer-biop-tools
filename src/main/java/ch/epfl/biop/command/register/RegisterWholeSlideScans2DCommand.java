@@ -98,10 +98,10 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
                 IJ.log("- Coarse Affine Registration");
 
                 CommandModule cm = cs.run(Elastix2DAffineRegisterCommand.class, true,
-                        "sacs_fixed", new SourceAndConverter[]{global_ref_source},
+                        "sources_fixed", new SourceAndConverter[]{global_ref_source},
                         "tp_fixed", 0,
                         "level_fixed_source", SourceHelper.bestLevel(global_ref_source, 0, coarse_pixel_size_mm),
-                        "sacs_moving", new SourceAndConverter[]{current_ref_source},
+                        "sources_moving", new SourceAndConverter[]{current_ref_source},
                         "tp_moving", 0,
                         "level_moving_source", SourceHelper.bestLevel(current_ref_source, 0, coarse_pixel_size_mm),
                         "px", top_left_x,
@@ -131,8 +131,8 @@ public class RegisterWholeSlideScans2DCommand implements BdvPlaygroundActionComm
                 IJ.log("- Landmarks registration");
                 tst_temp =
                         (RealTransform) cs.run(Elastix2DSparsePointsRegisterCommand.class, true,
-                                "sacs_fixed", new SourceAndConverter[]{global_ref_source},
-                                "sacs_moving", new SourceAndConverter[]{firstRegSrc},
+                                "sources_fixed", new SourceAndConverter[]{global_ref_source},
+                                "sources_moving", new SourceAndConverter[]{firstRegSrc},
                                 "tp_fixed", 0,
                                 "level_fixed_source", SourceHelper.bestLevel(global_ref_source, 0, precise_pixel_size_mm), //TODO does this make sense ? Shouldn't it be self pixel precise size ?
                                 "tp_moving", 0,

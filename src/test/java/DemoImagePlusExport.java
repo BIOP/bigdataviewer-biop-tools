@@ -30,9 +30,9 @@ public class DemoImagePlusExport
         // Import SpimData
         SpimDataFromXmlImporter importer = new SpimDataFromXmlImporter(filePath);
 
-        AbstractSpimData spimData = importer.get();
+        AbstractSpimData<?> spimData = importer.get();
 
-        SourceAndConverter sac = SourceServices
+        SourceAndConverter<?> source = SourceServices
                 .getSourceService()
                 .getSourcesFromDataset(spimData)
                 .get(0);
@@ -41,9 +41,9 @@ public class DemoImagePlusExport
         BdvHandle bdvHandle = SourceServices.getBdvDisplayService().getActiveBdv();
 
         // Show the sourceandconverter
-        SourceServices.getBdvDisplayService().show(bdvHandle, sac);
-        new BrightnessAutoAdjuster(sac, 0).run();
-        new ViewerTransformAdjuster(bdvHandle, sac).run();
+        SourceServices.getBdvDisplayService().show(bdvHandle, source);
+        new BrightnessAutoAdjuster(source, 0).run();
+        new ViewerTransformAdjuster(bdvHandle, source).run();
 
         // Export
         ij.context()

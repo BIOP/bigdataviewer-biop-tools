@@ -6,7 +6,6 @@ import org.scijava.Context;
 import org.scijava.ItemIO;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
-import sc.fiji.bdvpg.scijava.BdvPgMenus;
 import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
@@ -37,8 +36,8 @@ public class Elastix2DSplineRegisterCommand extends AbstractElastix2DRegistratio
     public void run() {
         ElastixHelper.checkOrSetLocal(ctx);
         Elastix2DSplineRegister reg = new Elastix2DSplineRegister(
-                sacs_fixed, level_fixed_source, tp_fixed,
-                sacs_moving, level_moving_source, tp_moving,
+                sources_fixed, level_fixed_source, tp_fixed,
+                sources_moving, level_moving_source, tp_moving,
                 num_ctrl_points_x,
                 px_size_in_current_unit,
                 px,py,pz,sx,sy,

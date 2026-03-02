@@ -49,9 +49,9 @@ public class EditSourcesWarpingCommand implements BdvPlaygroundActionCommand {
 
     @Override
     public void run() {
-        for (SourceAndConverter sac : moving_sources) {
-            if (!(sac.getSpimSource() instanceof WarpedSource)) {
-                System.err.println(sac.getSpimSource().getName()+" is not a Warped source, it cannot be edited");
+        for (SourceAndConverter<?> source : moving_sources) {
+            if (!(source.getSpimSource() instanceof WarpedSource)) {
+                System.err.println(source.getSpimSource().getName()+" is not a Warped source, it cannot be edited");
             }
         }
 
@@ -98,12 +98,12 @@ public class EditSourcesWarpingCommand implements BdvPlaygroundActionCommand {
 
         bwl.getBigWarp().closeAll();
 
-        for (SourceAndConverter sac : moving_sources) {
-            WarpedSource src = ((WarpedSource) sac.getSpimSource());
+        for (SourceAndConverter<?> source : moving_sources) {
+            WarpedSource src = ((WarpedSource) source.getSpimSource());
             src.updateTransform(rt);
             src.setIsTransformed(true);
-            if (sac.asVolatile() != null) {
-                WarpedSource vsrc = (WarpedSource) sac.asVolatile().getSpimSource();
+            if (source.asVolatile() != null) {
+                WarpedSource vsrc = (WarpedSource) source.asVolatile().getSpimSource();
                 vsrc.updateTransform(rt);
                 vsrc.setIsTransformed(true);
             }

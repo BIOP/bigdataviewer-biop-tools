@@ -55,7 +55,7 @@ public class ExportEllipticProjection implements Command {
     @Parameter(label = "Select Source(s)",
             callback = "validateMessage",
             description = "Elliptically-transformed sources to export")
-    SourceAndConverter<?>[] sacs;
+    SourceAndConverter<?>[] sources;
 
     @Parameter(label = "Resolution Level",
             description = "Pyramid level to use (0 = highest resolution)")
@@ -149,10 +149,10 @@ public class ExportEllipticProjection implements Command {
     public void run() {
         validateMessage();
 
-        List<SourceAndConverter<?>> sources = sorter.apply(Arrays.asList(sacs));
+        List<SourceAndConverter<?>> sources = sorter.apply(Arrays.asList(this.sources));
 
         // At least one source
-        if ((sacs==null)||(sacs.length==0)) {
+        if ((this.sources ==null)||(this.sources.length==0)) {
             IJ.log("No selected source. Abort command.");
             return;
         }
@@ -214,13 +214,13 @@ public class ExportEllipticProjection implements Command {
     Elliptical3DTransform transform = null;
 
     public void validateMessage() {
-        if ((sacs==null)||(sacs.length==0)) {
+        if ((sources ==null)||(sources.length==0)) {
             validate_message = "Please select the sources to export";
             return;
         }
         transform = null;
         boolean hasMultipleTransforms = false;
-        for (SourceAndConverter source : sacs) {
+        for (SourceAndConverter source : sources) {
             if (!(source.getSpimSource() instanceof WarpedSource)) {
                 validate_message = source.getSpimSource().getName()+" is not a transformed source";
                 return;
@@ -248,7 +248,7 @@ public class ExportEllipticProjection implements Command {
         }
 
         // Checks all on a single source
-        SourceAndConverter modelSource = sacs[0];
+        SourceAndConverter modelSource = sources[0];
 
         Source wrappedSource = ((WarpedSource)modelSource.getSpimSource()).getWrappedSource();
 
@@ -271,9 +271,9 @@ public class ExportEllipticProjection implements Command {
             validate_message +="Recommended Level:"+levelZ+"<br>";
         }
 
-        maxTimepoint = SourceHelper.getMaxTimepoint(sacs)+1;
+        maxTimepoint = SourceHelper.getMaxTimepoint(sources)+1;
 
-        int maxTimeFrames = SourceHelper.getMaxTimepoint(sacs)+1;
+        int maxTimeFrames = SourceHelper.getMaxTimepoint(sources)+1;
 
         int maxZSlices;
 
@@ -304,7 +304,7 @@ public class ExportEllipticProjection implements Command {
                     .setC(range_channels)
                     .setZ(range_slices)
                     .setT(range_frames)
-                    .get(sacs.length, maxZSlices,maxTimeFrames);
+                    .get(sources.length, maxZSlices,maxTimeFrames);
         } catch (Exception e) {
             validate_message +="<font color=\"red\">"+e.getMessage()+"</font><br></html>";
             return;
@@ -313,7 +313,7 @@ public class ExportEllipticProjection implements Command {
         int nc = range.getRangeC().size();
         int nz = range.getRangeZ().size();
         int nt = range.getRangeT().size();
-        int bytesPerPix = getBytesPerPixel(sacs[0]);
+        int bytesPerPix = getBytesPerPixel(sources[0]);
         long nTotalBytes = (long) range.getTotalPlanes() * (long) nBytesPerPlane * (long) bytesPerPix;
 
         double totalMb = nTotalBytes / (1024.0*1024);
@@ -323,8 +323,8 @@ public class ExportEllipticProjection implements Command {
 
     }
 
-    private int getBytesPerPixel(SourceAndConverter sac) {
-        Object o = Util.getTypeFromInterval(sac.getSpimSource().getSource(0,0));
+    private int getBytesPerPixel(SourceAndConverter<?> source) {
+        Object o = source.getSpimSource().getSource(0,0).getType();
         if (o instanceof UnsignedByteType) {
             return 1;
         } else if (o instanceof UnsignedShortType) {
@@ -338,7 +338,7 @@ public class ExportEllipticProjection implements Command {
         }
     }
 
-    public Function<Collection<SourceAndConverter<?>>, List<SourceAndConverter<?>>> sorter = sacslist -> SourceHelper.sortDefaultGeneric(sacslist);
+    public Function<Collection<SourceAndConverter<?>>, List<SourceAndConverter<?>>> sorter = SourceHelper::sortDefaultGeneric;
 
     private SourceAndConverter<?> createModelSource() {
         // Origin is in fact the point 0,0,0 of the image

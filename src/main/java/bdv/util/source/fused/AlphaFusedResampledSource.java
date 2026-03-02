@@ -145,7 +145,7 @@ public class AlphaFusedResampledSource< T extends RealType<T> & NativeType<T>> i
      */
     public AlphaFusedResampledSource(Collection<Source<T>> origins,
                                      String blendingMode,
-                                     Source< T > resamplingModel,
+                                     Source< ? > resamplingModel,
                                      String name,
                                      boolean reuseMipMaps,
                                      boolean cache,

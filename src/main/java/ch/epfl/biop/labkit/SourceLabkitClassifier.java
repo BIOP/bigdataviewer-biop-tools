@@ -173,7 +173,7 @@ public class SourceLabkitClassifier implements Runnable, Function<SourceAndConve
             }
         }
 
-        SourceAndConverter<UnsignedByteType> sac;
+        SourceAndConverter<UnsignedByteType> source;
         if (hasVolatile) {
             // Create volatile version
             Source<VolatileUnsignedByteType> volatileSource = new VolatileSource<>(
@@ -189,13 +189,13 @@ public class SourceLabkitClassifier implements Runnable, Function<SourceAndConve
                     //SourceHelper.createConverter(labkitSource);
                     RealARGBColorConverter.create(new VolatileUnsignedByteType(), 0, 255);
 
-            SourceAndConverter<VolatileUnsignedByteType> vsac = new SourceAndConverter<>(volatileSource, volatileConverter);
-            sac = new SourceAndConverter<>(labkitSource, converter, vsac);
+            SourceAndConverter<VolatileUnsignedByteType> vsource = new SourceAndConverter<>(volatileSource, volatileConverter);
+            source = new SourceAndConverter<>(labkitSource, converter, vsource);
         } else {
-            sac = new SourceAndConverter<>(labkitSource, converter);
+            source = new SourceAndConverter<>(labkitSource, converter);
         }
 
-        return sac;
+        return source;
     }
 
     /**

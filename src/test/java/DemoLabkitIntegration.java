@@ -103,7 +103,7 @@ public class DemoLabkitIntegration {
         // Sources can be selected thanks to their path in bigdataviewer-playground's treeview
         // @doc-command: ch.epfl.biop.scijava.command.source.labkit.SourcesLabkitCommand
         ij.command().run(SourcesLabkitCommand.class, true,
-                "sacs", datasetName,
+                "sources", datasetName,
                 "resolution_level", 0
         ).get();
 

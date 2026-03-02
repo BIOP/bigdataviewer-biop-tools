@@ -26,7 +26,7 @@ public class DisplayEllipseFromTransformCommand implements Command {
     @Parameter(type = ItemIO.OUTPUT,
             label = "Ellipsoid Source",
             description = "The generated ellipsoid source for visualization")
-    SourceAndConverter sac_out;
+    SourceAndConverter<?> source_out;
 
     @Parameter(type = ItemIO.BOTH,
             label = "Elliptical Transform",
@@ -74,17 +74,17 @@ public class DisplayEllipseFromTransformCommand implements Command {
         ws.updateTransform(e3dt.inverse());
         ws.setIsTransformed(true);
 
-        sac_out = SourceHelper.createSourceAndConverter(ws);
-        source_service.register(sac_out);
+        source_out = SourceHelper.createSourceAndConverter(ws);
+        source_service.register(source_out);
 
         e3dt.updateNotifiers.add(() -> {
             ws.updateTransform(e3dt.inverse());
             SourceServices
                     .getBdvDisplayService()
-                    .getDisplaysOf(sac_out).forEach(bdvHandle -> bdvHandle.getViewerPanel().requestRepaint());
+                    .getDisplaysOf(source_out).forEach(bdvHandle -> bdvHandle.getViewerPanel().requestRepaint());
         });
 
-        new BrightnessAdjuster(sac_out,0,255).run();
+        new BrightnessAdjuster(source_out,0,255).run();
 
 
     }

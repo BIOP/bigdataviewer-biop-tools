@@ -43,12 +43,12 @@ public class AlphaDemoWithCustomConverter {
         Source<?> volatile_source = sources[5].asVolatile().getSpimSource();
 
         Converter converter = createConverterRealType((RealType) non_volatile_source.getType());
-        SourceAndConverter vsac = new SourceAndConverter(volatile_source, converter);
-        SourceAndConverter sac = new SourceAndConverter(non_volatile_source, converter, vsac);
+        SourceAndConverter vsource = new SourceAndConverter(volatile_source, converter);
+        SourceAndConverter source = new SourceAndConverter(non_volatile_source, converter, vsource);
 
         SourceServices
                 .getBdvDisplayService()
-                .show(bdv, sac);
+                .show(bdv, source);
 
         // Zoom out
         AffineTransform3D view = new AffineTransform3D();

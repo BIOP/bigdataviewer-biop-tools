@@ -38,7 +38,7 @@ public class SourcesRecenterCommand implements BdvPlaygroundActionCommand {
     @Parameter(label = "Select Source(s)",
             type = ItemIO.BOTH,
             description = "The sources to recenter")
-    public SourceAndConverter[] sacs;
+    public SourceAndConverter<?>[] sources;
 
     @Parameter(label = "Mode",
             choices = {"Mutate", "Append"},
@@ -47,22 +47,19 @@ public class SourcesRecenterCommand implements BdvPlaygroundActionCommand {
 
     @Override
     public void run() {
-        for (SourceAndConverter sac:sacs) {
+        for (SourceAndConverter<?> source: sources) {
 
-            long sx = sac.getSpimSource().getSource(timepoint, 0).dimension(0);
+            long sx = source.getSpimSource().getSource(timepoint, 0).dimension(0);
 
-            long sy = sac.getSpimSource().getSource(timepoint, 0).dimension(1);
+            long sy = source.getSpimSource().getSource(timepoint, 0).dimension(1);
 
             AffineTransform3D at3D = new AffineTransform3D();
 
-            sac.getSpimSource().getSourceTransform(timepoint, 0, at3D);
-
-            //AffineTransform3D at3DToOrigin = new AffineTransform3D();
-            //at3DToOrigin.translate(-at3D.get(0, 3), -at3D.get(1, 3), -at3D.get(2, 3));
+            source.getSpimSource().getSourceTransform(timepoint, 0, at3D);
 
             AffineTransform3D at3DCenter = new AffineTransform3D();
             at3DCenter.concatenate(at3D.inverse());
-            at3DCenter.translate(-sx/2, -sy/2,0);
+            at3DCenter.translate((double) -sx /2.0, (double) -sy /2.0,0);
             at3D.set(cx,0,3);
             at3D.set(cy,1,3);
             at3D.set(cz,2,3);
@@ -70,17 +67,17 @@ public class SourcesRecenterCommand implements BdvPlaygroundActionCommand {
 
             switch (mode) {
                 case "Mutate":
-                    SourceTransformHelper.mutate(at3DCenter, new SourceAndTimeRange(sac, timepoint));
+                    SourceTransformHelper.mutate(at3DCenter, new SourceAndTimeRange<>(source, timepoint));
                     break;
                 case "Append":
-                    SourceTransformHelper.append(at3DCenter, new SourceAndTimeRange(sac, timepoint));
+                    SourceTransformHelper.append(at3DCenter, new SourceAndTimeRange<>(source, timepoint));
                     break;
             }
         }
 
         SourceServices
                 .getBdvDisplayService()
-                .updateDisplays(sacs);
+                .updateDisplays(sources);
 
     }
 }

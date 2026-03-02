@@ -14,6 +14,7 @@ import sc.fiji.bdvpg.scijava.BdvPgMenus;
 import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
 import sc.fiji.bdvpg.scijava.services.SourceService;
 import sc.fiji.bdvpg.services.SourceServices;
+import sc.fiji.bdvpg.source.SourceHelper;
 import sc.fiji.bdvpg.source.importer.EmptySourceCreator;
 
 import java.util.*;
@@ -42,7 +43,7 @@ public class BdvViewToSourceCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(required = false,
             description = "The sources to slice")
-    SourceAndConverter[] sources;
+    SourceAndConverter<?>[] sources;
 
     @Parameter(label = "Match Window Size",
             persist = false,
@@ -107,17 +108,16 @@ public class BdvViewToSourceCommand implements BdvPlaygroundActionCommand {
 
         sourceList = sorter.apply(Arrays.asList(sources));
 
-        SourceAndConverter model = createModelSource();
+        SourceAndConverter<?> model = createModelSource();
 
         // The core of it : resampling each source with the model
         java.util.List<SourceAndConverter> resampledSourceList = sourceList
                 .stream()
-                .map(sac -> new SourceMosaicZSlicer(sac,model, reuse_mipmaps, cache, interpolate, () -> (long) 1).get())
+                .map(source -> new SourceMosaicZSlicer(source,model, reuse_mipmaps, cache, interpolate, () -> (long) 1).get())
                 .collect(Collectors.toList());
 
-        resampledSourceList.forEach(sac -> {
-            SourceServices.getSourceService().register(sac);
-        });
+        resampledSourceList.forEach(source ->
+                SourceServices.getSourceService().register(source));
 
         SourceServices.getSourceService().register(model);
 
@@ -126,7 +126,7 @@ public class BdvViewToSourceCommand implements BdvPlaygroundActionCommand {
 
     }
 
-    private SourceAndConverter createModelSource() {
+    private SourceAndConverter<?> createModelSource() {
         // Origin is in fact the point 0,0,0 of the image
         // Get current big dataviewer transformation : source transform and viewer transform
         at3D = new AffineTransform3D(); // Empty Transform
@@ -222,67 +222,13 @@ public class BdvViewToSourceCommand implements BdvPlaygroundActionCommand {
     // -- Initializers --
 
     public void updateUnit() {
-        if ((sourceList.size()>0) && (sourceList.get(0)!=null)) {
+        if ((!sourceList.isEmpty()) && (sourceList.get(0)!=null)) {
             if (sourceList.get(0).getSpimSource().getVoxelDimensions() != null) {
                 unitOfFirstSource = sourceList.get(0).getSpimSource().getVoxelDimensions().unit();
             }
         }
     }
 
-    public Function<Collection<SourceAndConverter<?>>, java.util.List<SourceAndConverter<?>>> sorter = BdvViewToSourceCommand::sortDefault;
+    public Function<Collection<SourceAndConverter<?>>, java.util.List<SourceAndConverter<?>>> sorter = SourceHelper::sortDefaultGeneric;
 
-    /**
-     * Default sorting order for SourceAndConverter
-     * Because we want some consistency in channel ordering when exporting to an ImagePlus
-     * AArrg indexes are back
-     *
-     * TODO : find a better way to order between spimdata
-     * @param sources sources
-     * @return sorted sources
-     */
-    public static java.util.List<SourceAndConverter<?>> sortDefault(Collection<SourceAndConverter<?>> sources) {
-        List<SourceAndConverter<?>> sortedList = new ArrayList<>(sources.size());
-        sortedList.addAll(sources);
-
-        Comparator<SourceAndConverter> sacComparator = (s1, s2) -> {
-            // Those who do not belong to spimdata are last:
-            SourceService.SpimDataInfo sdi1 = null, sdi2 = null;
-            if (SourceServices
-                    .getSourceService()
-                    .getMetadata(s1, SourceService.SPIM_DATA_INFO)!=null) {
-                sdi1 = ((SourceService.SpimDataInfo)(SourceServices
-                        .getSourceService()
-                        .getMetadata(s1, SourceService.SPIM_DATA_INFO)));
-            }
-
-            if (SourceServices
-                    .getSourceService()
-                    .getMetadata(s2, SourceService.SPIM_DATA_INFO)!=null) {
-                sdi2 = ((SourceService.SpimDataInfo)(SourceServices
-                        .getSourceService()
-                        .getMetadata(s2, SourceService.SPIM_DATA_INFO)));
-            }
-
-            if ((sdi1==null)&&(sdi2!=null)) {
-                return -1;
-            }
-
-            if ((sdi1!=null)&&(sdi2==null)) {
-                return 1;
-            }
-
-            if ((sdi1!=null)&&(sdi2!=null)) {
-                if (sdi1.asd==sdi2.asd) {
-                    return sdi1.setupId-sdi2.setupId;
-                } else {
-                    return sdi2.toString().compareTo(sdi1.toString());
-                }
-            }
-
-            return s2.getSpimSource().getName().compareTo(s1.getSpimSource().getName());
-        };
-
-        sortedList.sort(sacComparator);
-        return sortedList;
-    }
 }

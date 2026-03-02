@@ -58,7 +58,7 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(label = "Select Source(s)",
             description = "The sources to display on the grid")
-    public SourceAndConverter[] sources;
+    public SourceAndConverter<?>[] sources;
 
     @Parameter(label = "Start Timepoint",
             description = "The timepoint to use for determining source dimensions")
@@ -104,29 +104,29 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
 
         List<SourceAndConverter<?>> sourceList = sorter.apply(Arrays.asList(sources));
 
-        Map<SacProperties, List<SourceAndConverter<?>>> sacClasses = sourceList
+        Map<SacProperties, List<SourceAndConverter<?>>> sourceClasses = sourceList
                 .stream()
-                .collect(Collectors.groupingBy(sac -> {
-                    SacProperties props = new SacProperties(sac);
+                .collect(Collectors.groupingBy(source -> {
+                    SacProperties props = new SacProperties(source);
                     for (Class<? extends Entity> entityClass : entSplit) {
                         props.splitByEntity(entityClass);
                     }
-                    return props; //new SacProperties(sac)
+                    return props; //new SacProperties(source)
                 }));
 
-        Map<SourceAndConverter<?>, List<SacProperties>> keySetSac = sacClasses.keySet().stream().collect(Collectors.groupingBy(p -> p.sac));
+        Map<SourceAndConverter<?>, List<SacProperties>> keySetSource = sourceClasses.keySet().stream().collect(Collectors.groupingBy(p -> p.source));
 
-        List<SourceAndConverter<?>> sortedSacs = sorter.apply(keySetSac.keySet());
+        List<SourceAndConverter<?>> sortedSources = sorter.apply(keySetSource.keySet());
 
-        List<SourceAndConverter<?>> sacsToDisplay = new ArrayList<>();
+        List<SourceAndConverter<?>> sourcesToDisplay = new ArrayList<>();
 
-        sortedSacs.forEach(sacKey -> {
-            SacProperties sacPropsKey = keySetSac.get(sacKey).get(0);
+        sortedSources.forEach(sourceKey -> {
+            SacProperties sourcePropsKey = keySetSource.get(sourceKey).get(0);
             for (Class<? extends Entity> entityClass : entSplit) {
-                sacPropsKey.splitByEntity(entityClass);
+                sourcePropsKey.splitByEntity(entityClass);
             }
 
-            AffineTransform3D location = sacPropsKey.location;
+            AffineTransform3D location = sourcePropsKey.location;
 
             int xPos = currentIndex % n_columns;
             int yPos = currentIndex / n_columns;
@@ -138,24 +138,24 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
 
             currentIndex++;
 
-            List<SourceAndConverter<?>> sacs = sorter.apply(sacClasses.get(sacPropsKey));// sacSortedPerLocation.get(location);
+            List<SourceAndConverter<?>> sources = sorter.apply(sourceClasses.get(sourcePropsKey));
 
             int tp = timepoint_begin;
 
             long nPixX = 1, nPixY = 1, nPixZ = 1;
 
-            if (!sacs.get(0).getSpimSource().isPresent(tp)) {
-                if (SourceHelper.hasAValidTimepoint(sacs.get(0).getSpimSource())) {
-                    tp = SourceHelper.getAValidTimepoint(sacs.get(0).getSpimSource());
+            if (!sources.get(0).getSpimSource().isPresent(tp)) {
+                if (SourceHelper.hasAValidTimepoint(sources.get(0).getSpimSource())) {
+                    tp = SourceHelper.getAValidTimepoint(sources.get(0).getSpimSource());
                 }
             }
 
-            if (sacs.get(0).getSpimSource().isPresent(tp)) {
-                nPixX = sacs.get(0).getSpimSource().getSource(tp, 0).dimension(0);
+            if (sources.get(0).getSpimSource().isPresent(tp)) {
+                nPixX = sources.get(0).getSpimSource().getSource(tp, 0).dimension(0);
 
-                nPixY = sacs.get(0).getSpimSource().getSource(tp, 0).dimension(1);
+                nPixY = sources.get(0).getSpimSource().getSource(tp, 0).dimension(1);
 
-                nPixZ = sacs.get(0).getSpimSource().getSource(tp, 0).dimension(2);
+                nPixZ = sources.get(0).getSpimSource().getSource(tp, 0).dimension(2);
             }
 
             long sizeMax = Math.max(nPixX, nPixY);
@@ -169,16 +169,16 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
             SourceAffineTransformer sat = new SourceAffineTransformer(null, currentAffineTransform);
 
             List<SourceAndConverter<?>> transformedSacs =
-                    sacs.stream().map(sac -> {
-                        SourceAndConverter<?> trSac = sat.apply(sac);
-                        transformedToOriginal.put(trSac, sac);
+                    sources.stream().map(source -> {
+                        SourceAndConverter<?> trSac = sat.apply(source);
+                        transformedToOriginal.put(trSac, source);
                         SourceServices
                                 .getSourceService()
                                 .register(trSac);
 
                         ConverterSetup csOrigin = SourceServices
                                 .getSourceService()
-                                .getConverterSetup(sac);
+                                .getConverterSetup(source);
 
                         ConverterSetup csDestination = SourceServices
                                 .getSourceService()
@@ -211,13 +211,13 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
                         return trSac;
                     }).collect(Collectors.toList());
 
-            sacsToDisplay.addAll(transformedSacs);
+            sourcesToDisplay.addAll(transformedSacs);
         });
 
         //BdvHandle bdvh =
 
         BdvHandle bdvh = SourceServices.getBdvDisplayService().getNewBdv();
-        SourceServices.getBdvDisplayService().show(bdvh, sacsToDisplay.toArray(new SourceAndConverter[0]));
+        SourceServices.getBdvDisplayService().show(bdvh, sourcesToDisplay.toArray(new SourceAndConverter[0]));
 
         AffineTransform3D currentViewLocation = new AffineTransform3D();
 
@@ -254,7 +254,7 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
         editor.behaviour(new SourceContextMenuClickBehaviour( bdvh,
                 () -> ssb.getSelectedSources()
                             .stream()
-                            .map((sac) -> transformedToOriginal.get(sac))
+                            .map((source) -> transformedToOriginal.get(source))
                             .collect(Collectors.toSet())), "Sources Context Menu", "button3");
 
         // One way to chain the behaviour : install and uninstall on source selector toggling:
@@ -278,44 +278,36 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
         });
     }
 
-    public static String[] getPopupActionsOnWrappedSource() {
-        String[] editorPopupActions = {
-                "Inspect Sources",
-                getCommandName(SourceBrightnessAdjustInteractiveCommand.class),
-                getCommandName(ExportToMultipleImagePlusCommand.class)};
-        return editorPopupActions;
-    }
-
     /**
      * Sorts sources according to their dataset and view id
      */
-    public Function<Collection<SourceAndConverter<?>>,List<SourceAndConverter<?>>> sorter = sacslist -> SourceHelper.sortDefaultGeneric(sacslist);
+    public Function<Collection<SourceAndConverter<?>>,List<SourceAndConverter<?>>> sorter = SourceHelper::sortDefaultGeneric;
 
     public static class SacProperties {
 
         public final AffineTransform3D location;
         public long[] dims = new long[3];
-        public final SourceAndConverter sac;
+        public final SourceAndConverter<?> source;
         public final boolean isRGB; // Always split RGB images
 
         /**
          * crete the Sac Properties object
-         * @param sac source to give
+         * @param source source to give
          */
-        public SacProperties(SourceAndConverter sac) {
+        public SacProperties(SourceAndConverter<?> source) {
             location = new AffineTransform3D();
 
-            if (SourceHelper.hasAValidTimepoint(sac.getSpimSource())) {
-                int tpvalid = SourceHelper.getAValidTimepoint(sac.getSpimSource());
-                sac.getSpimSource().getSourceTransform(tpvalid, 0, location);
-                sac.getSpimSource().getSource(tpvalid, 0).dimensions(dims);
+            if (SourceHelper.hasAValidTimepoint(source.getSpimSource())) {
+                int tpvalid = SourceHelper.getAValidTimepoint(source.getSpimSource());
+                source.getSpimSource().getSourceTransform(tpvalid, 0, location);
+                source.getSpimSource().getSource(tpvalid, 0).dimensions(dims);
             }
-            this.sac = sac;
-            this.isRGB = (sac.getSpimSource().getType() instanceof ARGBType) || (sac.getSpimSource().getType() instanceof VolatileARGBType);
+            this.source = source;
+            this.isRGB = (source.getSpimSource().getType() instanceof ARGBType) || (source.getSpimSource().getType() instanceof VolatileARGBType);
         }
 
-        public SourceAndConverter getSource() {
-            return sac;
+        public SourceAndConverter<?> getSource() {
+            return source;
         }
 
         List<Class<? extends Entity>> entitiesSplit = new ArrayList<>();
@@ -337,12 +329,12 @@ public class OverviewerCommand implements BdvPlaygroundActionCommand {
 
             if (obj instanceof SacProperties) {
                 SacProperties other = (SacProperties) obj;
-                if (isRGB) return other.sac == this.sac; // Always split different RGB images
+                if (isRGB) return other.source == this.source; // Always split different RGB images
                 if  (
                       (MatrixApproxEquals(location.getRowPackedCopy(), other.location.getRowPackedCopy()))
                     &&(dims[0]==other.dims[0])&&(dims[1]==other.dims[1])&&(dims[2]==other.dims[2])) {
                     for (Class<? extends Entity> entityClass:entitiesSplit) {
-                        if (!haveSameEntity(other.sac, this.sac, entityClass)) {
+                        if (!haveSameEntity(other.source, this.source, entityClass)) {
                             return false;
                         }
                     }

@@ -79,7 +79,7 @@ public class DemoLabkitSegmentation {
         // using scjava parameters:
         // #@SourceService source_service
         // #@SourceBdvDisplayService display_service
-        SourceService sacService = ij.get(SourceService.class);
+        SourceService sourceService = ij.get(SourceService.class);
         SourceBdvDisplayService displayService = ij.get(SourceBdvDisplayService.class);
 
         // @doc-step: Download the Sample Dataset
@@ -117,19 +117,19 @@ public class DemoLabkitSegmentation {
 
         SourceAndConverter<?> classifiedSource = (SourceAndConverter<?>) ij.command().run(
                 SourcesLabkitClassifierCommand.class, true,
-                "sacs", datasetName,
+                "sources", datasetName,
                 "classifier_file", classifierFile,
                 "resolution_level", 0,
                 "suffix", "_classified",
                 "use_gpu", true
-        ).get().getOutput("sac_out");
+        ).get().getOutput("source_out");
 
         //DemoHelper.shot("DemoLabkitSegmentation_04_classifier_applied", "BigDataViewer");
 
         // @doc-step: Display Sources in BigDataViewer
         // Show both the original sources and the classified result in BDV.
         // The segmentation is computed lazily as you navigate.
-        SourceAndConverter<?>[] originalSources = sacService.tree()
+        SourceAndConverter<?>[] originalSources = sourceService.tree()
                 .getSources(datasetName)
                 .toArray(new SourceAndConverter[0]);
 
@@ -137,7 +137,7 @@ public class DemoLabkitSegmentation {
         displayService.show(classifiedSource);
 
         // Configure display range for the classification labels (typically 0-N classes)
-        sacService.getConverterSetup(classifiedSource).setDisplayRange(0, 5);
+        sourceService.getConverterSetup(classifiedSource).setDisplayRange(0, 5);
 
         // Adjust view to fit the classified source
         BdvHandle bdvHandle = displayService.getActiveBdv();

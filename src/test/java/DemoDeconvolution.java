@@ -86,12 +86,12 @@ public class DemoDeconvolution {
 
         // Get the source and PSF from the service
         String datasetName = FilenameUtils.removeExtension(helaKyotoLLS7.getName());
-        SourceService sacService = ij.context().getService(SourceService.class);
+        SourceService sourceService = ij.context().getService(SourceService.class);
 
-        SourceAndConverter[] sources = sacService.tree().getSources(datasetName)
+        SourceAndConverter<?>[] sources = sourceService.tree().getSources(datasetName)
                 .toArray(new SourceAndConverter[0]);
 
-        SourceAndConverter psf = sacService.tree().getSources("psf_lls7_200nm")
+        SourceAndConverter<?> psf = sourceService.tree().getSources("psf_lls7_200nm")
                 .toArray(new SourceAndConverter[0])[0];
 
         // Run the deconvolution command
@@ -114,8 +114,8 @@ public class DemoDeconvolution {
         result.get();
 
         // Get the deconvolved source from the service (it was registered by the command)
-        SourceAndConverter[] deconvolvedSources = sacService.getSources().stream()
-                .filter(sac -> sac.getSpimSource().getName().contains("_deconvolved"))
+        SourceAndConverter<?>[] deconvolvedSources = sourceService.getSources().stream()
+                .filter(source -> source.getSpimSource().getName().contains("_deconvolved"))
                 .toArray(SourceAndConverter[]::new);
 
         if (deconvolvedSources.length > 0) {

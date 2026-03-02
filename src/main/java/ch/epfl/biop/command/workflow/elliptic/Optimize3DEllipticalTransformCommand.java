@@ -90,7 +90,7 @@ public class Optimize3DEllipticalTransformCommand implements BdvPlaygroundAction
     double stz = 1;
 
     @Parameter
-    SourceAndConverter sac;
+    SourceAndConverter<?> source;
 
     int nOptimizedParams;
 
@@ -111,7 +111,7 @@ public class Optimize3DEllipticalTransformCommand implements BdvPlaygroundAction
 
     public void run() {
         // Is this a warped source ?
-        WarpedSource<?> ws = (WarpedSource<?>) sac.getSpimSource();
+        WarpedSource<?> ws = (WarpedSource<?>) source.getSpimSource();
         /*
         try {
             if ( bdv_h.getViewerPanel().getState().getSources().get(sourceIndex).getSpimSource() instanceof TransformedSource) {

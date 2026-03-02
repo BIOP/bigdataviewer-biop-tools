@@ -49,10 +49,7 @@ import java.awt.GridLayout;
 import java.awt.Point;
 import java.awt.Stroke;
 import java.text.DecimalFormat;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -70,15 +67,8 @@ public class GridBdvSupplier implements IBdvSupplier {
 	@Override
 	public BdvHandle get() {
 
-		/*BdvHandle bdvh = super.get();
-
-		//BdvSupplierHelper.addSourcesDragAndDrop(bdvh);
-		//bdvh.getViewerPanel().setTransferHandler();
-		bdvh.getViewerPanel().setTransferHandler(null);
-		System.out.println("New Suuplirt!");
-		bdvh.getViewerPanel().setTransferHandler(new GridTransferHandler(bdvh));*/
 		BdvOptions options = this.sOptions.getBdvOptions();
-		ArrayImg<ByteType, ByteArray> dummyImg = ArrayImgs.bytes(new long[]{2L, 2L, 2L});
+		ArrayImg<ByteType, ByteArray> dummyImg = ArrayImgs.bytes(2L, 2L, 2L);
 		options = options.sourceTransform(new AffineTransform3D());
 		BdvStackSource<ByteType> bss = BdvFunctions.show(dummyImg, "dummy", options);
 		BdvHandle bdvh = bss.getBdvHandle();
@@ -112,7 +102,7 @@ public class GridBdvSupplier implements IBdvSupplier {
 		JButton nameToggle = new JButton("Display sources name");
 		AtomicBoolean nameOverlayEnabled = new AtomicBoolean();
 		nameOverlayEnabled.set(true);
-		SourceNameOverlayAdder nameOverlayAdder = new SourceNameOverlayAdder(bdvh, new Font(this.sOptions.font, 0, this.sOptions.fontSize));
+		SourceNameOverlayAdder nameOverlayAdder = new SourceNameOverlayAdder(bdvh, new Font(this.sOptions.font, Font.PLAIN, this.sOptions.fontSize));
 		nameToggle.addActionListener((e) -> {
 			if (nameOverlayEnabled.get()) {
 				nameOverlayEnabled.set(false);
@@ -202,16 +192,13 @@ public class GridBdvSupplier implements IBdvSupplier {
 		 * When the user drops the data -> import the slices
 		 *
 		 * @param support weird stuff for swing drag and drop TODO : link proper documentation
-		 * @param sacs list of source and converter to import
+		 * @param sources list of sources to import
 		 */
 		@Override
-		public void importSources(TransferSupport support, List<SourceAndConverter<?>> sacs) {
+		public void importSources(TransferSupport support, List<SourceAndConverter<?>> sources) {
 			Optional<BdvHandle> bdvh_local = getBdvHandleFromViewerPanel(((bdv.viewer.ViewerPanel) support.getComponent()));
 			if (bdvh_local.isPresent()) {
-				//double slicingAxisPosition = iSliceNoStep * msp.sizePixX * (int) msp.getReslicedAtlas().getStep();
-				//msp.createSlice(sacs.toArray(new SourceAndConverter[0]), slicingAxisPosition, msp.getAtlas().getMap().getAtlasPrecisionInMillimeter(), Tile.class, new Tile(-1));
-				//System.out.println("DROP!!");
-				gBdv.addSources(sacs, iX, iY);
+				gBdv.addSources(sources, iX, iY);
 			}
 		}
 
@@ -389,13 +376,13 @@ public class GridBdvSupplier implements IBdvSupplier {
 				//double[] coords =  center.positionAsDoubleArray();
 				transform3D.translate(-coords[0], -coords[1], -coords[2]);
 				transform3D.translate(cpxy.px*gridSizeX, cpxy.py*gridSizeY, 0);
-				((TransformedSource)source.getSpimSource()).setFixedTransform(transform3D);
+				((TransformedSource<?>)source.getSpimSource()).setFixedTransform(transform3D);
 			});
 			bdvh.getViewerPanel().requestRepaint();
 		}
 
 		public synchronized void setGridSize(double gridSizeX, double gridSizeY) {
-			if ((gridSizeX!=this.gridSizeX)||(gridSizeY!=gridSizeY)) {
+			if ((gridSizeX!=this.gridSizeX)||(gridSizeY!=this.gridSizeY)) {
 				this.gridSizeX = gridSizeX;
 				this.gridSizeY = gridSizeY;
 				updatePositions();
@@ -409,14 +396,14 @@ public class GridBdvSupplier implements IBdvSupplier {
 			return gridSizeY;
 		}
 
-		public synchronized void addSources(List<SourceAndConverter<?>> sacs, int px, int py) {
-			RealPoint center = SourceHelper.getSourceCenterPoint(sacs.get(0),0);
+		public synchronized void addSources(List<SourceAndConverter<?>> sources, int px, int py) {
+			RealPoint center = SourceHelper.getSourceCenterPoint(sources.get(0),0);
 			AffineTransform3D transform3D = new AffineTransform3D();
 			double[] coords =  center.positionAsDoubleArray();
 			transform3D.translate(-coords[0], -coords[1], -coords[2]);
 			transform3D.translate(px*gridSizeX, py*gridSizeY, 0);
-			SourceAffineTransformer sat = new SourceAffineTransformer(null, transform3D);
-			for (SourceAndConverter<?> source: sacs) {
+			SourceAffineTransformer sat = new SourceAffineTransformer<>(null, transform3D);
+			for (SourceAndConverter<?> source: sources) {
 				SourceAndConverter<?> transformed = sat.apply(source);
 				sourceToCenter.put(transformed, new CenterAndGridPosition(center, px, py));
 				SourceServices
@@ -426,11 +413,7 @@ public class GridBdvSupplier implements IBdvSupplier {
 		}
 		@Override
 		public void viewerStateChanged(ViewerStateChange change) {
-			switch (change) {
-				case NUM_SOURCES_CHANGED:
 
-					break;
-			}
 		}
 	}
 

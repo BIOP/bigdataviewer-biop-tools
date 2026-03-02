@@ -127,9 +127,9 @@ public class AlphaProjectorFactory implements AccumulateProjectorFactory<ARGBTyp
     }
 
     public interface SourcesMetadata {
-        boolean isAlphaSource(SourceAndConverter sac);
-        boolean hasAlphaSource(SourceAndConverter sac);
-        SourceAndConverter getAlphaSource(SourceAndConverter sac);
+        boolean isAlphaSource(SourceAndConverter source);
+        boolean hasAlphaSource(SourceAndConverter source);
+        SourceAndConverter getAlphaSource(SourceAndConverter source);
     }
 
 }

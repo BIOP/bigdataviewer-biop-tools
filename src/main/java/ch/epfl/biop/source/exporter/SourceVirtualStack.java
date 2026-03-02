@@ -153,8 +153,8 @@ public class SourceVirtualStack<T extends NumericType<T> & NativeType<T>> extend
             return null;
     }
 
-    public boolean noSourcePresent(SourceAndConverter sac, int iZ, int iT) {
-        return !sac.getSpimSource().isPresent(iT);
+    public boolean noSourcePresent(SourceAndConverter source, int iZ, int iT) {
+        return !source.getSpimSource().isPresent(iT);
     }
 
     /**
@@ -167,10 +167,10 @@ public class SourceVirtualStack<T extends NumericType<T> & NativeType<T>> extend
      * @return byteprocessor
      */
     public ByteProcessor getByteProcessor(int iC, int iZ, int iT) {
-        SourceAndConverter sac = sources.get(iC);
-        if (noSourcePresent(sac, iZ, iT)) return new ByteProcessor(width, height);
+        SourceAndConverter source = sources.get(iC);
+        if (noSourcePresent(source, iZ, iT)) return new ByteProcessor(width, height);
 
-        RandomAccessibleInterval<UnsignedByteType> rai = sac.getSpimSource().getSource(iT, resolutionLevel);
+        RandomAccessibleInterval<UnsignedByteType> rai = source.getSpimSource().getSource(iT, resolutionLevel);
         RandomAccessibleInterval<UnsignedByteType> slice = Views.hyperSlice(rai, 2, iZ);
         byte[] bytes = new byte[nPixPerPlane];
         IterableInterval<UnsignedByteType> ii = Views.flatIterable(slice);
@@ -197,9 +197,9 @@ public class SourceVirtualStack<T extends NumericType<T> & NativeType<T>> extend
      * @return shortprocessor
      */
     public ShortProcessor getShortProcessor(int iC, int iZ, int iT) {
-        SourceAndConverter sac = sources.get(iC);
-        if (noSourcePresent(sac, iZ, iT)) return new ShortProcessor(width, height);
-        RandomAccessibleInterval<UnsignedShortType> rai = sac.getSpimSource().getSource(iT, resolutionLevel);
+        SourceAndConverter source = sources.get(iC);
+        if (noSourcePresent(source, iZ, iT)) return new ShortProcessor(width, height);
+        RandomAccessibleInterval<UnsignedShortType> rai = source.getSpimSource().getSource(iT, resolutionLevel);
         RandomAccessibleInterval<UnsignedShortType> slice = Views.hyperSlice(rai, 2, iZ);
         short[] shorts = new short[nPixPerPlane];
         IterableInterval<UnsignedShortType> ii = Views.flatIterable(slice);
@@ -241,9 +241,9 @@ public class SourceVirtualStack<T extends NumericType<T> & NativeType<T>> extend
      * @return floatprocessor
      */
     public FloatProcessor getFloatProcessor(int iC, int iZ, int iT) {
-        SourceAndConverter sac = sources.get(iC);
-        if (noSourcePresent(sac, iZ, iT)) return new FloatProcessor(width, height);
-        RandomAccessibleInterval<FloatType> rai = sac.getSpimSource().getSource(iT, resolutionLevel);
+        SourceAndConverter source = sources.get(iC);
+        if (noSourcePresent(source, iZ, iT)) return new FloatProcessor(width, height);
+        RandomAccessibleInterval<FloatType> rai = source.getSpimSource().getSource(iT, resolutionLevel);
         RandomAccessibleInterval<FloatType> slice = Views.hyperSlice(rai, 2, iZ);
         float[] floats = new float[nPixPerPlane];
         IterableInterval<FloatType> ii = Views.flatIterable(slice);
@@ -270,9 +270,9 @@ public class SourceVirtualStack<T extends NumericType<T> & NativeType<T>> extend
      * @return colorprocessor
      */
     public ColorProcessor getColorProcessor(int iC, int iZ, int iT) {
-        SourceAndConverter sac = sources.get(iC);
-        if (noSourcePresent(sac, iZ, iT)) return new ColorProcessor(width, height);
-        RandomAccessibleInterval<ARGBType> rai = sac.getSpimSource().getSource(iT, resolutionLevel);
+        SourceAndConverter source = sources.get(iC);
+        if (noSourcePresent(source, iZ, iT)) return new ColorProcessor(width, height);
+        RandomAccessibleInterval<ARGBType> rai = source.getSpimSource().getSource(iT, resolutionLevel);
         RandomAccessibleInterval<ARGBType> slice = Views.hyperSlice(rai, 2, iZ);
         int[] ints = new int[nPixPerPlane];
         IterableInterval<ARGBType> ii = Views.flatIterable(slice);

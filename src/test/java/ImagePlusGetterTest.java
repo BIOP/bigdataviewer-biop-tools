@@ -51,7 +51,7 @@ public class ImagePlusGetterTest {
         //        .getSourceAndConverterDisplayService().getActiveBdv();
         /*SourceServices
                 .getSourceAndConverterDisplayService()
-                .show(sac);*/
+                .show(source);*/
         ArrayList<SourceAndConverter<?>> sources = new ArrayList<>();
         sources.add(allSources.get(0));
 

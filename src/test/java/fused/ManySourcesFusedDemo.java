@@ -78,19 +78,18 @@ public class ManySourcesFusedDemo {
         final String filePath = "src/test/resources/mri-stack.xml";
         // Import SpimData
         SpimDataFromXmlImporter importer = new SpimDataFromXmlImporter(filePath);
-        //importer.run();
 
-        final AbstractSpimData spimData = importer.get();
+        final AbstractSpimData<?> spimData = importer.get();
 
-        SourceAndConverter sac = SourceServices
+        SourceAndConverter<?> source = SourceServices
                 .getSourceService()
                 .getSourcesFromDataset(spimData)
                 .get(0);
 
-        new ViewerTransformAdjuster(bdvHandle, sac).run();
-        new BrightnessAutoAdjuster(sac, 0).run();
+        new ViewerTransformAdjuster(bdvHandle, source).run();
+        new BrightnessAutoAdjuster<>(source, 0).run();
 
-        ArrayList<SourceAndConverter<?>> sacs = new ArrayList<>();
+        ArrayList<SourceAndConverter<?>> sources = new ArrayList<>();
         for (int x = 0; x < numberOfSourcesInOneAxis;x++) {
             for (int y = 0; y < numberOfSourcesInOneAxis; y++) {
 
@@ -101,19 +100,19 @@ public class ManySourcesFusedDemo {
                     at3d.scale(0.5 + Math.random() / 4, 0.5 + Math.random() / 4, 1);
                     at3d.translate(200 * x, 200 * y, 0);
 
-                    SourceAndConverter transformedSac = new SourceAffineTransformer(sac, at3d).get();
+                    SourceAndConverter<?> transformedSac = new SourceAffineTransformer<>(source, at3d).get();
 
-                    sacs.add(transformedSac);
+                    sources.add(transformedSac);
                 }
             }
         }
 
         SourceServices
                 .getBdvDisplayService()
-                .show(bdvHandle, sacs.toArray(new SourceAndConverter[0]));
+                .show(bdvHandle, sources.toArray(new SourceAndConverter[0]));
 
         SourceGroup sg = bdvHandle.getViewerPanel().state().getGroups().get(1);
 
-        bdvHandle.getViewerPanel().state().addSourcesToGroup(sacs, sg);
+        bdvHandle.getViewerPanel().state().addSourcesToGroup(sources, sg);
     }
 }
