@@ -12,7 +12,7 @@ import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.view.Views;
 import sc.fiji.bdvpg.services.SourceServices;
-import sc.fiji.bdvpg.dataset.importer.SpimDataFromXmlImporter;
+import sc.fiji.bdvpg.dataset.importer.XMLToDatasetImporter;
 
 
 public class Resample3DAlongAxis {
@@ -29,7 +29,7 @@ public class Resample3DAlongAxis {
 
         final String filePath = "src/test/resources/mri-stack.xml";
         // Import SpimData
-        SpimDataFromXmlImporter importer = new SpimDataFromXmlImporter(filePath);
+        XMLToDatasetImporter importer = new XMLToDatasetImporter(filePath);
         //importer.run();
 
         final AbstractSpimData spimData = importer.get();

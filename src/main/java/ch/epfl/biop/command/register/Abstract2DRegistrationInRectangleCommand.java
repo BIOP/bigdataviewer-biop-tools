@@ -4,7 +4,7 @@ import net.imglib2.realtransform.AffineTransform3D;
 import org.scijava.ItemIO;
 import org.scijava.plugin.Parameter;
 
-abstract class Abstract2DRegistrationInRectangleCommand extends SelectSourcesForRegistrationCommand {
+abstract class Abstract2DRegistrationInRectangleCommand extends SourcesForRegistrationSelectCommand {
 
     @Parameter(label = "ROI Position X",
             style = "format:0.#####E0",

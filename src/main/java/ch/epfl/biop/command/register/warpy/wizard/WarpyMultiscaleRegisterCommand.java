@@ -2,7 +2,7 @@ package ch.epfl.biop.command.register.warpy.wizard;
 
 import bdv.util.QuPathBdvHelper;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.command.register.MultiscaleRegisterCommand;
+import ch.epfl.biop.command.register.SourcesMultiscaleRegisterCommand;
 import ij.IJ;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.realtransform.InvertibleRealTransform;
@@ -129,7 +129,7 @@ public class WarpyMultiscaleRegisterCommand implements Command {
             }
 
 
-            CommandModule module = cs.run(MultiscaleRegisterCommand.class, true,
+            CommandModule module = cs.run(SourcesMultiscaleRegisterCommand.class, true,
                     "fixed", fixed_sources,
                     "moving", moving_sources,
                     "sources_to_transform", moving_sources,

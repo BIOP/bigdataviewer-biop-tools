@@ -27,8 +27,8 @@
 import bdv.util.BdvHandle;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.DatasetHelper;
-import ch.epfl.biop.bdv.img.bioformats.command.CreateBdvDatasetBioFormatsCommand;
-import ch.epfl.biop.command.process.labkit.SourcesLabkitClassifierCommand;
+import ch.epfl.biop.bdv.img.bioformats.command.DatasetFromBioFormatsCreateCommand;
+import ch.epfl.biop.command.process.labkit.SourcesLabkitClassifyCommand;
 import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;
 import sc.fiji.bdvpg.viewers.bdv.navigate.ViewerTransformAdjuster;
@@ -94,7 +94,7 @@ public class DemoLabkitSegmentation {
         // This registers the sources in BigDataViewer-Playground.
         // @doc-command: ch.epfl.biop.bdv.img.bioformats.command.CreateBdvDatasetBioFormatsCommand
         String datasetName = fileCZI.getName();
-        ij.command().run(CreateBdvDatasetBioFormatsCommand.class, true,
+        ij.command().run(DatasetFromBioFormatsCreateCommand.class, true,
                 "datasetname", datasetName,
                 "unit", "MICROMETER",
                 "files", new File[]{fileCZI},
@@ -116,7 +116,7 @@ public class DemoLabkitSegmentation {
         );
 
         SourceAndConverter<?> classifiedSource = (SourceAndConverter<?>) ij.command().run(
-                SourcesLabkitClassifierCommand.class, true,
+                SourcesLabkitClassifyCommand.class, true,
                 "sources", datasetName,
                 "classifier_file", classifierFile,
                 "resolution_level", 0,

@@ -10,7 +10,7 @@ import net.imglib2.type.numeric.NumericType;
 import org.scijava.task.Task;
 import org.scijava.task.TaskService;
 import sc.fiji.bdvpg.services.SourceServices;
-import sc.fiji.bdvpg.dataset.importer.SpimDataFromXmlImporter;
+import sc.fiji.bdvpg.dataset.importer.XMLToDatasetImporter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +37,7 @@ public class ImagePlusGetterTest {
         //final String filePath = "D:/Operetta Dataset/Opertta Tiling Magda/MagdaData.xml";
         //final String filePath = "N:/temp-romain/TL2_bdv.xml";
         // Import SpimData
-        SpimDataFromXmlImporter importer = new SpimDataFromXmlImporter(filePath);
+        XMLToDatasetImporter importer = new XMLToDatasetImporter(filePath);
         //importer.run();
 
         final AbstractSpimData spimData = importer.get();

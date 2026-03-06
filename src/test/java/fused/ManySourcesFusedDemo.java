@@ -16,7 +16,7 @@ import sc.fiji.bdvpg.services.SourceServices;
 import sc.fiji.bdvpg.source.display.BrightnessAutoAdjuster;
 import sc.fiji.bdvpg.source.importer.EmptySourceCreator;
 import sc.fiji.bdvpg.source.transform.SourceAffineTransformer;
-import sc.fiji.bdvpg.dataset.importer.SpimDataFromXmlImporter;
+import sc.fiji.bdvpg.dataset.importer.XMLToDatasetImporter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,7 +77,7 @@ public class ManySourcesFusedDemo {
 
         final String filePath = "src/test/resources/mri-stack.xml";
         // Import SpimData
-        SpimDataFromXmlImporter importer = new SpimDataFromXmlImporter(filePath);
+        XMLToDatasetImporter importer = new XMLToDatasetImporter(filePath);
 
         final AbstractSpimData<?> spimData = importer.get();
 

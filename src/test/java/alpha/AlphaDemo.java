@@ -42,7 +42,7 @@ import sc.fiji.bdvpg.bdv.supplier.alpha.AlphaSerializableBdvOptions;
 import sc.fiji.bdvpg.services.SourceServices;
 import sc.fiji.bdvpg.source.display.BrightnessAutoAdjuster;
 import sc.fiji.bdvpg.source.display.ColorChanger;
-import sc.fiji.bdvpg.dataset.importer.SpimDataFromXmlImporter;
+import sc.fiji.bdvpg.dataset.importer.XMLToDatasetImporter;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -78,9 +78,9 @@ public class AlphaDemo
 		BdvHandle bdv = SourceServices.getBdvDisplayService().getNewBdv();
 
 		// Import SpimData
-		new SpimDataFromXmlImporter( "src/test/resources/mri-stack.xml" ).run();
-		new SpimDataFromXmlImporter("src/test/resources/mri-stack-shiftedX.xml").run();
-		new SpimDataFromXmlImporter( "src/test/resources/mri-stack-shiftedY.xml" ).run();
+		new XMLToDatasetImporter( "src/test/resources/mri-stack.xml" ).run();
+		new XMLToDatasetImporter("src/test/resources/mri-stack-shiftedX.xml").run();
+		new XMLToDatasetImporter( "src/test/resources/mri-stack-shiftedY.xml" ).run();
 
 		// Get a handle on the sources
 		final List< SourceAndConverter<?>> sources = SourceServices.getSourceService().getSources();

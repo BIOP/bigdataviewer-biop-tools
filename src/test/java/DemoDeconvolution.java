@@ -27,9 +27,9 @@
 import bdv.util.BdvFunctions;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.DatasetHelper;
-import ch.epfl.biop.bdv.img.bioformats.command.CreateBdvDatasetBioFormatsCommand;
-import ch.epfl.biop.command.process.deconvolve.SourcesDeconvolverCommand;
-import ch.epfl.biop.command.workflow.lls7.LLS7OpenDatasetCommand;
+import ch.epfl.biop.bdv.img.bioformats.command.DatasetFromBioFormatsCreateCommand;
+import ch.epfl.biop.command.process.deconvolve.SourcesDeconvolveCommand;
+import ch.epfl.biop.command.workflow.lls7.LLS7DatasetOpenCommand;
 import net.haesleinhuepf.clij.CLIJ;
 import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;
@@ -68,13 +68,13 @@ public class DemoDeconvolution {
         // Load the LLS7 dataset
         File helaKyotoLLS7 = DatasetHelper.getDataset("https://zenodo.org/records/14505724/files/Hela-Kyoto-1-Timepoint-LLS7.czi");
 
-        ij.command().run(LLS7OpenDatasetCommand.class, true,
+        ij.command().run(LLS7DatasetOpenCommand.class, true,
                 "czi_file", helaKyotoLLS7,
                 "legacy_xy_mode", false).get();
 
         // Load the PSF
         File psfLLS7 = DatasetHelper.getDataset("https://zenodo.org/records/14505724/files/psf-200nm.tif");
-        ij.command().run(CreateBdvDatasetBioFormatsCommand.class, true,
+        ij.command().run(DatasetFromBioFormatsCreateCommand.class, true,
                 "files", new File[]{psfLLS7},
                 "datasetname", "psf_lls7_200nm",
                 "unit", "MICROMETER",
@@ -95,10 +95,10 @@ public class DemoDeconvolution {
                 .toArray(new SourceAndConverter[0])[0];
 
         // Run the deconvolution command
-        Future<?> result = ij.command().run(SourcesDeconvolverCommand.class, true,
+        Future<?> result = ij.command().run(SourcesDeconvolveCommand.class, true,
                 "sources", new SourceAndConverter[]{sources[0]},
                 "psf", psf,
-                "output_pixel_type", SourcesDeconvolverCommand.ORIGINAL,
+                "output_pixel_type", SourcesDeconvolveCommand.ORIGINAL,
                 "suffix", "_deconvolved",
                 "block_size_x", 128 - 32,
                 "block_size_y", 512 - 32,

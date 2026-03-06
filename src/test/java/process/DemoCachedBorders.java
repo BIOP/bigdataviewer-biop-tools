@@ -9,9 +9,9 @@ import net.imagej.ImageJ;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.real.FloatType;
-import sc.fiji.bdvpg.command.process.SourceDuplicateWithLUTCommand;
+import sc.fiji.bdvpg.command.process.SourceWithLUTDuplicateCommand;
 import sc.fiji.bdvpg.services.SourceServices;
-import sc.fiji.bdvpg.source.importer.VoronoiSourceGetter;
+import sc.fiji.bdvpg.source.importer.VoronoiSourceCreator;
 
 public class DemoCachedBorders {
     public static void main(String... args) throws Exception {
@@ -20,14 +20,14 @@ public class DemoCachedBorders {
         DebugTools.enableLogging ("OFF");
         ij.ui().showUI();
 
-        SourceAndConverter<FloatType> voronoi = new VoronoiSourceGetter(new long[]{4096*2, 4096*2, 4096*2}, 100000, false).get();
+        SourceAndConverter<FloatType> voronoi = new VoronoiSourceCreator(new long[]{4096*2, 4096*2, 4096*2}, 100000, false).get();
 
         BdvHandle bdvh = SourceServices.getBdvDisplayService().getNewBdv();
 
         SourceAndConverter<UnsignedByteType> borders = SourceVoxelProcessor.getBorders(voronoi);
 
         SourceAndConverter<?>[] reColoredVoronoi = (SourceAndConverter<?>[])
-                ij.module().run(ij.command().getCommand(SourceDuplicateWithLUTCommand.class), true,
+                ij.module().run(ij.command().getCommand(SourceWithLUTDuplicateCommand.class), true,
                         "sources", new SourceAndConverter[]{voronoi}
                 ).get().getOutput("sources_out");
 

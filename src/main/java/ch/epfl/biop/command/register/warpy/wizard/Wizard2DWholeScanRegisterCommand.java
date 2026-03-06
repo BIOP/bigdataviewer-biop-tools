@@ -5,9 +5,9 @@ import bdv.util.*;
 import bdv.viewer.Interpolation;
 import bdv.viewer.SourceAndConverter;
 import bigwarp.BigWarp;
-import ch.epfl.biop.command.view.region.GetUserPointsCommand;
-import ch.epfl.biop.command.view.region.GetUserRectangleCommand;
-import ch.epfl.biop.command.register.RegisterWholeSlideScans2DCommand;
+import ch.epfl.biop.command.display.bdv.region.UserPointsGetCommand;
+import ch.epfl.biop.command.display.bdv.region.UserRectangleGetCommand;
+import ch.epfl.biop.command.register.Sources2DRegisterCommand;
 import ch.epfl.biop.viewers.bdv.PointsSelectorBehaviour;
 import ch.epfl.biop.viewers.bdv.card.CardHelper;
 import ch.epfl.biop.viewers.bdv.graphicalhandle.GraphicalHandle;
@@ -61,7 +61,7 @@ import java.util.stream.Collectors;
 import static bdv.ui.BdvDefaultCards.*;
 import static bdv.util.RealTransformHelper.BigWarpFileFromRealTransform;
 import static ch.epfl.biop.viewers.bdv.RectangleSelectorBehaviour.box;
-import static ch.epfl.biop.command.process.transform.RemoveZOffsetCommand.getZ0Transform;
+import static ch.epfl.biop.command.process.transform.SourcesZOffsetRemoveCommand.getZ0Transform;
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
        // menuPath = BdvPgMenus.RootMenu+"Register>Warpy (Wizard)>Warpy - Wizard Align Slides (2D)",
@@ -273,7 +273,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
             IJ.log("Registration started...");
 
             // Coarse and spline registration - if selected by the user
-            transformation = (RealTransform) cs.run(RegisterWholeSlideScans2DCommand.class, true,
+            transformation = (RealTransform) cs.run(Sources2DRegisterCommand.class, true,
                         "global_ref_source", fixed,
                                "current_ref_source", moving,
                                "pt_list_coordinates", ptCoords,
@@ -618,7 +618,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
         BdvHandleHelper.addCard(bdvh, "Place landmark grid", addGridCard, true);
 
         landmarks = (List<RealPoint>) cs
-                .run(GetUserPointsCommand.class, true,
+                .run(UserPointsGetCommand.class, true,
                         "message_for_user", "Select the position of the landmarks that will be used for the registration (at least 4).",
                         "time_out_in_ms", -1,
                         "graphical_handle_supplier",
@@ -643,7 +643,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
         // Gets estimated corners to initialize the rectangle
         RealInterval box = getBoundingBox();
 
-        CommandModule module = cs.run(GetUserRectangleCommand.class, true,
+        CommandModule module = cs.run(UserRectangleGetCommand.class, true,
                         "message_for_user", "Select a rectangular region for the region you'd like to register.",
                         "time_out_in_ms", -1,
                         "p1", box.minAsRealPoint(),

@@ -1,0 +1,79 @@
+package ch.epfl.biop.command.register.warpy;
+
+import bdv.viewer.SourceAndConverter;
+import ch.epfl.biop.registration.Registration;
+import ch.epfl.biop.registration.source.affine.Sift2DAffineRegistration;
+import ch.epfl.biop.source.processor.SourcesProcessor;
+import org.scijava.command.Command;
+import org.scijava.plugin.Menu;
+import org.scijava.plugin.Parameter;
+import org.scijava.plugin.Plugin;
+import sc.fiji.bdvpg.scijava.BdvPgMenus;
+import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
+
+import java.util.Map;
+
+@Plugin(type = BdvPlaygroundActionCommand.class,
+        //menuPath = BdvPgMenus.RootMenu+"Register>Warpy>Register Pair 2D - Sift Affine",
+        menu = {
+                @Menu(label = BdvPgMenus.L1),
+                @Menu(label = BdvPgMenus.L2),
+                @Menu(label = BdvPgMenus.RegisterMenu, weight = BdvPgMenus.RegisterW),
+                @Menu(label = "Warpy", weight = -2),
+                @Menu(label = "Register Pair - Affine SIFT 2D", weight = 6)
+        },
+        description = "Performs automatic 2D affine registration using SIFT feature matching")
+
+public class PairRegistrationSift2DAffineRegisterCommand extends AbstractPairRegistrationInROI2DCommand implements Command {
+
+    @Parameter(label = "Transformation model", choices = {"AFFINE", "TRANSLATION"})
+    String transformation_model;
+
+    @Parameter(label = "Fixed Channels",
+            description = "Channel indices of the fixed image to use for registration (comma separated, e.g., '0' or '0,1')")
+    String channels_fixed_csv;
+
+    @Parameter(label = "Moving Channels",
+            description = "Channel indices of the moving image to use for registration (comma separated, e.g., '0' or '0,1')")
+    String channels_moving_csv;
+
+    @Parameter(label = "Pixel Size (um)",
+            description = "Pixel size in micrometers for resampling during registration (larger = faster but less precise)")
+    double pixel_size_micrometer = 20;
+
+    @Parameter(label = "Invert Moving",
+            description = "When checked, inverts the intensity of the moving image before matching")
+    boolean invert_moving;
+
+    @Parameter(label = "Invert Fixed",
+            description = "When checked, inverts the intensity of the fixed image before matching")
+    boolean invert_fixed;
+
+    @Override
+    protected void addRegistrationSpecificParametersExceptRoi(Map<String, Object> parameters) {
+        parameters.put(Registration.RESAMPLING_PX_SIZE, pixel_size_micrometer/1000.0);
+        parameters.put(Sift2DAffineRegistration.INVERT_MOVING_KEY, invert_moving);
+        parameters.put(Sift2DAffineRegistration.INVERT_FIXED_KEY, invert_fixed);
+        parameters.put(Sift2DAffineRegistration.TRANSFORMATION_MODEL, transformation_model);
+    }
+
+    @Override
+    Registration<SourceAndConverter<?>[]> getRegistration() {
+        return new Sift2DAffineRegistration();
+    }
+
+    @Override
+    protected boolean validate() {
+        return true;
+    }
+
+    @Override
+    protected SourcesProcessor getSourcesProcessorFixed() {
+        return AbstractPairRegistration2DCommand.getChannelProcessorFromCsv(channels_fixed_csv, registration_pair.getFixedSources().length);
+    }
+
+    @Override
+    protected SourcesProcessor getSourcesProcessorMoving() {
+        return AbstractPairRegistration2DCommand.getChannelProcessorFromCsv(channels_moving_csv, registration_pair.getMovingSourcesOrigin().length);
+    }
+}

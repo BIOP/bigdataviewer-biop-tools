@@ -8,7 +8,7 @@ import net.imagej.patcher.LegacyInjector;
 import net.imglib2.realtransform.RealTransform;
 import sc.fiji.bdvpg.services.SourceServices;
 import sc.fiji.bdvpg.source.display.BrightnessAdjuster;
-import sc.fiji.bdvpg.dataset.importer.SpimDataFromXmlImporter;
+import sc.fiji.bdvpg.dataset.importer.XMLToDatasetImporter;
 
 import java.util.concurrent.ExecutionException;
 
@@ -26,7 +26,7 @@ public class DemoEllipticalSource {
 
         final String filePath = "src/test/resources/mri-stack.xml";
         // Import SpimData
-        SpimDataFromXmlImporter importer = new SpimDataFromXmlImporter(filePath);
+        XMLToDatasetImporter importer = new XMLToDatasetImporter(filePath);
         final AbstractSpimData spimData = importer.get();
 
         SourceAndConverter source = SourceServices

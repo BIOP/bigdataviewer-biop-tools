@@ -2,7 +2,7 @@ package ch.epfl.biop.command.workflow.elliptic;
 
 import bdv.util.BdvHandle;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.command.view.region.GetUserBoxCommand;
+import ch.epfl.biop.command.display.bdv.region.UserBoxGetCommand;
 import ij.IJ;
 import ij.ImagePlus;
 import net.imglib2.RealInterval;
@@ -76,7 +76,7 @@ public class EasyExportEllipticProjection implements Command {
             }
 
             CommandModule boxSelector =
-                    cs.run(GetUserBoxCommand.class, true,
+                    cs.run(UserBoxGetCommand.class, true,
                             "bdvh", bdvh,
                                     "message", "Select (r, theta, phi) bounds to crop",
                                     "zmin", -4.0*Math.PI,

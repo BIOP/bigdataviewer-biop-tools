@@ -9,7 +9,7 @@ import ch.epfl.biop.bdv.img.imageplus.ImagePlusToSpimData;
 import ch.epfl.biop.bdv.select.SelectedSourcesListener;
 import ch.epfl.biop.bdv.select.SourceSelectorBehaviour;
 import ch.epfl.biop.bdv.select.ToggleListener;
-import ch.epfl.biop.command.register.Sift2DAffineRegisterCommand;
+import ch.epfl.biop.command.register.SourcesSift2DAffineRegisterCommand;
 import ij.IJ;
 import ij.ImagePlus;
 import mpicbg.spim.data.SpimData;
@@ -172,7 +172,7 @@ public class DemoRegistrationSIFTAffine {
                 // Go for the registration - on a selected rectangle
                 Future<CommandModule> task = ij.context()
                         .getService(CommandService.class)
-                        .run(Sift2DAffineRegisterCommand.class, true,
+                        .run(SourcesSift2DAffineRegisterCommand.class, true,
                             "sources_fixed", new SourceAndConverter[]{fixedSource},
                             "tp_fixed", 0,
                             "level_fixed_source", 0,

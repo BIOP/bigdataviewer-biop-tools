@@ -9,7 +9,7 @@ import net.imagej.ImageJ;
 import net.imglib2.realtransform.AffineTransform3D;
 import sc.fiji.bdvpg.scijava.services.SourceService;
 import sc.fiji.bdvpg.services.SourceServices;
-import sc.fiji.bdvpg.dataset.importer.SpimDataFromXmlImporter;
+import sc.fiji.bdvpg.dataset.importer.XMLToDatasetImporter;
 
 import javax.swing.tree.TreePath;
 
@@ -45,7 +45,7 @@ public class FusedRamChallenge {
         SourceServices.getSourceService().register(model);
 
         IJ.log(" Loading dataset ");
-        AbstractSpimData asd = new SpimDataFromXmlImporter("C:\\Users\\nicol\\Downloads\\CompositeTiles\\CompositeTiles\\tiles.xml").get();
+        AbstractSpimData asd = new XMLToDatasetImporter("C:\\Users\\nicol\\Downloads\\CompositeTiles\\CompositeTiles\\tiles.xml").get();
 
         IJ.log(" Dataset loaded ");
 

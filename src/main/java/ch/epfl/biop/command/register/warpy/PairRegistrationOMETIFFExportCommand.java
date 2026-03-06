@@ -1,0 +1,196 @@
+package ch.epfl.biop.command.register.warpy;
+
+import bdv.viewer.SourceAndConverter;
+import ch.epfl.biop.kheops.ometiff.OMETiffExporter;
+import ch.epfl.biop.registration.RegistrationPair;
+import ch.epfl.biop.source.processor.SourcesProcessor;
+import ij.IJ;
+import ome.units.UNITS;
+import org.apache.commons.io.FilenameUtils;
+import org.scijava.Context;
+import org.scijava.ItemVisibility;
+import org.scijava.command.Command;
+import org.scijava.log.LogService;
+import org.scijava.plugin.Menu;
+import org.scijava.plugin.Parameter;
+import org.scijava.plugin.Plugin;
+import org.scijava.task.TaskService;
+import sc.fiji.bdvpg.scijava.BdvPgMenus;
+import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
+import sc.fiji.bdvpg.source.transform.SourceResampler;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+@Plugin(type = BdvPlaygroundActionCommand.class,
+        //menuPath = BdvPgMenus.RootMenu+"Register>Warpy>Register Pair - Export To OME-TIFF",
+        menu = {
+                @Menu(label = BdvPgMenus.L1),
+                @Menu(label = BdvPgMenus.L2),
+                @Menu(label = BdvPgMenus.RegisterMenu, weight = BdvPgMenus.RegisterW),
+                @Menu(label = "Warpy", weight = -2),
+                @Menu(label = "Register Pair - Export To OME-TIFF", weight = 11)
+        },
+        description = "Exports the registered images as a pyramidal OME-TIFF file")
+public class PairRegistrationOMETIFFExportCommand implements Command {
+
+    @Parameter
+    Context ctx;
+
+    @Parameter(label = "Registration Pair",
+            description = "The registration pair to export")
+    RegistrationPair registration_pair;
+
+    @Parameter(label = "Interpolate",
+            description = "When checked, uses interpolation when resampling the moving image")
+    boolean interpolate;
+
+    @Parameter(visibility = ItemVisibility.MESSAGE)
+    String message = "If you include channels of the fixed image, the pixel type should match those of the moving one";
+
+    @Parameter(label = "Fixed Channels",
+            description = "Channels from fixed image to include (comma separated, empty for none, '*' for all)")
+    String channels_fixed_csv;
+
+    @Parameter(label = "Moving Channels",
+            description = "Channels from moving image to include (comma separated, empty for none, '*' for all)")
+    String channels_moving_csv;
+
+    @Parameter(label = "Output File",
+            description = "Path where the OME-TIFF will be saved",
+            style = "save")
+    File file_path;
+
+    @Parameter
+    LogService ls;
+
+    @Parameter(label = "Resolution Levels",
+            description = "Number of pyramid resolution levels to generate")
+    int n_resolution_levels = 4;
+
+    @Parameter(label = "Downscaling Factor",
+            description = "Scale factor between consecutive resolution levels")
+    int downscaling = 2;
+
+    @Parameter(label = "Tile Size X",
+            description = "Width of tiles in pixels (negative for no tiling)")
+    int tile_size_x = 512;
+
+    @Parameter(label = "Tile Size Y",
+            description = "Height of tiles in pixels (negative for no tiling)")
+    int tile_size_y = 512;
+
+    @Parameter(label = "Number of Threads",
+            description = "Number of parallel threads for export (0 = serial processing)")
+    int n_threads = 8;
+
+    @Parameter(label = "Compression",
+            description = "Compression algorithm for the output file",
+            choices = {"LZW", "Uncompressed", "JPEG-2000", "JPEG-2000 Lossy", "JPEG"})
+    String compression = "LZW";
+
+    @Parameter(label = "Compress Temp Files",
+            description = "When checked, compresses temporary files to save disk space during export")
+    boolean compress_temp_files = false;
+
+    @Parameter
+    TaskService taskService;
+
+    @Override
+    public void run() {
+
+        if (file_path.exists()) {
+            ls.warn("Export file path already exists, the export will not be performed.");
+            return;
+        }
+        if (channels_fixed_csv.trim().equals("*")) {
+            channels_fixed_csv = "0";
+            for (int i = 1; i<registration_pair.getFixedSources().length; i++) {
+                channels_fixed_csv+=","+i;
+            }
+        }
+        if (channels_moving_csv.trim().equals("*")) {
+            channels_moving_csv = "0";
+            for (int i = 1; i<registration_pair.getMovingSourcesOrigin().length; i++) {
+                channels_moving_csv+=","+i;
+            }
+        }
+
+        SourceAndConverter<?>[] fixed_sources = null, moving_sources = null;
+
+        if ((channels_fixed_csv != null) && (!channels_fixed_csv.trim().isEmpty())) {
+            fixed_sources = getSourcesProcessorFixed().apply(registration_pair.getFixedSources());
+        }
+        if ((channels_moving_csv != null) && (!channels_moving_csv.trim().isEmpty())) {
+            moving_sources = getSourcesProcessorMoving().apply(registration_pair.getMovingSourcesRegistered());
+        }
+
+        int nSources = ((fixed_sources == null)?0: fixed_sources.length) + ((moving_sources == null)?0: moving_sources.length);
+
+        if (nSources == 0) {
+            ls.warn("No source is defined in the export command - skipping export.");
+            return;
+        }
+
+        List<SourceAndConverter<?>> exportedSources;
+
+        if (fixed_sources!=null) {
+            exportedSources = new ArrayList<>(Arrays.asList(fixed_sources)); // Already adds all fixed sources - no need to change anything
+        } else {
+            exportedSources = new ArrayList<>();
+        }
+
+        // TODO do a pixel type matching check
+
+        // Now let's add the moving sources resamples like the fixed sources
+        // We take the first source of the fixed sources as the model
+        SourceAndConverter<?> modelSource = registration_pair.getFixedSources()[0];
+
+        if (moving_sources!=null) {
+            for (SourceAndConverter<?> source : moving_sources) {
+                exportedSources.add(
+                        new SourceResampler(source,
+                                modelSource,
+                                source.getSpimSource().getName() + "_Registered",
+                                false, false,
+                                interpolate, 0).get());
+            }
+        }
+
+        try {
+            String imageName = FilenameUtils.removeExtension(file_path.getName());
+            if (imageName.endsWith(".ome")) {
+                imageName = FilenameUtils.removeExtension(imageName);
+            }
+
+            OMETiffExporter.builder()
+                    .put(exportedSources.toArray(new SourceAndConverter[0]))
+                    .defineMetaData(FilenameUtils.removeExtension(imageName))
+                    .putMetadataFromSources(exportedSources.toArray(new SourceAndConverter[0]), UNITS.MILLIMETER)
+                    .defineWriteOptions().maxTilesInQueue(200).compression(this.compression)
+                    .compressTemporaryFiles(this.compress_temp_files)
+                    .nThreads(this.n_threads)
+                    .downsample(this.downscaling)
+                    .nResolutionLevels(this.n_resolution_levels)
+                    .rangeT("").rangeC("").rangeZ("")
+                    .monitor(this.taskService).savePath(file_path.getAbsolutePath())
+                    .tileSize(this.tile_size_x, this.tile_size_y).create().export();
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        IJ.log("Export warpy registered image done.");
+
+    }
+
+    protected SourcesProcessor getSourcesProcessorFixed() {
+        return AbstractPairRegistration2DCommand.getChannelProcessorFromCsv(channels_fixed_csv, registration_pair.getFixedSources().length);
+    }
+
+    protected SourcesProcessor getSourcesProcessorMoving() {
+        return AbstractPairRegistration2DCommand.getChannelProcessorFromCsv(channels_moving_csv, registration_pair.getMovingSourcesOrigin().length);
+    }
+}

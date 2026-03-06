@@ -3,7 +3,7 @@ package ch.epfl.biop.registration.source.affine;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.registration.plugin.IRegistrationPlugin;
 import ch.epfl.biop.registration.plugin.RegistrationTypeProperties;
-import ch.epfl.biop.command.register.Sift2DAffineRegisterCommand;
+import ch.epfl.biop.command.register.SourcesSift2DAffineRegisterCommand;
 import net.imglib2.realtransform.AffineTransform3D;
 import org.scijava.command.Command;
 import org.scijava.command.CommandModule;
@@ -65,7 +65,7 @@ public class Sift2DAffineRegistration extends AffineTransformSourceRegistration 
         try {
             Class<? extends Command> registrationCommandClass;
             // Is it supposed to be done on a server ?
-            registrationCommandClass = Sift2DAffineRegisterCommand.class;
+            registrationCommandClass = SourcesSift2DAffineRegisterCommand.class;
 
             // Registration success flag
             boolean success = true;

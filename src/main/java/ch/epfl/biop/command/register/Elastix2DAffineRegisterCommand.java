@@ -16,7 +16,7 @@ import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
  * This command automatically computes the number of scales needed for registration
  * It resamples the original sources in order to allow for a registration based on a specific
  * region and not on the whole image. This also allows to register landmark regions
- * on big images. See {@link RegisterWholeSlideScans2DCommand}
+ * on big images. See {@link Sources2DRegisterCommand}
  */
 
 @Plugin(type = BdvPlaygroundActionCommand.class,

@@ -1,9 +1,9 @@
 package ch.epfl.biop.scijava;
 
-import ch.epfl.biop.bdv.img.bioformats.command.CreateBdvDatasetBioFormatsCommand;
+import ch.epfl.biop.bdv.img.bioformats.command.DatasetFromBioFormatsCreateCommand;
 import ch.epfl.biop.bdv.img.bioformats.command.OpenSampleCommand;
-import ch.epfl.biop.bdv.img.omero.command.CreateBdvDatasetOMEROCommand;
-import ch.epfl.biop.bdv.img.qupath.command.CreateBdvDatasetQuPathCommand;
+import ch.epfl.biop.bdv.img.omero.command.DatasetFromOMEROCreateCommand;
+import ch.epfl.biop.bdv.img.qupath.command.DatasetFromQuPathCreateCommand;
 import ch.epfl.biop.kheops.command.KheopsExportSourcesCommand;
 import org.apache.commons.io.FilenameUtils;
 import org.scijava.Priority;
@@ -36,9 +36,9 @@ public class RegisterBdvPlaygroundExtrasService extends AbstractService implemen
 
     public void initialize() {
         SourceService.registerScijavaCommand(OpenSampleCommand.class);
-        SourceService.registerScijavaCommand(CreateBdvDatasetBioFormatsCommand.class);
-        SourceService.registerScijavaCommand(CreateBdvDatasetOMEROCommand.class);
-        SourceService.registerScijavaCommand(CreateBdvDatasetQuPathCommand.class);
+        SourceService.registerScijavaCommand(DatasetFromBioFormatsCreateCommand.class);
+        SourceService.registerScijavaCommand(DatasetFromOMEROCreateCommand.class);
+        SourceService.registerScijavaCommand(DatasetFromQuPathCreateCommand.class);
         SourceService.registerScijavaCommand(KheopsExportSourcesCommand.class);
         // Adds transfer handler
 
@@ -50,7 +50,7 @@ public class RegisterBdvPlaygroundExtrasService extends AbstractService implemen
 
             @Override
             public void loadFile(File f) {
-                cs.run(CreateBdvDatasetBioFormatsCommand.class,true,
+                cs.run(DatasetFromBioFormatsCreateCommand.class,true,
                         "files", new File[]{f},
                             "datasetname", f.getName()
                         );
@@ -71,7 +71,7 @@ public class RegisterBdvPlaygroundExtrasService extends AbstractService implemen
 
             @Override
             public void loadFile(File f) {
-                cs.run(CreateBdvDatasetQuPathCommand.class,true,
+                cs.run(DatasetFromQuPathCreateCommand.class,true,
                         "qupath_project", f,
                         "datasetname", ""
                 );

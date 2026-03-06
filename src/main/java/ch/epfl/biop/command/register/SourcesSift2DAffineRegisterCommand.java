@@ -1,0 +1,81 @@
+package ch.epfl.biop.command.register;
+
+import ch.epfl.biop.source.register.SIFTRegister;
+import mpicbg.imagefeatures.FloatArray2DSIFT;
+import org.scijava.ItemIO;
+import org.scijava.plugin.Parameter;
+import org.scijava.plugin.Plugin;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
+
+/**
+ * This command automatically computes the number of scales needed for registration
+ * It resamples the original sources in order to allow for a registration based on a specific
+ * region and not on the whole image. This also allows to register landmark regions
+ * on big images. See {@link Sources2DRegisterCommand}
+ */
+
+@Plugin(type = BdvPlaygroundActionCommand.class,
+    //    menuPath = BdvPgMenus.RootMenu+"Source>Register>Obsolete>Register Sources with SIFT (Affine, 2D)",
+        description = "Performs an affine registration in 2D between 2 sources. Low level command which\n"+
+                      "requires many parameters. For more user friendly command, use wizards instead.\n"+
+                      "Outputs the transform to apply to the moving source.")
+public class SourcesSift2DAffineRegisterCommand extends Abstract2DRegistrationInRectangleCommand implements BdvPlaygroundActionCommand {
+
+    private static Logger logger = LoggerFactory.getLogger(SourcesSift2DAffineRegisterCommand.class);
+
+    @Parameter(label = "Transformation model", choices = {"AFFINE", "TRANSLATION"})
+    String transformation_model;
+
+    @Parameter(label = "Invert Moving",
+            description = "When checked, inverts the intensity of the moving image for matching")
+    boolean invert_moving;
+
+    @Parameter(label = "Invert Fixed",
+            description = "When checked, inverts the intensity of the fixed image for matching")
+    boolean invert_fixed;
+
+    @Parameter(type = ItemIO.OUTPUT,
+            description = "Whether the registration completed successfully")
+    boolean success;
+
+    @Override
+    public void run() {
+        FloatArray2DSIFT.Param param = new FloatArray2DSIFT.Param();
+        param.maxOctaveSize = 2048;
+
+        SIFTRegister.MODEL model;
+
+        switch (transformation_model) {
+            case "AFFINE": model = SIFTRegister.MODEL.AFFINE;break;
+            case "TRANSLATION": model = SIFTRegister.MODEL.TRANSLATION; break;
+            default:
+                throw new RuntimeException("Unknown transformation model "+transformation_model);
+        }
+
+        SIFTRegister reg = new SIFTRegister(
+                sources_fixed, level_fixed_source, tp_fixed,invert_fixed,
+                sources_moving, level_moving_source, tp_moving,invert_moving,
+                px_size_in_current_unit,
+                px,py,pz,sx,sy,
+                param,
+                0.92f,
+                25.0f,
+                0.05f,
+                7,
+                model
+                );
+
+        reg.setInterpolate(interpolate);
+
+        success = reg.run();
+
+        if (success) {
+            at3d = reg.getAffineTransform();
+        } else {
+            logger.error("Error during registration: "+reg.getErrorMessage());
+        }
+    }
+
+}

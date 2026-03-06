@@ -4,7 +4,7 @@ import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.bdv.img.legacy.bioformats.command.BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand;
 import ch.epfl.biop.bdv.img.legacy.bioformats.command.BioformatsBigdataviewerBridgeDatasetCommand;
 import ch.epfl.biop.bdv.img.legacy.bioformats.entity.SeriesNumber;
-import ch.epfl.biop.command.io.exporter.ExportToMultipleImagePlusCommand;
+import ch.epfl.biop.command.exporter.SourcesToMultipleImagePlusExportCommand;
 import ch.epfl.biop.source.exporter.IntRangeParser;
 import ij.IJ;
 import ij.ImagePlus;
@@ -21,7 +21,6 @@ import org.scijava.task.Task;
 import org.scijava.task.TaskService;
 import sc.fiji.bdvpg.scijava.services.SourceService;
 import sc.fiji.bdvpg.scijava.services.tree.FilterNode;
-import sc.fiji.bdvpg.scijava.services.tree.SourceTree;
 import sc.fiji.bdvpg.source.SourceAndTimeRange;
 import sc.fiji.bdvpg.source.SourceHelper;
 import sc.fiji.bdvpg.source.transform.SourceTransformHelper;
@@ -113,7 +112,7 @@ public class OMETiffMultiSeriesProcessorExporter {
         rangeSeries.parallelStream().forEach(index -> {
             FilterNode currentSeriesNode = seriesNode.child(index);
                 try {
-                    List<ImagePlus> ij1_images = (List<ImagePlus>) command.run(ExportToMultipleImagePlusCommand.class, false,
+                    List<ImagePlus> ij1_images = (List<ImagePlus>) command.run(SourcesToMultipleImagePlusExportCommand.class, false,
                             "sources", currentSeriesNode.sources(),
                             "level", 0,
                             "range_frames", builder.rangeT,

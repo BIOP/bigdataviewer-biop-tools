@@ -15,7 +15,7 @@ import sc.fiji.bdvpg.services.SourceServices;
 import sc.fiji.bdvpg.source.display.BrightnessAutoAdjuster;
 import sc.fiji.bdvpg.source.register.BigWarpLauncher;
 import sc.fiji.bdvpg.source.transform.SourceRealTransformer;
-import sc.fiji.bdvpg.dataset.importer.SpimDataFromXmlImporter;
+import sc.fiji.bdvpg.dataset.importer.XMLToDatasetImporter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +38,7 @@ public class DemoCachedTransform {
     public static void demo3d() {
         final String filePath = "src/test/resources/mri-stack.xml";
         // Import SpimData
-        SpimDataFromXmlImporter importer = new SpimDataFromXmlImporter(filePath);
+        XMLToDatasetImporter importer = new XMLToDatasetImporter(filePath);
 
         AbstractSpimData<?> spimData = importer.get();
 
@@ -47,7 +47,7 @@ public class DemoCachedTransform {
                 .getSourcesFromDataset(spimData)
                 .get(0);
 
-        importer = new SpimDataFromXmlImporter(filePath);
+        importer = new XMLToDatasetImporter(filePath);
 
         spimData = importer.get();
 

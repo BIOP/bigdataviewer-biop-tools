@@ -1,6 +1,6 @@
 import bdv.util.BdvHandle;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.command.io.exporter.BasicBdvViewToImagePlusCommand;
+import ch.epfl.biop.command.display.bdv.export.BdvViewToImagePlusBasicExportCommand;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;
@@ -8,7 +8,7 @@ import org.scijava.command.CommandService;
 import sc.fiji.bdvpg.viewers.bdv.navigate.ViewerTransformAdjuster;
 import sc.fiji.bdvpg.services.SourceServices;
 import sc.fiji.bdvpg.source.display.BrightnessAutoAdjuster;
-import sc.fiji.bdvpg.dataset.importer.SpimDataFromXmlImporter;
+import sc.fiji.bdvpg.dataset.importer.XMLToDatasetImporter;
 
 public class DemoImagePlusExport
 {
@@ -28,7 +28,7 @@ public class DemoImagePlusExport
     public static void demo() {
         final String filePath = "src/test/resources/mri-stack.xml";
         // Import SpimData
-        SpimDataFromXmlImporter importer = new SpimDataFromXmlImporter(filePath);
+        XMLToDatasetImporter importer = new XMLToDatasetImporter(filePath);
 
         AbstractSpimData<?> spimData = importer.get();
 
@@ -48,7 +48,7 @@ public class DemoImagePlusExport
         // Export
         ij.context()
                 .getService( CommandService.class)
-                .run( BasicBdvViewToImagePlusCommand.class, true,
+                .run( BdvViewToImagePlusBasicExportCommand.class, true,
                         "bdv_h", bdvHandle,
                         "capturename", "image",
                         "zsize", 20,

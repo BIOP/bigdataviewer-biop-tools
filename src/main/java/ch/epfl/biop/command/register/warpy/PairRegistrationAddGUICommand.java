@@ -15,10 +15,10 @@ import org.scijava.object.ObjectService;
 import org.scijava.plugin.Menu;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import sc.fiji.bdvpg.scijava.BdvMenuHelper;
 import sc.fiji.bdvpg.scijava.BdvPgMenus;
 import sc.fiji.bdvpg.viewers.bdv.BdvHandleHelper;
 import sc.fiji.bdvpg.viewers.bdv.navigate.ViewerTransformAdjuster;
-import sc.fiji.bdvpg.scijava.BdvScijavaHelper;
 import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -123,27 +123,27 @@ public class PairRegistrationAddGUICommand implements Command {
         addConfirmationCloseHook(bdvh);
 
         int hierarchyLevelsSkipped = 3;
-        BdvScijavaHelper.addCommandToBdvHandleMenu(bdvh, ctx, PairRegistrationCenterCommand.class,
+        BdvMenuHelper.addCommandToBdvHandleMenu(bdvh, ctx, PairRegistrationCenterCommand.class,
                 hierarchyLevelsSkipped,"registration_pair", registration_pair);
-        BdvScijavaHelper.addCommandToBdvHandleMenu(bdvh, ctx, PairRegistrationRotateCommand.class,
+        BdvMenuHelper.addCommandToBdvHandleMenu(bdvh, ctx, PairRegistrationRotateCommand.class,
                 hierarchyLevelsSkipped,"registration_pair", registration_pair);
-        BdvScijavaHelper.addCommandToBdvHandleMenu(bdvh, ctx, PairRegistrationFlipCommand.class,
+        BdvMenuHelper.addCommandToBdvHandleMenu(bdvh, ctx, PairRegistrationFlipCommand.class,
                 hierarchyLevelsSkipped,"registration_pair", registration_pair);
-        BdvScijavaHelper.addCommandToBdvHandleMenu(bdvh, ctx, PairRegistrationSift2DAffineCommand.class,
+        BdvMenuHelper.addCommandToBdvHandleMenu(bdvh, ctx, PairRegistrationSift2DAffineRegisterCommand.class,
                 hierarchyLevelsSkipped,"registration_pair", registration_pair);
-        BdvScijavaHelper.addCommandToBdvHandleMenu(bdvh, ctx, PairRegistrationElastix2DAffineCommand.class,
+        BdvMenuHelper.addCommandToBdvHandleMenu(bdvh, ctx, PairRegistrationElastix2DAffineRegisterCommand.class,
                 hierarchyLevelsSkipped,"registration_pair", registration_pair);
-        BdvScijavaHelper.addCommandToBdvHandleMenu(bdvh, ctx, PairRegistrationElastix2DSplineCommand.class,
+        BdvMenuHelper.addCommandToBdvHandleMenu(bdvh, ctx, PairRegistrationElastix2DSplineRegisterCommand.class,
                 hierarchyLevelsSkipped,"registration_pair", registration_pair);
-        BdvScijavaHelper.addCommandToBdvHandleMenu(bdvh, ctx, PairRegistrationBigWarp2DSplineCommand.class,
+        BdvMenuHelper.addCommandToBdvHandleMenu(bdvh, ctx, PairRegistrationBigWarp2DSplineRegisterCommand.class,
                 hierarchyLevelsSkipped,"registration_pair", registration_pair);
-        BdvScijavaHelper.addCommandToBdvHandleMenu(bdvh, ctx, PairRegistrationExportToQuPathCommand.class,
+        BdvMenuHelper.addCommandToBdvHandleMenu(bdvh, ctx, PairRegistrationQuPathExportCommand.class,
                 hierarchyLevelsSkipped,"registration_pair", registration_pair);
-        BdvScijavaHelper.addCommandToBdvHandleMenu(bdvh, ctx, PairRegistrationExportToOMETIFFCommand.class,
+        BdvMenuHelper.addCommandToBdvHandleMenu(bdvh, ctx, PairRegistrationOMETIFFExportCommand.class,
                 hierarchyLevelsSkipped,"registration_pair", registration_pair);
-        BdvScijavaHelper.addCommandToBdvHandleMenu(bdvh, ctx, PairRegistrationEditLastRegistrationCommand.class,
+        BdvMenuHelper.addCommandToBdvHandleMenu(bdvh, ctx, PairRegistrationLastRegistrationEditCommand.class,
                 hierarchyLevelsSkipped,"registration_pair", registration_pair);
-        BdvScijavaHelper.addCommandToBdvHandleMenu(bdvh, ctx, PairRegistrationRemoveLastRegistrationCommand.class,
+        BdvMenuHelper.addCommandToBdvHandleMenu(bdvh, ctx, PairRegistrationLastRegistrationRemoveCommand.class,
                 hierarchyLevelsSkipped,"registration_pair", registration_pair);
 
         BdvHandleHelper.setWindowTitle(bdvh, "Warpy Registration: "+registration_pair.getName());

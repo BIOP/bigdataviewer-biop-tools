@@ -32,7 +32,7 @@ import java.util.stream.Stream;
                 "is a thin plate spline transform object that can be applied to other sources then \n" +
                 "edited in BigWarp.")
 
-public class Elastix2DSparsePointsRegisterCommand extends SelectSourcesForRegistrationCommand implements BdvPlaygroundActionCommand {
+public class Elastix2DSparsePointsRegisterCommand extends SourcesForRegistrationSelectCommand implements BdvPlaygroundActionCommand {
 
     private static Logger logger = LoggerFactory.getLogger(Elastix2DSparsePointsRegisterCommand.class);
 

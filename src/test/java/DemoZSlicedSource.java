@@ -11,7 +11,7 @@ import net.imglib2.view.Views;
 import sc.fiji.bdvpg.viewers.bdv.navigate.ViewerTransformAdjuster;
 import sc.fiji.bdvpg.services.SourceServices;
 import sc.fiji.bdvpg.source.display.BrightnessAutoAdjuster;
-import sc.fiji.bdvpg.dataset.importer.SpimDataFromXmlImporter;
+import sc.fiji.bdvpg.dataset.importer.XMLToDatasetImporter;
 
 import java.util.List;
 
@@ -34,7 +34,7 @@ public class DemoZSlicedSource {
         // load and convert the famous blobs image// Gets active BdvHandle instance
         BdvHandle bdv = SourceServices.getBdvDisplayService().getActiveBdv();
         // Import SpimData
-        new SpimDataFromXmlImporter("src/test/resources/mri-stack.xml").run();
+        new XMLToDatasetImporter("src/test/resources/mri-stack.xml").run();
 
         final List<SourceAndConverter<?>> sources = SourceServices.getSourceService().getSources();
 

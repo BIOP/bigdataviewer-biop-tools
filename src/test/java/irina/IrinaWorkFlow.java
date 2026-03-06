@@ -4,10 +4,10 @@ import bdv.util.BigWarpHelper;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.ImagePlusToOMETiff;
 import ch.epfl.biop.OMETiffMultiSeriesProcessorExporter;
-import ch.epfl.biop.bdv.img.bioformats.command.CreateBdvDatasetBioFormatsCommand;
+import ch.epfl.biop.bdv.img.bioformats.command.DatasetFromBioFormatsCreateCommand;
 import ch.epfl.biop.bdv.img.bioformats.entity.FileName;
 import ch.epfl.biop.kheops.KheopsHelper;
-import ch.epfl.biop.command.dataset.DatasetToBigStitcherDatasetCommand;
+import ch.epfl.biop.command.dataset.DatasetXMLToBigStitcherDatasetConvertCommand;
 import ch.epfl.biop.source.exporter.CZTRange;
 import ch.epfl.biop.source.exporter.ImagePlusGetter;
 import ij.ImagePlus;
@@ -27,13 +27,12 @@ import org.scijava.Context;
 import org.scijava.command.CommandService;
 import sc.fiji.bdvpg.scijava.services.SourceService;
 import sc.fiji.bdvpg.scijava.services.tree.FilterNode;
-import sc.fiji.bdvpg.scijava.services.tree.SourceTree;
 import sc.fiji.bdvpg.source.SourceAndTimeRange;
 import sc.fiji.bdvpg.source.importer.EmptySourceCreator;
 import sc.fiji.bdvpg.source.transform.SourceRealTransformer;
 import sc.fiji.bdvpg.source.transform.SourceResampler;
 import sc.fiji.bdvpg.source.transform.SourceTransformHelper;
-import sc.fiji.bdvpg.dataset.exporter.XmlFromSpimDataExporter;
+import sc.fiji.bdvpg.dataset.exporter.DatasetToXMLExporter;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -178,13 +177,13 @@ public class IrinaWorkFlow {
     public static void saveToXmlBdvDataset(Context ctx, List<String> filePaths, String filePath) throws ExecutionException, InterruptedException {
         String datasetName = filePath;
         File[] files = filePaths.stream().map(path -> new File(path)).toArray(File[]::new);
-        AbstractSpimData spimdata = (AbstractSpimData) ctx.getService(CommandService.class).run(CreateBdvDatasetBioFormatsCommand.class,true,
+        AbstractSpimData spimdata = (AbstractSpimData) ctx.getService(CommandService.class).run(DatasetFromBioFormatsCreateCommand.class,true,
                 "datasetname", datasetName,
                 "unit","MICROMETER",
                 "files", files,
                 "splitrgbchannels", false).get().getOutput("spimdata");
 
-        new XmlFromSpimDataExporter(spimdata, filePath, ctx).run();
+        new DatasetToXMLExporter(spimdata, filePath, ctx).run();
 
         SourceService source_service = ctx.getService(SourceService.class);
         source_service.remove(source_service.getSourcesFromDataset(spimdata).toArray(new SourceAndConverter[0])); // Cleanup*/
@@ -228,7 +227,7 @@ public class IrinaWorkFlow {
         List<String> pathsOutput = new ArrayList<>();
         try {
             String datasetName = parentPath.getAbsolutePath();
-            AbstractSpimData spimdata = (AbstractSpimData) ctx.getService(CommandService.class).run(CreateBdvDatasetBioFormatsCommand.class,true,
+            AbstractSpimData spimdata = (AbstractSpimData) ctx.getService(CommandService.class).run(DatasetFromBioFormatsCreateCommand.class,true,
                     "datasetname", datasetName,
                     "unit","MICROMETER",
                     "files", files,
@@ -313,7 +312,7 @@ public class IrinaWorkFlow {
         File fileIn = new File(xmlDataset);
         File fileOut = new File(fileIn.getParent(), FilenameUtils.removeExtension(fileIn.getName())+"-bigstitcher.xml");
         try {
-            command.run(DatasetToBigStitcherDatasetCommand.class,true,
+            command.run(DatasetXMLToBigStitcherDatasetConvertCommand.class,true,
                     "xmlin", fileIn,
                             "xmlout", fileOut,
                     "viewsetupreference", -1
