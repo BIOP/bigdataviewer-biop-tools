@@ -1,16 +1,15 @@
 package ch.epfl.biop.command.display.bdv.settings;
 
-
 import org.scijava.Context;
 import org.scijava.plugin.Menu;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.bdv.supplier.alpha.AlphaBdvSupplier;
 import sc.fiji.bdvpg.bdv.supplier.alpha.AlphaSerializableBdvOptions;
-import sc.fiji.bdvpg.viewers.bdv.supplier.IBdvSupplier;
+import sc.fiji.bdvpg.viewer.bdv.supplier.IBdvSupplier;
 import sc.fiji.bdvpg.scijava.BdvPgMenus;
 import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
-import sc.fiji.bdvpg.scijava.services.SourceBdvDisplayService;
+import sc.fiji.bdvpg.scijava.service.SourceBdvDisplayService;
 
 import java.util.Arrays;
 

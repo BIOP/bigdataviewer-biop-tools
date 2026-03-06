@@ -1,10 +1,10 @@
-package ch.epfl.biop.viewers.bdv;
+package ch.epfl.biop.viewer.bdv;
 
 import bdv.util.BdvHandle;
 import bdv.util.BdvOptions;
 import bdv.util.BdvOverlaySource;
 import bdv.viewer.ViewerPanel;
-import ch.epfl.biop.viewers.bdv.card.CardHelper;
+import ch.epfl.biop.viewer.bdv.card.CardHelper;
 import net.imglib2.RealPoint;
 import net.imglib2.realtransform.AffineTransform3D;
 import org.scijava.ui.behaviour.Behaviour;
@@ -12,7 +12,7 @@ import org.scijava.ui.behaviour.ClickBehaviour;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.util.Behaviours;
 import org.scijava.ui.behaviour.util.TriggerBehaviourBindings;
-import sc.fiji.bdvpg.viewers.bdv.BdvHandleHelper;
+import sc.fiji.bdvpg.viewer.bdv.BdvHandleHelper;
 
 import javax.swing.*;
 import java.awt.*;

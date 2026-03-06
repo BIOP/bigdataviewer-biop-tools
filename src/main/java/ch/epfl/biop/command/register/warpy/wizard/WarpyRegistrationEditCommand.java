@@ -18,7 +18,7 @@ import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
 import sc.fiji.bdvpg.scijava.BdvPgMenus;
-import sc.fiji.bdvpg.services.SourceServices;
+import sc.fiji.bdvpg.service.SourceServices;
 import sc.fiji.bdvpg.source.SourceAndTimeRange;
 import sc.fiji.bdvpg.source.register.BigWarpLauncher;
 import sc.fiji.bdvpg.source.transform.SourceTransformHelper;
@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
 import static bdv.ui.BdvDefaultCards.DEFAULT_SOURCEGROUPS_CARD;
 import static bdv.ui.BdvDefaultCards.DEFAULT_VIEWERMODES_CARD;
 import static bdv.util.RealTransformHelper.BigWarpFileFromRealTransform;
-import static ch.epfl.biop.viewers.bdv.RectangleSelectorBehaviour.box;
+import static ch.epfl.biop.viewer.bdv.RectangleSelectorBehaviour.box;
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
         menu = {

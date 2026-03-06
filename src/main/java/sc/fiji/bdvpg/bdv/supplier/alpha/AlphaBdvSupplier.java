@@ -22,14 +22,14 @@ import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.integer.ByteType;
 import net.imglib2.type.numeric.real.FloatType;
 import org.jetbrains.annotations.NotNull;
-import sc.fiji.bdvpg.viewers.bdv.BdvHandleHelper;
-import sc.fiji.bdvpg.viewers.bdv.navigate.RayCastPositionerSliderAdder;
-import sc.fiji.bdvpg.viewers.bdv.navigate.SourceNavigatorSliderAdder;
-import sc.fiji.bdvpg.viewers.bdv.navigate.TimepointAdapterAdder;
-import sc.fiji.bdvpg.viewers.bdv.overlay.SourceNameOverlayAdder;
+import sc.fiji.bdvpg.viewer.bdv.BdvHandleHelper;
+import sc.fiji.bdvpg.viewer.bdv.navigate.RayCastPositionerSliderAdder;
+import sc.fiji.bdvpg.viewer.bdv.navigate.SourceNavigatorSliderAdder;
+import sc.fiji.bdvpg.viewer.bdv.navigate.TimepointAdapterAdder;
+import sc.fiji.bdvpg.viewer.bdv.overlay.SourceNameOverlayAdder;
 import sc.fiji.bdvpg.bdv.supplier.BdvSupplierHelper;
-import sc.fiji.bdvpg.viewers.bdv.supplier.IBdvSupplier;
-import sc.fiji.bdvpg.services.SourceServices;
+import sc.fiji.bdvpg.viewer.bdv.supplier.IBdvSupplier;
+import sc.fiji.bdvpg.service.SourceServices;
 
 import javax.swing.*;
 import java.awt.Font;
@@ -74,7 +74,7 @@ public class AlphaBdvSupplier implements IBdvSupplier {
 
     /**
      * Sources Metadata (how to retrieve and when to create alpha sources) backed by a
-     * {@link sc.fiji.bdvpg.scijava.services.SourceService}
+     * {@link sc.fiji.bdvpg.scijava.service.SourceService}
      */
     final public static SourcesMetadata sourcesMetadata = new SourcesMetadata() {
         @Override

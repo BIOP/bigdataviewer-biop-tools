@@ -13,9 +13,9 @@ import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.view.Views;
 import org.scijava.Context;
-import sc.fiji.bdvpg.scijava.services.RenamableSource;
-import sc.fiji.bdvpg.scijava.services.tree.inspect.ISourceInspector;
-import sc.fiji.bdvpg.services.ISourceService;
+import sc.fiji.bdvpg.scijava.service.RenamableSource;
+import sc.fiji.bdvpg.scijava.service.tree.inspect.ISourceInspector;
+import sc.fiji.bdvpg.service.ISourceService;
 import sc.fiji.labkit.ui.segmentation.SegmentationUtils;
 import sc.fiji.labkit.ui.segmentation.Segmenter;
 import sc.fiji.labkit.ui.segmentation.weka.TrainableSegmentationSegmenter;
@@ -23,7 +23,7 @@ import sc.fiji.labkit.ui.segmentation.weka.TrainableSegmentationSegmenter;
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.*;
 
-import static sc.fiji.bdvpg.scijava.services.tree.inspect.SourceInspector.appendInspectorResult;
+import static sc.fiji.bdvpg.scijava.service.tree.inspect.SourceInspector.appendInspectorResult;
 
 /**
  * A lazy Source that applies a Labkit classifier to input sources.

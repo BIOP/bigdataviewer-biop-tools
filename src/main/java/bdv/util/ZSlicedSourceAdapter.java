@@ -36,8 +36,8 @@ import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sc.fiji.bdvpg.scijava.adapter.source.ISourceAdapter;
-import sc.fiji.bdvpg.services.SourceAdapter;
-import sc.fiji.bdvpg.services.SourceServices;
+import sc.fiji.bdvpg.service.SourceAdapter;
+import sc.fiji.bdvpg.service.SourceServices;
 
 import java.lang.reflect.Type;
 

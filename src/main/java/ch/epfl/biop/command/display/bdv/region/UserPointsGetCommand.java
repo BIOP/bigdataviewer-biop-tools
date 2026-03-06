@@ -1,10 +1,10 @@
 package ch.epfl.biop.command.display.bdv.region;
 
 import bdv.util.BdvHandle;
-import ch.epfl.biop.viewers.bdv.BdvSourcesDemo;
-import ch.epfl.biop.viewers.bdv.PointsSelectorBehaviour;
-import ch.epfl.biop.viewers.bdv.graphicalhandle.GraphicalHandle;
-import ch.epfl.biop.viewers.bdv.graphicalhandle.XYRectangleGraphicalHandle;
+import ch.epfl.biop.viewer.bdv.BdvSourcesDemo;
+import ch.epfl.biop.viewer.bdv.PointsSelectorBehaviour;
+import ch.epfl.biop.viewer.bdv.graphicalhandle.GraphicalHandle;
+import ch.epfl.biop.viewer.bdv.graphicalhandle.XYRectangleGraphicalHandle;
 import net.imagej.ImageJ;
 import net.imglib2.RealPoint;
 import org.scijava.ItemIO;

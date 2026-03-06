@@ -12,12 +12,12 @@ import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.RealType;
 import org.junit.After;
 import org.junit.Test;
-import sc.fiji.bdvpg.viewers.bdv.supplier.IBdvSupplier;
+import sc.fiji.bdvpg.viewer.bdv.supplier.IBdvSupplier;
 import sc.fiji.bdvpg.bdv.supplier.alpha.AlphaBdvSupplier;
 import sc.fiji.bdvpg.bdv.supplier.alpha.AlphaSerializableBdvOptions;
 import bdv.util.converters.RealARGBColorConverter;
-import sc.fiji.bdvpg.services.SourceServiceLoader;
-import sc.fiji.bdvpg.services.SourceServices;
+import sc.fiji.bdvpg.service.SourceServiceLoader;
+import sc.fiji.bdvpg.service.SourceServices;
 
 public class AlphaDemoWithCustomConverter {
 

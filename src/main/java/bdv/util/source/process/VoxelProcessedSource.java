@@ -12,16 +12,16 @@ import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.view.ExtendedRandomAccessibleInterval;
 import net.imglib2.view.Views;
-import sc.fiji.bdvpg.scijava.services.RenamableSource;
-import sc.fiji.bdvpg.scijava.services.tree.inspect.ISourceInspector;
-import sc.fiji.bdvpg.services.ISourceService;
+import sc.fiji.bdvpg.scijava.service.RenamableSource;
+import sc.fiji.bdvpg.scijava.service.tree.inspect.ISourceInspector;
+import sc.fiji.bdvpg.service.ISourceService;
 import sc.fiji.bdvpg.source.SourceHelper;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.HashSet;
 import java.util.Set;
 
-import static sc.fiji.bdvpg.scijava.services.tree.inspect.SourceInspector.appendInspectorResult;
+import static sc.fiji.bdvpg.scijava.service.tree.inspect.SourceInspector.appendInspectorResult;
 
 public class VoxelProcessedSource<I,O extends NumericType<O>> implements Source<O>, ISourceInspector {
 

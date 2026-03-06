@@ -1,4 +1,4 @@
-package ch.epfl.biop.viewers.bdv;
+package ch.epfl.biop.viewer.bdv;
 
 import bdv.util.BdvOverlay;
 import bdv.viewer.SourceAndConverter;

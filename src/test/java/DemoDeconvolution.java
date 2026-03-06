@@ -34,7 +34,7 @@ import net.haesleinhuepf.clij.CLIJ;
 import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;
 import org.apache.commons.io.FilenameUtils;
-import sc.fiji.bdvpg.scijava.services.SourceService;
+import sc.fiji.bdvpg.scijava.service.SourceService;
 
 import java.io.File;
 import java.util.concurrent.Future;

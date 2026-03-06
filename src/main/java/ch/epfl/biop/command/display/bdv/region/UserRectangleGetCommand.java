@@ -1,8 +1,8 @@
 package ch.epfl.biop.command.display.bdv.region;
 
 import bdv.util.BdvHandle;
-import ch.epfl.biop.viewers.bdv.BdvSourcesDemo;
-import ch.epfl.biop.viewers.bdv.RectangleSelectorBehaviour;
+import ch.epfl.biop.viewer.bdv.BdvSourcesDemo;
+import ch.epfl.biop.viewer.bdv.RectangleSelectorBehaviour;
 import net.imagej.ImageJ;
 import net.imglib2.RealPoint;
 import org.scijava.ItemIO;

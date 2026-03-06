@@ -1,4 +1,4 @@
-package ch.epfl.biop.viewers.bdv.graphicalhandle;
+package ch.epfl.biop.viewer.bdv.graphicalhandle;
 
 import org.scijava.ui.behaviour.util.Behaviours;
 import org.scijava.ui.behaviour.util.TriggerBehaviourBindings;

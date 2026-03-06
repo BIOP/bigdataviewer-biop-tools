@@ -6,7 +6,7 @@ import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;
 import net.imglib2.realtransform.RealTransform;
-import sc.fiji.bdvpg.services.SourceServices;
+import sc.fiji.bdvpg.service.SourceServices;
 import sc.fiji.bdvpg.source.display.BrightnessAdjuster;
 import sc.fiji.bdvpg.dataset.importer.XMLToDatasetImporter;
 

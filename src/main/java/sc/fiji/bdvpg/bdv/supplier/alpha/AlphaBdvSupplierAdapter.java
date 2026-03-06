@@ -1,8 +1,8 @@
 package sc.fiji.bdvpg.bdv.supplier.alpha;
 
 import org.scijava.plugin.Plugin;
-import sc.fiji.bdvpg.viewers.bdv.supplier.DefaultBdvSupplier;
-import sc.fiji.bdvpg.viewers.bdv.supplier.IBdvSupplier;
+import sc.fiji.bdvpg.viewer.bdv.supplier.DefaultBdvSupplier;
+import sc.fiji.bdvpg.viewer.bdv.supplier.IBdvSupplier;
 import sc.fiji.persist.IClassRuntimeAdapter;
 
 /**

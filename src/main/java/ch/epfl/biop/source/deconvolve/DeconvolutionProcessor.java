@@ -40,9 +40,9 @@ import net.imglib2.type.PrimitiveType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
 import sc.fiji.bdvpg.cache.GlobalLoaderCache;
-import sc.fiji.bdvpg.scijava.services.RenamableSource;
-import sc.fiji.bdvpg.scijava.services.tree.inspect.ISourceInspector;
-import sc.fiji.bdvpg.services.ISourceService;
+import sc.fiji.bdvpg.scijava.service.RenamableSource;
+import sc.fiji.bdvpg.scijava.service.tree.inspect.ISourceInspector;
+import sc.fiji.bdvpg.service.ISourceService;
 import sc.fiji.bdvpg.source.SourceHelper;
 
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -53,7 +53,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static sc.fiji.bdvpg.scijava.services.tree.inspect.SourceInspector.appendInspectorResult;
+import static sc.fiji.bdvpg.scijava.service.tree.inspect.SourceInspector.appendInspectorResult;
 
 /**
  * A named processor class for Richardson-Lucy deconvolution that can be serialized.

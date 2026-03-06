@@ -1,4 +1,4 @@
-package ch.epfl.biop.viewers.bdv.graphicalhandle;
+package ch.epfl.biop.viewer.bdv.graphicalhandle;
 
 import bdv.viewer.SynchronizedViewerState;
 import net.imglib2.RealPoint;

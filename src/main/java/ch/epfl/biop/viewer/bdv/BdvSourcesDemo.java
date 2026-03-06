@@ -1,4 +1,4 @@
-package ch.epfl.biop.viewers.bdv;
+package ch.epfl.biop.viewer.bdv;
 
 import bdv.util.BdvFunctions;
 import bdv.util.BdvHandle;
@@ -11,7 +11,7 @@ import mpicbg.spim.data.XmlIoSpimData;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.realtransform.AffineTransform3D;
-import sc.fiji.bdvpg.services.SourceServices;
+import sc.fiji.bdvpg.service.SourceServices;
 
 /**
  * Source Selector Behaviour Demo

@@ -3,7 +3,7 @@ import ch.epfl.biop.command.workflow.lls7.LLS7DatasetOpenCommand;
 import ch.epfl.biop.command.workflow.lls7.LLS7ZDriftCompensateCommand;
 import net.imagej.ImageJ;
 import org.apache.commons.io.FilenameUtils;
-import sc.fiji.bdvpg.scijava.services.SourceService;
+import sc.fiji.bdvpg.scijava.service.SourceService;
 
 import java.io.File;
 

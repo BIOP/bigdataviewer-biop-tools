@@ -33,7 +33,7 @@ import org.scijava.task.TaskService;
 import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
 import sc.fiji.bdvpg.dataset.importer.XMLToDatasetImporter;
 import sc.fiji.bdvpg.scijava.BdvPgMenus;
-import sc.fiji.bdvpg.scijava.services.SourceService;
+import sc.fiji.bdvpg.scijava.service.SourceService;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -44,7 +44,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static sc.fiji.bdvpg.services.ISourceService.SPIM_DATA_INFO;
+import static sc.fiji.bdvpg.service.ISourceService.SPIM_DATA_INFO;
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
         //menuPath = BdvPgMenus.RootMenu+"Export>Dataset - Fuse BigStitcher Dataset To OME-TIFF",

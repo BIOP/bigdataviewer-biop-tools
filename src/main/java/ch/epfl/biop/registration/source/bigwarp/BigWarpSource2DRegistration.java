@@ -9,8 +9,8 @@ import ch.epfl.biop.registration.plugin.IRegistrationPlugin;
 import ch.epfl.biop.registration.plugin.RegistrationTypeProperties;
 import ch.epfl.biop.registration.source.spline.RealTransformSourceRegistration;
 import org.scijava.plugin.Plugin;
-import sc.fiji.bdvpg.viewers.bdv.BdvHandleHelper;
-import sc.fiji.bdvpg.services.SourceServices;
+import sc.fiji.bdvpg.viewer.bdv.BdvHandleHelper;
+import sc.fiji.bdvpg.service.SourceServices;
 import sc.fiji.bdvpg.source.register.BigWarpLauncher;
 
 import java.awt.EventQueue;

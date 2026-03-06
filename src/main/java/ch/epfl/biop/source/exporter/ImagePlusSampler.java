@@ -9,7 +9,7 @@ import net.imglib2.type.numeric.NumericType;
 import org.scijava.task.Task;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sc.fiji.bdvpg.services.SourceServices;
+import sc.fiji.bdvpg.service.SourceServices;
 import sc.fiji.bdvpg.source.SourceHelper;
 import sc.fiji.bdvpg.source.transform.SourceResampler;
 

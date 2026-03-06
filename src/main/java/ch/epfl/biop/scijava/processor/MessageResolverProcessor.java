@@ -1,4 +1,4 @@
-package ch.epfl.biop.scijava.processors;
+package ch.epfl.biop.scijava.processor;
 
 import org.scijava.ItemVisibility;
 import org.scijava.log.LogService;

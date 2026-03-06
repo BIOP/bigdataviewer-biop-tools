@@ -4,7 +4,7 @@ import bdv.util.BdvHandle;
 import bdv.util.source.alpha.AlphaSourceHelper;
 import bdv.util.source.fused.AlphaFusedResampledSource;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.bdv.img.bioformats.command.CreateBdvDatasetBioFormatsCommand;
+import ch.epfl.biop.bdv.img.bioformats.command.DatasetFromBioFormatsCreateCommand;
 import ch.epfl.biop.source.SourceFuserAndResampler;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imagej.ImageJ;
@@ -16,8 +16,8 @@ import net.imglib2.realtransform.inverse.WrappedIterativeInvertibleRealTransform
 import net.imglib2.type.numeric.real.FloatType;
 import org.junit.After;
 import org.junit.Test;
-import sc.fiji.bdvpg.viewers.bdv.navigate.ViewerTransformAdjuster;
-import sc.fiji.bdvpg.services.SourceServices;
+import sc.fiji.bdvpg.viewer.bdv.navigate.ViewerTransformAdjuster;
+import sc.fiji.bdvpg.service.SourceServices;
 import sc.fiji.bdvpg.source.display.BrightnessAutoAdjuster;
 import sc.fiji.bdvpg.source.importer.EmptySourceCreator;
 import sc.fiji.bdvpg.source.transform.SourceAffineTransformer;
@@ -85,7 +85,7 @@ public class ManyWarpedSourcesFusedDemo {
         String datasetName = "Icons";
         AbstractSpimData<?> spimdata = null;
         try {
-            spimdata = (AbstractSpimData<?>) ij.command().run(CreateBdvDatasetBioFormatsCommand.class, true,
+            spimdata = (AbstractSpimData<?>) ij.command().run(DatasetFromBioFormatsCreateCommand.class, true,
                     "files", new File[] {
                             new File("src/test/resources/ij.jpg"),
                             //new File("src/test/resources/fiji.jpg"),

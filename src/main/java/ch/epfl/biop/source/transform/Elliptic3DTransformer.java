@@ -4,7 +4,7 @@ import bdv.img.WarpedSource;
 import bdv.util.Elliptical3DTransform;
 import bdv.viewer.SourceAndConverter;
 import net.imglib2.realtransform.BoundingBoxEstimation;
-import sc.fiji.bdvpg.services.SourceServices;
+import sc.fiji.bdvpg.service.SourceServices;
 
 import java.util.function.Function;
 

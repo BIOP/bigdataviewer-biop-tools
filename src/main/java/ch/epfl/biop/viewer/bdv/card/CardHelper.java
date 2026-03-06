@@ -1,4 +1,4 @@
-package ch.epfl.biop.viewers.bdv.card;
+package ch.epfl.biop.viewer.bdv.card;
 
 import bdv.util.BdvHandle;
 

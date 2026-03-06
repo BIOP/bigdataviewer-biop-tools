@@ -1,4 +1,4 @@
-package ch.epfl.biop.viewers.bdv.graphicalhandle;
+package ch.epfl.biop.viewer.bdv.graphicalhandle;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;

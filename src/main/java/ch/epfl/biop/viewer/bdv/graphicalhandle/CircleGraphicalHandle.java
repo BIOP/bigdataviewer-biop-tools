@@ -1,4 +1,4 @@
-package ch.epfl.biop.viewers.bdv.graphicalhandle;
+package ch.epfl.biop.viewer.bdv.graphicalhandle;
 
 import org.scijava.ui.behaviour.Behaviour;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
@@ -8,13 +8,18 @@ import org.scijava.ui.behaviour.util.TriggerBehaviourBindings;
 import java.awt.*;
 import java.util.function.Supplier;
 
-public class SquareGraphicalHandle extends GraphicalHandle{
+/**
+ * Circular Graphical Handle {@link GraphicalHandle}, which radius, position, and color is defined by
+ * functional interfaces.
+ */
+
+public class CircleGraphicalHandle extends GraphicalHandle{
 
     Supplier<Integer[]> coords;
     Supplier<Integer> radius;
     Supplier<Integer[]> color;
 
-    public SquareGraphicalHandle(GraphicalHandleListener ghl,
+    public CircleGraphicalHandle(GraphicalHandleListener ghl,
                                  Behaviours behaviours,
                                  TriggerBehaviourBindings bindings,
                                  String nameMap,
@@ -27,8 +32,8 @@ public class SquareGraphicalHandle extends GraphicalHandle{
         this.coords = coords;
     }
 
-    public SquareGraphicalHandle(GraphicalHandleListener ghl,
-                                 Behaviour behaviour, String behaviourName, String trigger,
+    public CircleGraphicalHandle(GraphicalHandleListener ghl,
+                                 Behaviour behaviour,String behaviourName, String trigger,
                                  TriggerBehaviourBindings bindings,
                                  Supplier<Integer[]> coords,
                                  Supplier<Integer> radius,
@@ -54,7 +59,7 @@ public class SquareGraphicalHandle extends GraphicalHandle{
         if (this.mouseAbove) {
             r=(int) (r*1.2);
         }
-        g.fillRect(pos[0] - r, pos[1] - r, 2*r, 2*r);
+        g.fillOval(pos[0] - r, pos[1] - r, 2*r, 2*r);
     }
 
     @Override
@@ -67,7 +72,10 @@ public class SquareGraphicalHandle extends GraphicalHandle{
         Integer[] pos = coords.get();
         double r = (double)(radius.get());
         if ((pos == null) || (pos[0] == null) || (pos[1] == null)) return false;
-        return (x>pos[0]-r)&&(x<pos[0]+r)&&(y>pos[1]-r)&&(y<pos[1]+r);
+        double dx = (double)pos[0]-(double)x;
+        double dy = (double)pos[1]-(double)y;
+        double d2 = dx*dx+dy*dy;
+        return d2<(r*r);
     }
 
     @Override

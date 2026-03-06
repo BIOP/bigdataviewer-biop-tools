@@ -1,14 +1,14 @@
-package ch.epfl.biop.viewers.bdv;
+package ch.epfl.biop.viewer.bdv;
 
 import bdv.util.BdvHandle;
 import bdv.util.BdvOptions;
 import bdv.util.BdvOverlaySource;
 import bdv.viewer.ViewerPanel;
 import bdv.viewer.ViewerState;
-import ch.epfl.biop.viewers.bdv.card.CardHelper;
-import ch.epfl.biop.viewers.bdv.graphicalhandle.CircleGraphicalHandle;
-import ch.epfl.biop.viewers.bdv.graphicalhandle.GraphicalHandle;
-import ch.epfl.biop.viewers.bdv.graphicalhandle.GraphicalHandleListener;
+import ch.epfl.biop.viewer.bdv.card.CardHelper;
+import ch.epfl.biop.viewer.bdv.graphicalhandle.CircleGraphicalHandle;
+import ch.epfl.biop.viewer.bdv.graphicalhandle.GraphicalHandle;
+import ch.epfl.biop.viewer.bdv.graphicalhandle.GraphicalHandleListener;
 import net.imglib2.RealPoint;
 import net.imglib2.realtransform.AffineTransform3D;
 import org.scijava.ui.behaviour.Behaviour;
@@ -17,7 +17,7 @@ import org.scijava.ui.behaviour.DragBehaviour;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.util.Behaviours;
 import org.scijava.ui.behaviour.util.TriggerBehaviourBindings;
-import sc.fiji.bdvpg.viewers.bdv.BdvHandleHelper;
+import sc.fiji.bdvpg.viewer.bdv.BdvHandleHelper;
 
 import javax.swing.*;
 import java.awt.event.MouseEvent;
@@ -29,7 +29,7 @@ import java.util.function.Supplier;
 
 import static bdv.ui.BdvDefaultCards.*;
 import static bdv.util.BdvFunctions.showOverlay;
-import static ch.epfl.biop.viewers.bdv.RectangleSelectorBehaviour.box;
+import static ch.epfl.biop.viewer.bdv.RectangleSelectorBehaviour.box;
 
 /**
  * Appends and controls a {@link PointsSelectorBehaviour} in a {@link BdvHandle}

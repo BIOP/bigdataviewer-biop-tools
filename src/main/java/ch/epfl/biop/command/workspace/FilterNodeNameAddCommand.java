@@ -5,9 +5,9 @@ import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.BdvPgMenus;
 import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
-import sc.fiji.bdvpg.scijava.services.SourceService;
-import sc.fiji.bdvpg.scijava.services.tree.FilterNode;
-import sc.fiji.bdvpg.scijava.services.tree.SourceTreeModel;
+import sc.fiji.bdvpg.scijava.service.SourceService;
+import sc.fiji.bdvpg.scijava.service.tree.FilterNode;
+import sc.fiji.bdvpg.scijava.service.tree.SourceTreeModel;
 
 
 @Plugin(type = BdvPlaygroundActionCommand.class,

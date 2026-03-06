@@ -21,13 +21,13 @@ import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.util.Behaviours;
-import sc.fiji.bdvpg.viewers.bdv.BdvHandleHelper;
-import sc.fiji.bdvpg.viewers.behaviour.EditorBehaviourUnInstaller;
-import sc.fiji.bdvpg.viewers.behaviour.SourceContextMenuClickBehaviour;
+import sc.fiji.bdvpg.viewer.bdv.BdvHandleHelper;
+import sc.fiji.bdvpg.viewer.behaviour.EditorBehaviourUnInstaller;
+import sc.fiji.bdvpg.viewer.behaviour.SourceContextMenuClickBehaviour;
 import sc.fiji.bdvpg.scijava.BdvPgMenus;
 import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
-import sc.fiji.bdvpg.scijava.services.SourceService;
-import sc.fiji.bdvpg.services.SourceServices;
+import sc.fiji.bdvpg.scijava.service.SourceService;
+import sc.fiji.bdvpg.service.SourceServices;
 import sc.fiji.bdvpg.source.SourceHelper;
 import sc.fiji.bdvpg.source.transform.SourceAffineTransformer;
 
@@ -35,9 +35,9 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static sc.fiji.bdvpg.scijava.services.SourceService.getCommandName;
-import static sc.fiji.bdvpg.services.ISourceService.SPIM_DATA_INFO;
-import static sc.fiji.bdvpg.viewers.ViewerOrthoSyncStarter.MatrixApproxEquals;
+import static sc.fiji.bdvpg.scijava.service.SourceService.getCommandName;
+import static sc.fiji.bdvpg.service.ISourceService.SPIM_DATA_INFO;
+import static sc.fiji.bdvpg.viewer.ViewerOrthoSyncStarter.MatrixApproxEquals;
 
 /**
  * Command which display sources on a grid in BigDataViewer

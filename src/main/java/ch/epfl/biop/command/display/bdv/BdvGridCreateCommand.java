@@ -9,7 +9,7 @@ import sc.fiji.bdvpg.bdv.supplier.grid.GridBdvSupplier;
 import sc.fiji.bdvpg.scijava.BdvPgMenus;
 import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
 
-import static sc.fiji.bdvpg.scijava.services.SourceService.getCommandName;
+import static sc.fiji.bdvpg.scijava.service.SourceService.getCommandName;
 
 /**
  * Command which display sources on a grid in BigDataViewer

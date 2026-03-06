@@ -6,8 +6,8 @@ import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
 import com.amazonaws.services.kms.model.UnsupportedOperationException;
 import net.imglib2.type.numeric.real.FloatType;
-import sc.fiji.bdvpg.services.ISourceService;
-import sc.fiji.bdvpg.services.SourceServices;
+import sc.fiji.bdvpg.service.ISourceService;
+import sc.fiji.bdvpg.service.SourceServices;
 
 import java.util.List;
 import java.util.Optional;
@@ -15,7 +15,7 @@ import java.util.Optional;
 /**
  * Helper function which creates or retrieves {@link IAlphaSource} linked to potentially
  * any {@link Source}. This helper uses the weak keys cache of
- * bigdataviewer playground's {@link sc.fiji.bdvpg.scijava.services.SourceService}
+ * bigdataviewer playground's {@link sc.fiji.bdvpg.scijava.service.SourceService}
  * to avoid re-creating multiple alpha sources.
  * <p>
  * {@link WarpedSource} as well as TransformedSource {@link TransformedSource} are supported

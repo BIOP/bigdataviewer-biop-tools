@@ -5,7 +5,7 @@ import bdv.util.source.alpha.AlphaSourceHelper;
 import bdv.util.source.fused.AlphaFusedResampledSource;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.DatasetHelper;
-import ch.epfl.biop.bdv.img.bioformats.command.CreateBdvDatasetBioFormatsCommand;
+import ch.epfl.biop.bdv.img.bioformats.command.DatasetFromBioFormatsCreateCommand;
 import ch.epfl.biop.source.EmptyMultiResolutionSourceCreator;
 import ch.epfl.biop.source.SourceFuserAndResampler;
 import ij.IJ;
@@ -20,9 +20,9 @@ import net.imglib2.realtransform.inverse.WrappedIterativeInvertibleRealTransform
 import net.imglib2.type.numeric.real.FloatType;
 import org.junit.After;
 import org.junit.Test;
-import sc.fiji.bdvpg.viewers.bdv.navigate.ViewerTransformAdjuster;
-import sc.fiji.bdvpg.scijava.services.SourceService;
-import sc.fiji.bdvpg.services.SourceServices;
+import sc.fiji.bdvpg.viewer.bdv.navigate.ViewerTransformAdjuster;
+import sc.fiji.bdvpg.scijava.service.SourceService;
+import sc.fiji.bdvpg.service.SourceServices;
 import sc.fiji.bdvpg.source.SourceHelper;
 import sc.fiji.bdvpg.source.transform.SourceAffineTransformer;
 import sc.fiji.bdvpg.source.transform.SourceRealTransformer;
@@ -53,7 +53,7 @@ public class CrazyMultireWarpedSourcesFusedDemo {
             folderVsi = DatasetHelper.dowloadBrainVSIDataset();
 
 
-            ij.command().run(CreateBdvDatasetBioFormatsCommand.class, true,
+            ij.command().run(DatasetFromBioFormatsCreateCommand.class, true,
                 "files", new File[] {
                             new File(folderVsi+"Slide_00.vsi"),
                             new File(folderVsi+"Slide_01.vsi"),
