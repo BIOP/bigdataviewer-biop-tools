@@ -18,7 +18,7 @@ import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
                 @Menu(label = "Register Pair - Remove Last Registration", weight = 10.5)
         },
         description = "Removes the last registration step from the registration pair")
-public class PairRegistrationLastRegistrationRemoveCommand implements Command {
+public class PairRegistrationLastRegistrationRemoveCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(label = "Registration Pair",
             description = "The registration pair whose last step will be removed")

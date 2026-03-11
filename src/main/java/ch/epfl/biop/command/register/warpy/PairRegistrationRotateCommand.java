@@ -26,7 +26,7 @@ import java.util.Map;
                 @Menu(label = "Register Pair - Rotate", weight = 3)
         },
         description = "Applies a rotation transformation to the moving sources around X, Y, or Z axis")
-public class PairRegistrationRotateCommand extends AbstractPairRegistration2DCommand implements Command {
+public class PairRegistrationRotateCommand extends AbstractPairRegistration2DCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(label = "Angle",
             description = "Rotation angle in degrees",

@@ -37,7 +37,7 @@ import java.nio.charset.Charset;
                 @Menu(label = "Warpy - Create Registration", weight = 0)
         },
         description = "Interactive wizard for registering QuPath entries with visual landmark editing")
-public class WarpyRegisterCommand implements Command {
+public class WarpyRegisterCommand implements BdvPlaygroundActionCommand {
 
     private static Logger logger = LoggerFactory.getLogger(WarpyRegisterCommand.class);
 

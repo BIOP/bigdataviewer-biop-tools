@@ -17,6 +17,7 @@ import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
 import sc.fiji.bdvpg.scijava.service.SourceService;
 import sc.fiji.bdvpg.service.SourceServices;
 import sc.fiji.bdvpg.source.importer.EmptySourceCreator;
@@ -36,7 +37,7 @@ import java.util.stream.Collectors;
 @Plugin(type = Command.class,
         menuPath = "Image>Stacks>Rotation 3D Resample",
         description = "Reorients a 3D ImagePlus so that two ROI points become aligned along Z axis")
-public class ImagePlusRot3DReSampleCommand<T extends NumericType<T> & NativeType<T>> implements Command {
+public class ImagePlusRot3DReSampleCommand<T extends NumericType<T> & NativeType<T>> implements BdvPlaygroundActionCommand {
 
     @Parameter(label = "Input Image",
             description = "The 3D image to reorient")

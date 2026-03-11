@@ -34,7 +34,7 @@ import java.util.List;
                 @Menu(label = "Register Pair - Export To OME-TIFF", weight = 11)
         },
         description = "Exports the registered images as a pyramidal OME-TIFF file")
-public class PairRegistrationOMETIFFExportCommand implements Command {
+public class PairRegistrationOMETIFFExportCommand implements BdvPlaygroundActionCommand {
 
     @Parameter
     Context ctx;

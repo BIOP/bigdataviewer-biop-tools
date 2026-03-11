@@ -3,8 +3,9 @@ package ch.epfl.biop.command.register;
 import bdv.viewer.SourceAndConverter;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
+import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
 
-abstract public class SourcesForRegistrationSelectCommand implements Command {
+abstract public class SourcesForRegistrationSelectCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(label = "Fixed Source(s)",
             description = "Reference source(s) that remain stationary during registration")

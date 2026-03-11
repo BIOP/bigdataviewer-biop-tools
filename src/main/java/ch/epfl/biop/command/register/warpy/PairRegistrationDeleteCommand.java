@@ -20,7 +20,7 @@ import java.io.IOException;
                 @Menu(label = "Delete Registration Pair", weight = 14)
         },
         description = "Removes a registration pair from memory and closes associated resources")
-public class PairRegistrationDeleteCommand implements Command {
+public class PairRegistrationDeleteCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(label = "Registration Pair",
             description = "The registration pair to delete")

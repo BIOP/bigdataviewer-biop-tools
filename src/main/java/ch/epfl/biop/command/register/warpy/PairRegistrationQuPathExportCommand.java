@@ -19,7 +19,7 @@ import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
                 @Menu(label = "Register Pair - Export To QuPath", weight = 12)
         },
         description = "Exports the registration transforms to a QuPath project for use in Warpy")
-public class PairRegistrationQuPathExportCommand implements Command {
+public class PairRegistrationQuPathExportCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(label = "Registration Pair",
             description = "The registration pair to export")

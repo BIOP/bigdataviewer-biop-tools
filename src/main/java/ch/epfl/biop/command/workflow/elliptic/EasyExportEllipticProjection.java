@@ -31,7 +31,7 @@ import java.util.function.Function;
 @Plugin(type = BdvPlaygroundActionCommand.class,
         menuPath = BdvPgMenus.RootMenu+"Specialized Workflows>Elliptic Transform>Source - Export Elliptic 3D Transformed Sources (Interactive Box)",
         description = "Interactively select a region in spherical coordinates and export to ImagePlus")
-public class EasyExportEllipticProjection implements Command {
+public class EasyExportEllipticProjection implements BdvPlaygroundActionCommand {
 
     @Parameter(label = "Select Source(s)",
             callback = "validateMessage",

@@ -1,5 +1,5 @@
 
-import ch.epfl.biop.bdv.img.qupath.command.CreateBdvDatasetQuPathCommand;
+import ch.epfl.biop.bdv.img.qupath.command.DatasetFromQuPathCreateCommand;
 import loci.common.DebugTools;
 import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;
@@ -14,7 +14,7 @@ public class DemoOpenQuPathProject {
         final ImageJ ij = new ImageJ();
         ij.ui().showUI();
         DebugTools.enableLogging("INFO");
-        ij.command().run(CreateBdvDatasetQuPathCommand.class, true).get();
+        ij.command().run(DatasetFromQuPathCreateCommand.class, true).get();
 
     }
 }

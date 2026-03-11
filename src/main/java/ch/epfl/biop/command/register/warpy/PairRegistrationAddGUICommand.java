@@ -40,7 +40,7 @@ import java.util.Set;
                 @Menu(label = "Register Pair - Add GUI", weight = 2)
         },
         description = "Opens a BigDataViewer window with  controls for performing registrations")
-public class PairRegistrationAddGUICommand implements Command {
+public class PairRegistrationAddGUICommand implements BdvPlaygroundActionCommand {
 
     @Parameter(label = "Registration Pair",
             description = "The registration pair to visualize and control")

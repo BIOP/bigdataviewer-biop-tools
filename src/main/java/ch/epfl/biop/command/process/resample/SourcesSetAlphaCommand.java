@@ -15,7 +15,7 @@ import sc.fiji.bdvpg.scijava.BdvPgMenus;
 @Plugin(type = BdvPlaygroundActionCommand.class,
         menuPath = BdvPgMenus.RootMenu+"Process>Fuse & Resample>Source - Set Linear Blending Mask (L1 Alpha)",
         description = "Sets L1 distance-based alpha blending for smooth transitions at source edges")
-public class SourcesSetAlphaCommand implements Command {
+public class SourcesSetAlphaCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(label = "Select Source(s)",
             description = "The sources to apply L1 alpha blending to")

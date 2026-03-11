@@ -24,7 +24,7 @@ import java.util.Map;
         },
         description = "Performs automatic 2D affine registration using SIFT feature matching")
 
-public class PairRegistrationSift2DAffineRegisterCommand extends AbstractPairRegistrationInROI2DCommand implements Command {
+public class PairRegistrationSift2DAffineRegisterCommand extends AbstractPairRegistrationInROI2DCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(label = "Transformation model", choices = {"AFFINE", "TRANSLATION"})
     String transformation_model;

@@ -47,7 +47,7 @@ import static bdv.util.Elliptical3DTransform.RADIUS_Z;
 @Plugin(type = BdvPlaygroundActionCommand.class,
         menuPath = BdvPgMenus.RootMenu+"Specialized Workflows>Elliptic Transform>Source - Export Elliptic 3D Transformed Sources",
         description = "Exports elliptically-transformed sources to an ImagePlus with spherical coordinate sampling")
-public class ExportEllipticProjection implements Command {
+public class ExportEllipticProjection implements BdvPlaygroundActionCommand {
 
     @Parameter(label = "", visibility = ItemVisibility.MESSAGE, required = false, persist = false)
     String export_sources_message = "<html><h2>Exported Elliptic Transformed Source</h2></html>";

@@ -24,7 +24,7 @@ import java.util.Map;
         },
         description = "Opens BigWarp for interactive manual landmark-based spline registration")
 
-public class PairRegistrationBigWarp2DSplineRegisterCommand extends AbstractPairRegistration2DCommand implements Command {
+public class PairRegistrationBigWarp2DSplineRegisterCommand extends AbstractPairRegistration2DCommand implements BdvPlaygroundActionCommand {
 
     @Override
     protected void addRegistrationParameters(Map<String, Object> parameters) {

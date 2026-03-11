@@ -25,6 +25,7 @@ import org.scijava.Context;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
+import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
 import sc.fiji.persist.ScijavaGsonHelper;
 
 import java.io.File;
@@ -43,7 +44,7 @@ import java.util.stream.Collectors;
 
 // Not maintained.
 @Deprecated
-public class MamutWarperCommand implements Command {
+public class MamutWarperCommand implements BdvPlaygroundActionCommand {
 
     @SuppressWarnings( "unused" )
     @Parameter

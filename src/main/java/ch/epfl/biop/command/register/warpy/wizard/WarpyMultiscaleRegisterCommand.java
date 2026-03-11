@@ -38,7 +38,7 @@ import java.nio.charset.Charset;
                 @Menu(label = "Warpy - Create Multiscale Registration", weight = 0.5)
         },
         description = "Performs automated multiscale registration between QuPath entries, saved to the project")
-public class WarpyMultiscaleRegisterCommand implements Command {
+public class WarpyMultiscaleRegisterCommand implements BdvPlaygroundActionCommand {
 
     private static Logger logger = LoggerFactory.getLogger(WarpyMultiscaleRegisterCommand.class);
 

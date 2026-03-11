@@ -12,7 +12,7 @@ import sc.fiji.bdvpg.scijava.BdvPgMenus;
 import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
 
 //@Plugin(type = BdvPlaygroundActionCommand.class, menuPath = BdvPgMenus.RootMenu+"Source>Convert>To 16 bits")
-public class ConvertSourceTo16BitCommand implements Command {
+public class ConvertSourceTo16BitCommand implements BdvPlaygroundActionCommand {
 
     @Parameter
     SourceAndConverter<?>[] sources;

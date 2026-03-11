@@ -13,6 +13,7 @@ import net.imglib2.type.numeric.integer.UnsignedShortType;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
+import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
 import sc.fiji.bdvpg.scijava.service.SourceService;
 import sc.fiji.bdvpg.service.SourceServices;
 import sc.fiji.bdvpg.source.SourceHelper;
@@ -21,7 +22,7 @@ import sc.fiji.bdvpg.source.display.BrightnessAdjuster;
 
 //@Plugin(type = Command.class, menuPath = BdvPgMenus.RootMenu+"Source>Transform>Create Ellipsoid Source",
 //        description = "Creates an ellipsoid source from an elliptical 3D transform for visualization")
-public class DisplayEllipseFromTransformCommand implements Command {
+public class DisplayEllipseFromTransformCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(type = ItemIO.OUTPUT,
             label = "Ellipsoid Source",

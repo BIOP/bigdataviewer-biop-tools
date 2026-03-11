@@ -44,7 +44,7 @@ import static ch.epfl.biop.command.register.warpy.wizard.WarpyRegistrationEditCo
                 @Menu(label = "Warpy - Export Registered Image", weight = 10)
         },
         description = "Exports Warpy-registered sources from a QuPath project to a fused OME-TIFF file")
-public class WarpyRegisteredImageExportCommand implements Command {
+public class WarpyRegisteredImageExportCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(visibility = ItemVisibility.MESSAGE, persist = false, style = "message")
     String message = "<html><h1>QuPath registration exporter</h1>Please select a moving and a fixed source<br></html>";

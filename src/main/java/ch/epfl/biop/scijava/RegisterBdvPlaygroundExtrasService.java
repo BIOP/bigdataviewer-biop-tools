@@ -13,7 +13,6 @@ import org.scijava.plugin.Plugin;
 import org.scijava.service.AbstractService;
 import org.scijava.service.SciJavaService;
 import org.scijava.service.Service;
-import sc.fiji.bdvpg.bdv.supplier.biop.BdvSetBiopViewerSettingsCommand;
 import sc.fiji.bdvpg.scijava.service.SourceService;
 import sc.fiji.bdvpg.scijava.service.tree.swingdnd.SourceServiceTreeTransferHandler;
 

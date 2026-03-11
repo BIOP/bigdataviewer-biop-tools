@@ -26,7 +26,7 @@ import java.util.Map;
                 @Menu(label = "Register Pair - Flip", weight = 4)
         },
         description = "Applies a flip transformation to the moving sources along X, Y, or Z axis")
-public class PairRegistrationFlipCommand extends AbstractPairRegistration2DCommand implements Command {
+public class PairRegistrationFlipCommand extends AbstractPairRegistration2DCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(label = "Axis",
             description = "Axis along which to flip the moving sources",

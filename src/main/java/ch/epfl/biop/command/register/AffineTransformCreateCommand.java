@@ -7,16 +7,17 @@ import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
 import sc.fiji.bdvpg.scijava.BdvPgMenus;
 
 /**
  * Command to create a 3D affine transform from a 4x4 matrix specification.
  */
-@Plugin(type = Command.class, initializer = "init",
+@Plugin(type = BdvPlaygroundActionCommand.class, initializer = "init",
         menuPath = BdvPgMenus.RootMenu+"Process>Transform>New Affine Transform",
         description = "Creates an affine transform from a 4x4 matrix for use in other commands",
         headless = true)
-public class AffineTransformCreateCommand implements Command {
+public class AffineTransformCreateCommand implements BdvPlaygroundActionCommand {
 
     private static Logger logger = LoggerFactory.getLogger(AffineTransformCreateCommand.class);
 

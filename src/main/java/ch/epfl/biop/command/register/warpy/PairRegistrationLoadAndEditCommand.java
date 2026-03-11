@@ -46,7 +46,7 @@ import static net.imglib2.realtransform.RealTransformHelper.getTransformSequence
                 @Menu(label = "Register Pair - Load And Edit An Existing Registration", weight = 1.5)
         },
         description = "Reconstructs a registration pair sequence from an existing QuPath registration file")
-public class PairRegistrationLoadAndEditCommand implements Command {
+public class PairRegistrationLoadAndEditCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(visibility = ItemVisibility.MESSAGE, persist = false, style = "message")
     String message = "<html><h1>Load QuPath registration</h1>Please select moving and fixed sources<br></html>";

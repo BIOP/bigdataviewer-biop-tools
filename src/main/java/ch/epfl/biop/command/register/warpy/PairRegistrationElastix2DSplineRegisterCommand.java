@@ -4,7 +4,6 @@ import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.registration.Registration;
 import ch.epfl.biop.registration.source.spline.Elastix2DSplineRegistration;
 import ch.epfl.biop.source.processor.SourcesProcessor;
-import org.scijava.command.Command;
 import org.scijava.plugin.Menu;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
@@ -24,7 +23,7 @@ import java.util.Map;
         },
         description = "Performs automatic 2D B-spline deformable registration using Elastix")
 
-public class PairRegistrationElastix2DSplineRegisterCommand extends AbstractPairRegistrationInROI2DCommand implements Command {
+public class PairRegistrationElastix2DSplineRegisterCommand extends AbstractPairRegistrationInROI2DCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(label = "Control Points X",
             description = "Number of B-spline control points along X axis (minimum 2, more = finer deformation)")

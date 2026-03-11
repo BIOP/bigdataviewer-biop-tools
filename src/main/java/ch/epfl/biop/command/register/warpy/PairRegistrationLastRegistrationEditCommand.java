@@ -18,7 +18,7 @@ import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
                 @Menu(label = "Register Pair - Edit Last Registration", weight = 10)
         },
         description = "Re-opens the last registration step for editing (e.g., adjust landmarks)")
-public class PairRegistrationLastRegistrationEditCommand implements Command {
+public class PairRegistrationLastRegistrationEditCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(label = "Registration Pair",
             description = "The registration pair whose last step will be edited")

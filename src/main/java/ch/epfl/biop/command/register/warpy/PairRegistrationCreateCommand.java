@@ -23,7 +23,7 @@ import java.util.List;
                 @Menu(label = "Create Registration Pair", weight = 1)
         },
         description = "Creates a new registration pair from fixed and moving sources for the Warpy workflow")
-public class PairRegistrationCreateCommand implements Command {
+public class PairRegistrationCreateCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(label = "Fixed Source(s)",
             description = "The reference source(s) that will remain stationary during registration",

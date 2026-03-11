@@ -24,7 +24,7 @@ import java.util.Map;
         },
         description = "Performs automatic 2D affine registration using Elastix")
 
-public class PairRegistrationElastix2DAffineRegisterCommand extends AbstractPairRegistrationInROI2DCommand implements Command {
+public class PairRegistrationElastix2DAffineRegisterCommand extends AbstractPairRegistrationInROI2DCommand implements BdvPlaygroundActionCommand {
 
     @Parameter(label = "Fixed Channels",
             description = "Channel indices of the fixed image to use for registration (comma separated, e.g., '0' or '0,1')")

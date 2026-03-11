@@ -50,7 +50,7 @@ import static ch.epfl.biop.viewer.bdv.RectangleSelectorBehaviour.box;
                 @Menu(label = "Warpy - Edit Registration", weight = 1)
         },
         description = "Opens BigWarp to manually edit an existing Warpy registration between QuPath entries")
-public class WarpyRegistrationEditCommand implements Command {
+public class WarpyRegistrationEditCommand implements BdvPlaygroundActionCommand {
 
 
     @Parameter(visibility = ItemVisibility.MESSAGE, persist = false, style = "message")

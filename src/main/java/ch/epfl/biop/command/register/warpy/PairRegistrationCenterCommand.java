@@ -26,7 +26,7 @@ import java.util.Map;
                 @Menu(label = "Register Pair - Center Moving Sources On Fixed Sources", weight = 5)
         },
         description = "Applies a translation to center the moving sources over the fixed sources")
-public class PairRegistrationCenterCommand extends AbstractPairRegistration2DCommand implements Command {
+public class PairRegistrationCenterCommand extends AbstractPairRegistration2DCommand implements BdvPlaygroundActionCommand {
 
     @Override
     protected void addRegistrationParameters(Map<String, Object> parameters) {

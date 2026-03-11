@@ -10,6 +10,7 @@ import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.convert.ConvertService;
 import org.scijava.plugin.Parameter;
+import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -22,7 +23,7 @@ import java.util.stream.Collectors;
  * Abstract base class for 2D registration commands that operate on registration pairs.
  * Provides the common framework for executing pair-based registrations.
  */
-abstract public class AbstractPairRegistration2DCommand implements Command {
+abstract public class AbstractPairRegistration2DCommand implements BdvPlaygroundActionCommand {
 
     @Parameter
     Context ctx;
