@@ -3,7 +3,7 @@ package process;
 import bdv.cache.SharedQueue;
 import bdv.util.source.process.VoxelProcessedSource;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.sourceandconverter.SourceVoxelProcessor;
+import ch.epfl.biop.source.SourceVoxelProcessor;
 import loci.common.DebugTools;
 import net.imagej.ImageJ;
 import net.imglib2.Cursor;

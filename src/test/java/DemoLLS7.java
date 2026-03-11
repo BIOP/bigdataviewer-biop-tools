@@ -1,7 +1,7 @@
 import bdv.util.BdvHandle;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.DatasetHelper;
-import ch.epfl.biop.bdv.img.bioformats.command.CreateBdvDatasetBioFormatsCommand;
+import ch.epfl.biop.bdv.img.bioformats.command.DatasetFromBioFormatsCreateCommand;
 import mpicbg.spim.data.generic.AbstractSpimData;
 
 import java.io.File;
@@ -25,7 +25,7 @@ public class DemoLLS7 {
                 "disable_memo", false
         ).get().getOutput("spimdata");
 
-        SourceAndConverter<?>[] eggChamberSources = ss.getSourceAndConverterFromSpimdata(dataset).toArray(new SourceAndConverter<?>[0]);
+        SourceAndConverter<?>[] eggChamberSources = ss.getSourcesFromDataset(dataset).toArray(new SourceAndConverter<?>[0]);
 
         BdvHandle bdvh = ds.getNewBdv();*/
 

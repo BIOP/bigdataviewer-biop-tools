@@ -5,9 +5,9 @@ import bdv.util.source.alpha.AlphaSourceHelper;
 import bdv.util.source.fused.AlphaFusedResampledSource;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.DatasetHelper;
-import ch.epfl.biop.bdv.img.bioformats.command.CreateBdvDatasetBioFormatsCommand;
-import ch.epfl.biop.sourceandconverter.EmptyMultiResolutionSourceAndConverterCreator;
-import ch.epfl.biop.sourceandconverter.SourceFuserAndResampler;
+import ch.epfl.biop.bdv.img.bioformats.command.DatasetFromBioFormatsCreateCommand;
+import ch.epfl.biop.source.EmptyMultiResolutionSourceCreator;
+import ch.epfl.biop.source.SourceFuserAndResampler;
 import ij.IJ;
 import loci.common.DebugTools;
 import net.imagej.ImageJ;
@@ -20,12 +20,12 @@ import net.imglib2.realtransform.inverse.WrappedIterativeInvertibleRealTransform
 import net.imglib2.type.numeric.real.FloatType;
 import org.junit.After;
 import org.junit.Test;
-import sc.fiji.bdvpg.bdv.navigate.ViewerTransformAdjuster;
-import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceAffineTransformer;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceRealTransformer;
+import sc.fiji.bdvpg.viewer.bdv.navigate.ViewerTransformAdjuster;
+import sc.fiji.bdvpg.scijava.service.SourceService;
+import sc.fiji.bdvpg.service.SourceServices;
+import sc.fiji.bdvpg.source.SourceHelper;
+import sc.fiji.bdvpg.source.transform.SourceAffineTransformer;
+import sc.fiji.bdvpg.source.transform.SourceRealTransformer;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -53,7 +53,7 @@ public class CrazyMultireWarpedSourcesFusedDemo {
             folderVsi = DatasetHelper.dowloadBrainVSIDataset();
 
 
-            ij.command().run(CreateBdvDatasetBioFormatsCommand.class, true,
+            ij.command().run(DatasetFromBioFormatsCreateCommand.class, true,
                 "files", new File[] {
                             new File(folderVsi+"Slide_00.vsi"),
                             new File(folderVsi+"Slide_01.vsi"),
@@ -72,26 +72,26 @@ public class CrazyMultireWarpedSourcesFusedDemo {
         }
 
         List<SourceAndConverter<?>> sources =
-                ij.get(SourceAndConverterService.class).getUI()
-                  .getSourceAndConvertersFromPath(datasetName+">Channel>FL DAPI");
+                ij.get(SourceService.class).tree()
+                  .getSources(datasetName+">Channel>FL DAPI");
 
         List<SourceAndConverter<?>> sources_0 = new ArrayList<>();
 
         sources_0.addAll(demo(sources, nSourcesInX));
 
-        sources = ij.get(SourceAndConverterService.class).getUI()
-                    .getSourceAndConvertersFromPath(datasetName+">Channel>FL FITC");
+        sources = ij.get(SourceService.class).tree()
+                    .getSources(datasetName+">Channel>FL FITC");
 
         List<SourceAndConverter<?>> sources_1 = new ArrayList<>();
         sources_1.addAll(demo(sources, nSourcesInX));
 
-        sources = ij.get(SourceAndConverterService.class).getUI()
-                    .getSourceAndConvertersFromPath(datasetName+">Channel>FL CY3");
+        sources = ij.get(SourceService.class).tree()
+                    .getSources(datasetName+">Channel>FL CY3");
 
         List<SourceAndConverter<?>> sources_2 = new ArrayList<>();
         sources_2.addAll(demo(sources, nSourcesInX));
 
-        //sources_2.forEach(SourceAndConverterServices.getSourceAndConverterService()::register);
+        //sources_2.forEach(SourceServices.getSourceService()::register);
 
         double pxSize = 0.0002;//*10;
 
@@ -105,7 +105,7 @@ public class CrazyMultireWarpedSourcesFusedDemo {
         IJ.log("Making a virtual ["+nPixX+"x"+nPixY+"] Image");
 
         SourceAndConverter<?> model =
-                new EmptyMultiResolutionSourceAndConverterCreator(
+                new EmptyMultiResolutionSourceCreator(
                         "Model",
                         location,
                         nPixX,
@@ -113,8 +113,8 @@ public class CrazyMultireWarpedSourcesFusedDemo {
                         1,1,
                         2,2,2,16).get();
 
-        SourceAndConverterServices.getSourceAndConverterService().register(model);
-        BdvHandle bdvh = SourceAndConverterServices.getBdvDisplayService().getNewBdv();
+        SourceServices.getSourceService().register(model);
+        BdvHandle bdvh = SourceServices.getBdvDisplayService().getNewBdv();
 
 
         SourceAndConverter<?> fused_0 = new SourceFuserAndResampler(sources_0,
@@ -125,7 +125,7 @@ public class CrazyMultireWarpedSourcesFusedDemo {
                 256, 256, 1, -1,8).get();
 
 
-        SourceAndConverterServices.getBdvDisplayService().show(bdvh, fused_0);
+        SourceServices.getBdvDisplayService().show(bdvh, fused_0);
 
         new ViewerTransformAdjuster(bdvh, fused_0).run();
 
@@ -137,7 +137,7 @@ public class CrazyMultireWarpedSourcesFusedDemo {
                 256, 256, 1, -1, 8).get();
 
 
-        SourceAndConverterServices.getBdvDisplayService().show(bdvh, fused_1);
+        SourceServices.getBdvDisplayService().show(bdvh, fused_1);
 
         SourceAndConverter<?> fused_2 = new SourceFuserAndResampler(sources_2,
                 //AlphaFusedResampledSource.AVERAGE,
@@ -146,7 +146,7 @@ public class CrazyMultireWarpedSourcesFusedDemo {
                 true, true, false, 0,
                 256, 256, 1, -1,8).get();
 
-        SourceAndConverterServices.getBdvDisplayService().show(bdvh, fused_2);
+        SourceServices.getBdvDisplayService().show(bdvh, fused_2);
 
         /*try {
             DebugTools.setRootLevel("OFF");
@@ -211,7 +211,7 @@ public class CrazyMultireWarpedSourcesFusedDemo {
 
     public static List<SourceAndConverter<?>> demo(List<SourceAndConverter<?>> sources, int numberOfSourcesInOneAxis) {
 
-        ArrayList<SourceAndConverter<?>> sacs = new ArrayList<>();
+        ArrayList<SourceAndConverter<?>> sources_ = new ArrayList<>();
         //ini++;
         Random generator = new Random(200+ini);
 
@@ -220,9 +220,9 @@ public class CrazyMultireWarpedSourcesFusedDemo {
             for (int y = 0; y < numberOfSourcesInOneAxis; y++) {
                 // For each source
 
-                SourceAndConverter<?> sac = sources.get(sourceIndex);
-                SourceAndConverter<FloatType> alphaSac = AlphaSourceHelper.getOrBuildAlphaSource(sac);
-                RealPoint center = SourceAndConverterHelper.getSourceAndConverterCenterPoint(sac, 0);
+                SourceAndConverter<?> source = sources.get(sourceIndex);
+                SourceAndConverter<FloatType> alphaSac = AlphaSourceHelper.getOrBuildAlphaSource(source);
+                RealPoint center = SourceHelper.getSourceCenterPoint(source, 0);
                 AffineTransform3D at3d = new AffineTransform3D();
 
                 //at3d.rotate(2, generator.nextDouble()*6.0); // Rotate along Z
@@ -230,7 +230,7 @@ public class CrazyMultireWarpedSourcesFusedDemo {
                 at3d.translate(8 * (x+1)-center.getDoublePosition(0),
                         6 * (y+1)-center.getDoublePosition(1), -center.getDoublePosition(2)); // random translation
 
-                RealPoint ptC = SourceAndConverterHelper.getSourceAndConverterCenterPoint(sac,0);
+                RealPoint ptC = SourceHelper.getSourceCenterPoint(source,0);
                 double r = 1;
                 double xc = ptC.getDoublePosition(0);
                 double yc = ptC.getDoublePosition(1);
@@ -270,20 +270,20 @@ public class CrazyMultireWarpedSourcesFusedDemo {
                 WrappedIterativeInvertibleRealTransform invertibleRealTransform = new WrappedIterativeInvertibleRealTransform(rt);
                 InvertibleWrapped2DTransformAs3D rt3d = new InvertibleWrapped2DTransformAs3D(invertibleRealTransform);
 
-                SourceAndConverter<?> warped_sac = new SourceRealTransformer<>(sac, rt3d).get();
-                SourceAndConverterServices
-                        .getSourceAndConverterService()
-                                .register(warped_sac);
+                SourceAndConverter<?> warped_source = new SourceRealTransformer<>(source, rt3d).get();
+                SourceServices
+                        .getSourceService()
+                                .register(warped_source);
 
-                AlphaSourceHelper.setAlphaSource(warped_sac, alphaSac); // Keeps bounds
-                SourceAndConverter<?> transformedSac = new SourceAffineTransformer<>(warped_sac, at3d).get();
+                AlphaSourceHelper.setAlphaSource(warped_source, alphaSac); // Keeps bounds
+                SourceAndConverter<?> transformedSac = new SourceAffineTransformer<>(warped_source, at3d).get();
 
-                sacs.add(transformedSac);
+                sources_.add(transformedSac);
                 sourceIndex++;
                 sourceIndex = sourceIndex % sources.size();
             }
         }
 
-        return sacs;
+        return sources_;
     }
 }

@@ -10,9 +10,6 @@ public class SimpleIJLaunch {
 
         DebugTools.enableLogging("INFO");
         ij.ui().showUI();
-
-        //dowloadBrainVSIDataset();
-
     }
 
 }

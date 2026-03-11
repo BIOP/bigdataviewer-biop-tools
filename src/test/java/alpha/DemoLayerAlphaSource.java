@@ -73,32 +73,32 @@ public class DemoLayerAlphaSource {
         BdvOptions options = BdvOptions.options();
         options = options.accumulateProjectorFactory(new LayerAlphaProjectorFactory(new SourcesMetadata() {
             @Override
-            public boolean isAlphaSource(SourceAndConverter sac) {
-                if (sourceToAlpha.containsValue(sac)) return true;
+            public boolean isAlphaSource(SourceAndConverter source) {
+                if (sourceToAlpha.containsValue(source)) return true;
                 return false;
             }
 
             @Override
-            public boolean hasAlphaSource(SourceAndConverter sac) {
-                if (sourceToAlpha.containsKey(sac)) {
-                    return sourceToAlpha.get(sac) != null;
+            public boolean hasAlphaSource(SourceAndConverter source) {
+                if (sourceToAlpha.containsKey(source)) {
+                    return sourceToAlpha.get(source) != null;
                 }
                 return false;
             }
 
             @Override
-            public SourceAndConverter getAlphaSource(SourceAndConverter sac) {
-                if (sourceToAlpha.containsKey(sac)) {
-                    return sourceToAlpha.get(sac);
+            public SourceAndConverter getAlphaSource(SourceAndConverter source) {
+                if (sourceToAlpha.containsKey(source)) {
+                    return sourceToAlpha.get(source);
                 }
                 return null;
             }
         },
             new LayerMetadata() {
                 @Override
-                public Layer getLayer(SourceAndConverter sac) {
-                    if (sourceToLayer.containsKey(sac)) {
-                        return sourceToLayer.get(sac);
+                public Layer getLayer(SourceAndConverter source) {
+                    if (sourceToLayer.containsKey(source)) {
+                        return sourceToLayer.get(source);
                     } else {
                         return layers.get(0);
                     }
@@ -116,13 +116,13 @@ public class DemoLayerAlphaSource {
 
         Source<FloatType> alpha = new AlphaSourceRAI(stackSources.get(0).getSources().get(0).getSpimSource(), 1f);
 
-        SourceAndConverter<FloatType> alpha_sac =
+        SourceAndConverter<FloatType> alpha_source =
                 new SourceAndConverter<>(alpha, mc);
 
-        bdvh.getViewerPanel().state().addSource(alpha_sac); // No converter setup
-        bdvh.getViewerPanel().state().setSourceActive(alpha_sac, true);
+        bdvh.getViewerPanel().state().addSource(alpha_source); // No converter setup
+        bdvh.getViewerPanel().state().setSourceActive(alpha_source, true);
 
-        sourceToAlpha.put(bdvh.getViewerPanel().state().getSources().get(0), alpha_sac);
+        sourceToAlpha.put(bdvh.getViewerPanel().state().getSources().get(0), alpha_source);
         sourceToLayer.put(bdvh.getViewerPanel().state().getSources().get(0), layers.get(1));
 
         sd = BdvSampleDatasets.getTestSpimData();
@@ -134,12 +134,12 @@ public class DemoLayerAlphaSource {
 
         AlphaSource alpha_anim = new AlphaSourceRAI(stackSources.get(0).getSources().get(0).getSpimSource(), 0.8f);
 
-        alpha_sac = new SourceAndConverter<>(alpha_anim, mc);
+        alpha_source = new SourceAndConverter<>(alpha_anim, mc);
 
-        bdvh.getViewerPanel().state().addSource(alpha_sac); // No converter setup
-        bdvh.getViewerPanel().state().setSourceActive(alpha_sac, true);
+        bdvh.getViewerPanel().state().addSource(alpha_source); // No converter setup
+        bdvh.getViewerPanel().state().setSourceActive(alpha_source, true);
 
-        sourceToAlpha.put(bdvh.getViewerPanel().state().getSources().get(2), alpha_sac);
+        sourceToAlpha.put(bdvh.getViewerPanel().state().getSources().get(2), alpha_source);
         sourceToLayer.put(bdvh.getViewerPanel().state().getSources().get(2), layers.get(2));
 
     }

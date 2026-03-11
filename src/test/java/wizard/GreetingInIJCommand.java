@@ -4,9 +4,10 @@ import ij.IJ;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
 
-@Plugin(type = Command.class)
-public class GreetingInIJCommand implements Command {
+@Plugin(type = BdvPlaygroundActionCommand.class)
+public class GreetingInIJCommand implements BdvPlaygroundActionCommand {
 
     @Parameter
     String name;

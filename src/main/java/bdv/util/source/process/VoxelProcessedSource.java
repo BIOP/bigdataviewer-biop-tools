@@ -12,16 +12,16 @@ import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.NumericType;
 import net.imglib2.view.ExtendedRandomAccessibleInterval;
 import net.imglib2.view.Views;
-import sc.fiji.bdvpg.scijava.services.ui.RenamableSourceAndConverter;
-import sc.fiji.bdvpg.scijava.services.ui.inspect.ISourceInspector;
-import sc.fiji.bdvpg.services.ISourceAndConverterService;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
+import sc.fiji.bdvpg.scijava.service.RenamableSource;
+import sc.fiji.bdvpg.scijava.service.tree.inspect.ISourceInspector;
+import sc.fiji.bdvpg.service.ISourceService;
+import sc.fiji.bdvpg.source.SourceHelper;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.HashSet;
 import java.util.Set;
 
-import static sc.fiji.bdvpg.scijava.services.ui.SourceAndConverterInspector.appendInspectorResult;
+import static sc.fiji.bdvpg.scijava.service.tree.inspect.SourceInspector.appendInspectorResult;
 
 public class VoxelProcessedSource<I,O extends NumericType<O>> implements Source<O>, ISourceInspector {
 
@@ -116,7 +116,7 @@ public class VoxelProcessedSource<I,O extends NumericType<O>> implements Source<
     }
 
     @Override
-    public Set<SourceAndConverter<?>> inspect(DefaultMutableTreeNode parent, SourceAndConverter<?> sac, ISourceAndConverterService sourceAndConverterService, boolean registerIntermediateSources) {
+    public Set<SourceAndConverter<?>> inspect(DefaultMutableTreeNode parent, SourceAndConverter<?> source, ISourceService SourceService, boolean registerIntermediateSources) {
         DefaultMutableTreeNode nameNode = new DefaultMutableTreeNode(
                 "Name: " + this.name);
         parent.add(nameNode);
@@ -126,33 +126,33 @@ public class VoxelProcessedSource<I,O extends NumericType<O>> implements Source<
 
         HashSet subSources = new HashSet<>();
 
-        if (!sourceAndConverterService.getSourceAndConvertersFromSource(getOriginSource()).isEmpty()) {
+        if (!SourceService.getSourcesFromSpimSource(getOriginSource()).isEmpty()) {
             // at least a SourceAndConverter already exists for this source
-            sourceAndConverterService.getSourceAndConvertersFromSource(getOriginSource()).forEach((src) -> {
+            SourceService.getSourcesFromSpimSource(getOriginSource()).forEach((src) -> {
                 DefaultMutableTreeNode wrappedSourceNode =
-                        new DefaultMutableTreeNode(new RenamableSourceAndConverter(src));
+                        new DefaultMutableTreeNode(new RenamableSource(src));
                 originalSource.add(wrappedSourceNode);
                 subSources.addAll(appendInspectorResult(wrappedSourceNode, src,
-                        sourceAndConverterService, registerIntermediateSources));
+                        SourceService, registerIntermediateSources));
             });
         } else {
             // no source and converter exist for this source : creates it
-            SourceAndConverter<?> src = SourceAndConverterHelper
+            SourceAndConverter<?> src = SourceHelper
                     .createSourceAndConverter(origin);
             if (registerIntermediateSources) {
-                sourceAndConverterService.register(src);
+                SourceService.register(src);
             }
             DefaultMutableTreeNode wrappedSourceNode = new DefaultMutableTreeNode(
-                    new RenamableSourceAndConverter(src));
+                    new RenamableSource(src));
             originalSource.add(wrappedSourceNode);
             subSources.addAll(appendInspectorResult(wrappedSourceNode, src,
-                    sourceAndConverterService, registerIntermediateSources));
+                    SourceService, registerIntermediateSources));
         }
 
         if (this.processor instanceof ISourceInspector) {
             ISourceInspector inspector = (ISourceInspector) processor;
             DefaultMutableTreeNode processorNode = new DefaultMutableTreeNode("Processor");
-            inspector.inspect(processorNode, null, sourceAndConverterService, registerIntermediateSources);
+            inspector.inspect(processorNode, null, SourceService, registerIntermediateSources);
             parent.add(processorNode);
         }
         return subSources;

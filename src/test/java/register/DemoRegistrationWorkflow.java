@@ -1,8 +1,5 @@
 package register;
 
-import ch.epfl.biop.bdv.img.qupath.command.CreateBdvDatasetQuPathCommand;
-import ch.epfl.biop.registration.scijava.command.PairRegistrationCreateCommand;
-import ch.epfl.biop.registration.scijava.command.PairRegistrationSift2DAffineCommand;
 import loci.common.DebugTools;
 import net.imagej.ImageJ;
 

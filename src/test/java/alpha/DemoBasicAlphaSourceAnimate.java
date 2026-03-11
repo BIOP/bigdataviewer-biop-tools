@@ -36,11 +36,11 @@ public class DemoBasicAlphaSourceAnimate {
 
         Source<FloatType> alpha = new AlphaSourceRAI(stackSources.get(0).getSources().get(0).getSpimSource(), 1f);
 
-        SourceAndConverter<FloatType> alpha_sac =
+        SourceAndConverter<FloatType> alpha_source =
                 new SourceAndConverter<>(alpha, mc);
 
-        bdvh.getViewerPanel().state().addSource(alpha_sac); // No converter setup
-        bdvh.getViewerPanel().state().setSourceActive(alpha_sac, true);
+        bdvh.getViewerPanel().state().addSource(alpha_source); // No converter setup
+        bdvh.getViewerPanel().state().setSourceActive(alpha_source, true);
 
         sd = BdvSampleDatasets.getTestSpimData();
 
@@ -51,10 +51,10 @@ public class DemoBasicAlphaSourceAnimate {
 
         AlphaSource alpha_anim = new AlphaSourceRAI(stackSources.get(0).getSources().get(0).getSpimSource(), 0.5f);
 
-        alpha_sac = new SourceAndConverter<>(alpha_anim, mc);
+        alpha_source = new SourceAndConverter<>(alpha_anim, mc);
 
-        bdvh.getViewerPanel().state().addSource(alpha_sac); // No converter setup
-        bdvh.getViewerPanel().state().setSourceActive(alpha_sac, true);
+        bdvh.getViewerPanel().state().addSource(alpha_source); // No converter setup
+        bdvh.getViewerPanel().state().setSourceActive(alpha_source, true);
 
         Thread animate_alpha = new Thread(() -> {
             int i=0;

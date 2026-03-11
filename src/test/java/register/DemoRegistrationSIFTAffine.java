@@ -9,7 +9,7 @@ import ch.epfl.biop.bdv.img.imageplus.ImagePlusToSpimData;
 import ch.epfl.biop.bdv.select.SelectedSourcesListener;
 import ch.epfl.biop.bdv.select.SourceSelectorBehaviour;
 import ch.epfl.biop.bdv.select.ToggleListener;
-import ch.epfl.biop.scijava.command.source.register.Sift2DAffineRegisterCommand;
+import ch.epfl.biop.command.register.SourcesSift2DAffineRegisterCommand;
 import ij.IJ;
 import ij.ImagePlus;
 import mpicbg.spim.data.SpimData;
@@ -26,8 +26,8 @@ import org.scijava.command.CommandService;
 import org.scijava.ui.behaviour.ClickBehaviour;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.util.Behaviours;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterAndTimeRange;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceTransformHelper;
+import sc.fiji.bdvpg.source.SourceAndTimeRange;
+import sc.fiji.bdvpg.source.transform.SourceTransformHelper;
 
 import java.util.Collection;
 import java.util.List;
@@ -172,11 +172,11 @@ public class DemoRegistrationSIFTAffine {
                 // Go for the registration - on a selected rectangle
                 Future<CommandModule> task = ij.context()
                         .getService(CommandService.class)
-                        .run(Sift2DAffineRegisterCommand.class, true,
-                            "sacs_fixed", new SourceAndConverter[]{fixedSource},
+                        .run(SourcesSift2DAffineRegisterCommand.class, true,
+                            "sources_fixed", new SourceAndConverter[]{fixedSource},
                             "tp_fixed", 0,
                             "level_fixed_source", 0,
-                            "sacs_moving", new SourceAndConverter[]{movingSource},
+                            "sources_moving", new SourceAndConverter[]{movingSource},
                             "tp_moving", 0,
                             "level_moving_source", 0,
                             "px_size_in_current_unit", 1,
@@ -185,13 +185,14 @@ public class DemoRegistrationSIFTAffine {
                             "py",-10,
                             "pz",0,
                             "sx",250,
-                            "sy",250
+                            "sy",250,
+                            "transformation_model", "AFFINE"
                         );
 
                 Thread t = new Thread(() -> {
                     try {
                         AffineTransform3D at3d = (AffineTransform3D) task.get().getOutput("at3d");
-                        SourceTransformHelper.mutate(at3d, new SourceAndConverterAndTimeRange(movingSource,0));
+                        SourceTransformHelper.mutate(at3d, new SourceAndTimeRange(movingSource,0));
                         bdvh.getViewerPanel().requestRepaint();
                     } catch (Exception e) {
                         e.printStackTrace();

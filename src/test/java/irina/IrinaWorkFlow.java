@@ -4,14 +4,12 @@ import bdv.util.BigWarpHelper;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.ImagePlusToOMETiff;
 import ch.epfl.biop.OMETiffMultiSeriesProcessorExporter;
-import ch.epfl.biop.bdv.img.bioformats.command.CreateBdvDatasetBioFormatsCommand;
+import ch.epfl.biop.bdv.img.bioformats.command.DatasetFromBioFormatsCreateCommand;
 import ch.epfl.biop.bdv.img.bioformats.entity.FileName;
-import ch.epfl.biop.bdv.img.legacy.bioformats.command.BasicOpenFilesWithBigdataviewerBioformatsBridgeCommand;
-import ch.epfl.biop.bdv.img.legacy.bioformats.entity.FileIndex;
 import ch.epfl.biop.kheops.KheopsHelper;
-import ch.epfl.biop.scijava.command.spimdata.DatasetToBigStitcherDatasetCommand;
-import ch.epfl.biop.sourceandconverter.exporter.CZTRange;
-import ch.epfl.biop.sourceandconverter.exporter.ImagePlusGetter;
+import ch.epfl.biop.command.dataset.DatasetXMLToBigStitcherDatasetConvertCommand;
+import ch.epfl.biop.source.exporter.CZTRange;
+import ch.epfl.biop.source.exporter.ImagePlusGetter;
 import ij.ImagePlus;
 import loci.common.DebugTools;
 import mpicbg.spim.data.generic.AbstractSpimData;
@@ -27,14 +25,14 @@ import net.imglib2.type.numeric.NumericType;
 import org.apache.commons.io.FilenameUtils;
 import org.scijava.Context;
 import org.scijava.command.CommandService;
-import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
-import sc.fiji.bdvpg.scijava.services.ui.SourceAndConverterServiceUI;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterAndTimeRange;
-import sc.fiji.bdvpg.sourceandconverter.importer.EmptySourceAndConverterCreator;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceRealTransformer;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceResampler;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceTransformHelper;
-import sc.fiji.bdvpg.spimdata.exporter.XmlFromSpimDataExporter;
+import sc.fiji.bdvpg.scijava.service.SourceService;
+import sc.fiji.bdvpg.scijava.service.tree.FilterNode;
+import sc.fiji.bdvpg.source.SourceAndTimeRange;
+import sc.fiji.bdvpg.source.importer.EmptySourceCreator;
+import sc.fiji.bdvpg.source.transform.SourceRealTransformer;
+import sc.fiji.bdvpg.source.transform.SourceResampler;
+import sc.fiji.bdvpg.source.transform.SourceTransformHelper;
+import sc.fiji.bdvpg.dataset.exporter.DatasetToXMLExporter;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -132,7 +130,7 @@ public class IrinaWorkFlow {
 
         Function<SourceAndConverter<?>,SourceAndConverter<?>>
                 physicalToPixel = source ->
-                SourceTransformHelper.createNewTransformedSourceAndConverter(transform.inverse(), new SourceAndConverterAndTimeRange(source,0));
+                SourceTransformHelper.createNewTransformedSourceAndConverter(transform.inverse(), new SourceAndTimeRange(source,0));
 
         SourceAndConverter uncroppedModel = physicalToPixel.apply(sources.get(0));
 
@@ -141,7 +139,7 @@ public class IrinaWorkFlow {
         long nPz = uncroppedModel.getSpimSource().getSource(0,0).max(2)+1; // Humpf
         AffineTransform3D location = new AffineTransform3D();
         location.translate(cropX, cropY, 0);
-        SourceAndConverter croppedModel = new EmptySourceAndConverterCreator("model", location, nPx, nPy, nPz).get();
+        SourceAndConverter croppedModel = new EmptySourceCreator("model", location, nPx, nPy, nPz).get();
 
         RealTransform realTransform = BigWarpHelper.realTransformFromBigWarpFile(new File(landmarkFileUnwarp), true);
 
@@ -151,7 +149,7 @@ public class IrinaWorkFlow {
 
         Function<SourceAndConverter<?>,SourceAndConverter<?>>
                 pixelToPhysical = source ->
-                SourceTransformHelper.createNewTransformedSourceAndConverter(transform, new SourceAndConverterAndTimeRange(source,0));
+                SourceTransformHelper.createNewTransformedSourceAndConverter(transform, new SourceAndTimeRange(source,0));
 
         List<SourceAndConverter<?>> correctedSources = sources.stream()
                 .map(src -> (SourceAndConverter<?>) src)
@@ -179,16 +177,16 @@ public class IrinaWorkFlow {
     public static void saveToXmlBdvDataset(Context ctx, List<String> filePaths, String filePath) throws ExecutionException, InterruptedException {
         String datasetName = filePath;
         File[] files = filePaths.stream().map(path -> new File(path)).toArray(File[]::new);
-        AbstractSpimData spimdata = (AbstractSpimData) ctx.getService(CommandService.class).run(CreateBdvDatasetBioFormatsCommand.class,true,
+        AbstractSpimData spimdata = (AbstractSpimData) ctx.getService(CommandService.class).run(DatasetFromBioFormatsCreateCommand.class,true,
                 "datasetname", datasetName,
                 "unit","MICROMETER",
                 "files", files,
                 "splitrgbchannels", false).get().getOutput("spimdata");
 
-        new XmlFromSpimDataExporter(spimdata, filePath, ctx).run();
+        new DatasetToXMLExporter(spimdata, filePath, ctx).run();
 
-        SourceAndConverterService sac_service = ctx.getService(SourceAndConverterService.class);
-        sac_service.remove(sac_service.getSourceAndConverterFromSpimdata(spimdata).toArray(new SourceAndConverter[0])); // Cleanup*/
+        SourceService source_service = ctx.getService(SourceService.class);
+        source_service.remove(source_service.getSourcesFromDataset(spimdata).toArray(new SourceAndConverter[0])); // Cleanup*/
 
     }
 
@@ -229,23 +227,22 @@ public class IrinaWorkFlow {
         List<String> pathsOutput = new ArrayList<>();
         try {
             String datasetName = parentPath.getAbsolutePath();
-            AbstractSpimData spimdata = (AbstractSpimData) ctx.getService(CommandService.class).run(CreateBdvDatasetBioFormatsCommand.class,true,
+            AbstractSpimData spimdata = (AbstractSpimData) ctx.getService(CommandService.class).run(DatasetFromBioFormatsCreateCommand.class,true,
                     "datasetname", datasetName,
                     "unit","MICROMETER",
                     "files", files,
                     "splitrgbchannels", false).get().getOutput("spimdata");
 
-            SourceAndConverterService sac_service = ctx.getService(SourceAndConverterService.class);
+            SourceService source_service = ctx.getService(SourceService.class);
 
-            SourceAndConverterServiceUI.Node filesNode =
-                    sac_service.getUI()
-                            .getRoot()
-                            .child(datasetName)
-                            .child(FileName.class.getSimpleName());
+            FilterNode filesNode = source_service.tree()
+                    .root()
+                    .child(datasetName)
+                    .child(FileName.class.getSimpleName());
 
             spimdata.setBasePath(parentPath);
 
-            Map<Integer, SourceAndConverter> fileIndexToSource = new HashMap<>();
+            Map<Integer, SourceAndConverter<?>> fileIndexToSource = new HashMap<>();
             Map<Integer, Set<Integer>> links = new HashMap<>();
             Set<Integer> allNodes = new HashSet<>();
 
@@ -258,8 +255,8 @@ public class IrinaWorkFlow {
 
             for (int i = 0; i<filePaths.size()-1; i++) {
                 for (int j = i+1; j<filePaths.size();j++) {
-                    SourceAndConverter srci = fileIndexToSource.get(i);
-                    SourceAndConverter srcj = fileIndexToSource.get(j);
+                    SourceAndConverter<?> srci = fileIndexToSource.get(i);
+                    SourceAndConverter<?> srcj = fileIndexToSource.get(j);
                     if (intersect2D(srci, srcj)) {
                         links.get(i).add(j);
                         links.get(j).add(i);
@@ -267,7 +264,7 @@ public class IrinaWorkFlow {
                 }
             }
 
-            sac_service.remove(sac_service.getSourceAndConverterFromSpimdata(spimdata).toArray(new SourceAndConverter[0])); // Cleanup*/
+            source_service.remove(source_service.getSourcesFromDataset(spimdata).toArray(new SourceAndConverter[0])); // Cleanup*/
 
             List<Set<Integer>> components = new ArrayList<>();
 
@@ -276,7 +273,7 @@ public class IrinaWorkFlow {
                 LinkedList<Integer> unvisitedNodes = new LinkedList<>();
                 Set<Integer> visitedNodes = new HashSet<>();
                 unvisitedNodes.add(startIndex);
-                while (unvisitedNodes.size() != 0) {
+                while (!unvisitedNodes.isEmpty()) {
                     Integer cNode = unvisitedNodes.getFirst();
                     allNodes.remove(cNode);
                     visitedNodes.add(cNode);
@@ -315,7 +312,7 @@ public class IrinaWorkFlow {
         File fileIn = new File(xmlDataset);
         File fileOut = new File(fileIn.getParent(), FilenameUtils.removeExtension(fileIn.getName())+"-bigstitcher.xml");
         try {
-            command.run(DatasetToBigStitcherDatasetCommand.class,true,
+            command.run(DatasetXMLToBigStitcherDatasetConvertCommand.class,true,
                     "xmlin", fileIn,
                             "xmlout", fileOut,
                     "viewsetupreference", -1

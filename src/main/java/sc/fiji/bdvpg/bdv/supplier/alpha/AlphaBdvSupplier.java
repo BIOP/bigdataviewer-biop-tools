@@ -22,14 +22,14 @@ import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.integer.ByteType;
 import net.imglib2.type.numeric.real.FloatType;
 import org.jetbrains.annotations.NotNull;
-import sc.fiji.bdvpg.bdv.BdvHandleHelper;
-import sc.fiji.bdvpg.bdv.navigate.RayCastPositionerSliderAdder;
-import sc.fiji.bdvpg.bdv.navigate.SourceNavigatorSliderAdder;
-import sc.fiji.bdvpg.bdv.navigate.TimepointAdapterAdder;
-import sc.fiji.bdvpg.bdv.overlay.SourceNameOverlayAdder;
+import sc.fiji.bdvpg.viewer.bdv.BdvHandleHelper;
+import sc.fiji.bdvpg.viewer.bdv.navigate.RayCastPositionerSliderAdder;
+import sc.fiji.bdvpg.viewer.bdv.navigate.SourceNavigatorSliderAdder;
+import sc.fiji.bdvpg.viewer.bdv.navigate.TimepointAdapterAdder;
+import sc.fiji.bdvpg.viewer.bdv.overlay.SourceNameOverlayAdder;
 import sc.fiji.bdvpg.bdv.supplier.BdvSupplierHelper;
-import sc.fiji.bdvpg.bdv.supplier.IBdvSupplier;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
+import sc.fiji.bdvpg.viewer.bdv.supplier.IBdvSupplier;
+import sc.fiji.bdvpg.service.SourceServices;
 
 import javax.swing.*;
 import java.awt.Font;
@@ -74,22 +74,22 @@ public class AlphaBdvSupplier implements IBdvSupplier {
 
     /**
      * Sources Metadata (how to retrieve and when to create alpha sources) backed by a
-     * {@link sc.fiji.bdvpg.scijava.services.SourceAndConverterService}
+     * {@link sc.fiji.bdvpg.scijava.service.SourceService}
      */
     final public static SourcesMetadata sourcesMetadata = new SourcesMetadata() {
         @Override
-        public boolean isAlphaSource(SourceAndConverter<?> sac) {
-            return sac.getSpimSource() instanceof IAlphaSource;
+        public boolean isAlphaSource(SourceAndConverter<?> source) {
+            return source.getSpimSource() instanceof IAlphaSource;
         }
 
         @Override
-        public boolean hasAlphaSource(SourceAndConverter<?> sac) {
-            return SourceAndConverterServices.getSourceAndConverterService().containsMetadata(sac, ALPHA_SOURCE_KEY);
+        public boolean hasAlphaSource(SourceAndConverter<?> source) {
+            return SourceServices.getSourceService().containsMetadata(source, ALPHA_SOURCE_KEY);
         }
 
         @Override
-        public SourceAndConverter<FloatType> getAlphaSource(SourceAndConverter<?> sac) {
-            return (SourceAndConverter<FloatType>) SourceAndConverterServices.getSourceAndConverterService().getMetadata(sac, ALPHA_SOURCE_KEY);
+        public SourceAndConverter<FloatType> getAlphaSource(SourceAndConverter<?> source) {
+            return (SourceAndConverter<FloatType>) SourceServices.getSourceService().getMetadata(source, ALPHA_SOURCE_KEY);
         }
     };
 
@@ -252,15 +252,15 @@ public class AlphaBdvSupplier implements IBdvSupplier {
         public void buildMap() {
             // Issue : one source can belong to multiple groups, but only to one layer TODO
             sourceToGroup.clear();
-            viewer.state().getGroups().forEach(group -> viewer.state().getSourcesInGroup(group).forEach(sac -> sourceToGroup.put(sac, group)));
+            viewer.state().getGroups().forEach(group -> viewer.state().getSourcesInGroup(group).forEach(source -> sourceToGroup.put(source, group)));
         }
 
         final SourceGroupLayer defaultLayer;
 
         @Override
-        public Layer getLayer(SourceAndConverter<?> sac) {
-            if (sourceToGroup.containsKey(sac)) {
-                return groupToLayer.get(sourceToGroup.get(sac));
+        public Layer getLayer(SourceAndConverter<?> source) {
+            if (sourceToGroup.containsKey(source)) {
+                return groupToLayer.get(sourceToGroup.get(source));
             } else {
                 return defaultLayer;
             }
@@ -433,7 +433,7 @@ public class AlphaBdvSupplier implements IBdvSupplier {
 
             Set<SourceAndConverter<?>> alphaSourcesToActivate =
                     state.getActiveSources().stream()
-                    .filter(sac -> !sourcesMetadata.isAlphaSource(sac))
+                    .filter(source -> !sourcesMetadata.isAlphaSource(source))
                     .filter(sourcesMetadata::hasAlphaSource)
                     .map(sourcesMetadata::getAlphaSource)
                     .collect(Collectors.toSet());
@@ -442,8 +442,8 @@ public class AlphaBdvSupplier implements IBdvSupplier {
 
             Set<SourceAndConverter<?>> alphaSourcesToDeActivate =
                     state.getSources().stream()
-                            .filter(sac -> !sourcesMetadata.isAlphaSource(sac))
-                            .filter(sac -> !state.isSourceVisible(sac))
+                            .filter(source -> !sourcesMetadata.isAlphaSource(source))
+                            .filter(source -> !state.isSourceVisible(source))
                             .filter(sourcesMetadata::hasAlphaSource)
                             .map(sourcesMetadata::getAlphaSource)
                             .collect(Collectors.toSet());
@@ -465,14 +465,14 @@ public class AlphaBdvSupplier implements IBdvSupplier {
             Set<SourceAndConverter<?>> currentAlphaSources =
                     currentSources.stream().filter(sourcesMetadata::isAlphaSource).collect(Collectors.toSet());
 
-            for (SourceAndConverter<?> sac : currentSources) {
+            for (SourceAndConverter<?> source : currentSources) {
                 // Let's investigate the source:
                 // Ignore if it is an alpha source
-                if (!sourcesMetadata.isAlphaSource(sac)) {
+                if (!sourcesMetadata.isAlphaSource(source)) {
                     // Is there an alpha source linked ?
-                    if (sourcesMetadata.hasAlphaSource(sac)) {
+                    if (sourcesMetadata.hasAlphaSource(source)) {
                         // Is it in the list of all sources ?
-                        SourceAndConverter<?> alpha = sourcesMetadata.getAlphaSource(sac);
+                        SourceAndConverter<?> alpha = sourcesMetadata.getAlphaSource(source);
                         if (!currentSources.contains(alpha)) {
                             // Not in the list : it should be added
                             alphaSourcesToAdd.add(alpha);
@@ -481,16 +481,16 @@ public class AlphaBdvSupplier implements IBdvSupplier {
                         }
                     } else {
                         // No alpha source, let's try to build it
-                        if (!(sac.getSpimSource() instanceof PlaceHolderSource)) {
-                            //("Building alpha source for source " + sac.getSpimSource().getName() + " of class " + sac.getSpimSource().getClass().getSimpleName());
-                            SourceAndConverter<FloatType> alpha = AlphaSourceHelper.getOrBuildAlphaSource(sac);
+                        if (!(source.getSpimSource() instanceof PlaceHolderSource)) {
+                            //("Building alpha source for source " + source.getSpimSource().getName() + " of class " + source.getSpimSource().getClass().getSimpleName());
+                            SourceAndConverter<FloatType> alpha = AlphaSourceHelper.getOrBuildAlphaSource(source);
                             alphaSourcesToAdd.add(alpha);
                         }
                     }
                 }
             }
 
-            Set<SourceAndConverter<?>> alphaSourcesToRemove = currentAlphaSources.stream().filter(sac -> !usefulAlphaSources.contains(sac)).collect(Collectors.toSet());
+            Set<SourceAndConverter<?>> alphaSourcesToRemove = currentAlphaSources.stream().filter(source -> !usefulAlphaSources.contains(source)).collect(Collectors.toSet());
             bdvh.getViewerPanel().state().addSources(alphaSourcesToAdd);
             bdvh.getViewerPanel().state().removeSources(alphaSourcesToRemove);
 

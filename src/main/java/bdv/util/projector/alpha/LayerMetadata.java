@@ -8,8 +8,8 @@ public interface LayerMetadata {
     /**
      * Returns the layer associated with the given source and converter.
      *
-     * @param sac the source and converter
+     * @param source the source and converter
      * @return the layer containing this source
      */
-    Layer getLayer(SourceAndConverter<?> sac);
+    Layer getLayer(SourceAndConverter<?> source);
 }

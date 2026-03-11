@@ -25,8 +25,8 @@
  */
 
 import ch.epfl.biop.DatasetHelper;
-import ch.epfl.biop.bdv.img.bioformats.command.CreateBdvDatasetBioFormatsCommand;
-import ch.epfl.biop.scijava.command.source.labkit.SourcesLabkitCommand;
+import ch.epfl.biop.bdv.img.bioformats.command.DatasetFromBioFormatsCreateCommand;
+import ch.epfl.biop.command.process.labkit.SourcesLabkitOpenCommand;
 import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;
 
@@ -85,7 +85,7 @@ public class DemoLabkitIntegration {
         // @doc-command: ch.epfl.biop.bdv.img.bioformats.command.CreateBdvDatasetBioFormatsCommand
 
         String datasetName = fileCZI.getName();
-        ij.command().run(CreateBdvDatasetBioFormatsCommand.class, true,
+        ij.command().run(DatasetFromBioFormatsCreateCommand.class, true,
                 "datasetname", datasetName,
                 "unit", "MICROMETER",
                 "files", new File[]{fileCZI},
@@ -102,8 +102,8 @@ public class DemoLabkitIntegration {
         // You can now use Labkit's tools to create labels and train classifiers.
         // Sources can be selected thanks to their path in bigdataviewer-playground's treeview
         // @doc-command: ch.epfl.biop.scijava.command.source.labkit.SourcesLabkitCommand
-        ij.command().run(SourcesLabkitCommand.class, true,
-                "sacs", datasetName,
+        ij.command().run(SourcesLabkitOpenCommand.class, true,
+                "sources", datasetName,
                 "resolution_level", 0
         ).get();
 

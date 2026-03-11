@@ -2,17 +2,16 @@ package process;
 
 import bdv.util.BdvHandle;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.sourceandconverter.SourceHelper;
-import ch.epfl.biop.sourceandconverter.SourceVoxelProcessor;
+import ch.epfl.biop.source.SourceHelper;
+import ch.epfl.biop.source.SourceVoxelProcessor;
 import loci.common.DebugTools;
 import net.imagej.ImageJ;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.real.FloatType;
-import sc.fiji.bdvpg.scijava.command.source.LUTSourceCreatorCommand;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
-import sc.fiji.bdvpg.sourceandconverter.SourceAndConverterHelper;
-import sc.fiji.bdvpg.sourceandconverter.importer.VoronoiSourceGetter;
+import sc.fiji.bdvpg.command.process.SourceWithLUTDuplicateCommand;
+import sc.fiji.bdvpg.service.SourceServices;
+import sc.fiji.bdvpg.source.importer.VoronoiSourceCreator;
 
 public class DemoCachedBorders {
     public static void main(String... args) throws Exception {
@@ -21,40 +20,40 @@ public class DemoCachedBorders {
         DebugTools.enableLogging ("OFF");
         ij.ui().showUI();
 
-        SourceAndConverter<FloatType> voronoi = new VoronoiSourceGetter(new long[]{4096*2, 4096*2, 4096*2}, 100000, false).get();
+        SourceAndConverter<FloatType> voronoi = new VoronoiSourceCreator(new long[]{4096*2, 4096*2, 4096*2}, 100000, false).get();
 
-        BdvHandle bdvh = SourceAndConverterServices.getBdvDisplayService().getNewBdv();
+        BdvHandle bdvh = SourceServices.getBdvDisplayService().getNewBdv();
 
         SourceAndConverter<UnsignedByteType> borders = SourceVoxelProcessor.getBorders(voronoi);
 
         SourceAndConverter<?>[] reColoredVoronoi = (SourceAndConverter<?>[])
-                ij.module().run(ij.command().getCommand(LUTSourceCreatorCommand.class), true,
-                        "sacs", new SourceAndConverter[]{voronoi}
-                ).get().getOutput("sacs_out");
+                ij.module().run(ij.command().getCommand(SourceWithLUTDuplicateCommand.class), true,
+                        "sources", new SourceAndConverter[]{voronoi}
+                ).get().getOutput("sources_out");
 
-        SourceAndConverterServices.getBdvDisplayService().show(bdvh, reColoredVoronoi[0]);
-        SourceAndConverterServices
-                .getSourceAndConverterService()
+        SourceServices.getBdvDisplayService().show(bdvh, reColoredVoronoi[0]);
+        SourceServices
+                .getSourceService()
                         .getConverterSetup(reColoredVoronoi[0]).setDisplayRange(0,1280);
 
-        SourceAndConverterServices
-                .getSourceAndConverterService()
+        SourceServices
+                .getSourceService()
                 .getConverterSetup(borders).setDisplayRange(0,256);
 
-        SourceAndConverterServices.getBdvDisplayService().show(bdvh, borders);
+        SourceServices.getBdvDisplayService().show(bdvh, borders);
 
         SourceAndConverter<UnsignedByteType> smoothenedBorders = SourceHelper.lazyPyramidizeXY2(borders);
 
-        SourceAndConverterServices
-                .getSourceAndConverterService()
+        SourceServices
+                .getSourceService()
                 .getConverterSetup(smoothenedBorders).setDisplayRange(0,256);
 
 
-        SourceAndConverterServices
-                .getSourceAndConverterService()
+        SourceServices
+                .getSourceService()
                 .getConverterSetup(smoothenedBorders).setColor(new ARGBType(ARGBType.rgba(128, 255, 120, 60)));
 
-        SourceAndConverterServices.getBdvDisplayService().show(bdvh, smoothenedBorders);
+        SourceServices.getBdvDisplayService().show(bdvh, smoothenedBorders);
 
     }
 }

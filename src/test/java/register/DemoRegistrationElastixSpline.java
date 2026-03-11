@@ -8,7 +8,7 @@ import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.bdv.select.SelectedSourcesListener;
 import ch.epfl.biop.bdv.select.SourceSelectorBehaviour;
 import ch.epfl.biop.bdv.select.ToggleListener;
-import ch.epfl.biop.scijava.command.source.register.Elastix2DSplineRegisterCommand;
+import ch.epfl.biop.command.register.Elastix2DSplineRegisterCommand;
 import ij.IJ;
 import ij.ImagePlus;
 import mpicbg.spim.data.SpimData;
@@ -25,8 +25,8 @@ import org.scijava.command.CommandService;
 import org.scijava.ui.behaviour.ClickBehaviour;
 import org.scijava.ui.behaviour.io.InputTriggerConfig;
 import org.scijava.ui.behaviour.util.Behaviours;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
-import sc.fiji.bdvpg.sourceandconverter.transform.SourceRealTransformer;
+import sc.fiji.bdvpg.service.SourceServices;
+import sc.fiji.bdvpg.source.transform.SourceRealTransformer;
 
 import java.util.Collection;
 import java.util.concurrent.Future;
@@ -111,7 +111,7 @@ public class DemoRegistrationElastixSpline {
         BdvHandle bdvh = bss.getBdvHandle();
         bss.removeFromBdv();
 
-        /*SourceAndConverterServices
+        /*SourceServices
                 .getSourceAndConverterDisplayService()
                 .registerBdvSource(bdvh);*/
 
@@ -169,9 +169,9 @@ public class DemoRegistrationElastixSpline {
         bdvh.getViewerPanel().state().setViewerTransform(m);
         bdvh.getViewerPanel().requestRepaint();
 
-        bdvh.getViewerPanel().state().getSources().forEach(sac -> {
-            SourceAndConverterServices.getSourceAndConverterService()
-                    .register(sac);
+        bdvh.getViewerPanel().state().getSources().forEach(source -> {
+            SourceServices.getSourceService()
+                    .register(source);
         });
 
 
@@ -189,10 +189,10 @@ public class DemoRegistrationElastixSpline {
             } else {
                 // Go for the registration - on a selected rectangle
                 Future<CommandModule> task = ij.context().getService(CommandService.class).run(Elastix2DSplineRegisterCommand.class, true,
-                        "sacs_fixed", new SourceAndConverter[]{fixedSource},
+                        "sources_fixed", new SourceAndConverter[]{fixedSource},
                         "tp_fixed", 0,
                         "level_fixed_source", 0,
-                        "sacs_moving", new SourceAndConverter[]{movingSource},
+                        "sources_moving", new SourceAndConverter[]{movingSource},
                         "tp_moving", 0,
                         "level_moving_source", 0,
                         "px_size_in_current_unit", 5,
@@ -212,11 +212,11 @@ public class DemoRegistrationElastixSpline {
                         SourceAndConverter transformedSource = new SourceRealTransformer(null, rt).apply(movingSource);
                         //bdvh.getViewerPanel().state().removeSource(movingSource);
                         //bdvh.getViewerPanel().state().addSource(transformedSource);
-                        SourceAndConverterServices
+                        SourceServices
                                 .getBdvDisplayService()
                                 .show(transformedSource, fixedSource);
 
-                        BdvHandle bdvh_new = SourceAndConverterServices
+                        BdvHandle bdvh_new = SourceServices
                                 .getBdvDisplayService()
                                 .getActiveBdv();
 

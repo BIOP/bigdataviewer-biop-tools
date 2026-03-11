@@ -31,8 +31,8 @@ import bdv.util.BdvHandle;
 import bdv.viewer.SourceAndConverter;
 import com.formdev.flatlaf.FlatDarkLaf;
 import net.imagej.ImageJ;
-import sc.fiji.bdvpg.scijava.services.SourceAndConverterBdvDisplayService;
-import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
+import sc.fiji.bdvpg.scijava.service.SourceBdvDisplayService;
+import sc.fiji.bdvpg.scijava.service.SourceService;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -58,9 +58,9 @@ public class DemoHelper {
      * @param depth the depth to expand (typically 3)
      */
     public static void expandTreeView(ImageJ ij, int depth) {
-        SourceAndConverterService sacService = ij.get(SourceAndConverterService.class);
-        if (sacService != null && sacService.getUI() != null) {
-            sacService.getUI().expandToDepth(depth);
+        SourceService sourceService = ij.get(SourceService.class);
+        if (sourceService != null && sourceService.tree() != null) {
+            sourceService.tree().expandToDepth(depth);
         }
     }
 
@@ -191,27 +191,6 @@ public class DemoHelper {
             latch.await();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-        }
-    }
-
-    public static void closeFijiAndBdvs(ImageJ ij) {
-        try {
-
-            // Closes bdv windows
-            SourceAndConverterBdvDisplayService sac_display_service =
-                    ij.context().getService(SourceAndConverterBdvDisplayService.class);
-            sac_display_service.getDisplays().forEach(BdvHandle::close);
-
-            // Clears all sources
-            SourceAndConverterService sac_service =
-                    ij.context().getService(SourceAndConverterService.class);
-            sac_service.remove(sac_service.getSourceAndConverters().toArray(new SourceAndConverter[0]));
-
-            // Closes ij context
-            ij.context().close();
-
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 

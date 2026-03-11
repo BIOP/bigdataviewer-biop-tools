@@ -1,0 +1,128 @@
+/*-
+ * #%L
+ * Labkit Integration for BigDataViewer-Playground - BIOP - EPFL
+ * %%
+ * Copyright (C) 2024 - 2025 EPFL
+ * %%
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ * #L%
+ */
+package ch.epfl.biop.command.process.labkit;
+
+import bdv.viewer.SourceAndConverter;
+import net.imglib2.type.numeric.integer.UnsignedByteType;
+import org.scijava.Context;
+import org.scijava.ItemIO;
+import org.scijava.plugin.Menu;
+import org.scijava.plugin.Parameter;
+import org.scijava.plugin.Plugin;
+import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
+import ch.epfl.biop.labkit.SourceLabkitClassifier;
+import sc.fiji.bdvpg.scijava.BdvPgMenus;
+
+import java.io.File;
+
+/**
+ * Command to create a lazy Labkit-classified source from BigDataViewer sources.
+ * <p>
+ * This command applies a pre-trained Labkit classifier to the selected sources
+ * and creates a new source containing the segmentation result. The segmentation
+ * is computed lazily (on-demand) as tiles are requested.
+ * </p>
+ */
+@Plugin(type = BdvPlaygroundActionCommand.class,
+        //menuPath = BdvPgMenus.RootMenu + "Process>Classify (Labkit)>Source - Apply Labkit Classifier",
+        menu = {
+                @Menu(label = BdvPgMenus.L1),
+                @Menu(label = BdvPgMenus.L2),
+                @Menu(label = BdvPgMenus.ProcessMenu, weight = BdvPgMenus.ProcessW),
+                @Menu(label = "Classify (Labkit)", weight = -2.1),
+                @Menu(label = "Source - Apply Labkit Classifier", weight = 6)
+        },
+        description = "Creates a lazy segmentation source by applying a Labkit classifier to selected sources")
+public class SourcesLabkitClassifyCommand implements BdvPlaygroundActionCommand {
+
+    @Parameter
+    Context context;
+
+    @Parameter(label = "Select Source(s)",
+            style = "sorted",
+            description = "The sources to classify (each source is treated as a channel)")
+    SourceAndConverter<?>[] sources;
+
+    @Parameter(label = "Classifier File",
+            style = "open",
+            description = "Path to the Labkit .classifier file")
+    File classifier_file;
+
+    @Parameter(label = "Resolution Level",
+            min = "0",
+            description = "Resolution level to use from input sources (0 = full resolution)")
+    int resolution_level = 0;
+
+    @Parameter(label = "Output Name Suffix",
+            description = "Suffix appended to the source name for the classified output")
+    String suffix = "_classified";
+
+    @Parameter(label = "Use GPU",
+            description = "Use GPU acceleration for classification (requires compatible GPU and OpenCL)")
+    boolean use_gpu = false;
+
+    @Parameter(type = ItemIO.OUTPUT,
+            description = "The classified source")
+    SourceAndConverter<UnsignedByteType> source_out;
+
+    @Override
+    public void run() {
+        if (sources == null || sources.length == 0) {
+            System.err.println("No sources selected.");
+            return;
+        }
+
+        if (classifier_file == null || !classifier_file.exists()) {
+            System.err.println("Classifier file not found: " + classifier_file);
+            return;
+        }
+
+        String classifierPath = classifier_file.getAbsolutePath();
+        String outputName = sources[0].getSpimSource().getName() + suffix;
+
+        System.out.println("Applying Labkit classifier to " + sources.length + " source(s):");
+        for (int i = 0; i < sources.length; i++) {
+            System.out.println("  Channel " + i + ": " + sources[i].getSpimSource().getName());
+        }
+        System.out.println("Classifier: " + classifierPath);
+        System.out.println("Resolution level: " + resolution_level);
+        System.out.println("GPU acceleration: " + (use_gpu ? "enabled" : "disabled"));
+
+        // Create the classified source using SourceLabkitClassifier
+        SourceLabkitClassifier classifier = new SourceLabkitClassifier(
+                sources,
+                classifierPath,
+                context,
+                outputName,
+                resolution_level,
+                use_gpu
+        );
+
+        source_out = classifier.get();
+
+        System.out.println("Created classified source: " + source_out.getSpimSource().getName());
+    }
+}

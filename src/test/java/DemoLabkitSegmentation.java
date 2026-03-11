@@ -27,13 +27,13 @@
 import bdv.util.BdvHandle;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.DatasetHelper;
-import ch.epfl.biop.bdv.img.bioformats.command.CreateBdvDatasetBioFormatsCommand;
-import ch.epfl.biop.scijava.command.source.labkit.SourcesLabkitClassifierCommand;
+import ch.epfl.biop.bdv.img.bioformats.command.DatasetFromBioFormatsCreateCommand;
+import ch.epfl.biop.command.process.labkit.SourcesLabkitClassifyCommand;
 import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;
-import sc.fiji.bdvpg.bdv.navigate.ViewerTransformAdjuster;
-import sc.fiji.bdvpg.scijava.services.SourceAndConverterBdvDisplayService;
-import sc.fiji.bdvpg.scijava.services.SourceAndConverterService;
+import sc.fiji.bdvpg.viewer.bdv.navigate.ViewerTransformAdjuster;
+import sc.fiji.bdvpg.scijava.service.SourceBdvDisplayService;
+import sc.fiji.bdvpg.scijava.service.SourceService;
 
 import java.io.File;
 
@@ -77,10 +77,10 @@ public class DemoLabkitSegmentation {
         // @doc-step: Get services once for reuse
         // You can also get the services at the beginning of scripts by
         // using scjava parameters:
-        // #@SourceAndConverterService source_service
-        // #@SourceAndConverterBdvDisplayService display_service
-        SourceAndConverterService sacService = ij.get(SourceAndConverterService.class);
-        SourceAndConverterBdvDisplayService displayService = ij.get(SourceAndConverterBdvDisplayService.class);
+        // #@SourceService source_service
+        // #@SourceBdvDisplayService display_service
+        SourceService sourceService = ij.get(SourceService.class);
+        SourceBdvDisplayService displayService = ij.get(SourceBdvDisplayService.class);
 
         // @doc-step: Download the Sample Dataset
         // Download a sample LLS7 (Lattice Light Sheet 7) dataset from Zenodo.
@@ -94,7 +94,7 @@ public class DemoLabkitSegmentation {
         // This registers the sources in BigDataViewer-Playground.
         // @doc-command: ch.epfl.biop.bdv.img.bioformats.command.CreateBdvDatasetBioFormatsCommand
         String datasetName = fileCZI.getName();
-        ij.command().run(CreateBdvDatasetBioFormatsCommand.class, true,
+        ij.command().run(DatasetFromBioFormatsCreateCommand.class, true,
                 "datasetname", datasetName,
                 "unit", "MICROMETER",
                 "files", new File[]{fileCZI},
@@ -116,28 +116,28 @@ public class DemoLabkitSegmentation {
         );
 
         SourceAndConverter<?> classifiedSource = (SourceAndConverter<?>) ij.command().run(
-                SourcesLabkitClassifierCommand.class, true,
-                "sacs", datasetName,
+                SourcesLabkitClassifyCommand.class, true,
+                "sources", datasetName,
                 "classifier_file", classifierFile,
                 "resolution_level", 0,
                 "suffix", "_classified",
                 "use_gpu", true
-        ).get().getOutput("sac_out");
+        ).get().getOutput("source_out");
 
         //DemoHelper.shot("DemoLabkitSegmentation_04_classifier_applied", "BigDataViewer");
 
         // @doc-step: Display Sources in BigDataViewer
         // Show both the original sources and the classified result in BDV.
         // The segmentation is computed lazily as you navigate.
-        SourceAndConverter<?>[] originalSources = sacService.getUI()
-                .getSourceAndConvertersFromPath(datasetName)
+        SourceAndConverter<?>[] originalSources = sourceService.tree()
+                .getSources(datasetName)
                 .toArray(new SourceAndConverter[0]);
 
         displayService.show(originalSources);
         displayService.show(classifiedSource);
 
         // Configure display range for the classification labels (typically 0-N classes)
-        sacService.getConverterSetup(classifiedSource).setDisplayRange(0, 5);
+        sourceService.getConverterSetup(classifiedSource).setDisplayRange(0, 5);
 
         // Adjust view to fit the classified source
         BdvHandle bdvHandle = displayService.getActiveBdv();

@@ -4,11 +4,11 @@ import bdv.util.BdvHandle;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.bdv.img.OpenersToSpimData;
 import ch.epfl.biop.bdv.img.opener.OpenerSettings;
-import ch.epfl.biop.sourceandconverter.SourceHelper;
+import ch.epfl.biop.source.SourceHelper;
 import loci.common.DebugTools;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imagej.ImageJ;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
+import sc.fiji.bdvpg.service.SourceServices;
 
 import java.util.List;
 
@@ -19,7 +19,7 @@ public class DemoLazyPyramid {
         DebugTools.enableLogging ("OFF");
         ij.ui().showUI();
 
-        BdvHandle bdvh = SourceAndConverterServices.getBdvDisplayService().getNewBdv();
+        BdvHandle bdvh = SourceServices.getBdvDisplayService().getNewBdv();
 
         OpenerSettings atlasSettings = OpenerSettings.BioFormats()
                 .location("N:\\temp-Nico\\Slide_Demo_Downscale.tif")
@@ -28,11 +28,11 @@ public class DemoLazyPyramid {
 
         AbstractSpimData<?> dataset = OpenersToSpimData.getSpimData(atlasSettings);
 
-        SourceAndConverterServices.getSourceAndConverterService().register(dataset);
+        SourceServices.getSourceService().register(dataset);
 
-        List<SourceAndConverter<?>> sources = SourceAndConverterServices.getSourceAndConverterService().getSourceAndConverterFromSpimdata(dataset);
+        List<SourceAndConverter<?>> sources = SourceServices.getSourceService().getSourcesFromDataset(dataset);
 
-        SourceAndConverterServices.getSourceAndConverterService().register(SourceHelper.lazyPyramidizeXY2((SourceAndConverter)sources.get(0)));
+        SourceServices.getSourceService().register(SourceHelper.lazyPyramidizeXY2((SourceAndConverter)sources.get(0)));
 
     }
 }

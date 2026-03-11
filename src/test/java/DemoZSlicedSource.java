@@ -8,10 +8,10 @@ import net.imglib2.FinalInterval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.view.ExtendedRandomAccessibleInterval;
 import net.imglib2.view.Views;
-import sc.fiji.bdvpg.bdv.navigate.ViewerTransformAdjuster;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
-import sc.fiji.bdvpg.sourceandconverter.display.BrightnessAutoAdjuster;
-import sc.fiji.bdvpg.spimdata.importer.SpimDataFromXmlImporter;
+import sc.fiji.bdvpg.viewer.bdv.navigate.ViewerTransformAdjuster;
+import sc.fiji.bdvpg.service.SourceServices;
+import sc.fiji.bdvpg.source.display.BrightnessAutoAdjuster;
+import sc.fiji.bdvpg.dataset.importer.XMLToDatasetImporter;
 
 import java.util.List;
 
@@ -32,19 +32,19 @@ public class DemoZSlicedSource {
         ij.ui().showUI();
 
         // load and convert the famous blobs image// Gets active BdvHandle instance
-        BdvHandle bdv = SourceAndConverterServices.getBdvDisplayService().getActiveBdv();
+        BdvHandle bdv = SourceServices.getBdvDisplayService().getActiveBdv();
         // Import SpimData
-        new SpimDataFromXmlImporter("src/test/resources/mri-stack.xml").run();
+        new XMLToDatasetImporter("src/test/resources/mri-stack.xml").run();
 
-        final List<SourceAndConverter<?>> sacs = SourceAndConverterServices.getSourceAndConverterService().getSourceAndConverters();
+        final List<SourceAndConverter<?>> sources = SourceServices.getSourceService().getSources();
 
-        sacs.forEach( sac -> {
-            SourceAndConverterServices.getBdvDisplayService().show( bdv, sac );
-            new ViewerTransformAdjuster( bdv, sac ).run();
-            new BrightnessAutoAdjuster<>( sac, 0 ).run();
+        sources.forEach( source -> {
+            SourceServices.getBdvDisplayService().show( bdv, source );
+            new ViewerTransformAdjuster( bdv, source ).run();
+            new BrightnessAutoAdjuster<>( source, 0 ).run();
         } );
 
-        RandomAccessibleInterval<?> nonResliced = sacs.get(0).getSpimSource().getSource(0,0);
+        RandomAccessibleInterval<?> nonResliced = sources.get(0).getSpimSource().getSource(0,0);
 
         ExtendedRandomAccessibleInterval rai = SlicerViews.extendSlicer(nonResliced,2,0);
 

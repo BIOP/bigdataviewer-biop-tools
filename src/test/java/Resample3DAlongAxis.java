@@ -1,8 +1,7 @@
 import bdv.util.*;
 import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
-import ch.epfl.biop.sourceandconverter.SourceHelper;
-import ij.ImagePlus;
+import ch.epfl.biop.source.SourceHelper;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imagej.ImageJ;
 import net.imagej.patcher.LegacyInjector;
@@ -10,11 +9,10 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.RealPoint;
 import net.imglib2.img.display.imagej.ImageJFunctions;
 import net.imglib2.realtransform.AffineTransform3D;
-import net.imglib2.type.numeric.integer.UnsignedByteType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.view.Views;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
-import sc.fiji.bdvpg.spimdata.importer.SpimDataFromXmlImporter;
+import sc.fiji.bdvpg.service.SourceServices;
+import sc.fiji.bdvpg.dataset.importer.XMLToDatasetImporter;
 
 
 public class Resample3DAlongAxis {
@@ -31,32 +29,32 @@ public class Resample3DAlongAxis {
 
         final String filePath = "src/test/resources/mri-stack.xml";
         // Import SpimData
-        SpimDataFromXmlImporter importer = new SpimDataFromXmlImporter(filePath);
+        XMLToDatasetImporter importer = new XMLToDatasetImporter(filePath);
         //importer.run();
 
         final AbstractSpimData spimData = importer.get();
 
-        SourceAndConverter sac = SourceAndConverterServices
-                .getSourceAndConverterService()
-                .getSourceAndConverterFromSpimdata(spimData)
+        SourceAndConverter source = SourceServices
+                .getSourceService()
+                .getSourcesFromDataset(spimData)
                 .get(0);
 
         // Creates a BdvHandle
-        //BdvHandle bdvHandle = SourceAndConverterServices
+        //BdvHandle bdvHandle = SourceServices
         //        .getSourceAndConverterDisplayService().getActiveBdv();
-        /*SourceAndConverterServices
+        /*SourceServices
                 .getSourceAndConverterDisplayService()
-                .show(sac);*/
+                .show(source);*/
 
         AffineTransform3D m = new AffineTransform3D();
 
-        sac.getSpimSource().getSourceTransform(0,0,m);
+        source.getSpimSource().getSourceTransform(0,0,m);
 
         RandomAccessibleIntervalSource<UnsignedShortType> rais;
 
         // DO NOT WORK
          rais = new RandomAccessibleIntervalSource<UnsignedShortType>(
-                Views.expandZero(sac.getSpimSource().getSource(0,0),0,0,0), // even though we don't care about the size of the border, this helps set the dimension
+                Views.expandZero(source.getSpimSource().getSource(0,0),0,0,0), // even though we don't care about the size of the border, this helps set the dimension
                 new UnsignedShortType(),
                 m,
                 "RAIS"

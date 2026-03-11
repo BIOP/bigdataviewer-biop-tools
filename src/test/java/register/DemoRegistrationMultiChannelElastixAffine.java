@@ -4,13 +4,13 @@ import bdv.util.BdvHandle;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.bdv.img.OpenersToSpimData;
 import ch.epfl.biop.bdv.img.opener.OpenerSettings;
-import ch.epfl.biop.scijava.command.source.register.Elastix2DAffineRegisterCommand;
+import ch.epfl.biop.command.register.Elastix2DAffineRegisterCommand;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import net.imagej.ImageJ;
 import org.scijava.command.CommandService;
-import sc.fiji.bdvpg.bdv.navigate.ViewerTransformAdjuster;
-import sc.fiji.bdvpg.scijava.services.SourceAndConverterBdvDisplayService;
-import sc.fiji.bdvpg.services.SourceAndConverterServices;
+import sc.fiji.bdvpg.viewer.bdv.navigate.ViewerTransformAdjuster;
+import sc.fiji.bdvpg.scijava.service.SourceBdvDisplayService;
+import sc.fiji.bdvpg.service.SourceServices;
 
 import java.util.List;
 
@@ -33,8 +33,8 @@ public class DemoRegistrationMultiChannelElastixAffine {
 
         AbstractSpimData<?> atlasDataset = OpenersToSpimData.getSpimData(atlasSettings);
 
-        SourceAndConverterServices.getSourceAndConverterService().register(atlasDataset);
-        List<SourceAndConverter<?>> atlasSources = SourceAndConverterServices.getSourceAndConverterService().getSourceAndConverterFromSpimdata(atlasDataset);
+        SourceServices.getSourceService().register(atlasDataset);
+        List<SourceAndConverter<?>> atlasSources = SourceServices.getSourceService().getSourcesFromDataset(atlasDataset);
 
         OpenerSettings sliceSettings = OpenerSettings.BioFormats()
                 .location("./src/test/resources/multichanreg/Slice.tif")
@@ -43,10 +43,10 @@ public class DemoRegistrationMultiChannelElastixAffine {
 
         AbstractSpimData<?> sliceDataset = OpenersToSpimData.getSpimData(sliceSettings);
 
-        SourceAndConverterServices.getSourceAndConverterService().register(sliceDataset);
-        List<SourceAndConverter<?>> sliceSources = SourceAndConverterServices.getSourceAndConverterService().getSourceAndConverterFromSpimdata(sliceDataset);
+        SourceServices.getSourceService().register(sliceDataset);
+        List<SourceAndConverter<?>> sliceSources = SourceServices.getSourceService().getSourcesFromDataset(sliceDataset);
 
-        SourceAndConverterBdvDisplayService displayService = SourceAndConverterServices.getBdvDisplayService();
+        SourceBdvDisplayService displayService = SourceServices.getBdvDisplayService();
         BdvHandle bdvh = displayService.getNewBdv();
         displayService.show(bdvh, atlasSources.toArray(new SourceAndConverter[0]));
         displayService.show(bdvh, sliceSources.toArray(new SourceAndConverter[0]));
@@ -59,10 +59,10 @@ public class DemoRegistrationMultiChannelElastixAffine {
         ij.context()
             .getService(CommandService.class)
             .run(Elastix2DAffineRegisterCommand.class, true,
-                    "sacs_fixed", atlasSources.toArray(new SourceAndConverter[0]),
+                    "sources_fixed", atlasSources.toArray(new SourceAndConverter[0]),
                     "tp_fixed", 0,
                     "level_fixed_source", 0,
-                    "sacs_moving", sliceSources.toArray(new SourceAndConverter[0]),
+                    "sources_moving", sliceSources.toArray(new SourceAndConverter[0]),
                     "tp_moving", 0,
                     "level_moving_source", 0,
                     "px_size_in_current_unit", 0.02,

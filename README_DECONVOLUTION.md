@@ -46,7 +46,7 @@ Before deconvolution, you need to load your images as BDV sources. Here are the 
 #### Option 1: Standard Image Files (TIF, CZI, OME-TIFF, etc.)
 
 For most image formats:
-1. Go to `Plugins > BigDataViewer-Playground > BDVDataset > Create BDV Dataset [BioFormats]`
+1. Go to `Plugins > BigDataViewer-Playground > XML Dataset > Create BDV Dataset [BioFormats]`
 2. Select your image file(s)
 3. Configure:
     - **Dataset name**: Choose a name
@@ -58,7 +58,7 @@ For most image formats:
 #### Option 2: Lattice Light Sheet 7 (LLS7) Data
 
 For LLS7 CZI files with proper deskewing:
-1. Go to `Plugins > BigDataViewer-Playground > BDVDataset > Open LLS7 Dataset`
+1. Go to `Plugins > BigDataViewer-Playground > XML Dataset > Open LLS7 Dataset`
 2. Select your LLS7 CZI file
 3. Set **Legacy XY mode**: false (unless you are working aith an older file)
 
@@ -68,7 +68,7 @@ For LLS7 CZI files with proper deskewing:
 #@Context ctx
 // Load standard image file
 CommandService cs = ctx.getService(CommandService.class);
-SourceAndConverterService ss = ctx.getService(SourceAndConverterService.class);
+SourceService ss = ctx.getService(SourceService.class);
 
 File imageFile = new File("path/to/image.tif");
 
@@ -84,7 +84,7 @@ AbstractSpimData<?> dataset = (AbstractSpimData<?>) cs.run(
 ).get().getOutput("spimdata");
 
 // Get the BDV sources
-SourceAndConverter<?>[] sources = ss.getSourceAndConverterFromSpimdata(dataset)
+SourceAndConverter<?>[] sources = ss.getSourcesFromDataset(dataset)
     .toArray(new SourceAndConverter<?>[0]);
 ```
 
@@ -100,7 +100,7 @@ cs.run(LLS7OpenDatasetCommand.class, true,
 // Retrieve sources by dataset name
 String datasetName = FilenameUtils.removeExtension(lls7File.getName());
 SourceAndConverter<?>[] sources = ss.getUI()
-    .getSourceAndConvertersFromPath(datasetName)
+    .getSources(datasetName)
     .toArray(new SourceAndConverter[0]);
 ```
 
@@ -143,7 +143,7 @@ cs.run(LLS7OpenDatasetCommand.class, true,
 
 String datasetName = FilenameUtils.removeExtension(lls7File.getName());
 SourceAndConverter<?>[] channels = ss.getUI()
-    .getSourceAndConvertersFromPath(datasetName)
+    .getSources(datasetName)
     .toArray(new SourceAndConverter[0]);
 
 // 2. Load PSF
@@ -159,12 +159,12 @@ AbstractSpimData<?> psfDataset = (AbstractSpimData<?>) cs.run(
     "disable_memo", false
 ).get().getOutput("spimdata");
 
-SourceAndConverter<?> psf = ss.getSourceAndConverterFromSpimdata(psfDataset)
+SourceAndConverter<?> psf = ss.getSourcesFromDataset(psfDataset)
     .toArray(new SourceAndConverter<?>[0])[0];
 
 // 3. Run deconvolution
 ij.command().run(SourcesDeconvolverCommand.class, true,
-    "sacs", channels,
+    "sources", channels,
     "psf", psf,
     "output_pixel_type", "Float",
     "block_size_x", 512,

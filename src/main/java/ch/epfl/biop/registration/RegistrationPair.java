@@ -3,8 +3,8 @@ package ch.epfl.biop.registration;
 import bdv.util.QuPathBdvHelper;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.registration.plugin.RegistrationPluginHelper;
-import ch.epfl.biop.sourceandconverter.processor.SourcesAffineTransformer;
-import ch.epfl.biop.sourceandconverter.processor.SourcesProcessor;
+import ch.epfl.biop.source.processor.SourcesAffineTransformer;
+import ch.epfl.biop.source.processor.SourcesProcessor;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.realtransform.InvertibleRealTransform;
 import net.imglib2.realtransform.InvertibleRealTransformSequence;
@@ -13,22 +13,26 @@ import org.apache.commons.io.FileUtils;
 import org.scijava.Context;
 import org.scijava.Named;
 import sc.fiji.persist.ScijavaGsonHelper;
+import ch.epfl.biop.source.transform.SourceTimeMapper;
 
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class RegistrationPair implements Named, Closeable {
 
-    final SourceAndConverter<?>[] movingSourcesOrigin;
-    final SourceAndConverter<?>[] fixedSources;
+    SourceAndConverter<?>[] movingSourcesOrigin;
+    SourceAndConverter<?>[] fixedSources;
 
     final int timepointMoving;
     final int timepointFixed;
+
     final String name;
 
     SourceAndConverter<?>[] movingSourcesRegistered;
@@ -50,10 +54,17 @@ public class RegistrationPair implements Named, Closeable {
             this.movingSourcesOrigin = movingSources;
         }
 
+        // Remove t offsets
+        this.fixedSources = Arrays.stream(fixedSources)
+                .map(source -> new SourceTimeMapper(source, (t) -> t + timepointFixed, source.getSpimSource().getName() + "-T" + timepointFixed).get()).toArray(SourceAndConverter[]::new);
+
+        this.movingSourcesOrigin = Arrays.stream(movingSourcesOrigin)
+                .map(sour -> new SourceTimeMapper(sour, (t) -> t + timepointMoving, sour.getSpimSource().getName() + "-T" + timepointMoving).get()).toArray(SourceAndConverter[]::new);
+
         this.movingSourcesRegistered = movingSourcesOrigin;
 
-        this.timepointFixed = timepointFixed;
-        this.timepointMoving = timepointMoving;
+        this.timepointFixed = 0;//timepointFixed;
+        this.timepointMoving = 0;//timepointMoving;
         this.name = name;
     }
 
@@ -128,7 +139,7 @@ public class RegistrationPair implements Named, Closeable {
         } else {
             RegistrationStep rs = registrationPairSteps.get(registrationPairSteps.size()-2);
             registrationPairSteps.remove(registrationPairSteps.size()-1);
-            this.movingSourcesRegistered = rs.sacs;
+            this.movingSourcesRegistered = rs.sources;
         }
         listeners.forEach(listener -> listener.newEvent(RegistrationEvents.STEP_REMOVED));
     }
@@ -321,7 +332,7 @@ public class RegistrationPair implements Named, Closeable {
     public synchronized List<SourceAndConverter<?>[]> getAllSourcesPerStep() {
         List<SourceAndConverter<?>[]> sourcesPerStep = new ArrayList<>();
         for (RegistrationStep rs: registrationPairSteps) {
-            sourcesPerStep.add(rs.sacs);
+            sourcesPerStep.add(rs.sources);
         }
         return sourcesPerStep;
     }
@@ -342,16 +353,16 @@ public class RegistrationPair implements Named, Closeable {
     private static class RegistrationStep {
 
         final Registration<SourceAndConverter<?>[]> reg;
-        final SourceAndConverter<?>[] sacs;
+        final SourceAndConverter<?>[] sources;
         final SourcesProcessor fixedProcessor;
         final SourcesProcessor movingProcessor;
 
         public RegistrationStep(Registration<SourceAndConverter<?>[]> reg,
-                                SourceAndConverter<?>[] sacs,
+                                SourceAndConverter<?>[] sources,
                                 SourcesProcessor fixedProcessor,
                                 SourcesProcessor movingProcessor) {
             this.reg = reg;
-            this.sacs = sacs;
+            this.sources = sources;
             this.fixedProcessor = fixedProcessor;
             this.movingProcessor = movingProcessor;
         }
