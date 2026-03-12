@@ -29,6 +29,8 @@ jobs:
         with:
           java-version: '8'
           distribution: 'zulu'
+      - name: Clear corrupted xml-apis-ext from cache
+        run: rm -rf ~/.m2/repository/xml-apis/xml-apis-ext
       - name: Set up CI environment
         run: .github/setup.sh
       - name: Execute the build
