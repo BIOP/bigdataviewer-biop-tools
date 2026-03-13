@@ -27,10 +27,21 @@ jobs:
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
-          java-version: '8'
+          java-version: '11'
           distribution: 'zulu'
       - name: Clear corrupted xml-apis-ext from cache
         run: rm -rf ~/.m2/repository/xml-apis/xml-apis-ext
+      - name: Pre-install xml-apis-ext
+        run: |
+          curl -L https://repo1.maven.org/maven2/xml-apis/xml-apis-ext/1.3.04/xml-apis-ext-1.3.04.jar \
+            -o /tmp/xml-apis-ext.jar
+          ls -lh /tmp/xml-apis-ext.jar  # sanity check: should be ~85KB
+          mvn install:install-file \
+            -Dfile=/tmp/xml-apis-ext.jar \
+            -DgroupId=xml-apis \
+            -DartifactId=xml-apis-ext \
+            -Dversion=1.3.04 \
+            -Dpackaging=jar
       - name: Set up CI environment
         run: .github/setup.sh
       - name: Execute the build
