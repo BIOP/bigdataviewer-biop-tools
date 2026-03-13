@@ -192,12 +192,6 @@
 		<dependency>
 			<groupId>ome</groupId>
 			<artifactId>formats-bsd</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>xml-apis</groupId>
-					<artifactId>xml-apis</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 
 		<dependency>
@@ -241,12 +235,6 @@
 			<groupId>ch.epfl.biop</groupId>
 			<artifactId>ijl-utilities-wrappers</artifactId>
 			<version>${ijl-utilities-wrappers.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>xml-apis</groupId>
-					<artifactId>xml-apis-ext</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 
 		<dependency>
