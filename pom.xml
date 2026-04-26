@@ -130,6 +130,8 @@
 		<!-- package version below are determined by the parent pom but need to be upgraded or temporarily fixed for bugs -->
 
 		<spim_data.version>2.3.5</spim_data.version>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
 
 	</properties>
 
