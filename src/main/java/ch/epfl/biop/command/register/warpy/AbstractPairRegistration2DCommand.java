@@ -10,6 +10,8 @@ import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.convert.ConvertService;
 import org.scijava.plugin.Parameter;
+import org.scijava.task.Task;
+import org.scijava.task.TaskService;
 import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
 
 import java.util.Arrays;
@@ -28,6 +30,9 @@ abstract public class AbstractPairRegistration2DCommand implements BdvPlayground
     @Parameter
     Context ctx;
 
+    @Parameter
+    TaskService taskService;
+
     @Parameter(label = "Registration Pair",
             description = "The registration pair to apply the registration to")
     RegistrationPair registration_pair;
@@ -39,6 +44,7 @@ abstract public class AbstractPairRegistration2DCommand implements BdvPlayground
 
     @Override
     final public void run() {
+        Task task = null;
         synchronized (registration_pair) {
             try {
                 Map<String, Object> parameters = new HashMap<>();
@@ -54,6 +60,9 @@ abstract public class AbstractPairRegistration2DCommand implements BdvPlayground
                     return;
                 }
 
+                task = taskService.createTask(registration_pair.getName()+": "+registration.getRegistrationName());
+                task.start();
+
                 success = registration_pair
                         .executeRegistration(registration,
                                 convertToString(ctx, parameters),
@@ -67,6 +76,10 @@ abstract public class AbstractPairRegistration2DCommand implements BdvPlayground
                 System.err.println("Error during registration: "+e.getMessage());
                 e.printStackTrace();
                 success = false;
+            } finally {
+                if (task!=null) {
+                    task.finish();
+                }
             }
         }
 
