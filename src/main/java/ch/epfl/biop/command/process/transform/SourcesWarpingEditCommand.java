@@ -43,7 +43,7 @@ public class SourcesWarpingEditCommand implements BdvPlaygroundActionCommand {
     boolean is2d;
 
     Runnable waitForUser = () -> {
-        WaitForUserDialog dialog = new WaitForUserDialog("Choose slice","Please perform carefully your registration then press ok.");
+        WaitForUserDialog dialog = new WaitForUserDialog("Edit Registration","Please perform carefully your registration then press ok.");
         dialog.show();
     };
 
