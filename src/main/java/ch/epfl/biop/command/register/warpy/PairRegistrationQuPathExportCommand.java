@@ -2,6 +2,7 @@ package ch.epfl.biop.command.register.warpy;
 
 import ch.epfl.biop.registration.RegistrationPair;
 import org.scijava.Context;
+import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.plugin.Menu;
 import org.scijava.plugin.Parameter;
@@ -32,8 +33,16 @@ public class PairRegistrationQuPathExportCommand implements BdvPlaygroundActionC
             description = "When checked, overwrites existing registration files in the QuPath project")
     boolean allow_overwrite = true;
 
+    @Parameter(type = ItemIO.OUTPUT,
+            label = "Success",
+            description = "True if the registration export completed successfully")
+    boolean success = false;
+
     @Override
     public void run() {
-        registration_pair.exportToQuPath(allow_overwrite, ctx);
+        success = registration_pair.exportToQuPath(allow_overwrite, ctx);
+        if (!success) {
+            System.err.println("Registration not exported: " + registration_pair.getLastErrorMessage());
+        }
     }
 }

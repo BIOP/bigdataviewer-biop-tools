@@ -292,7 +292,7 @@ public class RegistrationPair implements Named, Closeable {
         File moving_entry_folder = QuPathBdvHelper.getDataEntryFolder(movingSourcesOrigin[0]);
 
         File resultFile = new File(moving_entry_folder.getAbsolutePath(), movingToFixedLandmarkName);
-        if (resultFile.exists() && (allowOverwrite == false)) {
+        if (resultFile.exists() && (!allowOverwrite)) {
             errorMessage = "The registration file already exists, overwrite not allowed.";
             return false;
         }
