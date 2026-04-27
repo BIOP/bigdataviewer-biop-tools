@@ -80,8 +80,8 @@ public class LLS7CropCommand implements BdvPlaygroundActionCommand {
                 center[0]-box_size_x, center[1]-box_size_y, center[2]-box_size_z,
                 center[0]+box_size_x, center[1]+box_size_y, center[2]+box_size_z );
         final RealInterval rangeInterval = Intervals.createMinMaxReal(
-                center[0]-5*box_size_x, center[1]-5*box_size_y, center[2]-5*box_size_z,
-                center[0]+5*box_size_x, center[1]+5*box_size_y, center[2]+5*box_size_z
+                center[0]-20*box_size_x, center[1]-20*box_size_y, center[2]-20*box_size_z,
+                center[0]+20*box_size_x, center[1]+20*box_size_y, center[2]+20*box_size_z
         //        0, 0, 0, box_size*5, box_size*5, box_size*5
         );
 
