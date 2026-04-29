@@ -145,8 +145,12 @@ public class MappedLevelSource<T> implements Source<T>, ISourceInspector {
 
     @Override
     public Set<SourceAndConverter<?>> inspect(DefaultMutableTreeNode parent, SourceAndConverter<?> source,
-                                               ISourceService sourceAndConverterService,
+                                               ISourceService source_service,
                                                boolean registerIntermediateSources) {
+
+        DefaultMutableTreeNode originalSource = new DefaultMutableTreeNode("Origin Source"); // This has to be the first one to correctly get the root
+        parent.add(originalSource);
+
         DefaultMutableTreeNode nameNode = new DefaultMutableTreeNode("Name: " + this.name);
         parent.add(nameNode);
 
@@ -154,29 +158,28 @@ public class MappedLevelSource<T> implements Source<T>, ISourceInspector {
                 "Level range: [" + minLevel + ", " + maxLevel + "] (of " + origin.getNumMipmapLevels() + " original levels)");
         parent.add(levelRangeNode);
 
-        DefaultMutableTreeNode originalSource = new DefaultMutableTreeNode("Origin Source");
         parent.add(originalSource);
 
         HashSet<SourceAndConverter<?>> subSources = new HashSet<>();
 
-        if (!sourceAndConverterService.getSourcesFromSpimSource(getOriginSource()).isEmpty()) {
-            sourceAndConverterService.getSourcesFromSpimSource(getOriginSource()).forEach((src) -> {
+        if (!source_service.getSourcesFromSpimSource(getOriginSource()).isEmpty()) {
+            source_service.getSourcesFromSpimSource(getOriginSource()).forEach((src) -> {
                 DefaultMutableTreeNode wrappedSourceNode =
                         new DefaultMutableTreeNode(new RenamableSource(src));
                 originalSource.add(wrappedSourceNode);
                 subSources.addAll(appendInspectorResult(wrappedSourceNode, src,
-                        sourceAndConverterService, registerIntermediateSources));
+                        source_service, registerIntermediateSources));
             });
         } else {
             SourceAndConverter<?> src = SourceHelper.createSourceAndConverter(origin);
             if (registerIntermediateSources) {
-                sourceAndConverterService.register(src);
+                source_service.register(src);
             }
             DefaultMutableTreeNode wrappedSourceNode = new DefaultMutableTreeNode(
                     new RenamableSource(src));
             originalSource.add(wrappedSourceNode);
             subSources.addAll(appendInspectorResult(wrappedSourceNode, src,
-                    sourceAndConverterService, registerIntermediateSources));
+                    source_service, registerIntermediateSources));
         }
 
         return subSources;

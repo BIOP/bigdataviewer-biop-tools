@@ -23,7 +23,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+
+import static bdv.util.source.time.MappedTimeSource.withName;
 
 public class RegistrationPair implements Named, Closeable {
 
@@ -56,10 +57,10 @@ public class RegistrationPair implements Named, Closeable {
 
         // Remove t offsets
         this.fixedSources = Arrays.stream(fixedSources)
-                .map(source -> new SourceTimeMapper(source, (t) -> t + timepointFixed, source.getSpimSource().getName() + "-T" + timepointFixed).get()).toArray(SourceAndConverter[]::new);
+                .map(source -> new SourceTimeMapper(source, withName((t) -> t + timepointFixed, "(t) -> t + "+timepointFixed), source.getSpimSource().getName() + "-T" + timepointFixed).get()).toArray(SourceAndConverter[]::new);
 
         this.movingSourcesOrigin = Arrays.stream(movingSourcesOrigin)
-                .map(sour -> new SourceTimeMapper(sour, (t) -> t + timepointMoving, sour.getSpimSource().getName() + "-T" + timepointMoving).get()).toArray(SourceAndConverter[]::new);
+                .map(sour -> new SourceTimeMapper(sour, withName((t) -> t + timepointMoving, "(t) -> t + "+timepointMoving), sour.getSpimSource().getName() + "-T" + timepointMoving).get()).toArray(SourceAndConverter[]::new);
 
         this.movingSourcesRegistered = movingSourcesOrigin;
 

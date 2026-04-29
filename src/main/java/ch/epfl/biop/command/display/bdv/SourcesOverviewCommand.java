@@ -226,6 +226,10 @@ public class SourcesOverviewCommand implements BdvPlaygroundActionCommand {
         SourceSelectorBehaviour ssb = (SourceSelectorBehaviour) SourceServices.getBdvDisplayService().getDisplayMetadata(
                 bdvh, SourceSelectorBehaviour.class.getSimpleName());
 
+        if (ssb == null) {
+            ssb = new SourceSelectorBehaviour(bdvh, "E");
+        }
+
         new EditorBehaviourUnInstaller(bdvh).run();
 
         addEditorBehaviours(bdvh, ssb);
@@ -241,7 +245,6 @@ public class SourcesOverviewCommand implements BdvPlaygroundActionCommand {
                     ctx.getService(ObjectService.class).removeObject(bdvh);
                 }
         );
-
     }
 
 

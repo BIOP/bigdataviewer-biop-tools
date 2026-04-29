@@ -194,6 +194,13 @@ public class DeconvolutionProcessor<T extends RealType<T>> implements VoxelProce
     public Set<SourceAndConverter<?>> inspect(DefaultMutableTreeNode parent, SourceAndConverter<?> source,
                                                ISourceService SourceService,
                                                boolean registerIntermediateSources) {
+
+        DefaultMutableTreeNode originalSource = new DefaultMutableTreeNode("Origin Source"); // This has to be the first one to correctly get the root
+        parent.add(originalSource);
+        DefaultMutableTreeNode wrappedSourceNode =
+                new DefaultMutableTreeNode(new RenamableSource(getRawSource()));
+        originalSource.add(wrappedSourceNode);
+
         parent.add(new DefaultMutableTreeNode("Cell Dimensions: " + Arrays.toString(cellDimensions)));
         parent.add(new DefaultMutableTreeNode("Overlap: " + Arrays.toString(overlap)));
         parent.add(new DefaultMutableTreeNode("Iterations: " + numIterations));

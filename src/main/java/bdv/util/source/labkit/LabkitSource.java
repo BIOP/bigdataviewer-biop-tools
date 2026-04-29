@@ -208,6 +208,19 @@ public class LabkitSource<T> implements Source<UnsignedByteType>, ISourceInspect
 
     @Override
     public Set<SourceAndConverter<?>> inspect(DefaultMutableTreeNode parent, SourceAndConverter<?> src, ISourceService SourceService, boolean registerIntermediateSources) {
+
+        DefaultMutableTreeNode classifiedSources = new DefaultMutableTreeNode("Classified Sources");
+
+        parent.add(classifiedSources);
+
+        for (SourceAndConverter source : this.sources) {
+            DefaultMutableTreeNode sourceNode = new DefaultMutableTreeNode(
+                    new RenamableSource(source));
+            classifiedSources.add(sourceNode);
+            appendInspectorResult(sourceNode, source,
+                    SourceService, registerIntermediateSources);
+        }
+
         DefaultMutableTreeNode nameNode = new DefaultMutableTreeNode(
                 "Name: " + this.name);
         parent.add(nameNode);
@@ -234,19 +247,6 @@ public class LabkitSource<T> implements Source<UnsignedByteType>, ISourceInspect
         DefaultMutableTreeNode useGpuNode = new DefaultMutableTreeNode(
                 "GPU: " + this.useGpu);
         parent.add(useGpuNode);
-
-        DefaultMutableTreeNode classifiedSources = new DefaultMutableTreeNode("Classified Sources");
-
-        parent.add(classifiedSources);
-
-        for (SourceAndConverter source : this.sources) {
-            DefaultMutableTreeNode sourceNode = new DefaultMutableTreeNode(
-                    new RenamableSource(source));
-            classifiedSources.add(sourceNode);
-            appendInspectorResult(sourceNode, source,
-                    SourceService, registerIntermediateSources);
-        }
-
 
         return new HashSet<>(Arrays.asList(this.sources));
     }

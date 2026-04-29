@@ -1,15 +1,16 @@
 package ch.epfl.biop.command.register.warpy;
 
+import bdv.util.source.time.MappedTimeSource;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.kheops.ometiff.OMETiffExporter;
 import ch.epfl.biop.registration.RegistrationPair;
 import ch.epfl.biop.source.processor.SourcesProcessor;
 import ij.IJ;
+import mpicbg.spim.data.generic.sequence.BasicViewSetup;
+import mpicbg.spim.data.sequence.Channel;
 import ome.units.UNITS;
 import org.apache.commons.io.FilenameUtils;
-import org.scijava.Context;
 import org.scijava.ItemVisibility;
-import org.scijava.command.Command;
 import org.scijava.log.LogService;
 import org.scijava.plugin.Menu;
 import org.scijava.plugin.Parameter;
@@ -17,6 +18,9 @@ import org.scijava.plugin.Plugin;
 import org.scijava.task.TaskService;
 import sc.fiji.bdvpg.scijava.BdvPgMenus;
 import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
+import sc.fiji.bdvpg.scijava.service.SourceService;
+import sc.fiji.bdvpg.scijava.service.tree.inspect.SourceInspector;
+import sc.fiji.bdvpg.service.ISourceService;
 import sc.fiji.bdvpg.source.transform.SourceResampler;
 
 import java.io.File;
@@ -37,7 +41,7 @@ import java.util.List;
 public class PairRegistrationOMETIFFExportCommand implements BdvPlaygroundActionCommand {
 
     @Parameter
-    Context ctx;
+    SourceService source_service;
 
     @Parameter(label = "Registration Pair",
             description = "The registration pair to export")
@@ -135,9 +139,13 @@ public class PairRegistrationOMETIFFExportCommand implements BdvPlaygroundAction
         }
 
         List<SourceAndConverter<?>> exportedSources;
+        List<Channel> channels = new ArrayList<>();
 
         if (fixed_sources!=null) {
             exportedSources = new ArrayList<>(Arrays.asList(fixed_sources)); // Already adds all fixed sources - no need to change anything
+            for (SourceAndConverter<?> source: fixed_sources) {
+                channels.add(getChannelFromSource(source));
+            }
         } else {
             exportedSources = new ArrayList<>();
         }
@@ -156,6 +164,7 @@ public class PairRegistrationOMETIFFExportCommand implements BdvPlaygroundAction
                                 source.getSpimSource().getName() + "_Registered",
                                 false, false,
                                 interpolate, 0).get());
+                channels.add(getChannelFromSource(source));
             }
         }
 
@@ -169,6 +178,14 @@ public class PairRegistrationOMETIFFExportCommand implements BdvPlaygroundAction
                     .put(exportedSources.toArray(new SourceAndConverter[0]))
                     .defineMetaData(FilenameUtils.removeExtension(imageName))
                     .putMetadataFromSources(exportedSources.toArray(new SourceAndConverter[0]), UNITS.MILLIMETER)
+                    .applyOnMeta(meta -> {
+                        for (int i=0;i< exportedSources.size();i++) {
+                            if (channels.get(i)!=null) {
+                                meta.setChannelName(channels.get(i).getName(),0,i);
+                            }
+                        }
+                        return meta;
+                    })
                     .defineWriteOptions().maxTilesInQueue(200).compression(this.compression)
                     .compressTemporaryFiles(this.compress_temp_files)
                     .nThreads(this.n_threads)
@@ -192,5 +209,16 @@ public class PairRegistrationOMETIFFExportCommand implements BdvPlaygroundAction
 
     protected SourcesProcessor getSourcesProcessorMoving() {
         return AbstractPairRegistration2DCommand.getChannelProcessorFromCsv(channels_moving_csv, registration_pair.getMovingSourcesOrigin().length);
+    }
+
+    private Channel getChannelFromSource(SourceAndConverter<?> source) {
+        // Sources are transformed, we need to check for the non-derived source, hopefully from a spimdata object
+        source = SourceInspector.getRootSourceAndConverter(source);
+        // Source linked to spimdata ? Could also look for the root source if it is derived
+        if (!source_service.containsMetadata(source, ISourceService.SPIM_DATA_INFO)) {
+            return null;
+        }
+        SourceService.SpimDataInfo meta = (SourceService.SpimDataInfo) source_service.getMetadata(source, ISourceService.SPIM_DATA_INFO);
+        return ((BasicViewSetup)(meta.asd.getSequenceDescription().getViewSetupsOrdered().get(meta.setupId))).getAttribute(Channel.class);
     }
 }

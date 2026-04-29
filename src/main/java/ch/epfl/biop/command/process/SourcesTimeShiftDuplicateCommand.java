@@ -11,6 +11,8 @@ import sc.fiji.bdvpg.scijava.BdvPgMenus;
 
 import java.util.Arrays;
 
+import static bdv.util.source.time.MappedTimeSource.withName;
+
 @Plugin(type = BdvPlaygroundActionCommand.class,
         //menuPath = BdvPgMenus.RootMenu+"Process>Source - Duplicate With Time-Shift",
         menu = {
@@ -41,7 +43,7 @@ public class SourcesTimeShiftDuplicateCommand implements BdvPlaygroundActionComm
     @Override
     public void run() {
         sources_out = Arrays.stream(sources)
-                .map(source -> new SourceTimeMapper(source, (t) -> t + timeshift, source.getSpimSource().getName() + suffix).get())
+                .map(source -> new SourceTimeMapper(source, withName((t) -> t + timeshift, "(t) -> t + "+timeshift), source.getSpimSource().getName() + suffix).get())
                 .toArray(SourceAndConverter[]::new);
     }
 

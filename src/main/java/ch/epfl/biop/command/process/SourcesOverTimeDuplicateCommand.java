@@ -11,6 +11,8 @@ import sc.fiji.bdvpg.scijava.BdvPgMenus;
 
 import java.util.Arrays;
 
+import static bdv.util.source.time.MappedTimeSource.withName;
+
 @Plugin(type = BdvPlaygroundActionCommand.class,
         //menuPath = BdvPgMenus.RootMenu+"Sources>Create copy of sources over time",
         menu = {
@@ -48,8 +50,9 @@ public class SourcesOverTimeDuplicateCommand implements BdvPlaygroundActionComma
 
     @Override
     public void run() {
+
         sources_out = Arrays.stream(sources)
-                .map(source -> new SourceTimeMapper(source, (t) -> (t >= t_start) && (t < t_end) ? timepoint_to_copy : -1, source.getSpimSource().getName() + suffix).get())
+                .map(source -> new SourceTimeMapper(source, withName((t) -> (t >= t_start) && (t < t_end) ? timepoint_to_copy : -1, "t -> "+timepoint_to_copy+" ["+t_start+" to "+t_end+"]"), source.getSpimSource().getName() + suffix).get())
                 .toArray(SourceAndConverter[]::new);
     }
 
