@@ -2,6 +2,7 @@ package bdv.util;
 
 import bdv.viewer.Interpolation;
 import bdv.viewer.Source;
+import bdv.viewer.SourceAndConverter;
 import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.imglib2.*;
 import net.imglib2.position.FunctionRandomAccessible;
@@ -11,13 +12,19 @@ import net.imglib2.view.ExtendedRandomAccessibleInterval;
 import net.imglib2.view.Views;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sc.fiji.bdvpg.scijava.service.tree.inspect.ISourceInspector;
+import sc.fiji.bdvpg.service.ISourceService;
 
+import javax.swing.tree.DefaultMutableTreeNode;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.function.Supplier;
 
-public class EmptyMultiresolutionSource implements Source<UnsignedShortType>, Serializable {
+public class EmptyMultiresolutionSource implements Source<UnsignedShortType>, Serializable, ISourceInspector {
 
     private static Logger logger = LoggerFactory.getLogger(EmptyMultiresolutionSource.class);
 
@@ -155,6 +162,39 @@ public class EmptyMultiresolutionSource implements Source<UnsignedShortType>, Se
     @Override
     public int getNumMipmapLevels() {
         return params.numberOfResolutions;
+    }
+
+    @Override
+    public Set<SourceAndConverter<?>> inspect(DefaultMutableTreeNode parent, SourceAndConverter<?> source,
+                                              ISourceService sourceAndConverterService,
+                                              boolean registerIntermediateSources) {
+        parent.add(new DefaultMutableTreeNode("Name: " + params.name));
+        parent.add(new DefaultMutableTreeNode(
+                "Dimensions: " + params.nx + " x " + params.ny + " x " + params.nz));
+        parent.add(new DefaultMutableTreeNode("Number of Timepoints: " + params.numberOfTimepoints));
+        parent.add(new DefaultMutableTreeNode("Number of Resolutions: " + params.numberOfResolutions));
+        parent.add(new DefaultMutableTreeNode(
+                "Downscaling Factors: [" + params.scalex + ", " + params.scaley + ", " + params.scalez + "]"));
+        parent.add(new DefaultMutableTreeNode("Type: UnsignedShortType (constant value 10)"));
+
+        final AffineTransform3D baseTransform = params.at3D;
+        parent.add(new DefaultMutableTreeNode(new Supplier<AffineTransform3D>() {
+            public AffineTransform3D get() {
+                AffineTransform3D copy = new AffineTransform3D();
+                copy.set(baseTransform);
+                return copy;
+            }
+
+            public String toString() {
+                return String.format(
+                        "Base Transform: [%.3e, %.3e, %.3e, %.3e; %.3e, %.3e, %.3e, %.3e; %.3e, %.3e, %.3e, %.3e]",
+                        baseTransform.get(0, 0), baseTransform.get(0, 1), baseTransform.get(0, 2), baseTransform.get(0, 3),
+                        baseTransform.get(1, 0), baseTransform.get(1, 1), baseTransform.get(1, 2), baseTransform.get(1, 3),
+                        baseTransform.get(2, 0), baseTransform.get(2, 1), baseTransform.get(2, 2), baseTransform.get(2, 3));
+            }
+        }));
+
+        return new HashSet<>();
     }
 
     static public class EmptyMultiresolutionSourceParams implements Cloneable, Serializable {

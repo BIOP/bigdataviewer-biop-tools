@@ -3,6 +3,7 @@ package bdv.util.source.process;
 import bdv.util.DefaultInterpolators;
 import bdv.viewer.Interpolation;
 import bdv.viewer.Source;
+import bdv.viewer.SourceAndConverter;
 import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.imglib2.Cursor;
 import net.imglib2.RandomAccessibleInterval;
@@ -19,9 +20,18 @@ import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.Views;
 import sc.fiji.bdvpg.cache.GlobalLoaderCache;
+import sc.fiji.bdvpg.scijava.service.RenamableSource;
+import sc.fiji.bdvpg.scijava.service.tree.inspect.ISourceInspector;
+import sc.fiji.bdvpg.service.ISourceService;
+import sc.fiji.bdvpg.source.SourceHelper;
 
+import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+
+import static sc.fiji.bdvpg.scijava.service.tree.inspect.SourceInspector.appendInspectorResult;
 
 /**
  * Lazy downscaling of a source.
@@ -33,7 +43,7 @@ import java.util.Map;
  *
  * @param <T> the pixel type of the source, must be a RealType and NativeType
  */
-public class LazyDownscaledXY2Source<T extends RealType<T> & NativeType<T>> implements Source<T> {
+public class LazyDownscaledXY2Source<T extends RealType<T> & NativeType<T>> implements Source<T>, ISourceInspector {
 
     protected final DefaultInterpolators< T > interpolators = new DefaultInterpolators<>();
 
@@ -162,6 +172,42 @@ public class LazyDownscaledXY2Source<T extends RealType<T> & NativeType<T>> impl
     @Override
     public int getNumMipmapLevels() {
         return nResolutionLevels;
+    }
+
+    @Override
+    public Set<SourceAndConverter<?>> inspect(DefaultMutableTreeNode parent, SourceAndConverter<?> source,
+                                              ISourceService sourceAndConverterService,
+                                              boolean registerIntermediateSources) {
+        parent.add(new DefaultMutableTreeNode("Name: " + this.name));
+        parent.add(new DefaultMutableTreeNode("Downscaling: XY only, factor 2 per level"));
+        parent.add(new DefaultMutableTreeNode("Resolution Levels: " + this.nResolutionLevels));
+
+        HashSet<SourceAndConverter<?>> subSources = new HashSet<>();
+
+        DefaultMutableTreeNode originalSource = new DefaultMutableTreeNode("Origin Source");
+        parent.add(originalSource);
+
+        if (!sourceAndConverterService.getSourcesFromSpimSource(origin).isEmpty()) {
+            sourceAndConverterService.getSourcesFromSpimSource(origin).forEach((src) -> {
+                DefaultMutableTreeNode wrappedSourceNode =
+                        new DefaultMutableTreeNode(new RenamableSource(src));
+                originalSource.add(wrappedSourceNode);
+                subSources.addAll(appendInspectorResult(wrappedSourceNode, src,
+                        sourceAndConverterService, registerIntermediateSources));
+            });
+        } else {
+            SourceAndConverter<?> src = SourceHelper.createSourceAndConverter(origin);
+            if (registerIntermediateSources) {
+                sourceAndConverterService.register(src);
+            }
+            DefaultMutableTreeNode wrappedSourceNode = new DefaultMutableTreeNode(
+                    new RenamableSource(src));
+            originalSource.add(wrappedSourceNode);
+            subSources.addAll(appendInspectorResult(wrappedSourceNode, src,
+                    sourceAndConverterService, registerIntermediateSources));
+        }
+
+        return subSources;
     }
 
 }

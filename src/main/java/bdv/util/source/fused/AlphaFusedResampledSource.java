@@ -8,6 +8,7 @@ import bdv.util.source.alpha.AlphaSourceHelper;
 import bdv.util.source.alpha.IAlphaSource;
 import bdv.viewer.Interpolation;
 import bdv.viewer.Source;
+import bdv.viewer.SourceAndConverter;
 import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.imglib2.Cursor;
 import net.imglib2.RandomAccessible;
@@ -37,11 +38,17 @@ import net.imglib2.view.Views;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sc.fiji.bdvpg.cache.GlobalLoaderCache;
+import sc.fiji.bdvpg.scijava.service.RenamableSource;
+import sc.fiji.bdvpg.scijava.service.tree.inspect.ISourceInspector;
+import sc.fiji.bdvpg.service.ISourceService;
 import sc.fiji.bdvpg.source.SourceHelper;
 
+import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
+
+import static sc.fiji.bdvpg.scijava.service.tree.inspect.SourceInspector.appendInspectorResult;
 
 import static net.imglib2.img.basictypeaccess.AccessFlags.VOLATILE;
 import static net.imglib2.type.PrimitiveType.BYTE;
@@ -77,7 +84,7 @@ import static net.imglib2.type.PrimitiveType.SHORT;
  * @author Nicolas Chiaruttini, BIOP EPFL, 2022
  */
 
-public class AlphaFusedResampledSource< T extends RealType<T> & NativeType<T>> implements Source<T> {
+public class AlphaFusedResampledSource< T extends RealType<T> & NativeType<T>> implements Source<T>, ISourceInspector {
 
     final public static String SUM = "SUM";
     final public static String AVERAGE = "AVERAGE";
@@ -495,6 +502,63 @@ public class AlphaFusedResampledSource< T extends RealType<T> & NativeType<T>> i
 
     public long getCacheZ() {
         return cacheZ;
+    }
+
+    @Override
+    public Set<SourceAndConverter<?>> inspect(DefaultMutableTreeNode parent, SourceAndConverter<?> source,
+                                              ISourceService sourceAndConverterService,
+                                              boolean registerIntermediateSources) {
+        parent.add(new DefaultMutableTreeNode("Name: " + this.name));
+        parent.add(new DefaultMutableTreeNode("Blending Mode: " + this.blendingMode));
+        parent.add(new DefaultMutableTreeNode("Reuse Mipmaps: " + this.reuseMipMaps));
+        parent.add(new DefaultMutableTreeNode("Default Mipmap Level: " + this.defaultMipMapLevel));
+        parent.add(new DefaultMutableTreeNode("Cached: " + this.cache));
+        if (this.cache) {
+            parent.add(new DefaultMutableTreeNode(
+                    "Cache Block Size: [" + cacheX + ", " + cacheY + ", " + cacheZ + "]"));
+        }
+
+        HashSet<SourceAndConverter<?>> subSources = new HashSet<>();
+
+        DefaultMutableTreeNode modelNode = new DefaultMutableTreeNode("Model Resampler Source");
+        parent.add(modelNode);
+        appendChildSource(modelNode, resamplingModel, sourceAndConverterService,
+                registerIntermediateSources, subSources);
+
+        DefaultMutableTreeNode originsNode = new DefaultMutableTreeNode(
+                "Origin Sources (" + origins.size() + ")");
+        parent.add(originsNode);
+        for (Source<T> origin : origins) {
+            appendChildSource(originsNode, origin, sourceAndConverterService,
+                    registerIntermediateSources, subSources);
+        }
+
+        return subSources;
+    }
+
+    private void appendChildSource(DefaultMutableTreeNode parentNode, Source<?> child,
+                                   ISourceService sourceAndConverterService,
+                                   boolean registerIntermediateSources,
+                                   Set<SourceAndConverter<?>> subSources) {
+        if (!sourceAndConverterService.getSourcesFromSpimSource(child).isEmpty()) {
+            sourceAndConverterService.getSourcesFromSpimSource(child).forEach((src) -> {
+                DefaultMutableTreeNode wrappedSourceNode =
+                        new DefaultMutableTreeNode(new RenamableSource(src));
+                parentNode.add(wrappedSourceNode);
+                subSources.addAll(appendInspectorResult(wrappedSourceNode, src,
+                        sourceAndConverterService, registerIntermediateSources));
+            });
+        } else {
+            SourceAndConverter<?> src = SourceHelper.createSourceAndConverter(child);
+            if (registerIntermediateSources) {
+                sourceAndConverterService.register(src);
+            }
+            DefaultMutableTreeNode wrappedSourceNode = new DefaultMutableTreeNode(
+                    new RenamableSource(src));
+            parentNode.add(wrappedSourceNode);
+            subSources.addAll(appendInspectorResult(wrappedSourceNode, src,
+                    sourceAndConverterService, registerIntermediateSources));
+        }
     }
 
 }
