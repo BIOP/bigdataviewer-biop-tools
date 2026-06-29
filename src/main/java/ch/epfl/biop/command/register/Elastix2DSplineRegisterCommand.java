@@ -34,7 +34,6 @@ public class Elastix2DSplineRegisterCommand extends AbstractElastix2DRegistratio
 
     @Override
     public void run() {
-        ElastixHelper.checkOrSetLocal(ctx);
         Elastix2DSplineRegister reg = new Elastix2DSplineRegister(
                 sources_fixed, level_fixed_source, tp_fixed,
                 sources_moving, level_moving_source, tp_moving,

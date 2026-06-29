@@ -36,7 +36,6 @@ public class Elastix2DAffineRegisterCommand extends AbstractElastix2DRegistratio
 
     @Override
     public void run() {
-        ElastixHelper.checkOrSetLocal(ctx);
         RegisterHelper rh = new RegisterHelper();
         if (verbose) {
             rh.verbose();

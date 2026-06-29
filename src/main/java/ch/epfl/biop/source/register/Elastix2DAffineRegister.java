@@ -5,10 +5,10 @@ import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.fiji.imageplusutils.ImagePlusFunctions;
 import ch.epfl.biop.source.exporter.CZTRange;
 import ch.epfl.biop.source.exporter.ImagePlusGetter;
-import ch.epfl.biop.wrappers.elastix.DefaultElastixTask;
+import ch.epfl.biop.wrappers.elastix.ApposeElastixTask;
 import ch.epfl.biop.wrappers.elastix.ElastixTask;
 import ch.epfl.biop.wrappers.elastix.RegisterHelper;
-import ch.epfl.biop.wrappers.transformix.DefaultTransformixTask;
+import ch.epfl.biop.wrappers.transformix.ApposeTransformixTask;
 import ch.epfl.biop.wrappers.transformix.TransformHelper;
 import ch.epfl.biop.wrappers.transformix.TransformixTask;
 import ij.IJ;
@@ -58,9 +58,9 @@ public class Elastix2DAffineRegister<FT extends NativeType<FT> & NumericType<FT>
 
     double background_offset_value_fixed = 0;
 
-    Supplier<TransformixTask> tt = () -> new DefaultTransformixTask();
+    Supplier<TransformixTask> tt = () -> new ApposeTransformixTask();
 
-    ElastixTask et = new DefaultElastixTask();
+    ElastixTask et = new ApposeElastixTask();
 
     String errorMessage = "";
 

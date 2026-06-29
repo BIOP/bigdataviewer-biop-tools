@@ -7,9 +7,8 @@ import ch.epfl.biop.java.utilities.roi.ConvertibleRois;
 import ch.epfl.biop.java.utilities.roi.types.RealPointList;
 import ch.epfl.biop.source.exporter.CZTRange;
 import ch.epfl.biop.source.exporter.ImagePlusGetter;
-import ch.epfl.biop.wrappers.elastix.DefaultElastixTask;
 import ch.epfl.biop.wrappers.elastix.*;
-import ch.epfl.biop.wrappers.transformix.DefaultTransformixTask;
+import ch.epfl.biop.wrappers.transformix.ApposeTransformixTask;
 import ch.epfl.biop.wrappers.transformix.TransformHelper;
 import ch.epfl.biop.wrappers.transformix.TransformixTask;
 import ij.IJ;
@@ -56,9 +55,9 @@ public class Elastix2DSplineRegister<FT extends NativeType<FT> & NumericType<FT>
 
     int numberOfIterationPerScale;
 
-    Supplier<TransformixTask> tt = () -> new DefaultTransformixTask();
+    Supplier<TransformixTask> tt = () -> new ApposeTransformixTask();
 
-    ElastixTask et = new DefaultElastixTask();
+    ElastixTask et = new ApposeElastixTask();
 
     double background_offset_value_moving = 0;
 
