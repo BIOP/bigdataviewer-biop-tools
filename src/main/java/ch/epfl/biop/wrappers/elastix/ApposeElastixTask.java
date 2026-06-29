@@ -309,6 +309,8 @@ public class ApposeElastixTask implements ElastixTask {
         return CACHED_ENV.python();
     }
 
+    public static String ITK_ELASTIX_VERSION = "0.25.3";
+
     /** Builds (and caches) the itk-elastix pixi environment. */
     private static Environment doBuildEnvironment() throws BuildException {
         return Appose
@@ -316,12 +318,12 @@ public class ApposeElastixTask implements ElastixTask {
                 .channels("conda-forge")
                 .conda("python==3.11", "numpy")
                 .pypi("appose @ git+https://github.com/apposed/appose-python@e44d688e0aac65b048978ddb40e18aef5afa6c96")
-                .pypi("itk-elastix==0.25.3")
+                .pypi("itk-elastix=="+ITK_ELASTIX_VERSION)
                 .env("NSLOTS", "1")
                 // Pool beats Platform for small images; never TBB (defaults to ~1024 work units).
                 // The init script also sets this before 'import itk' for belt-and-suspenders.
                 .env("ITK_GLOBAL_DEFAULT_THREADER", "Pool")
-                .name("itk-elastix-v6")
+                .name("itk-elastix-v"+ITK_ELASTIX_VERSION)
                 .logDebug()
                 .build();
     }
