@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>40.0.0</version> <!-- problem with 43 and jpeg2000 -->
+		<version>45.1.0</version> <!-- problem with 43 and jpeg2000 -->
 		<relativePath />
 	</parent>
 
@@ -184,11 +184,6 @@
 
 		<dependency>
 			<groupId>sc.fiji</groupId>
-			<artifactId>bigdataviewer-vistools</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>sc.fiji</groupId>
 			<artifactId>bigdataviewer-core</artifactId>
 		</dependency>
 
@@ -345,5 +340,43 @@
             <scope>test</scope>
         </dependency-->
 	</dependencies>
+
+	<profiles>
+		<!--
+			SlideBook .sld support relies on the proprietary, native-backed
+			SlideBook6Reader.jar (loaded by Bio-Formats via reflection). It is not
+			available in any Maven repository and cannot be redistributed, so it must
+			be installed manually into the local repository:
+
+			mvn install:install-file \
+			  -Dfile=SlideBook6Reader.jar \
+			  -DgroupId=com.slidebook \
+			  -DartifactId=SlideBook6Reader \
+			  -Dversion=2025.07.30 \
+			  -Dpackaging=jar
+
+			This profile auto-activates only when that jar is present in the local
+			repository. On CI (and for anyone who has not installed it) the file is
+			absent, the profile stays inactive, and the build does not try to resolve
+			it - so the missing dependency never breaks the build.
+		-->
+		<profile>
+			<id>slidebook</id>
+			<activation>
+				<file>
+					<exists>${user.home}/.m2/repository/com/slidebook/SlideBook6Reader/2025.07.30/SlideBook6Reader-2025.07.30.jar</exists>
+				</file>
+			</activation>
+			<dependencies>
+				<dependency>
+					<groupId>com.slidebook</groupId>
+					<artifactId>SlideBook6Reader</artifactId>
+					<version>2025.07.30</version>
+					<scope>provided</scope>
+				</dependency>
+			</dependencies>
+		</profile>
+	</profiles>
+
 
 </project>

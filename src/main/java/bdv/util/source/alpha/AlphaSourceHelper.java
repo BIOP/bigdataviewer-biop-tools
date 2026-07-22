@@ -4,7 +4,6 @@ import bdv.img.WarpedSource;
 import bdv.tools.transformation.TransformedSource;
 import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
-import com.amazonaws.services.kms.model.UnsupportedOperationException;
 import net.imglib2.type.numeric.real.FloatType;
 import sc.fiji.bdvpg.service.ISourceService;
 import sc.fiji.bdvpg.service.SourceServices;
