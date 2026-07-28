@@ -26,6 +26,8 @@
 package ch.epfl.biop.command.process.deconvolve;
 
 import bdv.cache.SharedQueue;
+import bdv.util.RandomAccessibleIntervalSource;
+import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.source.deconvolve.Deconvolver;
 import ij.IJ;
@@ -38,6 +40,7 @@ import net.imagej.ops.OpService;
 import net.imglib2.Cursor;
 import net.imglib2.FinalDimensions;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.view.Views;
@@ -48,6 +51,7 @@ import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
 import sc.fiji.bdvpg.scijava.BdvPgMenus;
+import sc.fiji.bdvpg.source.SourceHelper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -130,6 +134,19 @@ public class DistillPSFCommand implements BdvPlaygroundActionCommand {
     @Parameter(label = "Regularization Factor",
             description = "Regularization strength to prevent noise amplification (0 = no regularization)")
     float regularization_factor = 0f;
+
+    @Parameter(label = "Crop Output Around Centre",
+            description = "Crop the distilled PSF, which sits at the centre of the volume, to the size below")
+    boolean crop_output = true;
+
+    @Parameter(label = "PSF Size X", description = "Cropped PSF width (clamped to the image size)")
+    int psf_size_x = 64;
+
+    @Parameter(label = "PSF Size Y", description = "Cropped PSF height (clamped to the image size)")
+    int psf_size_y = 64;
+
+    @Parameter(label = "PSF Size Z", description = "Cropped PSF depth (clamped to the image size, never zero-padded)")
+    int psf_size_z = 128;
 
     @Parameter(type = ItemIO.OUTPUT,
             description = "The distilled PSF source")
@@ -257,7 +274,7 @@ public class DistillPSFCommand implements BdvPlaygroundActionCommand {
             // Build the (lazy) distilled-PSF source, then force it to compute now, on this
             // thread, so the GPU work happens inside this try block while the single-GPU pool
             // is the active one.
-            psf_out = Deconvolver.distillPSF(
+            SourceAndConverter<?> fullPsf = Deconvolver.distillPSF(
                     (SourceAndConverter) beads,
                     (SourceAndConverter) point_mask,
                     name,
@@ -266,12 +283,20 @@ public class DistillPSFCommand implements BdvPlaygroundActionCommand {
                     regularization_factor,
                     new SharedQueue(1, 1));
 
-            double sum = forceCompute(psf_out);
+            double sum = forceCompute(fullPsf);
             if (sum == 0.0) {
                 IJ.log("[Distill PSF] WARNING: the distilled PSF is all zeros. The GPU computation "
                         + "likely failed (out of memory?). Check the console/log for a stack trace.");
             } else {
                 IJ.log("[Distill PSF] Done.");
+            }
+
+            // The distilled PSF sits at the centre of the volume; crop around it if requested.
+            if (crop_output) {
+                psf_out = cropCentered(fullPsf, beads,
+                        new long[]{psf_size_x, psf_size_y, psf_size_z}, name);
+            } else {
+                psf_out = fullPsf;
             }
         } finally {
             // Shut down the single-GPU pool used for distillation...
@@ -331,6 +356,47 @@ public class DistillPSFCommand implements BdvPlaygroundActionCommand {
         } catch (Exception e) {
             IJ.log("[Distill PSF] Could not run the GPU memory pre-flight check: " + e.getMessage());
         }
+    }
+
+    /**
+     * Crops the (already computed) full-size PSF around the centre of the volume to at most the
+     * requested size, clamping each axis to the available size (never zero-padding). The output
+     * keeps the physical voxel calibration of the calibration source.
+     */
+    @SuppressWarnings("unchecked")
+    private SourceAndConverter<FloatType> cropCentered(SourceAndConverter<?> fullSource,
+                                                       SourceAndConverter<?> calibrationSource,
+                                                       long[] requestedSize, String outputName) {
+        RandomAccessibleInterval<FloatType> full =
+                (RandomAccessibleInterval<FloatType>) fullSource.getSpimSource().getSource(0, 0);
+        long[] fullDims = full.dimensionsAsLongArray();
+
+        long[] min = new long[3];
+        long[] max = new long[3];
+        for (int d = 0; d < 3; d++) {
+            long cropDim = Math.min(requestedSize[d], fullDims[d]);
+            min[d] = full.min(d) + (fullDims[d] - cropDim) / 2;
+            max[d] = min[d] + cropDim - 1;
+        }
+
+        RandomAccessibleInterval<FloatType> cropped = Views.zeroMin(Views.interval(full, min, max));
+        IJ.log("[Distill PSF] Cropped PSF to " + (max[0] - min[0] + 1) + " x "
+                + (max[1] - min[1] + 1) + " x " + (max[2] - min[2] + 1)
+                + " around the centre (requested " + requestedSize[0] + " x " + requestedSize[1]
+                + " x " + requestedSize[2] + ").");
+
+        // Preserve the calibration source's voxel size/orientation, shifting the translation so the
+        // cropped, zero-min PSF stays at the same physical location it occupied in the full volume.
+        AffineTransform3D transform = new AffineTransform3D();
+        calibrationSource.getSpimSource().getSourceTransform(0, 0, transform);
+        double[] worldMin = new double[3];
+        transform.apply(new double[]{min[0], min[1], min[2]}, worldMin);
+        AffineTransform3D croppedTransform = transform.copy();
+        croppedTransform.setTranslation(worldMin);
+
+        Source<FloatType> src = new RandomAccessibleIntervalSource<>(
+                cropped, new FloatType(), croppedTransform, outputName);
+        return SourceHelper.createSourceAndConverter(src);
     }
 
     /**
