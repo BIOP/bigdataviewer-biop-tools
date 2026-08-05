@@ -49,12 +49,15 @@ import org.scijava.ItemVisibility;
 import org.scijava.plugin.Menu;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import org.scijava.task.Task;
+import org.scijava.task.TaskService;
 import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
 import sc.fiji.bdvpg.scijava.BdvPgMenus;
 import sc.fiji.bdvpg.source.SourceHelper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Distills a point spread function (PSF) from a bead image and a mask of bead
@@ -98,13 +101,18 @@ public class DistillPSFCommand implements BdvPlaygroundActionCommand {
     @Parameter
     OpService ops;
 
+    @Parameter(required = false)
+    TaskService taskService;
+
     @Parameter(visibility = ItemVisibility.MESSAGE, persist = false, required = false)
     String pool_message = "";
 
-    @Parameter(label = "Bead Image Source",
-            description = "The 3D image containing sub-resolution beads",
+    @Parameter(label = "Bead Image Source(s)",
+            style = "sorted",
+            description = "One or more 3D images containing sub-resolution beads (e.g. the channels of a "
+                    + "multi-channel acquisition). Each is distilled sequentially against the same point mask.",
             callback = "updateEstimate")
-    SourceAndConverter<?> beads;
+    SourceAndConverter<?>[] beads;
 
     @Parameter(label = "Bead Centres (Point Mask) Source",
             description = "A same-sized image with a single non-zero pixel at the centre of each bead",
@@ -149,8 +157,8 @@ public class DistillPSFCommand implements BdvPlaygroundActionCommand {
     int psf_size_z = 128;
 
     @Parameter(type = ItemIO.OUTPUT,
-            description = "The distilled PSF source")
-    SourceAndConverter<?> psf_out;
+            description = "The distilled PSF sources, one per input bead source (same order)")
+    SourceAndConverter<?>[] psf_out;
 
     /** Builds the informational message shown at the top of the dialog. */
     protected void init() {
@@ -176,11 +184,11 @@ public class DistillPSFCommand implements BdvPlaygroundActionCommand {
     /** Recomputes the estimated GPU RAM whenever the sources or device change. */
     protected void updateEstimate() {
         try {
-            if (beads == null || point_mask == null) {
-                ram_message = "Select both sources to estimate the required GPU RAM.";
+            if (beads == null || beads.length == 0 || point_mask == null) {
+                ram_message = "Select bead source(s) and the point mask to estimate the required GPU RAM.";
                 return;
             }
-            long[] beadDims = beads.getSpimSource().getSource(0, 0).dimensionsAsLongArray();
+            long[] beadDims = beads[0].getSpimSource().getSource(0, 0).dimensionsAsLongArray();
             long[] maskDims = point_mask.getSpimSource().getSource(0, 0).dimensionsAsLongArray();
 
             if (beadDims.length < 3 || maskDims.length < 3) {
@@ -198,6 +206,8 @@ public class DistillPSFCommand implements BdvPlaygroundActionCommand {
             long oneBuffer = ext[0] * ext[1] * ext[2] * 4L;
 
             ram_message = "<html>"
+                    + "<b>" + beads.length + "</b> bead source(s) - processed <b>sequentially</b>, "
+                    + "so the estimate below applies to each channel in turn (not summed).<br>"
                     + "Padded FFT volume: <b>" + ext[0] + " x " + ext[1] + " x " + ext[2] + "</b>"
                     + " (input was " + beadDims[0] + " x " + beadDims[1] + " x " + beadDims[2] + ")<br>"
                     + "One float buffer at that size: <b>" + gb(oneBuffer) + "</b><br>"
@@ -226,6 +236,10 @@ public class DistillPSFCommand implements BdvPlaygroundActionCommand {
     @Override
     public void run() {
         // --- Validation (before touching the pool) ---
+        if (beads == null || beads.length == 0) {
+            IJ.error("PSF distillation", "No bead source selected.");
+            return;
+        }
         if (!point_mask.getSpimSource().isPresent(0)) {
             IJ.error("PSF distillation", "The point mask must be defined at timepoint 0.");
             return;
@@ -236,13 +250,18 @@ public class DistillPSFCommand implements BdvPlaygroundActionCommand {
                     + " cannot be used for PSF distillation.");
             return;
         }
-        long[] beadDims = beads.getSpimSource().getSource(0, 0).dimensionsAsLongArray();
         long[] maskDims = point_mask.getSpimSource().getSource(0, 0).dimensionsAsLongArray();
-        if (beadDims.length < 3 || !Arrays.equals(beadDims, maskDims)) {
-            IJ.error("PSF distillation", "Bead and mask must be 3D and have identical dimensions.\n"
-                    + "Bead: " + Arrays.toString(beadDims) + "\nMask: " + Arrays.toString(maskDims));
-            return;
+        // All bead sources are distilled against the same point mask, so they must all share its dimensions.
+        for (int ch = 0; ch < beads.length; ch++) {
+            long[] beadDims = beads[ch].getSpimSource().getSource(0, 0).dimensionsAsLongArray();
+            if (beadDims.length < 3 || !Arrays.equals(beadDims, maskDims)) {
+                IJ.error("PSF distillation", "Every bead source must be 3D and have the same dimensions as the "
+                        + "point mask.\nBead source #" + ch + " (" + beads[ch].getSpimSource().getName() + "): "
+                        + Arrays.toString(beadDims) + "\nMask: " + Arrays.toString(maskDims));
+                return;
+            }
         }
+        final long[] beadDims = maskDims; // identical for every channel (validated above)
 
         int nDevices;
         try {
@@ -261,7 +280,14 @@ public class DistillPSFCommand implements BdvPlaygroundActionCommand {
         final String originalSpec = Prefs.get(CLIJPoolOptions.KEY, "0:1");
         final boolean hadPool = CLIJxPool.isIntanceSet();
         CLIJxPool singlePool = null;
+        Task task = null;
+        final List<SourceAndConverter<?>> outputs = new ArrayList<>();
         try {
+            if (taskService != null) {
+                task = taskService.createTask("Distill PSF (" + beads.length + " channel(s))");
+                task.setProgressMaximum(beads.length);
+            }
+
             if (hadPool) {
                 IJ.log("[Distill PSF] Temporarily shutting down the shared CLIJ pool to free the GPU...");
                 CLIJxPool.getInstance().shutdown();
@@ -271,34 +297,57 @@ public class DistillPSFCommand implements BdvPlaygroundActionCommand {
 
             preflightMemoryCheck(singlePool, beadDims, maskDims);
 
-            // Build the (lazy) distilled-PSF source, then force it to compute now, on this
-            // thread, so the GPU work happens inside this try block while the single-GPU pool
-            // is the active one.
-            SourceAndConverter<?> fullPsf = Deconvolver.distillPSF(
-                    (SourceAndConverter) beads,
-                    (SourceAndConverter) point_mask,
-                    name,
-                    num_iterations,
-                    non_circulant,
-                    regularization_factor,
-                    new SharedQueue(1, 1));
+            // Each bead source is distilled sequentially, so at most one full-image FFT lives on the
+            // GPU at a time and the memory estimate above applies per channel.
+            for (int ch = 0; ch < beads.length; ch++) {
+                // Cancellation is honoured only between channels, never during a GPU deconvolution.
+                if (task != null && task.isCanceled()) {
+                    IJ.log("[Distill PSF] Cancelled by user after " + ch + " / " + beads.length + " channel(s).");
+                    break;
+                }
 
-            double sum = forceCompute(fullPsf);
-            if (sum == 0.0) {
-                IJ.log("[Distill PSF] WARNING: the distilled PSF is all zeros. The GPU computation "
-                        + "likely failed (out of memory?). Check the console/log for a stack trace.");
-            } else {
-                IJ.log("[Distill PSF] Done.");
-            }
+                SourceAndConverter<?> beadSource = beads[ch];
+                String channelName = beads.length == 1 ? name : name + "_ch" + ch;
+                if (task != null) {
+                    task.setStatusMessage("Distilling PSF - channel " + (ch + 1) + " / " + beads.length
+                            + " (" + beadSource.getSpimSource().getName() + ")");
+                }
+                IJ.log("[Distill PSF] Channel " + (ch + 1) + " / " + beads.length + " - "
+                        + beadSource.getSpimSource().getName());
 
-            // The distilled PSF sits at the centre of the volume; crop around it if requested.
-            if (crop_output) {
-                psf_out = cropCentered(fullPsf, beads,
-                        new long[]{psf_size_x, psf_size_y, psf_size_z}, name);
-            } else {
-                psf_out = fullPsf;
+                // Build the (lazy) distilled-PSF source, then force it to compute now, on this
+                // thread, so the GPU work happens inside this try block while the single-GPU pool
+                // is the active one.
+                SourceAndConverter<?> fullPsf = Deconvolver.distillPSF(
+                        (SourceAndConverter) beadSource,
+                        (SourceAndConverter) point_mask,
+                        channelName,
+                        num_iterations,
+                        non_circulant,
+                        regularization_factor,
+                        new SharedQueue(1, 1));
+
+                double sum = forceCompute(fullPsf);
+                if (sum == 0.0) {
+                    IJ.log("[Distill PSF] WARNING: the distilled PSF for channel " + (ch + 1)
+                            + " is all zeros. The GPU computation likely failed (out of memory?). "
+                            + "Check the console/log for a stack trace.");
+                }
+
+                // The distilled PSF sits at the centre of the volume; crop around it if requested.
+                if (crop_output) {
+                    outputs.add(cropCentered(fullPsf, beadSource,
+                            new long[]{psf_size_x, psf_size_y, psf_size_z}, channelName));
+                } else {
+                    outputs.add(fullPsf);
+                }
+
+                if (task != null) task.setProgressValue(ch + 1);
             }
+            IJ.log("[Distill PSF] Done (" + outputs.size() + " / " + beads.length + " channel(s)).");
         } finally {
+            psf_out = outputs.toArray(new SourceAndConverter[0]);
+            if (task != null) task.finish();
             // Shut down the single-GPU pool used for distillation...
             if (singlePool != null) {
                 try {
