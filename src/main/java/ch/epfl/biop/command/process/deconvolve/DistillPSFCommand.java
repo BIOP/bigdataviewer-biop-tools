@@ -41,8 +41,10 @@ import net.imglib2.Cursor;
 import net.imglib2.FinalDimensions;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.realtransform.AffineTransform3D;
+import net.imglib2.type.numeric.NumericType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.util.Util;
 import net.imglib2.view.Views;
 import org.scijava.ItemIO;
 import org.scijava.ItemVisibility;
@@ -58,6 +60,8 @@ import sc.fiji.bdvpg.source.SourceHelper;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Distills a point spread function (PSF) from a bead image and a mask of bead
@@ -98,6 +102,12 @@ public class DistillPSFCommand implements BdvPlaygroundActionCommand {
     private static final int PEAK_BUFFERS_LOW = 10;
     private static final int PEAK_BUFFERS_HIGH = 13;
 
+    /**
+     * Cached {@code {globalMemBytes, maxAllocBytes}} per GPU device index, so the live auto-crop
+     * estimate is GPU-call-free after the first query. Refreshed with authoritative values at run time.
+     */
+    private static final Map<Integer, long[]> DEVICE_MEMORY = new ConcurrentHashMap<>();
+
     @Parameter
     OpService ops;
 
@@ -123,6 +133,25 @@ public class DistillPSFCommand implements BdvPlaygroundActionCommand {
             description = "Index of the GPU device the distillation will run on (see list above)",
             callback = "updateEstimate")
     int device_index = 0;
+
+    @Parameter(label = "Auto-crop XY to fit GPU memory",
+            description = "Automatically crop the bead image and mask in XY (centred) to the largest size that " +
+                    "fits the GPU, based on the memory fraction below. Z is left at full size by default.",
+            callback = "updateEstimate")
+    boolean auto_crop_xy = false;
+
+    @Parameter(label = "GPU Memory Fraction",
+            description = "Fraction of the GPU's total memory the padded-FFT peak is allowed to reach (0.1 - 1.0). " +
+                    "Lower is safer. Only used when auto-crop is enabled.",
+            min = "0.1", max = "1.0", stepSize = "0.05", style = "slider",
+            callback = "updateEstimate")
+    double gpu_memory_fraction = 0.8;
+
+    @Parameter(label = "Also auto-crop Z (not recommended)",
+            description = "By default only XY is cropped. Enable to also shrink Z (isotropically with XY) if the " +
+                    "volume still does not fit - this truncates the PSF along the optical axis.",
+            callback = "updateEstimate")
+    boolean auto_crop_z = false;
 
     @Parameter(visibility = ItemVisibility.MESSAGE, persist = false, required = false)
     String ram_message = "Select both sources to estimate the required GPU RAM.";
@@ -202,21 +231,124 @@ public class DistillPSFCommand implements BdvPlaygroundActionCommand {
                 return;
             }
 
-            long[] ext = extendedFFTDimensions(beadDims, maskDims);
-            long oneBuffer = ext[0] * ext[1] * ext[2] * 4L;
+            StringBuilder sb = new StringBuilder("<html>");
+            sb.append("<b>").append(beads.length).append("</b> bead source(s) - processed <b>sequentially</b>, ")
+                    .append("so the estimate below applies to each channel in turn (not summed).<br>");
 
-            ram_message = "<html>"
-                    + "<b>" + beads.length + "</b> bead source(s) - processed <b>sequentially</b>, "
-                    + "so the estimate below applies to each channel in turn (not summed).<br>"
-                    + "Padded FFT volume: <b>" + ext[0] + " x " + ext[1] + " x " + ext[2] + "</b>"
-                    + " (input was " + beadDims[0] + " x " + beadDims[1] + " x " + beadDims[2] + ")<br>"
-                    + "One float buffer at that size: <b>" + gb(oneBuffer) + "</b><br>"
-                    + "Estimated peak GPU RAM: <b>" + gb((long) PEAK_BUFFERS_LOW * oneBuffer)
-                    + " - " + gb((long) PEAK_BUFFERS_HIGH * oneBuffer) + "</b> (rough)"
-                    + "</html>";
+            // Dimensions that will actually be sent to the GPU (possibly auto-cropped).
+            long[] procDims = beadDims;
+            long[] mem = auto_crop_xy ? deviceMemory(device_index) : null;
+            if (auto_crop_xy) {
+                if (mem == null) {
+                    sb.append("<font color=red>Auto-crop is on but device ").append(device_index)
+                            .append("'s memory could not be queried here; the crop will be computed at run time.</font><br>");
+                } else {
+                    long[] crop = computeAutoCrop(beadDims, mem[0], mem[1], gpu_memory_fraction, auto_crop_z);
+                    procDims = crop;
+                    boolean cropped = crop[0] != beadDims[0] || crop[1] != beadDims[1] || crop[2] != beadDims[2];
+                    sb.append("Auto-crop (device ").append(device_index).append(", ")
+                            .append(String.format("%.0f%%", gpu_memory_fraction * 100)).append(" of ")
+                            .append(gb(mem[0])).append(" = ").append(gb((long) (gpu_memory_fraction * mem[0])))
+                            .append("): ");
+                    if (cropped) {
+                        sb.append("<b>").append(crop[0]).append(" x ").append(crop[1]).append(" x ").append(crop[2])
+                                .append("</b> (from ").append(beadDims[0]).append(" x ").append(beadDims[1])
+                                .append(" x ").append(beadDims[2]).append(")<br>");
+                    } else {
+                        sb.append("<b>none needed</b> - the full volume fits.<br>");
+                    }
+                }
+            }
+
+            long[] ext = extendedFFTDimensions(procDims, procDims);
+            long oneBuffer = ext[0] * ext[1] * ext[2] * 4L;
+            sb.append("Padded FFT volume: <b>").append(ext[0]).append(" x ").append(ext[1]).append(" x ")
+                    .append(ext[2]).append("</b>");
+            if (procDims != beadDims) {
+                sb.append(" (from cropped ").append(procDims[0]).append(" x ").append(procDims[1])
+                        .append(" x ").append(procDims[2]).append(")");
+            } else {
+                sb.append(" (input ").append(beadDims[0]).append(" x ").append(beadDims[1]).append(" x ")
+                        .append(beadDims[2]).append(")");
+            }
+            sb.append("<br>One float buffer at that size: <b>").append(gb(oneBuffer)).append("</b><br>")
+                    .append("Estimated peak GPU RAM: <b>").append(gb((long) PEAK_BUFFERS_LOW * oneBuffer))
+                    .append(" - ").append(gb((long) PEAK_BUFFERS_HIGH * oneBuffer)).append("</b> (rough)");
+            if (mem != null) {
+                sb.append("<br>Device total memory: <b>").append(gb(mem[0])).append("</b>");
+            }
+            sb.append("</html>");
+            ram_message = sb.toString();
         } catch (Exception e) {
             ram_message = "<html>Could not estimate GPU RAM: " + e.getMessage() + "</html>";
         }
+    }
+
+    /**
+     * Returns {@code {globalMemBytes, maxAllocBytes}} for the given GPU device, or {@code null} if it
+     * cannot be queried. Cached in {@link #DEVICE_MEMORY} so the live estimate does not open a GPU
+     * context on every dialog interaction.
+     */
+    private static long[] deviceMemory(int deviceIndex) {
+        long[] cached = DEVICE_MEMORY.get(deviceIndex);
+        if (cached != null) return cached;
+        try {
+            CLIJx clijx = new CLIJx(new CLIJ(deviceIndex));
+            try {
+                long global = clijx.getCLIJ().getClearCLContext().getDevice().getGlobalMemorySizeInBytes();
+                long maxAlloc = clijx.getCLIJ().getClearCLContext().getDevice().getMaxMemoryAllocationSizeInBytes();
+                long[] mem = {global, maxAlloc};
+                DEVICE_MEMORY.put(deviceIndex, mem);
+                return mem;
+            } finally {
+                clijx.close();
+            }
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * Largest centred crop whose estimated peak GPU RAM stays within {@code fraction} of the device's
+     * global memory (and whose single FFT buffer stays under {@code maxAlloc}). XY is always scaled;
+     * Z is scaled together with XY only when {@code cropZ} is true, otherwise it is kept at full size.
+     * Returns {@code {cropX, cropY, cropZ}}; equals {@code fullDims} when no cropping is required.
+     */
+    private long[] computeAutoCrop(long[] fullDims, long globalMem, long maxAlloc, double fraction, boolean cropZ) {
+        double budget = fraction * globalMem;
+        if (fitsBudget(fullDims, budget, maxAlloc)) {
+            return new long[]{fullDims[0], fullDims[1], fullDims[2]};
+        }
+        // feasible(s) is monotonic: larger scale -> larger padded FFT -> more memory, so binary-search s.
+        double lo = 0.0, hi = 1.0;
+        for (int it = 0; it < 40; it++) {
+            double mid = 0.5 * (lo + hi);
+            if (fitsBudget(scaledCrop(fullDims, mid, cropZ), budget, maxAlloc)) lo = mid; else hi = mid;
+        }
+        return scaledCrop(fullDims, lo, cropZ);
+    }
+
+    /** Centred crop dimensions for a scale factor, rounded to even sizes and clamped to the full size. */
+    private static long[] scaledCrop(long[] fullDims, double s, boolean cropZ) {
+        return new long[]{
+                clampEven(Math.round(fullDims[0] * s), fullDims[0]),
+                clampEven(Math.round(fullDims[1] * s), fullDims[1]),
+                cropZ ? clampEven(Math.round(fullDims[2] * s), fullDims[2]) : fullDims[2]
+        };
+    }
+
+    private static long clampEven(long v, long full) {
+        if (v < 2) v = 2;
+        if (v > full) v = full;
+        if ((v & 1L) == 1L) v = Math.min(v + 1, full); // prefer even sizes, but never exceed the full size
+        return v;
+    }
+
+    /** True if the padded FFT of {@code dims} (used as both image and kernel) fits the memory limits. */
+    private boolean fitsBudget(long[] dims, double budget, long maxAlloc) {
+        long[] ext = extendedFFTDimensions(dims, dims);
+        long oneBuffer = ext[0] * ext[1] * ext[2] * 4L;
+        return (double) PEAK_BUFFERS_HIGH * oneBuffer <= budget && oneBuffer <= maxAlloc;
     }
 
     /** Extended (padded, next-fast-FFT) dimensions, matching what the CLIJ2-FFT engine uses. */
@@ -295,7 +427,38 @@ public class DistillPSFCommand implements BdvPlaygroundActionCommand {
             singlePool = new CLIJxPool(new int[]{device_index}, new int[]{1});
             CLIJxPool.setInstance(singlePool);
 
-            preflightMemoryCheck(singlePool, beadDims, maskDims);
+            // Authoritative device memory from the pool we are about to run on (also refreshes the cache).
+            long[] mem = poolDeviceMemory(singlePool);
+            if (mem != null) DEVICE_MEMORY.put(device_index, mem);
+
+            // Optionally auto-crop XY (and Z) so the padded FFT fits the GPU. The mask is cropped once
+            // (it is shared by every channel); each bead source is cropped to the same centred window.
+            SourceAndConverter<?> workingMask = point_mask;
+            long[] cropDims = null;
+            if (auto_crop_xy) {
+                if (mem != null) {
+                    long[] crop = computeAutoCrop(beadDims, mem[0], mem[1], gpu_memory_fraction, auto_crop_z);
+                    if (crop[0] != beadDims[0] || crop[1] != beadDims[1] || crop[2] != beadDims[2]) {
+                        cropDims = crop;
+                        IJ.log("[Distill PSF] Auto-crop to " + crop[0] + " x " + crop[1] + " x " + crop[2]
+                                + " (from " + beadDims[0] + " x " + beadDims[1] + " x " + beadDims[2] + ") to fit "
+                                + String.format("%.0f%%", gpu_memory_fraction * 100) + " of " + gb(mem[0]) + ".");
+                        if (crop_output && (crop[0] < psf_size_x || crop[1] < psf_size_y)) {
+                            IJ.log("[Distill PSF] NOTE: the auto-cropped XY (" + crop[0] + " x " + crop[1]
+                                    + ") is smaller than the requested PSF crop (" + psf_size_x + " x " + psf_size_y
+                                    + "); the output PSF will be correspondingly smaller.");
+                        }
+                        workingMask = cropSourceCentered(point_mask, cropDims);
+                    } else {
+                        IJ.log("[Distill PSF] Auto-crop enabled but the full volume already fits; no cropping applied.");
+                    }
+                } else {
+                    IJ.log("[Distill PSF] Auto-crop requested but device memory could not be queried; running un-cropped.");
+                }
+            }
+
+            long[] effDims = cropDims != null ? cropDims : beadDims;
+            preflightMemoryCheck(mem, effDims);
 
             // Each bead source is distilled sequentially, so at most one full-image FFT lives on the
             // GPU at a time and the memory estimate above applies per channel.
@@ -315,12 +478,16 @@ public class DistillPSFCommand implements BdvPlaygroundActionCommand {
                 IJ.log("[Distill PSF] Channel " + (ch + 1) + " / " + beads.length + " - "
                         + beadSource.getSpimSource().getName());
 
+                // Apply the same centred crop to this channel's beads (the mask was cropped above).
+                SourceAndConverter<?> workingBeads = cropDims != null
+                        ? cropSourceCentered(beadSource, cropDims) : beadSource;
+
                 // Build the (lazy) distilled-PSF source, then force it to compute now, on this
                 // thread, so the GPU work happens inside this try block while the single-GPU pool
                 // is the active one.
                 SourceAndConverter<?> fullPsf = Deconvolver.distillPSF(
-                        (SourceAndConverter) beadSource,
-                        (SourceAndConverter) point_mask,
+                        (SourceAndConverter) workingBeads,
+                        (SourceAndConverter) workingMask,
                         channelName,
                         num_iterations,
                         non_circulant,
@@ -370,24 +537,37 @@ public class DistillPSFCommand implements BdvPlaygroundActionCommand {
         }
     }
 
-    /** Warns (but does not abort) if the estimate exceeds the device's memory limits. */
-    private void preflightMemoryCheck(CLIJxPool pool, long[] beadDims, long[] maskDims) {
+    /** Reads {@code {globalMemBytes, maxAllocBytes}} from an idle instance of the pool, or {@code null} on failure. */
+    private static long[] poolDeviceMemory(CLIJxPool pool) {
         try {
-            long[] ext = extendedFFTDimensions(beadDims, maskDims);
-            long oneBuffer = ext[0] * ext[1] * ext[2] * 4L;
-            long peakHigh = (long) PEAK_BUFFERS_HIGH * oneBuffer;
-
             CLIJx clijx = pool.getIdleCLIJx();
-            long globalMem, maxAlloc;
             try {
-                globalMem = clijx.getCLIJ().getClearCLContext().getDevice().getGlobalMemorySizeInBytes();
-                maxAlloc = clijx.getCLIJ().getClearCLContext().getDevice().getMaxMemoryAllocationSizeInBytes();
+                long global = clijx.getCLIJ().getClearCLContext().getDevice().getGlobalMemorySizeInBytes();
+                long maxAlloc = clijx.getCLIJ().getClearCLContext().getDevice().getMaxMemoryAllocationSizeInBytes();
+                return new long[]{global, maxAlloc};
             } finally {
                 pool.setCLIJxIdle(clijx);
             }
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /** Warns (but does not abort) if the estimate for {@code dims} exceeds the device's memory limits. */
+    private void preflightMemoryCheck(long[] mem, long[] dims) {
+        try {
+            long[] ext = extendedFFTDimensions(dims, dims);
+            long oneBuffer = ext[0] * ext[1] * ext[2] * 4L;
+            long peakHigh = (long) PEAK_BUFFERS_HIGH * oneBuffer;
 
             IJ.log("[Distill PSF] Padded FFT volume: " + ext[0] + " x " + ext[1] + " x " + ext[2]
                     + " (" + gb(oneBuffer) + " per float buffer).");
+            if (mem == null) {
+                IJ.log("[Distill PSF] Estimated peak GPU RAM ~" + gb((long) PEAK_BUFFERS_LOW * oneBuffer)
+                        + " - " + gb(peakHigh) + ". (Device memory could not be queried.)");
+                return;
+            }
+            long globalMem = mem[0], maxAlloc = mem[1];
             IJ.log("[Distill PSF] Estimated peak GPU RAM ~" + gb((long) PEAK_BUFFERS_LOW * oneBuffer)
                     + " - " + gb(peakHigh) + ". Device: total " + gb(globalMem)
                     + ", max single allocation " + gb(maxAlloc) + ".");
@@ -395,16 +575,52 @@ public class DistillPSFCommand implements BdvPlaygroundActionCommand {
             if (peakHigh > globalMem) {
                 IJ.log("[Distill PSF] WARNING: estimated peak (" + gb(peakHigh)
                         + ") exceeds total GPU memory (" + gb(globalMem)
-                        + "). The run may fail with an out-of-memory error.");
+                        + "). The run may fail with an out-of-memory error"
+                        + (auto_crop_xy ? "" : " - consider enabling auto-crop XY") + ".");
             }
             if (oneBuffer > maxAlloc) {
                 IJ.log("[Distill PSF] WARNING: a single FFT buffer (" + gb(oneBuffer)
                         + ") exceeds the device's max single allocation (" + gb(maxAlloc)
-                        + "). The run will very likely fail.");
+                        + "). The run will very likely fail"
+                        + (auto_crop_xy ? "" : " - consider enabling auto-crop XY") + ".");
             }
         } catch (Exception e) {
             IJ.log("[Distill PSF] Could not run the GPU memory pre-flight check: " + e.getMessage());
         }
+    }
+
+    /**
+     * Crops any source to a centred box of the given size (per-axis clamped to the source, never
+     * zero-padded), preserving its pixel type and physical voxel calibration. This is plain imglib2
+     * ({@link Views#interval}/{@link Views#zeroMin}) re-wrapped as a {@link RandomAccessibleIntervalSource}
+     * whose transform is shifted so the crop keeps its original physical location.
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static SourceAndConverter<?> cropSourceCentered(SourceAndConverter<?> src, long[] size) {
+        Source<?> spim = src.getSpimSource();
+        RandomAccessibleInterval rai = spim.getSource(0, 0);
+        long[] dims = rai.dimensionsAsLongArray();
+
+        long[] min = new long[3];
+        long[] max = new long[3];
+        for (int d = 0; d < 3; d++) {
+            long crop = Math.min(size[d], dims[d]);
+            min[d] = rai.min(d) + (dims[d] - crop) / 2;
+            max[d] = min[d] + crop - 1;
+        }
+
+        RandomAccessibleInterval cropped = Views.zeroMin(Views.interval(rai, min, max));
+
+        AffineTransform3D transform = new AffineTransform3D();
+        spim.getSourceTransform(0, 0, transform);
+        double[] worldMin = new double[3];
+        transform.apply(new double[]{min[0], min[1], min[2]}, worldMin);
+        AffineTransform3D croppedTransform = transform.copy();
+        croppedTransform.setTranslation(worldMin);
+
+        NumericType type = (NumericType) Util.getTypeFromInterval(rai);
+        Source cropSource = new RandomAccessibleIntervalSource(cropped, type, croppedTransform, spim.getName());
+        return SourceHelper.createSourceAndConverter(cropSource);
     }
 
     /**
