@@ -24,6 +24,7 @@ import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.view.Views;
+import org.jdom2.Element;
 import org.scijava.ItemIO;
 import org.scijava.ItemVisibility;
 import org.scijava.plugin.Menu;
@@ -73,11 +74,15 @@ import java.util.concurrent.Future;
  * more background noise, since neighbouring voxels are no longer averaged.
  * </p>
  * <p>
- * <b>Coordinate convention.</b> The spot positions are taken as world coordinates of the selected
- * source(s), i.e. no calibration is read back from the XML. This is what makes the command work
- * for rotated or otherwise transformed sources, but it does mean the source must carry the same
- * calibration as the image TrackMate was run on. The log reports the bounding box of the spots in
- * source voxel coordinates, which makes a calibration mismatch immediately obvious.
+ * <b>Coordinate convention.</b> TrackMate writes physical positions, but they are relative to the
+ * <i>image</i> origin, whereas a source's transform may place that image anywhere in the world - a
+ * microscope stage position of a few centimetres is typical for a Bio-Formats import. The two are
+ * therefore reconciled through the pixel grid rather than through world coordinates: the calibration
+ * stored in the file's own {@code <ImageData>} element turns each position back into a pixel index,
+ * and the source transform then says where that pixel is, whatever translation or rotation it
+ * carries. The source dimensions are checked against the ones recorded in the file, since pixel
+ * indices only mean something on the grid they were measured on, and the log reports the bounding box
+ * of the spots in source voxels.
  * </p>
  * <h3>Beads that fall off the image</h3>
  * A bead close to a border yields a crop that is clipped by the image bounds, so it does not span
@@ -283,13 +288,28 @@ public class AveragePSFFromSpotsCommand implements BdvPlaygroundActionCommand {
             return;
         }
 
-        List<double[]> spots = readSpots(trackmate_file, visible_spots_only);
-        if (spots == null) return; // the reader already reported the problem
-        if (spots.isEmpty()) {
+        SpotList spotList = readSpots(trackmate_file, visible_spots_only);
+        if (spotList == null) return; // the reader already reported the problem
+        if (spotList.pixels.isEmpty()) {
             IJ.error("Average PSF", "The TrackMate file contains no "
                     + (visible_spots_only ? "visible " : "") + "spot in frame 0.");
             return;
         }
+        // The spots are pixel coordinates, so they only mean something on the grid they were measured
+        // on. A mismatch here would silently place every bead somewhere else.
+        for (SourceAndConverter<?> bead : beads) {
+            long[] dims = bead.getSpimSource().getSource(0, 0).dimensionsAsLongArray();
+            if (dims[0] != spotList.dimensions[0] || dims[1] != spotList.dimensions[1]
+                    || dims[2] != spotList.dimensions[2]) {
+                IJ.error("Average PSF", "Source " + bead.getSpimSource().getName() + " is "
+                        + dims[0] + " x " + dims[1] + " x " + dims[2] + " voxels, but the TrackMate file "
+                        + "was made on a " + spotList.dimensions[0] + " x " + spotList.dimensions[1]
+                        + " x " + spotList.dimensions[2] + " image.\nThe spot positions would not line "
+                        + "up. Select the source the spots were detected on, at full resolution.");
+                return;
+            }
+        }
+        final List<double[]> spots = spotList.pixels;
         IJ.log("[Average PSF] " + spots.size() + " spot(s) read from " + trackmate_file.getName() + ".");
 
         // --- Output grid: an empty source whose voxel grid the fusion resamples onto ---
@@ -378,8 +398,8 @@ public class AveragePSFFromSpotsCommand implements BdvPlaygroundActionCommand {
      * This is the only place that knows about the TrackMate format: should the format be replaced,
      * only this method has to follow.
      */
-    private static List<double[]> readSpots(File file, boolean visibleOnly) {
-        TmXmlReader reader = new TmXmlReader(file);
+    private static SpotList readSpots(File file, boolean visibleOnly) {
+        TrackMateFile reader = new TrackMateFile(file);
         if (!reader.isReadingOk()) {
             IJ.error("Average PSF", "Could not read the TrackMate file:\n" + reader.getErrorMessage());
             return null;
@@ -390,21 +410,93 @@ public class AveragePSFFromSpotsCommand implements BdvPlaygroundActionCommand {
                     + " - is it really a TrackMate file?");
             return null;
         }
-        IJ.log("[Average PSF] TrackMate file spatial units: " + model.getSpaceUnits()
-                + " (the source is expected to use the same unit).");
+        double[] calibration = reader.calibration();
+        long[] dimensions = reader.dimensions();
+        if (calibration == null || dimensions == null
+                || calibration[0] <= 0 || calibration[1] <= 0 || calibration[2] <= 0) {
+            IJ.error("Average PSF", "Could not read the voxel calibration from the <ImageData> element of "
+                    + file.getName() + ".\nIt is needed to turn the spot positions into pixel coordinates.");
+            return null;
+        }
+        IJ.log("[Average PSF] TrackMate grid: " + dimensions[0] + " x " + dimensions[1] + " x "
+                + dimensions[2] + " voxels of " + calibration[0] + " x " + calibration[1] + " x "
+                + calibration[2] + " " + model.getSpaceUnits() + ".");
 
-        List<double[]> spots = new ArrayList<>();
+        SpotList spots = new SpotList(dimensions);
         for (Spot spot : model.getSpots().iterable(0, visibleOnly)) {
-            spots.add(new double[]{
-                    spot.getDoublePosition(0), spot.getDoublePosition(1), spot.getDoublePosition(2)});
+            // TrackMate stores physical positions relative to the image origin, as pixel index times
+            // calibration. Dividing recovers the pixel index, which is the only thing that ties the
+            // spots to the source unambiguously: the source transform may carry an arbitrary
+            // translation - a microscope stage position, typically - that the XML knows nothing about.
+            spots.pixels.add(new double[]{
+                    spot.getDoublePosition(0) / calibration[0],
+                    spot.getDoublePosition(1) / calibration[1],
+                    spot.getDoublePosition(2) / calibration[2]});
         }
         // Beads from other frames would be located in frame-0 pixel data, which would be wrong.
         int all = model.getSpots().getNSpots(visibleOnly);
-        if (all > spots.size()) {
-            IJ.log("[Average PSF] NOTE: " + (all - spots.size()) + " spot(s) live outside frame 0 and are "
-                    + "ignored - only frame 0 matches the 3D source.");
+        if (all > spots.pixels.size()) {
+            IJ.log("[Average PSF] NOTE: " + (all - spots.pixels.size()) + " spot(s) live outside frame 0 "
+                    + "and are ignored - only frame 0 matches the 3D source.");
         }
         return spots;
+    }
+
+    /** Bead positions in pixel coordinates, together with the voxel grid they were measured on. */
+    private static class SpotList {
+        final List<double[]> pixels = new ArrayList<>();
+        final long[] dimensions;
+
+        SpotList(long[] dimensions) {
+            this.dimensions = dimensions;
+        }
+    }
+
+    /**
+     * A {@link TmXmlReader} that also exposes the {@code <Settings><ImageData>} element, which
+     * {@code TmXmlReader} itself only surfaces through {@code readSettings}, and that would drag in
+     * the whole provider machinery. Reaching the protected root element is cheaper and cannot fail
+     * for want of a plugin.
+     */
+    private static class TrackMateFile extends TmXmlReader {
+
+        TrackMateFile(File file) {
+            super(file);
+        }
+
+        /** {@code {pixelWidth, pixelHeight, voxelDepth}}, or {@code null} if unavailable. */
+        double[] calibration() {
+            Element imageData = imageData();
+            if (imageData == null) return null;
+            try {
+                return new double[]{
+                        Double.parseDouble(imageData.getAttributeValue("pixelwidth")),
+                        Double.parseDouble(imageData.getAttributeValue("pixelheight")),
+                        Double.parseDouble(imageData.getAttributeValue("voxeldepth"))};
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        /** {@code {width, height, nSlices}}, or {@code null} if unavailable. */
+        long[] dimensions() {
+            Element imageData = imageData();
+            if (imageData == null) return null;
+            try {
+                return new long[]{
+                        Long.parseLong(imageData.getAttributeValue("width")),
+                        Long.parseLong(imageData.getAttributeValue("height")),
+                        Long.parseLong(imageData.getAttributeValue("nslices"))};
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        private Element imageData() {
+            if (root == null) return null;
+            Element settings = root.getChild("Settings");
+            return settings == null ? null : settings.getChild("ImageData");
+        }
     }
 
     /**
@@ -414,7 +506,7 @@ public class AveragePSFFromSpotsCommand implements BdvPlaygroundActionCommand {
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
     private List<SourceAndConverter<FloatType>> buildBeadSources(SourceAndConverter<?> beadSource,
-                                                                List<double[]> spots,
+                                                                List<double[]> spotPixels,
                                                                 AffineTransform3D modelTransform,
                                                                 long[] outDims,
                                                                 double[] boxCentre) {
@@ -431,11 +523,12 @@ public class AveragePSFFromSpotsCommand implements BdvPlaygroundActionCommand {
         double[] spotMin = {Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE};
         double[] spotMax = {-Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE};
 
-        for (int i = 0; i < spots.size(); i++) {
-            double[] world = spots.get(i);
-
-            double[] pixel = new double[3];
-            inverse.apply(world, pixel);
+        for (int i = 0; i < spotPixels.size(); i++) {
+            // The spot is known in pixels; the source transform says where that is in the world,
+            // whatever translation it happens to carry.
+            double[] pixel = spotPixels.get(i);
+            double[] world = new double[3];
+            sourceTransform.apply(pixel, world);
             for (int d = 0; d < 3; d++) {
                 spotMin[d] = Math.min(spotMin[d], pixel[d]);
                 spotMax[d] = Math.max(spotMax[d], pixel[d]);
