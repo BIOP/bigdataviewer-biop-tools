@@ -89,6 +89,8 @@ public class AlphaFusedResampledSource< T extends RealType<T> & NativeType<T>> i
     final public static String SUM = "SUM";
     final public static String AVERAGE = "AVERAGE";
     final public static String MAX = "MAX";
+    /** Median of the sources present at each voxel; alpha is used as a presence mask only. */
+    final public static String MEDIAN = "MEDIAN";
 
     protected static Logger logger = LoggerFactory.getLogger(AlphaFusedResampledSource.class);
 

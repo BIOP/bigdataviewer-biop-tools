@@ -79,7 +79,8 @@ public class SourcesFuseAndResampleCommand implements BdvPlaygroundActionCommand
             description = "Method used to combine overlapping sources",
             choices = {AlphaFusedResampledSource.SUM, AlphaFusedResampledSource.AVERAGE,
             "SMOOTH "+AlphaFusedResampledSource.AVERAGE,
-            AlphaFusedResampledSource.MAX})
+            AlphaFusedResampledSource.MAX,
+            AlphaFusedResampledSource.MEDIAN})
     String blending_mode;
 
     @Override

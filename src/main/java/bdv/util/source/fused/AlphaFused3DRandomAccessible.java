@@ -10,6 +10,7 @@ import java.util.function.Supplier;
 
 import static bdv.util.source.fused.AlphaFusedResampledSource.AVERAGE;
 import static bdv.util.source.fused.AlphaFusedResampledSource.MAX;
+import static bdv.util.source.fused.AlphaFusedResampledSource.MEDIAN;
 import static bdv.util.source.fused.AlphaFusedResampledSource.SUM;
 
 public class AlphaFused3DRandomAccessible<T extends RealType<T>> implements RandomAccessible<T> {
@@ -40,6 +41,9 @@ public class AlphaFused3DRandomAccessible<T extends RealType<T>> implements Rand
         switch (blendingMode) {
             case AVERAGE:
                 this.ra = new AverageAlphaFused3DRandomAccess<T>(origins_ra, origins_alpha_ra, pixelSupplier);
+                break;
+            case MEDIAN:
+                this.ra = new MedianAlphaFused3DRandomAccess<T>(origins_ra, origins_alpha_ra, pixelSupplier);
                 break;
             case MAX:
                 this.ra = new MaxAlphaFused3DRandomAccess<T>(origins_ra, origins_alpha_ra, pixelSupplier);
