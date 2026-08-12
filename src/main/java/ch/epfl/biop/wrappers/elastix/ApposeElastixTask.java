@@ -127,8 +127,7 @@ public class ApposeElastixTask implements ElastixTask {
      * threader and a single ITK thread per process. Parallelism comes from running many workers.
      */
     private static String getInitScript() {
-        return ""
-                + "import os\n"
+        return "import os\n"
                 // Must be set before 'import itk' so the threader choice is in effect when the
                 // ITK thread pool is constructed lazily on first registration.
                 + "os.environ['ITK_GLOBAL_DEFAULT_THREADER'] = 'Pool'\n"
@@ -138,8 +137,7 @@ public class ApposeElastixTask implements ElastixTask {
     }
 
     private static String getScript() {
-        return ""
-                + "import shutil\n"
+        return "import shutil\n"
                 + "import tempfile\n"
                 + "import os\n"
                 + "import itk\n"
@@ -317,7 +315,7 @@ public class ApposeElastixTask implements ElastixTask {
                 .pixi()
                 .channels("conda-forge")
                 .conda("python==3.11", "numpy")
-                .pypi("appose @ git+https://github.com/apposed/appose-python@e44d688e0aac65b048978ddb40e18aef5afa6c96")
+                .pypi("appose==0.12.0")
                 .pypi("itk-elastix=="+ITK_ELASTIX_VERSION)
                 .env("NSLOTS", "1")
                 // Pool beats Platform for small images; never TBB (defaults to ~1024 work units).
@@ -362,7 +360,7 @@ public class ApposeElastixTask implements ElastixTask {
         panel.setBorder(BorderFactory.createEmptyBorder(20, 30, 20, 30));
 
         JLabel infoLabel = new JLabel("<html>"
-                + "<h2>Loading Elastix (itk-elastix 0.25.3)</h2>"
+                + "<h2>Loading Elastix (itk-elastix "+ITK_ELASTIX_VERSION+")</h2>"
                 + "<p>Setting up the registration environment on first use.<br>"
                 + "This one-off download may take a few minutes.</p>"
                 + "</html>", SwingConstants.CENTER);

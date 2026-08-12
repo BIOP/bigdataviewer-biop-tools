@@ -3,7 +3,7 @@ package ch.epfl.biop.command.importer;
 import ch.epfl.biop.bdv.img.OpenersToSpimData;
 import ch.epfl.biop.bdv.img.bioformats.BioFormatsHelper;
 import ch.epfl.biop.bdv.img.bioformats.entity.SeriesIndex;
-import ch.epfl.biop.bdv.img.entity.ImageName;
+import spimdata.util.ImageName;
 import ch.epfl.biop.bdv.img.legacy.bioformats.entity.FileIndex;
 import ch.epfl.biop.bdv.img.legacy.bioformats.entity.SeriesNumber;
 import ch.epfl.biop.bdv.img.opener.OpenerSettings;

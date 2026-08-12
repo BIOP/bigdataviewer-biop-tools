@@ -1,7 +1,7 @@
 package ch.epfl.biop.command.dataset;
 
 import ch.epfl.biop.bdv.img.bioformats.entity.SeriesIndex;
-import ch.epfl.biop.bdv.img.entity.ImageName;
+import spimdata.util.ImageName;
 import ch.epfl.biop.bdv.img.legacy.bioformats.BioFormatsSetupLoader;
 import ch.epfl.biop.bdv.img.legacy.bioformats.entity.FileIndex;
 import ch.epfl.biop.bdv.img.legacy.bioformats.entity.SeriesNumber;

@@ -9,3 +9,5 @@
 *.ome.tif
 *.bfmemo
 /nul
+/blosc.dll
+/blosc1.dll
