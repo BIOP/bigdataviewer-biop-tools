@@ -20,6 +20,7 @@ import net.imglib2.img.basictypeaccess.array.ByteArray;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.ARGBType;
 import net.imglib2.type.numeric.integer.ByteType;
+import sc.fiji.bdvpg.bdv.supplier.playground.PlaygroundBdvSupplierAdapter;
 import sc.fiji.bdvpg.viewer.bdv.BdvHandleHelper;
 import sc.fiji.bdvpg.viewer.bdv.navigate.RayCastPositionerSliderAdder;
 import sc.fiji.bdvpg.viewer.bdv.navigate.SourceNavigatorSliderAdder;
@@ -27,7 +28,7 @@ import sc.fiji.bdvpg.viewer.bdv.navigate.TimepointAdapterAdder;
 import sc.fiji.bdvpg.viewer.bdv.overlay.SourceNameOverlayAdder;
 import sc.fiji.bdvpg.bdv.supplier.BdvSupplierHelper;
 import sc.fiji.bdvpg.viewer.bdv.supplier.IBdvSupplier;
-import sc.fiji.bdvpg.bdv.supplier.biop.BiopSerializableBdvOptions;
+import sc.fiji.bdvpg.bdv.supplier.playground.PlaygroundSerializableBdvOptions;
 import sc.fiji.bdvpg.scijava.service.tree.swingdnd.BdvTransferHandler;
 import sc.fiji.bdvpg.service.SourceServices;
 import sc.fiji.bdvpg.source.SourceHelper;
@@ -54,14 +55,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class GridBdvSupplier implements IBdvSupplier {
-	public final BiopSerializableBdvOptions sOptions;
+	public final PlaygroundSerializableBdvOptions sOptions;
 
-	public GridBdvSupplier(BiopSerializableBdvOptions sOptions) {
+	public GridBdvSupplier(PlaygroundSerializableBdvOptions sOptions) {
 		this.sOptions = sOptions;
 	}
 
 	public GridBdvSupplier() {
-		this.sOptions = BiopSerializableBdvOptions.options();
+		this.sOptions = PlaygroundSerializableBdvOptions.options();
 	}
 
 	@Override

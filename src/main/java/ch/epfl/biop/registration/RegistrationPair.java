@@ -5,6 +5,7 @@ import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.registration.plugin.RegistrationPluginHelper;
 import ch.epfl.biop.source.processor.SourcesAffineTransformer;
 import ch.epfl.biop.source.processor.SourcesProcessor;
+import net.imglib2.Interval;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.realtransform.InvertibleRealTransform;
 import net.imglib2.realtransform.InvertibleRealTransformSequence;
@@ -56,10 +57,10 @@ public class RegistrationPair implements Named, Closeable {
         }
 
         // Remove t offsets
-        this.fixedSources = Arrays.stream(fixedSources)
+        this.fixedSources = Arrays.stream(this.fixedSources)
                 .map(source -> new SourceTimeMapper(source, withName((t) -> t + timepointFixed, "(t) -> t + "+timepointFixed), source.getSpimSource().getName() + "-T" + timepointFixed).get()).toArray(SourceAndConverter[]::new);
 
-        this.movingSourcesOrigin = Arrays.stream(movingSourcesOrigin)
+        this.movingSourcesOrigin = Arrays.stream(this.movingSourcesOrigin)
                 .map(sour -> new SourceTimeMapper(sour, withName((t) -> t + timepointMoving, "(t) -> t + "+timepointMoving), sour.getSpimSource().getName() + "-T" + timepointMoving).get()).toArray(SourceAndConverter[]::new);
 
         this.movingSourcesRegistered = movingSourcesOrigin;
@@ -374,16 +375,33 @@ public class RegistrationPair implements Named, Closeable {
         return name;//+" [#f="+fixedSources.length+" #m="+movingSourcesOrigin.length+" #regs="+registrationAndSources.size()+"]";
     }
 
+    /**
+     * Computes the world space transformation which brings the center of a source to z = 0.
+     * x and y are left untouched: the returned transform is a pure translation along z.
+     *
+     * @param source the source used as a reference (usually the first one of a group)
+     * @param timePoint the timepoint at which the source geometry is evaluated
+     * @return a translation along z only
+     */
     private static AffineTransform3D findZ0Transform(SourceAndConverter<?> source, int timePoint) {
-        long sz = source.getSpimSource().getSource(timePoint, 0).dimension(2);
-        AffineTransform3D at3D = new AffineTransform3D();
-        source.getSpimSource().getSourceTransform(timePoint, 0, at3D);
-        AffineTransform3D at3DCenter = new AffineTransform3D();
-        at3DCenter.concatenate(at3D.inverse());
-        at3DCenter.translate(0, 0, -sz/2.0+0.5); // Humpf
-        at3D.set(0,2,3);
-        at3DCenter.preConcatenate(at3D);
-        return at3DCenter;
+        Interval interval = source.getSpimSource().getSource(timePoint, 0);
+
+        AffineTransform3D sourceToWorld = new AffineTransform3D();
+        source.getSpimSource().getSourceTransform(timePoint, 0, sourceToWorld);
+
+        // Center of the stack, in pixel coordinates, voxel center convention
+        double[] centerPixel = new double[]{
+                (interval.min(0) + interval.max(0)) / 2.0,
+                (interval.min(1) + interval.max(1)) / 2.0,
+                (interval.min(2) + interval.max(2)) / 2.0
+        };
+
+        double[] centerWorld = new double[3];
+        sourceToWorld.apply(centerPixel, centerWorld);
+
+        AffineTransform3D zToZero = new AffineTransform3D();
+        zToZero.translate(0, 0, -centerWorld[2]);
+        return zToZero;
     }
 
     public enum RegistrationEvents {

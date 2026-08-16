@@ -41,7 +41,7 @@ import sc.fiji.bdvpg.viewer.bdv.ManualRegistrationStopper;
 import sc.fiji.bdvpg.viewer.bdv.navigate.ViewerTransformAdjuster;
 import sc.fiji.bdvpg.bdv.supplier.BdvSupplierHelper;
 import sc.fiji.bdvpg.viewer.bdv.supplier.IBdvSupplier;
-import sc.fiji.bdvpg.bdv.supplier.biop.BiopSerializableBdvOptions;
+import sc.fiji.bdvpg.bdv.supplier.playground.PlaygroundSerializableBdvOptions;
 import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
 import sc.fiji.bdvpg.scijava.service.SourceBdvDisplayService;
 import sc.fiji.bdvpg.service.SourceServices;
@@ -692,7 +692,7 @@ public class Wizard2DWholeScanRegisterCommand implements BdvPlaygroundActionComm
 
         @Override
         public BdvHandle get() {
-            BiopSerializableBdvOptions sOptions = new BiopSerializableBdvOptions();
+            PlaygroundSerializableBdvOptions sOptions = new PlaygroundSerializableBdvOptions();
             sOptions.is2D = true;
             sOptions.width = 1200;
             sOptions.height = 800;

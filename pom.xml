@@ -99,9 +99,9 @@
 
 		<!-- general imagej dependencies -->
 		<!-- bdv playground related dependencies -->
-		<bigdataviewer-playground.version>0.21.0</bigdataviewer-playground.version>
-        <bigdataviewer-image-loaders.version>0.21.1</bigdataviewer-image-loaders.version>
-		<bigdataviewer-playground-display.version>0.20.1</bigdataviewer-playground-display.version>
+		<bigdataviewer-playground.version>0.23.1-SNAPSHOT</bigdataviewer-playground.version>
+        <bigdataviewer-image-loaders.version>0.23.2-SNAPSHOT</bigdataviewer-image-loaders.version>
+		<bigdataviewer-playground-display.version>0.20.2-SNAPSHOT</bigdataviewer-playground-display.version>
 		<image-transform-converters.version>0.2.0</image-transform-converters.version>
 
 		<!-- biop dependencies -->
@@ -125,12 +125,15 @@
 
 		<releaseProfiles>sign,deploy-to-scijava</releaseProfiles>
 
+		<bigdataviewer-spimdata-extras.version>0.23.0</bigdataviewer-spimdata-extras.version>
+		<bigdataviewer-omezarr-adapter.version>0.1.0</bigdataviewer-omezarr-adapter.version>
+
 		<!-- test -->
 
 		<reflections.version>0.10.2</reflections.version>
 		<!-- package version below are determined by the parent pom but need to be upgraded or temporarily fixed for bugs -->
 
-		<spim_data.version>2.3.5</spim_data.version>
+		<!--spim_data.version>2.3.5</spim_data.version-->
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
 
@@ -317,6 +320,18 @@
 			<groupId>ch.epfl.biop</groupId>
 			<artifactId>quick-start-czi-reader</artifactId>
 			<version>${quick-start-czi-reader.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>ch.unige.biochem</groupId>
+			<artifactId>bigdataviewer-omezarr-adapter</artifactId>
+			<version>${bigdataviewer-omezarr-adapter.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>ch.epfl.biop</groupId>
+			<artifactId>bigdataviewer-spimdata-extras</artifactId>
+			<version>${bigdataviewer-spimdata-extras.version}</version>
 		</dependency>
 
 		<dependency>
