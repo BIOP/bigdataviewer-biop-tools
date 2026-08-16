@@ -44,6 +44,20 @@ abstract public class AbstractPairRegistration2DCommand implements BdvPlayground
 
     @Override
     final public void run() {
+        if (registration_pair == null) return;
+        // Flagged as busy before entering the synchronized block, so that a registration which
+        // is queued behind a running one is also reported to the user. The matching
+        // registrationEnded() is in a finally block: no exception, validation failure or early
+        // return can leave the pair stuck in the busy state.
+        registration_pair.registrationStarted();
+        try {
+            runRegistration();
+        } finally {
+            registration_pair.registrationEnded();
+        }
+    }
+
+    private void runRegistration() {
         Task task = null;
         synchronized (registration_pair) {
             try {

@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static bdv.util.source.time.MappedTimeSource.withName;
 
@@ -120,7 +122,7 @@ public class RegistrationPair implements Named, Closeable {
                 fixedProcessorForRegistration, movingProcessorForRegistration);
 
         registrationPairSteps.add(rp);
-        listeners.forEach(listener -> listener.newEvent(RegistrationEvents.STEP_ADDED));
+        notifyListeners(RegistrationEvents.STEP_ADDED);
     }
 
     @Override
@@ -143,7 +145,7 @@ public class RegistrationPair implements Named, Closeable {
             registrationPairSteps.remove(registrationPairSteps.size()-1);
             this.movingSourcesRegistered = rs.sources;
         }
-        listeners.forEach(listener -> listener.newEvent(RegistrationEvents.STEP_REMOVED));
+        notifyListeners(RegistrationEvents.STEP_REMOVED);
     }
 
     public synchronized void editLastRegistration() {
@@ -325,9 +327,8 @@ public class RegistrationPair implements Named, Closeable {
     }
 
     public void close(boolean askForUserConfirmation) throws IOException {
-        ArrayList<RegistrationPairListener> safeListeners = new ArrayList<>(listeners);
         setForceClose(!askForUserConfirmation);
-        safeListeners.forEach(listener -> listener.newEvent(RegistrationEvents.CLOSE));
+        notifyListeners(RegistrationEvents.CLOSE);
         listeners.clear();
     }
 
@@ -404,13 +405,56 @@ public class RegistrationPair implements Named, Closeable {
         return zToZero;
     }
 
+    private final AtomicInteger runningRegistrations = new AtomicInteger();
+
+    /**
+     * @return the number of registrations currently running on this pair, or waiting for
+     * a running one to finish
+     */
+    public int getRunningRegistrationCount() {
+        return runningRegistrations.get();
+    }
+
+    /**
+     * @return true if at least one registration is running or queued on this pair
+     */
+    public boolean isBusy() {
+        return runningRegistrations.get() > 0;
+    }
+
+    /**
+     * Signals that a registration is about to be run on this pair, and notifies the listeners
+     * so that they can display some feedback to the user.
+     * <p>
+     * This method is deliberately NOT synchronized: a registration which is queued behind a
+     * running one must be able to announce itself immediately, instead of waiting for the
+     * monitor of this object - which is precisely the situation the user needs to be told about.
+     * <p>
+     * Each call must be matched by a call to {@link RegistrationPair#registrationEnded()} in a
+     * finally block.
+     */
+    public void registrationStarted() {
+        runningRegistrations.incrementAndGet();
+        notifyListeners(RegistrationEvents.BUSY_CHANGED);
+    }
+
+    /**
+     * Signals that a registration started with {@link RegistrationPair#registrationStarted()}
+     * is over, whether it succeeded or not.
+     */
+    public void registrationEnded() {
+        runningRegistrations.updateAndGet(n -> n > 0 ? n - 1 : 0);
+        notifyListeners(RegistrationEvents.BUSY_CHANGED);
+    }
+
     public enum RegistrationEvents {
         STEP_ADDED,
         STEP_REMOVED,
+        BUSY_CHANGED,
         CLOSE
     }
 
-    final List<RegistrationPairListener> listeners = new ArrayList<>();
+    final List<RegistrationPairListener> listeners = new CopyOnWriteArrayList<>();
 
     public void addListener(RegistrationPairListener listener) {
         listeners.add(listener);
@@ -418,6 +462,25 @@ public class RegistrationPair implements Named, Closeable {
 
     public void removeListener(RegistrationPairListener listener) {
         listeners.remove(listener);
+    }
+
+    /**
+     * Notifies all listeners of an event. Listeners are called on the calling thread, which is
+     * usually not the EDT, and a listener which misbehaves cannot prevent the others from being
+     * notified.
+     *
+     * @param event the event to broadcast
+     */
+    private void notifyListeners(RegistrationEvents event) {
+        for (RegistrationPairListener listener : listeners) { // snapshot iteration, no CME
+            try {
+                listener.newEvent(event);
+            } catch (Exception e) {
+                System.err.println("Error while notifying a registration pair listener of "
+                        + event + ": " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
     }
 
     public interface RegistrationPairListener {
