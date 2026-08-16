@@ -56,7 +56,19 @@ public class BusyOverlay implements OverlayRenderer {
     private volatile int canvasWidth = 0;
     private volatile int canvasHeight = 0;
 
+    private volatile Color spinnerColor = SPINNER;
+
     private boolean errorReported = false;
+
+    /**
+     * Overrides the color of the rotating arc, so that the banner can follow the theme of the
+     * application it is embedded in. Can be called from any thread.
+     *
+     * @param color the spinner color, or null to restore the default
+     */
+    public void setSpinnerColor(Color color) {
+        this.spinnerColor = (color == null) ? SPINNER : color;
+    }
 
     /**
      * Switches the banner on or off. Can be called from any thread.
@@ -127,7 +139,7 @@ public class BusyOverlay implements OverlayRenderer {
             g.setColor(SPINNER_TRACK);
             g.draw(new Arc2D.Float(spinnerX, spinnerY, SPINNER_DIAMETER, SPINNER_DIAMETER,
                     0, 360, Arc2D.OPEN));
-            g.setColor(SPINNER);
+            g.setColor(spinnerColor);
             g.draw(new Arc2D.Float(spinnerX, spinnerY, SPINNER_DIAMETER, SPINNER_DIAMETER,
                     startAngle, -100, Arc2D.OPEN));
 
