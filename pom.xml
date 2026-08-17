@@ -108,7 +108,7 @@
 		<ijl-utilities-wrappers.version>0.12.1</ijl-utilities-wrappers.version>
 		<appose.version>0.12.0</appose.version>
 		<Operetta_Importer.version>0.7.0</Operetta_Importer.version>
-		<ijp-kheops.version>0.20.0</ijp-kheops.version>
+		<ijp-kheops.version>0.20.1-SNAPSHOT</ijp-kheops.version>
 		<quick-start-czi-reader.version>0.3.0</quick-start-czi-reader.version>
 
 		<!-- mastodon -->

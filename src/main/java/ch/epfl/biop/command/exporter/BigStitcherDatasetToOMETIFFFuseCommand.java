@@ -22,7 +22,6 @@ import mpicbg.spim.data.sequence.VoxelDimensions;
 import net.imglib2.cache.LoaderCache;
 import net.imglib2.cache.ref.BoundedSoftRefLoaderCache;
 import net.imglib2.realtransform.AffineTransform3D;
-import ome.codecs.CompressionType;
 import ome.units.UNITS;
 import org.apache.commons.io.FilenameUtils;
 import org.scijava.plugin.Menu;
@@ -311,11 +310,7 @@ public class BigStitcherDatasetToOMETIFFFuseCommand implements BdvPlaygroundActi
                         .nResolutionLevels(n_resolution_levels)
                         .savePath(output_path.getAbsolutePath());
 
-                if (use_lzw_compression) {
-                    exporter.lzw();
-                } else {
-                    exporter.compression(CompressionType.UNCOMPRESSED.getCompression());
-                }
+                setCompression(exporter);
 
                 exporter.create().export();
 
@@ -490,11 +485,24 @@ public class BigStitcherDatasetToOMETIFFFuseCommand implements BdvPlaygroundActi
                 .nResolutionLevels(n_resolution_levels)
                 .savePath(getPath(select_channels, select_slices, select_frames));
 
-        if (use_lzw_compression) exporter.lzw();
+        setCompression(exporter);
 
         exporter.create().export();
 
 
+    }
+
+    /**
+     * Both the split and the non split export paths have to go through this method:
+     * the default compression of the kheops writer is LZW, so an explicit uncompressed
+     * setting is required when the user unchecks the compression option.
+     */
+    private void setCompression(OMETiffExporter.OMETiffExporterBuilder.WriterOptions.WriterOptionsBuilder exporter) {
+        if (use_lzw_compression) {
+            exporter.lzw();
+        } else {
+            exporter.uncompressed();
+        }
     }
 
     /*private OMETiffPyramidizerExporter.Builder getDefaultBuilder() {
