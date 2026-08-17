@@ -149,6 +149,8 @@ public class PairRegistrationAddGUICommand implements BdvPlaygroundActionCommand
                 hierarchyLevelsSkipped,"registration_pair", registration_pair);
         BdvMenuHelper.addCommandToBdvHandleMenu(bdvh, ctx, PairRegistrationFlipCommand.class,
                 hierarchyLevelsSkipped,"registration_pair", registration_pair);
+        BdvMenuHelper.addCommandToBdvHandleMenu(bdvh, ctx, PairRegistrationManualAffineCommand.class,
+                hierarchyLevelsSkipped,"registration_pair", registration_pair);
         BdvMenuHelper.addCommandToBdvHandleMenu(bdvh, ctx, PairRegistrationSift2DAffineRegisterCommand.class,
                 hierarchyLevelsSkipped,"registration_pair", registration_pair);
         BdvMenuHelper.addCommandToBdvHandleMenu(bdvh, ctx, PairRegistrationElastix2DAffineRegisterCommand.class,
