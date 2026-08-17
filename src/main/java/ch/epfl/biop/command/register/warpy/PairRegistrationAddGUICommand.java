@@ -9,6 +9,8 @@ import bdv.viewer.SourceAndConverter;
 import bdv.viewer.SourceGroup;
 import ch.epfl.biop.registration.RegistrationPair;
 import ch.epfl.biop.viewer.bdv.BusyOverlay;
+import ch.epfl.biop.viewer.bdv.card.CardHelper;
+import ch.epfl.biop.viewer.bdv.card.NavigationHelp;
 import net.imglib2.realtransform.AffineTransform3D;
 import org.scijava.Context;
 import org.scijava.command.Command;
@@ -21,10 +23,15 @@ import sc.fiji.bdvpg.scijava.BdvPgMenus;
 import sc.fiji.bdvpg.viewer.bdv.BdvHandleHelper;
 import sc.fiji.bdvpg.viewer.bdv.navigate.ViewerTransformAdjuster;
 import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import java.awt.Component;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
@@ -32,6 +39,8 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+
+import static bdv.ui.BdvDefaultCards.DEFAULT_SOURCEGROUPS_CARD;
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
         //menuPath = BdvPgMenus.RootMenu+"Register>Warpy>Register Pair - Add GUI",
@@ -168,8 +177,57 @@ public class PairRegistrationAddGUICommand implements BdvPlaygroundActionCommand
         BdvMenuHelper.addCommandToBdvHandleMenu(bdvh, ctx, PairRegistrationLastRegistrationRemoveCommand.class,
                 hierarchyLevelsSkipped,"registration_pair", registration_pair);
 
+        addHelpCard(bdvh);
+
         BdvHandleHelper.setWindowTitle(bdvh, baseWindowTitle);
     }
+
+    /**
+     * Adds a card telling how to navigate the window and what the source groups hold.
+     * <p>
+     * Users of the Warpy workflow are not necessarily users of BigDataViewer, so neither the
+     * mouse gestures nor the meaning of the groups can be taken for granted. The navigation
+     * gestures are read from the keymap of the window rather than hardcoded, see
+     * {@link NavigationHelp}.
+     * <p>
+     * The card panel is expanded, otherwise the card - and the groups it describes - would stay
+     * behind the collapsed side panel.
+     *
+     * @param bdvh the registration window to document
+     */
+    private void addHelpCard(BdvHandle bdvh) {
+
+        JLabel help = new JLabel("<html><div style='width:" + (CARD_PANEL_WIDTH - 60) + "px'>" +
+                "<b>Navigating</b><br>" +
+                NavigationHelp.html(bdvh) + "<br><br>" +
+                "<b>Groups</b><br>" +
+                "The groups hold the successive stages of the registration: " +
+                "<i>Fixed sources</i> is the target, <i>Moving sources - origin</i> the moving " +
+                "image before any registration, and each <i>+ step</i> group the moving image " +
+                "as it is once that step has been applied.<br><br>" +
+                "Every group which is active is blended into the view, so activating and " +
+                "deactivating them is how the outcome of a step is compared with the fixed " +
+                "image, or with the steps which came before it.<br><br>" +
+                "<b>Registering</b><br>" +
+                "The registration steps themselves are in the <b>Warpy</b> menu of this window. " +
+                "They apply to the last stage, so they accumulate: a spline registration " +
+                "refines what the affine steps before it have already aligned." +
+                "</div></html>");
+        help.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        panel.add(help);
+
+        BdvHandleHelper.addCard(bdvh, "Help", panel, true);
+        // The groups are half of what the card explains, so they are worth showing straight away
+        bdvh.getCardPanel().setCardExpanded(DEFAULT_SOURCEGROUPS_CARD, true);
+        CardHelper.expandCardPanel(bdvh, CARD_PANEL_WIDTH);
+    }
+
+    /** Width, in pixels, given to the card panel when the registration window opens */
+    private static final int CARD_PANEL_WIDTH = 340;
 
     /**
      * Adds the busy banner to the viewer canvas, together with the swing timer which animates it.

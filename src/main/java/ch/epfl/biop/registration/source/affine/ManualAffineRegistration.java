@@ -1,9 +1,6 @@
 package ch.epfl.biop.registration.source.affine;
 
-import bdv.KeyConfigContexts;
-import bdv.TransformEventHandler2D;
 import bdv.tools.transformation.TransformedSource;
-import bdv.ui.splitpanel.SplitPanel;
 import bdv.util.BdvFunctions;
 import bdv.util.BdvHandle;
 import bdv.util.BdvOptions;
@@ -13,13 +10,14 @@ import bdv.viewer.SourceAndConverter;
 import bdv.viewer.TransformListener;
 import ch.epfl.biop.registration.plugin.IRegistrationPlugin;
 import ch.epfl.biop.registration.plugin.RegistrationTypeProperties;
+import ch.epfl.biop.viewer.bdv.card.CardHelper;
+import ch.epfl.biop.viewer.bdv.card.NavigationHelp;
 import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.basictypeaccess.array.ByteArray;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.integer.ByteType;
 import org.scijava.plugin.Plugin;
-import org.scijava.ui.behaviour.InputTrigger;
 import sc.fiji.bdvpg.bdv.supplier.BdvSupplierHelper;
 import sc.fiji.bdvpg.bdv.supplier.playground.PlaygroundSerializableBdvOptions;
 import sc.fiji.bdvpg.scijava.service.SourceBdvDisplayService;
@@ -28,7 +26,6 @@ import sc.fiji.bdvpg.source.SourceAndTimeRange;
 import sc.fiji.bdvpg.source.transform.SourceTransformHelper;
 import sc.fiji.bdvpg.viewer.bdv.BdvHandleHelper;
 import sc.fiji.bdvpg.viewer.bdv.ManualRegistrationStarter;
-import sc.fiji.bdvpg.viewer.bdv.config.BdvKeymapHelper;
 import sc.fiji.bdvpg.viewer.bdv.navigate.ViewerTransformAdjuster;
 
 import javax.swing.BorderFactory;
@@ -40,21 +37,15 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import java.awt.Component;
 import java.awt.EventQueue;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static bdv.ui.BdvDefaultCards.DEFAULT_SOURCEGROUPS_CARD;
 import static bdv.ui.BdvDefaultCards.DEFAULT_SOURCES_CARD;
@@ -200,15 +191,7 @@ public class ManualAffineRegistration extends AffineTransformSourceRegistration 
                                         "While the moving mode is on, the moving sources stay at the same " +
                                         "position relative to the screen: navigating in the window moves " +
                                         "them relative to the fixed sources.<br><br>" +
-                                        "<b>" + triggerText(bdvh, TransformEventHandler2D.DRAG_TRANSLATE,
-                                        TransformEventHandler2D.DRAG_TRANSLATE_KEYS, " drag") +
-                                        "</b> &ndash; translate<br>" +
-                                        "<b>" + triggerText(bdvh, TransformEventHandler2D.DRAG_ROTATE,
-                                        TransformEventHandler2D.DRAG_ROTATE_KEYS, " drag") +
-                                        "</b> &ndash; rotate<br>" +
-                                        "<b>" + triggerText(bdvh, TransformEventHandler2D.ZOOM_NORMAL,
-                                        TransformEventHandler2D.ZOOM_NORMAL_KEYS, "") +
-                                        "</b> &ndash; scale<br><br>" +
+                                        NavigationHelp.html(bdvh) + "<br><br>" +
                                         "Switch the moving mode off to navigate - zoom in to check the " +
                                         "alignment, for instance - without moving the sources." +
                                         "</div></html>"),
@@ -216,7 +199,7 @@ public class ManualAffineRegistration extends AffineTransformSourceRegistration 
                                 applyButton,
                                 cancelButton),
                         true);
-                expandCardPanel(bdvh);
+                CardHelper.expandCardPanel(bdvh, CARD_PANEL_WIDTH);
 
                 // Closing the window is a cancellation
                 BdvHandleHelper.getJFrame(bdvh).addWindowListener(new WindowAdapter() {
@@ -312,54 +295,6 @@ public class ManualAffineRegistration extends AffineTransformSourceRegistration 
     }
 
     /**
-     * Tells which mouse or key triggers a navigation command is bound to, as a short readable
-     * string - 'Left click drag', 'Mouse wheel'.
-     * <p>
-     * The bindings are user configurable - the keymap page of the BDV preferences, bound to
-     * ctrl COMMA, edits them - so they are read from the keymap of the window rather than
-     * hardcoded. Every trigger a command is bound to is listed: the alternatives are gestures
-     * a user may well be used to rather than variants of one another, the BIOP keymap for
-     * instance rotating on a middle drag and on a shift left drag alike.
-     *
-     * @param bdvh        the window whose keymap is read
-     * @param commandName name of the command, see {@link TransformEventHandler2D}
-     * @param defaults    triggers to fall back on when the keymap does not mention the command
-     * @param suffix      appended to each trigger, ' drag' for the dragging commands
-     * @return the triggers, separated by ' or ', or an empty string if the command is unbound
-     */
-    private static String triggerText(BdvHandle bdvh, String commandName, String[] defaults,
-                                      String suffix) {
-
-        Set<InputTrigger> bound = BdvKeymapHelper.getConfig(bdvh)
-                .getInputs(commandName, KeyConfigContexts.BIGDATAVIEWER);
-
-        Stream<String> triggers = bound.isEmpty()
-                ? Arrays.stream(defaults)
-                : bound.stream().map(InputTrigger::toString);
-
-        String text = triggers
-                .filter(trigger -> !NOT_MAPPED.equals(trigger))
-                .map(trigger -> MODIFIER.matcher(trigger).replaceAll("$1 + ")
-                        .replace("button1", "left click")
-                        .replace("button2", "middle click")
-                        .replace("button3", "right click")
-                        .replace("scroll", "mouse wheel") + suffix)
-                .collect(Collectors.joining(" or "));
-
-        return text.isEmpty() ? text : Character.toUpperCase(text.charAt(0)) + text.substring(1);
-    }
-
-    /**
-     * Modifier keys, as {@link InputTrigger#toString()} writes them - 'shift button1'. The
-     * trailing space is part of the match so that the replacement spells them out as
-     * 'shift + button1'.
-     */
-    private static final Pattern MODIFIER = Pattern.compile("\\b(shift|ctrl|meta|alt)\\b ");
-
-    /** How {@link InputTrigger#toString()} spells a binding which is deliberately blocked */
-    private static final String NOT_MAPPED = "not mapped";
-
-    /**
      * Sets the viewer transform so that the z = 0 plane is displayed, whatever the position
      * of the sources along z.
      *
@@ -404,47 +339,6 @@ public class ManualAffineRegistration extends AffineTransformSourceRegistration 
         bdvh.getCardPanel().removeCard(DEFAULT_SOURCEGROUPS_CARD);
         bdvh.getCardPanel().removeCard(DEFAULT_VIEWERMODES_CARD);
         return bdvh;
-    }
-
-    /**
-     * Makes the card panel visible, with a usable width.
-     * <p>
-     * This cannot be done while the window is being built: {@code SplitPanel.setCollapsed(false)}
-     * places the divider from the current width of the panel, which is still zero as long as the
-     * frame has not been laid out. The panel then ends up expanded but with a zero width - it
-     * simply looks absent. The expansion is therefore deferred to the first layout pass, and the
-     * divider is placed explicitly rather than left to the default.
-     *
-     * @param bdvh the viewer whose card panel must be shown
-     */
-    private static void expandCardPanel(BdvHandle bdvh) {
-        final SplitPanel splitPanel = bdvh.getSplitPanel();
-
-        final Runnable expand = () -> {
-            int width = splitPanel.getWidth();
-            if (width <= 0) return;
-            // setCollapsed is a no-op if the panel is already expanded: collapse it first so that
-            // the divider is recomputed
-            splitPanel.setCollapsed(true);
-            splitPanel.setCollapsed(false);
-            splitPanel.setDividerLocation(Math.max(width / 2, width - CARD_PANEL_WIDTH));
-        };
-
-        SwingUtilities.invokeLater(() -> {
-            if (splitPanel.getWidth() > 0) {
-                expand.run();
-            } else {
-                // The frame has not been laid out yet: wait for it
-                splitPanel.addComponentListener(new ComponentAdapter() {
-                    @Override
-                    public void componentResized(ComponentEvent e) {
-                        if (splitPanel.getWidth() <= 0) return;
-                        splitPanel.removeComponentListener(this);
-                        expand.run();
-                    }
-                });
-            }
-        });
     }
 
     private static JPanel box(Component... components) {
