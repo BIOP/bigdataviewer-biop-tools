@@ -55,11 +55,11 @@ public class PairRegistrationOMETIFFExportCommand implements BdvPlaygroundAction
     String message = "If you include channels of the fixed image, the pixel type should match those of the moving one";
 
     @Parameter(label = "Fixed Channels",
-            description = "Channels from fixed image to include (comma separated, empty for none, '*' for all)")
+            description = "Channels from fixed image to include (comma separated, empty for none, '*' for all)", required = false)
     String channels_fixed_csv;
 
     @Parameter(label = "Moving Channels",
-            description = "Channels from moving image to include (comma separated, empty for none, '*' for all)")
+            description = "Channels from moving image to include (comma separated, empty for none, '*' for all)", required = false)
     String channels_moving_csv;
 
     @Parameter(label = "Output File",
@@ -109,13 +109,13 @@ public class PairRegistrationOMETIFFExportCommand implements BdvPlaygroundAction
             ls.warn("Export file path already exists, the export will not be performed.");
             return;
         }
-        if (channels_fixed_csv.trim().equals("*")) {
+        if ((channels_fixed_csv != null) && (channels_fixed_csv.trim().equals("*"))) {
             channels_fixed_csv = "0";
             for (int i = 1; i<registration_pair.getFixedSources().length; i++) {
                 channels_fixed_csv+=","+i;
             }
         }
-        if (channels_moving_csv.trim().equals("*")) {
+        if ((channels_moving_csv != null) && (channels_moving_csv.trim().equals("*"))) {
             channels_moving_csv = "0";
             for (int i = 1; i<registration_pair.getMovingSourcesOrigin().length; i++) {
                 channels_moving_csv+=","+i;
