@@ -1,6 +1,5 @@
 package ch.epfl.biop.command.register.warpy;
 
-import bdv.util.source.time.MappedTimeSource;
 import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.kheops.ometiff.OMETiffExporter;
 import ch.epfl.biop.registration.RegistrationPair;

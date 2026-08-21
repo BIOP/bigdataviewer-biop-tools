@@ -6,13 +6,12 @@ import bdv.viewer.SourceAndConverter;
 import ch.epfl.biop.kheops.command.KheopsExportSourcesCommand;
 import com.google.gson.stream.JsonReader;
 import ij.IJ;
-import net.imglib2.realtransform.AffineTransform3D;
-import net.imglib2.realtransform.InvertibleRealTransformSequence;
-import net.imglib2.realtransform.RealTransform;
-import net.imglib2.realtransform.RealTransformHelper;
+import net.imglib2.FinalInterval;
+import net.imglib2.Interval;
+import net.imglib2.RealInterval;
+import net.imglib2.realtransform.*;
 import org.scijava.Context;
 import org.scijava.ItemVisibility;
-import org.scijava.command.Command;
 import org.scijava.command.CommandService;
 import org.scijava.plugin.Menu;
 import org.scijava.plugin.Parameter;
@@ -172,7 +171,9 @@ public class WarpyRegisteredImageExportCommand implements BdvPlaygroundActionCom
                     IJ.log("You may try to re-open your QuPath project with the option 'split RGB channel'");
                     return;
                 }
-                transformedSources.add(new SourceRealTransformer(sourceToTransformation.get(source).copy()).apply(source));
+                SourceRealTransformer srt = new SourceRealTransformer(sourceToTransformation.get(source).copy());
+                srt.setBoundingBoxEstimator(new DummyBoundingBoxEstimator()); // Dummy estimators or else we get singular matrix issues
+                transformedSources.add(srt.apply(source));
             }
             List<SourceAndConverter<?>> exportedSources = new ArrayList<>();
 
@@ -308,5 +309,26 @@ public class WarpyRegisteredImageExportCommand implements BdvPlaygroundActionCom
         this.message = message;
 
     }
+    static class DummyBoundingBoxEstimator extends BoundingBoxEstimation {
+
+        public DummyBoundingBoxEstimator() {
+        }
+
+        @Override
+        public RealInterval estimateInterval(RealTransform xfm, RealInterval interval) {
+            return new FinalInterval(new long[]{0,0,0}, new long[]{1,1,1});
+        }
+
+        @Override
+        public Interval estimatePixelInterval(RealTransform xfm, Interval interval) {
+            return new FinalInterval(new long[]{0,0,0}, new long[]{1,1,1});
+        }
+
+        public BoundingBoxEstimation copy() {
+            return this;
+        }
+
+    }
+
 
 }

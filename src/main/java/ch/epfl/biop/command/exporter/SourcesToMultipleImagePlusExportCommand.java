@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Plugin(type = BdvPlaygroundActionCommand.class,
-        //menuPath = BdvPgMenus.RootMenu+"Export>Source - Export To ImagePlus",
         menu = {
                 @Menu(label = BdvPgMenus.L1),
                 @Menu(label = BdvPgMenus.L2),
@@ -121,7 +120,7 @@ public class SourcesToMultipleImagePlusExportCommand implements BdvPlaygroundAct
 
         for (String entity : entities_split.split(",")) {
             String ent = entity.trim().toUpperCase();
-            if ((!entityClasses.containsKey(ent))&&(!ent.trim().equals(""))){
+            if ((!entityClasses.containsKey(ent))&&(!ent.trim().isEmpty())){
                 System.err.println("Unrecognized entity class "+ent);
             } else {
                 System.out.println("Splitting by "+ent);
