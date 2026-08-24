@@ -27,6 +27,7 @@ import net.imglib2.realtransform.inverse.WrappedIterativeInvertibleRealTransform
 import net.imglib2.type.numeric.integer.ByteType;
 import org.scijava.ItemIO;
 import org.scijava.ItemVisibility;
+import org.scijava.command.Command;
 import org.scijava.command.CommandModule;
 import org.scijava.command.CommandService;
 import org.scijava.plugin.Parameter;
@@ -63,7 +64,10 @@ import static bdv.util.RealTransformHelper.BigWarpFileFromRealTransform;
 import static ch.epfl.biop.viewer.bdv.RectangleSelectorBehaviour.box;
 import static ch.epfl.biop.command.process.transform.SourcesZOffsetRemoveCommand.getZ0Transform;
 
-@Plugin(type = BdvPlaygroundActionCommand.class,
+// Legacy command, kept for backward compatibility with existing scripts.
+// Declared as a plain Command rather than a BdvPlaygroundActionCommand: it has no menu
+// path, and the BDV Playground SourceService cannot register a menu-less action.
+@Plugin(type = Command.class,
        // menuPath = BdvPgMenus.RootMenu+"Register>Warpy (Wizard)>Warpy - Wizard Align Slides (2D)",
         headless = false // User interface required
         )

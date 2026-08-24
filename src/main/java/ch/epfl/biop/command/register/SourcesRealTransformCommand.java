@@ -3,6 +3,7 @@ package ch.epfl.biop.command.register;
 import bdv.viewer.SourceAndConverter;
 import net.imglib2.realtransform.RealTransform;
 import org.scijava.ItemIO;
+import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.scijava.BdvPgMenus;
@@ -12,7 +13,10 @@ import sc.fiji.bdvpg.source.transform.SourceRealTransformer;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-@Plugin(type = BdvPlaygroundActionCommand.class,
+// Legacy command, kept for backward compatibility with existing scripts.
+// Declared as a plain Command rather than a BdvPlaygroundActionCommand: it has no menu
+// path, and the BDV Playground SourceService cannot register a menu-less action.
+@Plugin(type = Command.class,
     //    menuPath = BdvPgMenus.RootMenu+"Source>Transform>Obsolete>Real Transform Sources",
         description = "Applies a non-linear real transform (e.g., spline) to sources")
 public class SourcesRealTransformCommand implements BdvPlaygroundActionCommand {

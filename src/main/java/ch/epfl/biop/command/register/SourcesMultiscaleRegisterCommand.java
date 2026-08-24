@@ -23,6 +23,7 @@ import net.imglib2.realtransform.ThinplateSplineTransform;
 import net.imglib2.realtransform.inverse.WrappedIterativeInvertibleRealTransform;
 import org.scijava.ItemIO;
 import org.scijava.ItemVisibility;
+import org.scijava.command.Command;
 import org.scijava.command.CommandService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
@@ -44,7 +45,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 // TODO test edge cases
-@Plugin(type = BdvPlaygroundActionCommand.class,
+// Legacy command, kept for backward compatibility with existing scripts.
+// Declared as a plain Command rather than a BdvPlaygroundActionCommand: it has no menu
+// path, and the BDV Playground SourceService cannot register a menu-less action.
+@Plugin(type = Command.class,
     //    menuPath = BdvPgMenus.RootMenu+"Source>Register>Obsolete>Multiscale Registration (2D)",
         headless = true, // User interface not required
         initializer = "updateInfo"

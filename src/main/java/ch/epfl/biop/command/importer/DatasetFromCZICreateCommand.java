@@ -14,6 +14,7 @@ import mpicbg.spim.data.XmlIoSpimData;
 import mpicbg.spim.data.generic.AbstractSpimData;
 import org.scijava.Context;
 import org.scijava.ItemIO;
+import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
@@ -25,7 +26,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-@Plugin(type = BdvPlaygroundActionCommand.class,
+// Legacy command, kept for backward compatibility with existing scripts.
+// Declared as a plain Command rather than a BdvPlaygroundActionCommand: it has no menu
+// path, and the BDV Playground SourceService cannot register a menu-less action.
+@Plugin(type = Command.class,
         // Note visible in the menu but has to be kept pour backward compatibility
         //menuPath = BdvPgMenus.RootMenu+"Import>Dataset - Create [CZI]",
         description = "Creates a BigStitcher-compatible XML dataset from a CZI file")

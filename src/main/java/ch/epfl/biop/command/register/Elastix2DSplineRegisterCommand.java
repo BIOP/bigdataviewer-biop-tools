@@ -4,11 +4,15 @@ import ch.epfl.biop.source.register.Elastix2DSplineRegister;
 import net.imglib2.realtransform.RealTransform;
 import org.scijava.Context;
 import org.scijava.ItemIO;
+import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
 
-@Plugin(type = BdvPlaygroundActionCommand.class,
+// Legacy command, kept for backward compatibility with existing scripts.
+// Declared as a plain Command rather than a BdvPlaygroundActionCommand: it has no menu
+// path, and the BDV Playground SourceService cannot register a menu-less action.
+@Plugin(type = Command.class,
     //    menuPath = BdvPgMenus.RootMenu+"Source>Register>Obsolete>Register Sources with Elastix (Spline, 2D)",
         description = "Performs B-spline deformable registration in 2D between two sources using Elastix")
 public class Elastix2DSplineRegisterCommand extends AbstractElastix2DRegistrationInRectangleCommand implements BdvPlaygroundActionCommand {

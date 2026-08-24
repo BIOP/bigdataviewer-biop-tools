@@ -9,6 +9,7 @@ import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.NumericType;
 import org.scijava.ItemIO;
 import org.scijava.ItemVisibility;
+import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.scijava.task.Task;
@@ -23,7 +24,10 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @SuppressWarnings({"unused", "CanBeFinal"})
-@Plugin(type = BdvPlaygroundActionCommand.class,
+// Legacy command, kept for backward compatibility with existing scripts.
+// Declared as a plain Command rather than a BdvPlaygroundActionCommand: it has no menu
+// path, and the BDV Playground SourceService cannot register a menu-less action.
+@Plugin(type = Command.class,
         //menuPath = BdvPgMenus.RootMenu+"Export>Source - Export To ImagePlus (ignore location)",
         /*menu = {
                 @Menu(label = BdvPgMenus.L1),

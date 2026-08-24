@@ -3,6 +3,7 @@ package ch.epfl.biop.command.register;
 import ch.epfl.biop.source.register.SIFTRegister;
 import mpicbg.imagefeatures.FloatArray2DSIFT;
 import org.scijava.ItemIO;
+import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.slf4j.Logger;
@@ -16,7 +17,10 @@ import sc.fiji.bdvpg.command.BdvPlaygroundActionCommand;
  * on big images. See {@link Sources2DRegisterCommand}
  */
 
-@Plugin(type = BdvPlaygroundActionCommand.class,
+// Legacy command, kept for backward compatibility with existing scripts.
+// Declared as a plain Command rather than a BdvPlaygroundActionCommand: it has no menu
+// path, and the BDV Playground SourceService cannot register a menu-less action.
+@Plugin(type = Command.class,
     //    menuPath = BdvPgMenus.RootMenu+"Source>Register>Obsolete>Register Sources with SIFT (Affine, 2D)",
         description = "Performs an affine registration in 2D between 2 sources. Low level command which\n"+
                       "requires many parameters. For more user friendly command, use wizards instead.\n"+
