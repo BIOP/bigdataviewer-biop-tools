@@ -53,7 +53,7 @@ import java.util.concurrent.Future;
  * on the centre of the output box, and averages the crops. It needs no GPU and no iterations, but
  * it does need a bead list.
  * </p>
- * <h3>Where the subpixel precision comes from</h3>
+ * <h2>Where the subpixel precision comes from</h2>
  * TrackMate's DoG detector localises spots with subpixel accuracy and stores the result in the XML
  * as {@code POSITION_X/Y/Z} in <b>physical units</b>. Those coordinates are used here as world
  * coordinates in the bead source's own frame, so the re-centring never goes through a rounding to
@@ -84,7 +84,7 @@ import java.util.concurrent.Future;
  * indices only mean something on the grid they were measured on, and the log reports the bounding box
  * of the spots in source voxels.
  * </p>
- * <h3>Beads that fall off the image</h3>
+ * <h2>Beads that fall off the image</h2>
  * A bead close to a border yields a crop that is clipped by the image bounds, so it does not span
  * the whole output box. This is handled by the alpha-aware fusion: every bead source carries an
  * implicit {@link bdv.util.source.alpha.AlphaSourceRAI} which is 1 over the crop and 0 outside, and
@@ -92,14 +92,14 @@ import java.util.concurrent.Future;
  * {@link bdv.util.source.fused.AverageAlphaFused3DRandomAccess} divides by the sum of the alphas,
  * {@link bdv.util.source.fused.MedianAlphaFused3DRandomAccess} takes the median of them. A clipped
  * bead therefore contributes only where it exists, with no bias and no need to discard it.
- * <h3>Median rather than mean</h3>
+ * <h2>Median rather than mean</h2>
  * With a few hundred beads scattered over a large field, a fair fraction of the crops contain a
  * <i>second</i> bead somewhere in the box. Averaging spreads those contaminants over the result as a
  * halo of small bumps; taking the median at each voxel discards them, because a contaminant is an
  * extreme value only at the voxels where it happens to fall. On a 255-bead dataset the median left
  * no far-background voxel above 1% of the peak, against 122 for the mean, and gave a PSF 2.5%
  * narrower. The mean is therefore not offered.
- * <h3>Per-bead normalisation</h3>
+ * <h2>Per-bead normalisation</h2>
  * Beads differ in brightness, so each crop is background-subtracted (by default the median of the
  * crop, which is dominated by background since the bead is tiny compared to the box) and divided by
  * its own peak, measured in a small window around the spot so that a brighter neighbour cannot

@@ -134,8 +134,15 @@
 		<!-- package version below are determined by the parent pom but need to be upgraded or temporarily fixed for bugs -->
 
 		<!--spim_data.version>2.3.5</spim_data.version-->
-        <maven.compiler.source>8</maven.compiler.source>
-        <maven.compiler.target>8</maven.compiler.target>
+		<!-- ch.epfl.biop:Operetta_Importer and its sc.fiji:Stitching_ dependency
+		     are compiled for Java 21, so this build must target 21 as well
+		     (the enforcer bytecode rule checks this). -->
+		<scijava.jvm.version>21</scijava.jvm.version>
+
+		<!-- Some dependencies (ome:turbojpeg) have classes in the default package,
+		     which breaks the module path derivation of the maven-javadoc-plugin.
+		     Run javadoc in non-modular (pre-Java 9) mode instead. -->
+		<legacyMode>true</legacyMode>
 
 	</properties>
 

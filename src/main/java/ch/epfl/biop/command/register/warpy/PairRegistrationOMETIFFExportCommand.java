@@ -94,10 +94,6 @@ public class PairRegistrationOMETIFFExportCommand implements BdvPlaygroundAction
             choices = {"LZW", "Uncompressed", "JPEG-2000", "JPEG-2000 Lossy", "JPEG"})
     String compression = "LZW";
 
-    @Parameter(label = "Compress Temp Files",
-            description = "When checked, compresses temporary files to save disk space during export")
-    boolean compress_temp_files = false;
-
     @Parameter
     TaskService taskService;
 
@@ -186,7 +182,6 @@ public class PairRegistrationOMETIFFExportCommand implements BdvPlaygroundAction
                         return meta;
                     })
                     .defineWriteOptions().maxTilesInQueue(200).compression(this.compression)
-                    .compressTemporaryFiles(this.compress_temp_files)
                     .nThreads(this.n_threads)
                     .downsample(this.downscaling)
                     .nResolutionLevels(this.n_resolution_levels)
