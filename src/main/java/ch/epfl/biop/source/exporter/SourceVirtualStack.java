@@ -1,5 +1,6 @@
 package ch.epfl.biop.source.exporter;
 
+import bdv.viewer.Source;
 import bdv.viewer.SourceAndConverter;
 import ij.ImagePlus;
 import ij.VirtualStack;
@@ -22,7 +23,6 @@ import net.imglib2.type.volatiles.VolatileARGBType;
 import net.imglib2.type.volatiles.VolatileFloatType;
 import net.imglib2.type.volatiles.VolatileUnsignedByteType;
 import net.imglib2.type.volatiles.VolatileUnsignedShortType;
-import net.imglib2.util.Util;
 import net.imglib2.view.Views;
 import org.scijava.task.Task;
 import org.slf4j.Logger;
@@ -96,19 +96,21 @@ public class SourceVirtualStack<T extends NumericType<T> & NativeType<T>> extend
         height = (int) raiModel.dimension(1);
         //nSlices = (int) raiModel.dimension(2);
         size = (int) range.getTotalPlanes();
-        final Object type = Util.getTypeFromInterval(raiModel);
-        if ((type instanceof UnsignedShortType) || (type instanceof VolatileUnsignedShortType)) {
-            bitDepth = 16;
-        } else if ((type instanceof UnsignedByteType) || (type instanceof VolatileUnsignedByteType)) {
-            bitDepth = 8;
-        } else if ((type instanceof FloatType) || (type instanceof VolatileFloatType)) {
-            bitDepth = 32;
-        } else if ((type instanceof ARGBType) || (type instanceof VolatileARGBType)) {
-            bitDepth = 24;
-        } else {
-            bitDepth = -1;
-            throw new UnsupportedOperationException("Type " + type.getClass() + " unsupported.");
+        // An ImageJ stack has a single bit depth, but nothing forces the sources - one per output
+        // channel - to share a pixel type. A mismatch used to surface much later as a
+        // ClassCastException in the middle of the pixel reading, so it is checked here, where the
+        // offending channel can still be named.
+        int commonBitDepth = -1;
+        for (int iC : range.getRangeC()) {
+            final int channelBitDepth = bitDepthOf(sources.get(iC).getSpimSource().getType());
+            if (commonBitDepth == -1) {
+                commonBitDepth = channelBitDepth;
+            } else if (channelBitDepth != commonBitDepth) {
+                throw new UnsupportedOperationException(
+                        "All channels should have the same pixel type, but they do not:" + listTypes(sources, range));
+            }
         }
+        bitDepth = commonBitDepth;
 
         nBytesPerProcessor = width * height * (bitDepth / 8);
 
@@ -129,6 +131,43 @@ public class SourceVirtualStack<T extends NumericType<T> & NativeType<T>> extend
             logger.error("Mismatch! nSlices = "+nZSlices+" rai Z dimension = "+raiModel.dimension(2));
         }*/
 
+    }
+
+    /**
+     * The ImageJ bit depth matching an ImgLib2 pixel type, volatile or not.
+     *
+     * @param type a pixel type instance, as returned by {@link bdv.viewer.Source#getType()}
+     * @return 8, 16, 24 (RGB) or 32
+     */
+    static int bitDepthOf(Object type) {
+        if ((type instanceof UnsignedShortType) || (type instanceof VolatileUnsignedShortType)) {
+            return 16;
+        } else if ((type instanceof UnsignedByteType) || (type instanceof VolatileUnsignedByteType)) {
+            return 8;
+        } else if ((type instanceof FloatType) || (type instanceof VolatileFloatType)) {
+            return 32;
+        } else if ((type instanceof ARGBType) || (type instanceof VolatileARGBType)) {
+            return 24;
+        } else {
+            throw new UnsupportedOperationException("Type " + type.getClass() + " unsupported.");
+        }
+    }
+
+    /**
+     * Lists the name and the pixel type of each channel, to be appended to an error message.
+     *
+     * @param sources sources list, each source is a channel
+     * @param range   the czt range, which selects and orders the channels
+     * @return one line per channel, each starting with a line break
+     */
+    static String listTypes(List<? extends SourceAndConverter<?>> sources, CZTRange range) {
+        StringBuilder types = new StringBuilder();
+        for (int iC : range.getRangeC()) {
+            Source<?> source = sources.get(iC).getSpimSource();
+            types.append("\n - ").append(source.getName())
+                    .append(" : ").append(source.getType().getClass().getSimpleName());
+        }
+        return types.toString();
     }
 
     ImagePlus imagePlusLocalizer = null;
