@@ -36,18 +36,14 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            appose_dir: ${{ github.workspace }}/appose-envs
             label: linux-64
           - os: windows-latest
-            appose_dir: C:/ae
             label: win-64
           # Apple silicon, macOS 15+: exercises the macosx_15_0_arm64 wheels.
           - os: macos-latest
-            appose_dir: ${{ github.workspace }}/appose-envs
             label: osx-arm64 (recent macOS)
           # Apple silicon, macOS 14: exercises the legacy itk-elastix fallback pin.
           - os: macos-14
-            appose_dir: ${{ github.workspace }}/appose-envs
             label: osx-arm64 (macOS 14)
           # No Intel macOS job: itk-elastix has published no osx-64 wheel since 0.21.0,
           # and ApposeElastixTask fails fast with an explanatory message there.
@@ -69,13 +65,17 @@ jobs:
         if: startsWith(matrix.os, 'macos')
         run: sw_vers
 
+      # Keeps every Appose artifact (pixi binary and environments) out of the runner image, and
+      # short: itk lays out deeply nested modules whose absolute paths otherwise blow past the
+      # 260-character MAX_PATH limit on Windows. Set here from $RUNNER_TEMP rather than from a
+      # matrix value, because github.workspace and runner.temp are both empty in the matrix
+      # context — that silently made this "/appose-envs" and failed every non-Windows job.
+      - name: Pick a directory for the Appose environment
+        shell: bash
+        run: echo "APPOSE_ENVS_DIR=$RUNNER_TEMP/ae" >> "$GITHUB_ENV"
+
       - name: Build and run the itk-elastix environment smoke test
         shell: bash
-        env:
-          # Keep every Appose artifact (pixi binary and environments) out of the runner image.
-          # On Windows the directory is deliberately short: itk lays out deeply nested modules
-          # whose absolute paths otherwise blow past the 260-character MAX_PATH limit.
-          APPOSE_ENVS_DIR: ${{ matrix.appose_dir }}
         run: |
           mvn -B --no-transfer-progress test \
             -Dtest=ApposeElastixEnvTest \
@@ -85,4 +85,4 @@ jobs:
       - name: Show the generated pixi manifest
         if: always()
         shell: bash
-        run: cat "${{ matrix.appose_dir }}"/*/pixi.toml || true
+        run: cat "$APPOSE_ENVS_DIR"/*/pixi.toml || true
