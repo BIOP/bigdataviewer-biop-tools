@@ -1,0 +1,24 @@
+# Fallback environment for Apple-silicon Macs running macOS 13 or 14, used in place of pixi.toml
+# by ch.epfl.biop.wrappers.elastix.ApposeElastixTask.
+#
+# itk-elastix 0.25.3 moved its Apple-silicon wheel tag from macosx_11_0_arm64 to
+# macosx_15_0_arm64, while itk itself still ships macosx_11_0_arm64 — so this looks like an
+# upstream packaging regression rather than a real OS requirement. 0.25.2 is the last release
+# installable on macOS 13/14; those machines are pinned to it here, and keep pixi's default
+# macOS 13.0 system requirement.
+#
+# Delete this file (and the isLegacyMacOS() branch in ApposeElastixTask) once itk-elastix
+# publishes Apple-silicon wheels for macOS 13 again.
+
+[workspace]
+name = "itk-elastix"
+channels = ["conda-forge"]
+platforms = ["@PLATFORM@"]
+
+[dependencies]
+python = "==3.11"
+numpy = ">=2,<3"
+
+[pypi-dependencies]
+appose = "==0.12.0"
+itk-elastix = "==0.25.2"

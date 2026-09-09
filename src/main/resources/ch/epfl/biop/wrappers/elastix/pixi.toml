@@ -1,0 +1,31 @@
+# Environment for ch.epfl.biop.wrappers.elastix.ApposeElastixTask.
+#
+# This file is the single source of truth for the itk-elastix environment: it is loaded from the
+# classpath at build time and handed to pixi as-is. The matrix in
+# .github/workflows/elastix-env.yml resolves this exact file on Linux, Windows and macOS.
+#
+# The platform below is substituted at build time with the conda subdir of the running machine
+# (linux-64, win-64 or osx-arm64). Only the current platform is listed on purpose: pixi locks
+# every platform named here, so listing them all would let a wheel that disappears on one OS
+# break users of the others.
+#
+# [system-requirements] macos: pixi assumes macOS 13.0 on osx-arm64 whatever the machine really
+# runs, and resolves PyPI wheels against that assumption. itk-elastix has tagged its Apple-silicon
+# wheels macosx_15_0_arm64 since 0.25.3, so without this line they are rejected on every Mac.
+# Macs older than macOS 15 get pixi-legacy-macos.toml instead.
+
+[workspace]
+name = "itk-elastix"
+channels = ["conda-forge"]
+platforms = ["@PLATFORM@"]
+
+[system-requirements]
+macos = "15.0"
+
+[dependencies]
+python = "==3.11"
+numpy = ">=2,<3"
+
+[pypi-dependencies]
+appose = "==0.12.0"
+itk-elastix = "==0.25.4"

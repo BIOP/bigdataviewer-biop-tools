@@ -20,7 +20,12 @@ import java.awt.Component;
 import java.awt.Frame;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,6 +36,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Appose-based implementation of {@link ElastixTask} using itk-elastix.
@@ -307,16 +314,105 @@ public class ApposeElastixTask implements ElastixTask {
         return CACHED_ENV.python();
     }
 
-    public static String ITK_ELASTIX_VERSION = "0.25.3";
+    /** Classpath manifest describing the environment, next to this class. */
+    private static final String MANIFEST = "pixi.toml";
+
+    /** Manifest used instead of {@link #MANIFEST} on Apple-silicon Macs older than macOS 15. */
+    private static final String MANIFEST_LEGACY_MACOS = "pixi-legacy-macos.toml";
+
+    /** Placeholder in the manifests, replaced with the conda subdir of the running machine. */
+    private static final String PLATFORM_PLACEHOLDER = "@PLATFORM@";
+
+    /** Matches the exact itk-elastix pin in a manifest, e.g. {@code itk-elastix = "==0.25.4"}. */
+    private static final Pattern ITK_ELASTIX_PIN =
+            Pattern.compile("^\\s*itk-elastix\\s*=\\s*\"==([^\"]+)\"", Pattern.MULTILINE);
+
+    /** The pixi manifest for this machine: a resource, with its placeholder resolved. */
+    private static final String PIXI_TOML = loadManifest();
+
+    /**
+     * The itk-elastix version installed into the pixi environment, read back from the manifest
+     * that this machine actually uses — the manifests are where the pin lives.
+     */
+    public static final String ITK_ELASTIX_VERSION = parseItkElastixVersion(PIXI_TOML);
+
+    /** True on macOS, whatever the architecture. */
+    private static boolean isMacOS() {
+        return System.getProperty("os.name", "").toLowerCase().startsWith("mac");
+    }
+
+    /**
+     * True on a Mac too old for the {@code macosx_15_0_arm64} wheels that itk-elastix has shipped
+     * since 0.25.3, and which therefore needs {@link #MANIFEST_LEGACY_MACOS}.
+     */
+    private static boolean isLegacyMacOS() {
+        return isMacOS() && macOSMajorVersion() < 15;
+    }
+
+    /** Major component of {@code os.version}; {@link Integer#MAX_VALUE} when unparseable. */
+    private static int macOSMajorVersion() {
+        String version = System.getProperty("os.version", "");
+        int dot = version.indexOf('.');
+        try {
+            return Integer.parseInt(dot < 0 ? version : version.substring(0, dot));
+        } catch (NumberFormatException e) {
+            return Integer.MAX_VALUE; // unknown format: assume a recent macOS
+        }
+    }
+
+    /** Conda platform identifier ("subdir") of the running machine. */
+    private static String condaSubdir() {
+        String arch = System.getProperty("os.arch", "").toLowerCase();
+        boolean arm64 = arch.equals("aarch64") || arch.equals("arm64");
+        if (isMacOS()) return arm64 ? "osx-arm64" : "osx-64";
+        if (System.getProperty("os.name", "").toLowerCase().startsWith("windows")) return "win-64";
+        return arm64 ? "linux-aarch64" : "linux-64";
+    }
+
+    /**
+     * Reads the manifest for this machine off the classpath and resolves its placeholder.
+     * <p>
+     * Loaded relative to this class rather than from the classpath root, because other Appose-based
+     * Fiji plugins ship a {@code /pixi.toml} of their own — imglib2-cellpose does — and inside Fiji
+     * they all share one classpath. Set {@code -Delastix.pixi.manifest=/path/to/pixi.toml} to try
+     * a different environment without rebuilding.
+     * </p>
+     */
+    private static String loadManifest() {
+        String override = System.getProperty("elastix.pixi.manifest");
+        String resource = isLegacyMacOS() ? MANIFEST_LEGACY_MACOS : MANIFEST;
+        try {
+            String toml;
+            if (override != null) toml = new String(Files.readAllBytes(Paths.get(override)), StandardCharsets.UTF_8);
+            else try (InputStream in = ApposeElastixTask.class.getResourceAsStream(resource)) {
+                if (in == null) throw new IllegalStateException("Missing classpath resource: "
+                        + ApposeElastixTask.class.getPackage().getName().replace('.', '/') + "/" + resource);
+                toml = new String(in.readAllBytes(), StandardCharsets.UTF_8);
+            }
+            return toml.replace(PLATFORM_PLACEHOLDER, condaSubdir());
+        } catch (IOException e) {
+            throw new IllegalStateException("Could not read " + (override != null ? override : resource), e);
+        }
+    }
+
+    /** Extracts the pinned itk-elastix version from a manifest. */
+    private static String parseItkElastixVersion(String toml) {
+        Matcher matcher = ITK_ELASTIX_PIN.matcher(toml);
+        if (!matcher.find()) throw new IllegalStateException(
+                "No exact itk-elastix pin found in the pixi manifest");
+        return matcher.group(1);
+    }
 
     /** Builds (and caches) the itk-elastix pixi environment. */
     private static Environment doBuildEnvironment() throws BuildException {
+        if ("osx-64".equals(condaSubdir())) {
+            throw new BuildException("itk-elastix publishes no Intel-Mac (osx-64) wheel since "
+                    + "0.21.0, so Intel Macs are not supported. On Apple silicon, this message "
+                    + "means the JVM is an Intel one running under Rosetta: use an arm64 Fiji/JDK.");
+        }
         return Appose
                 .pixi()
-                .channels("conda-forge")
-                .conda("python==3.11", "numpy")
-                .pypi("appose==0.12.0")
-                .pypi("itk-elastix=="+ITK_ELASTIX_VERSION)
+                .content(PIXI_TOML)
                 .env("NSLOTS", "1")
                 // Pool beats Platform for small images; never TBB (defaults to ~1024 work units).
                 // The init script also sets this before 'import itk' for belt-and-suspenders.

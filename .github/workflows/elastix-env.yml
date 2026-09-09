@@ -1,0 +1,88 @@
+# Resolves and smoke-tests the itk-elastix Appose (pixi) environment on every OS we ship to.
+#
+# Why this exists: itk-elastix publishes platform-specific wheels whose platform tags change
+# between releases. 0.25.3 moved the Apple-silicon wheel tag from macosx_11_0_arm64 to
+# macosx_15_0_arm64, which made the environment unsatisfiable on every Mac until the pixi
+# manifest declared a matching [system-requirements] macos version. Nothing in a Linux build
+# can catch that, hence the OS matrix.
+#
+# Standard GitHub-hosted runners are free and unlimited on public repositories, so the macOS
+# jobs here cost nothing. Each job downloads ~250 MB of conda/PyPI packages and takes a few
+# minutes; the environment is deliberately NOT cached, since resolving it from scratch is
+# exactly what is under test.
+#
+# The environment itself is NOT defined here: it lives in
+# src/main/resources/ch/epfl/biop/wrappers/elastix/pixi.toml (plus the pixi-legacy-macos.toml
+# fallback), which ApposeElastixTask loads at runtime. This workflow resolves those very files.
+name: elastix env
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Weekly, to catch upstream itk-elastix / itk wheel changes before users do.
+    - cron: '0 6 * * 1'
+  pull_request:
+    paths:
+      - 'src/main/java/ch/epfl/biop/wrappers/elastix/**'
+      - 'src/main/java/ch/epfl/biop/wrappers/transformix/**'
+      - 'src/main/resources/ch/epfl/biop/wrappers/elastix/**'
+      - 'src/test/java/ch/epfl/biop/wrappers/elastix/**'
+      - '.github/workflows/elastix-env.yml'
+
+jobs:
+  elastix-env:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            appose_dir: ${{ github.workspace }}/appose-envs
+            label: linux-64
+          - os: windows-latest
+            appose_dir: C:/ae
+            label: win-64
+          # Apple silicon, macOS 15+: exercises the macosx_15_0_arm64 wheels.
+          - os: macos-latest
+            appose_dir: ${{ github.workspace }}/appose-envs
+            label: osx-arm64 (recent macOS)
+          # Apple silicon, macOS 14: exercises the legacy itk-elastix fallback pin.
+          - os: macos-14
+            appose_dir: ${{ github.workspace }}/appose-envs
+            label: osx-arm64 (macOS 14)
+          # No Intel macOS job: itk-elastix has published no osx-64 wheel since 0.21.0,
+          # and ApposeElastixTask fails fast with an explanatory message there.
+
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          java-version: '21'
+          distribution: 'zulu'
+          cache: 'maven'
+
+      - name: Report macOS version
+        if: startsWith(matrix.os, 'macos')
+        run: sw_vers
+
+      - name: Build and run the itk-elastix environment smoke test
+        shell: bash
+        env:
+          # Keep every Appose artifact (pixi binary and environments) out of the runner image.
+          # On Windows the directory is deliberately short: itk lays out deeply nested modules
+          # whose absolute paths otherwise blow past the 260-character MAX_PATH limit.
+          APPOSE_ENVS_DIR: ${{ matrix.appose_dir }}
+        run: |
+          mvn -B --no-transfer-progress test \
+            -Dtest=ApposeElastixEnvTest \
+            -DfailIfNoSpecifiedTests=true \
+            -Delastix.env.test=true
+
+      - name: Show the generated pixi manifest
+        if: always()
+        shell: bash
+        run: cat "${{ matrix.appose_dir }}"/*/pixi.toml || true
