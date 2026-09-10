@@ -18,9 +18,6 @@ name: elastix env
 
 on:
   workflow_dispatch:
-  schedule:
-    # Weekly, to catch upstream itk-elastix / itk wheel changes before users do.
-    - cron: '0 6 * * 1'
   pull_request:
     paths:
       - 'src/main/java/ch/epfl/biop/wrappers/elastix/**'
