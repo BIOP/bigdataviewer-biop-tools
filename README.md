@@ -3,7 +3,9 @@
 [![](https://github.com/BIOP/bigdataviewer-biop-tools/actions/workflows/build-main.yml/badge.svg)](https://github.com/BIOP/bigdataviewer-biop-tools/actions/workflows/build-main.yml)
 [![Maven Scijava Version](https://img.shields.io/github/v/tag/BIOP/bigdataviewer-biop-tools?label=Version-[Maven%20Scijava])](https://maven.scijava.org/#browse/browse:releases:ch%2Fepfl%2Fbiop%2Fbigdataviewer-biop-tools)
 
-A Fiji plugin package providing tools for [BigDataViewer](https://imagej.net/plugins/bdv/), including image fusion, GPU-accelerated deconvolution, registration, and data processing. Developed by [BIOP](https://www.epfl.ch/research/facilities/ptbiop/) (BioImaging and Optics Platform) at EPFL.
+A Fiji plugin package providing tools for [BigDataViewer](https://imagej.net/plugins/bdv/), including image fusion, GPU-accelerated deconvolution, registration, and data processing.
+
+Originally developed at [BIOP](https://www.epfl.ch/research/facilities/ptbiop/) (BioImaging and Optics Platform), EPFL; maintained since 2026 by the image analysis facility of the [Biochemistry Department](https://www.unige.ch/sciences/biochimie/), University of Geneva.
 
 ## Features
 
@@ -29,11 +31,13 @@ A Fiji plugin package providing tools for [BigDataViewer](https://imagej.net/plu
 
 ## Installation
 
-Enable the **PTBIOP** update site in Fiji:
+Enable the **UNIGE-Biochem** update site in Fiji:
 
 1. `Help > Update... > Manage Update Sites`
-2. Check **PTBIOP**
-3. Close and restart Fiji
+2. Click `Add Unlisted Site` and enter:
+   - Name: `UNIGE-Biochem`
+   - URL: `https://sites.imagej.net/UNIGE-Biochem/`
+3. Tick it, then close and restart Fiji
 
 Commands appear under `Plugins > BigDataViewer > BigDataViewer-Playground`.
 
@@ -49,3 +53,7 @@ This package builds on:
 - [QuPath](https://qupath.github.io/) - Warpy registration workflow integration
 - [BigStitcher](https://imagej.net/plugins/bigstitcher/) - Tile stitching and fusion
 - [Elastix](https://elastix.lumc.nl/) - Deformable image registration
+
+## License
+
+Simplified BSD License (BSD 2-Clause) - see [LICENSE.txt](LICENSE.txt).

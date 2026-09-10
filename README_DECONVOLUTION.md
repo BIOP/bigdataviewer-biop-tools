@@ -33,7 +33,7 @@ You can also utilise Multi-GPU (and split them as needed).
 4. Add the following update sites:
     - CLIJ & CLIJ2
     - CLIJ-Deconvolution
-    - PTBIOP
+    - UNIGE-Biochem (unlisted: https://sites.imagej.net/UNIGE-Biochem/)
     - (Optional: Quick Start CZI Reader for fast CZI reading)
 5. Close and restart Fiji
 
@@ -240,11 +240,12 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-This project is licensed under the MIT License - see the license headers in source files for details.
+Simplified BSD License (BSD 2-Clause) - see [LICENSE.txt](LICENSE.txt).
 
 ## Acknowledgments
 
-- Developed at the [BioImaging and Optics Platform (BIOP)](https://biop.epfl.ch), EPFL
+- Originally developed at the [BioImaging and Optics Platform (BIOP)](https://biop.epfl.ch), EPFL
+- Maintained since 2026 by the image analysis facility of the [Biochemistry Department](https://www.unige.ch/sciences/biochimie/), University of Geneva
 - Built on [CLIJ2](https://clij.github.io/) by Robert Haase and
 - [clij2-fft](https://github.com/clij/clij2-fft/) by Brian Northan
 - Uses [BigDataViewer](https://imagej.net/plugins/bdv/) ecosystem

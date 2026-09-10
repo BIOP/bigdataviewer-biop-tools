@@ -14,12 +14,12 @@
 	<version>0.23.2-SNAPSHOT</version>
 
 	<name>Biop Bigdataviewer Tools and Plugins </name>
-	<description>Big data viewer tools BIOP - EPFL</description>
-	<url>http://biop.epfl.ch</url>
+	<description>BigDataViewer tools and plugins for Fiji: fusion, deconvolution, registration and data processing.</description>
+	<url>https://github.com/BIOP/bigdataviewer-biop-tools</url>
 	<inceptionYear>2018</inceptionYear>
 	<organization>
-		<name>BIOP</name>
-		<url>http://biop.epfl.ch</url>
+		<name>Biochemistry Department, University of Geneva</name>
+		<url>https://www.unige.ch/sciences/biochimie/</url>
 	</organization>
 	<licenses>
 		<license>
@@ -53,7 +53,7 @@
 		</contributor>
 		<contributor>
 			<name>Nicolas Chiaruttini</name>
-			<url>http://biop.epfl.ch/INFO_Facility.html</url>
+			<url>https://www.unige.ch/sciences/biochimie/</url>
 			<roles><role>founder</role></roles>
 			<properties><id>NicoKiaru</id></properties>
 		</contributor>
@@ -90,8 +90,8 @@
 	</ciManagement>
 
 	<properties>
-		<license.licenseName>N/A</license.licenseName>
-		<license.copyrightOwners>N/A</license.copyrightOwners>
+		<license.licenseName>bsd_2</license.licenseName>
+		<license.copyrightOwners>EPFL BIOP and University of Geneva</license.copyrightOwners>
 		<package-name>ch.epfl.biop.bigdataviewerBiopTools</package-name>
 		<scijava.deleteOtherVersions>true</scijava.deleteOtherVersions>
 		<!-- <scijava.app.directory>C:\Fiji.app</scijava.app.directory> -->
