@@ -107,6 +107,15 @@ public class AffineGizmoTest {
     }
 
     @Test
+    public void resetRestoresTheInitialTransform() {
+        AffineGizmo gizmo = drag(Handle.SIMILARITY, 1, 2, 0, false);
+        gizmo.reset();
+        assertEquals(initial(), gizmo.getTransform());
+        gizmo.drag(5, 5, false); // the drag ended with the reset
+        assertEquals(initial(), gizmo.getTransform());
+    }
+
+    @Test
     public void dragWithoutStartDoesNothing() {
         AffineGizmo gizmo = new AffineGizmo(initial(), CX, CY, L);
         gizmo.drag(10, 10, false);

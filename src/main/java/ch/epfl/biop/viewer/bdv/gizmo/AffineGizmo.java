@@ -46,6 +46,14 @@ public class AffineGizmo {
         this.cx = cx;
         this.cy = cy;
         this.length = length;
+        reset();
+    }
+
+    /**
+     * Goes back to the initial transform, ending any drag
+     */
+    public void reset() {
+        dragged = null;
         state[0] = transform.get(0, 0) * cx + transform.get(0, 1) * cy + transform.get(0, 3);
         state[1] = transform.get(1, 0) * cx + transform.get(1, 1) * cy + transform.get(1, 3);
         state[2] = transform.get(0, 0);

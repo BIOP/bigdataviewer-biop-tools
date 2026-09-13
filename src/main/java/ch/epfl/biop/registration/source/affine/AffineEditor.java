@@ -97,15 +97,22 @@ public class AffineEditor {
                         .toArray(SourceAndConverter[]::new)).run();
                 setZToZero(bdvh);
 
-                final AffineGizmoOverlay overlay = new AffineGizmoOverlay(bdvh, gizmo, () -> {
+                final Runnable update = () -> {
                     AffineTransform3D transform = gizmo.getTransform();
                     for (SourceAndConverter<?> source : movingDisplayed) {
                         ((TransformedSource<?>) source.getSpimSource()).setFixedTransform(transform);
                     }
                     bdvh.getViewerPanel().requestRepaint();
-                });
+                };
+                final AffineGizmoOverlay overlay = new AffineGizmoOverlay(bdvh, gizmo, update);
                 BdvFunctions.showOverlay(overlay, "Affine gizmo", BdvOptions.options().addTo(bdvh));
                 overlay.install();
+
+                final JButton resetButton = new JButton("Reset");
+                resetButton.addActionListener(e -> {
+                    gizmo.reset();
+                    update.run();
+                });
 
                 // Everything runs on the event dispatch thread: the first way the user ends the edition wins
                 final Consumer<Boolean> finish = apply -> {
@@ -132,8 +139,10 @@ public class AffineEditor {
                                         "<b>Yellow</b>: rotate and scale both axes.<br><br>" +
                                         "Hold shift to constrain a drag: translate along x or y only, " +
                                         "keep the direction of an axis, rotate without scaling.<br><br>" +
+                                        "<b>Reset</b> goes back to the transformation the edition started from.<br><br>" +
                                         NavigationHelp.html(bdvh) +
                                         "</div></html>"),
+                                resetButton,
                                 applyButton,
                                 cancelButton),
                         true);
