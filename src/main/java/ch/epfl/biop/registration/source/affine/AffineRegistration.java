@@ -12,11 +12,12 @@ import org.slf4j.LoggerFactory;
 /**
  * Registration class for applying affine transformations programmatically.
  * Allows creating and applying affine transforms conveniently.
+ * The transform can be edited afterwards with the {@link AffineEditor}.
  */
 @Plugin(type = IRegistrationPlugin.class)
 @RegistrationTypeProperties(
         isManual = false,
-        isEditable = false)
+        isEditable = true)
 public class AffineRegistration extends AffineTransformSourceRegistration {
 
     /** Logger for this class. */

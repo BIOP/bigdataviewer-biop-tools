@@ -58,10 +58,43 @@ abstract public class AffineTransformSourceRegistration extends SourceRegistrati
         isDone = true;
     }
 
+    /**
+     * Opens the {@link AffineEditor} on the current transform. The edition is only offered to the user for
+     * registrations annotated as editable, see {@link ch.epfl.biop.registration.plugin.RegistrationTypeProperties}
+     * @return true if the user applied the edition
+     */
     @Override
     public boolean edit() {
-        // TODO : find a way to edit an affine transform -> that shouldn't be so complicated
-        throw new UnsupportedOperationException();
+        return editInteractively(at3d, "Edit " + this);
+    }
+
+    /**
+     * Opens the {@link AffineEditor} on the fixed and moving images and blocks until the user applies or cancels.
+     * The gizmo sits at the center of the region given by the parameters px, py, sx and sy, when they are present.
+     * @param initial transform the edition starts from
+     * @param title title of the editor window
+     * @return true if the user applied the edition, whose result is then the transform of this registration
+     */
+    protected boolean editInteractively(AffineTransform3D initial, String title) {
+        AffineTransform3D result = AffineEditor.edit(fimg, mimg, initial, regionOfInterest(), timePoint, title);
+        if (result == null) return false;
+        at3d = result;
+        isDone = true;
+        return true;
+    }
+
+    /**
+     * @return the region {px, py, sx, sy} given in the parameters, or null if one of them is missing
+     */
+    private double[] regionOfInterest() {
+        String[] keys = {"px", "py", "sx", "sy"};
+        double[] roi = new double[keys.length];
+        for (int i = 0; i < keys.length; i++) {
+            String value = getRegistrationParameters().get(keys[i]);
+            if (value == null) return null;
+            roi[i] = Double.parseDouble(value);
+        }
+        return roi;
     }
 
     public RealTransform getTransformAsRealTransform() {
