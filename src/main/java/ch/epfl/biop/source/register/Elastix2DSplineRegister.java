@@ -59,9 +59,7 @@ public class Elastix2DSplineRegister<FT extends NativeType<FT> & NumericType<FT>
 
     ElastixTask et = new ApposeElastixTask();
 
-    double background_offset_value_moving = 0;
 
-    double background_offset_value_fixed = 0;
 
     String errorMessage = "";
 
@@ -79,8 +77,6 @@ public class Elastix2DSplineRegister<FT extends NativeType<FT> & NumericType<FT>
                                    double sx,
                                    double sy,
                                    int numberOfIterationPerScale,
-                                   double background_offset_value_moving,
-                                   double background_offset_value_fixed,
                                    boolean showResultIJ1) {
         this.sources_fixed = sources_fixed;
         this.sources_moving = sources_moving;
@@ -96,8 +92,6 @@ public class Elastix2DSplineRegister<FT extends NativeType<FT> & NumericType<FT>
         this.tpMoving = tpMoving;
         this.showResultIJ1 = showResultIJ1;
         this.nbControlPointsX = nbControlPointsX;
-        this.background_offset_value_fixed = background_offset_value_fixed;
-        this.background_offset_value_moving = background_offset_value_moving;
         this.numberOfIterationPerScale = numberOfIterationPerScale;
     }
 
@@ -130,16 +124,10 @@ public class Elastix2DSplineRegister<FT extends NativeType<FT> & NumericType<FT>
         AffineTransform3D atFixed = new AffineTransform3D();
         sFixed.getSourceTransform(tpMoving,levelMipmapFixed,atFixed);
 
-        if (background_offset_value_moving!=0) {
-            System.err.println("Ignored background_offset_value_moving");
-        }
 
         at3D.identity();
         at3D.translate(-px,-py,-pz);
 
-        if (background_offset_value_fixed!=0) {
-            System.err.println("Ignored background_offset_value_fixed");
-        }
 
         rh.setMovingImage(croppedMoving);
         rh.setFixedImage(croppedFixed);

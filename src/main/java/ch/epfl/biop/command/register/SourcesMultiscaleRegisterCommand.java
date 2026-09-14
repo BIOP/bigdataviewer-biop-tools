@@ -269,8 +269,6 @@ public class SourcesMultiscaleRegisterCommand implements BdvPlaygroundActionComm
                                 "parallel", !show_details,
                                 "verbose", debug,
                                 "max_iteration_per_scale", max_iteration_number_per_scale,
-                                "background_offset_value_moving", 0,
-                                "background_offset_value_fixed", 0,
                                 "task", task
                         ).get().getOutput("tst");
 

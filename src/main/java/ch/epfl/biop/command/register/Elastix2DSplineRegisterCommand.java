@@ -45,8 +45,6 @@ public class Elastix2DSplineRegisterCommand extends AbstractElastix2DRegistratio
                 px_size_in_current_unit,
                 px,py,pz,sx,sy,
                 max_iteration_per_scale,
-                background_offset_value_moving,
-                background_offset_value_fixed,
                 show_image_registration);
 
         reg.setInterpolate(interpolate);

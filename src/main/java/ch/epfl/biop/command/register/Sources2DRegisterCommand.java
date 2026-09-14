@@ -37,11 +37,7 @@ public class Sources2DRegisterCommand implements BdvPlaygroundActionCommand {
     @Parameter(label = "Index of current reference image (moving, DAPI channel of scan i)")
     SourceAndConverter<?> current_ref_source;
 
-    @Parameter(label = "Background offset value for moving image")
-    double background_offset_value_moving = 0;
 
-    @Parameter(label = "Background offset value for fixed image")
-    double background_offset_value_fixed = 0;
 
     @Parameter(label = "Locations of interest for warping registration", style = "text area")
     String pt_list_coordinates = "15,10,\n -30,-40,\n ";
@@ -118,8 +114,6 @@ public class Sources2DRegisterCommand implements BdvPlaygroundActionCommand {
                         "automatic_transform_initialization", false,
                         "max_iteration_per_scale", max_iteration_per_scale,
                         "min_image_size_pix", 32,
-                        "background_offset_value_moving", background_offset_value_moving,
-                        "background_offset_value_fixed", background_offset_value_fixed,
                         "verbose", verbose
                 ).get();
                 at1 = (AffineTransform3D) cm.getOutput("at3d");
@@ -150,8 +144,6 @@ public class Sources2DRegisterCommand implements BdvPlaygroundActionCommand {
                                 "parallel", !show_details,//false,
                                 "verbose", verbose,
                                 "max_iteration_per_scale", max_iteration_per_scale,
-                                "background_offset_value_moving", background_offset_value_moving,
-                                "background_offset_value_fixed", background_offset_value_fixed,
                                 "verbose", verbose
                         ).get().getOutput("tst");
             } else {

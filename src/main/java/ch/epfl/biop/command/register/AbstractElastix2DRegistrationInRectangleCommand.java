@@ -24,12 +24,6 @@ abstract class AbstractElastix2DRegistrationInRectangleCommand extends Abstract2
             description = "When checked, outputs detailed registration progress information")
     boolean verbose = false;
 
-    @Parameter(label = "Moving Background Offset",
-            description = "Value to add to moving image background for better matching")
-    double background_offset_value_moving = 0;
 
-    @Parameter(label = "Fixed Background Offset",
-            description = "Value to add to fixed image background for better matching")
-    double background_offset_value_fixed = 0;
 
 }

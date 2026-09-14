@@ -112,8 +112,6 @@ public class WarpyRegisterCommand implements BdvPlaygroundActionCommand {
                     "fixed", fixed_source,
                     "moving", moving_source,
                     "verbose", verbose,
-                    "background_offset_value_moving", 0,
-                    "background_offset_value_fixed", 0,
                     "sources_to_transform", new SourceAndConverter[]{moving_source}
             ).get();
 

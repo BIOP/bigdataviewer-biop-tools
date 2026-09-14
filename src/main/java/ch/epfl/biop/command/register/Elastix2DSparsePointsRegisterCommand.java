@@ -40,11 +40,7 @@ public class Elastix2DSparsePointsRegisterCommand extends SourcesForRegistration
 
     private static Logger logger = LoggerFactory.getLogger(Elastix2DSparsePointsRegisterCommand.class);
 
-    @Parameter(label = "Background offset value for moving image")
-    double background_offset_value_moving = 0;
 
-    @Parameter(label = "Background offset value for fixed image")
-    double background_offset_value_fixed = 0;
 
     @Parameter(label = "Size in physical units of each fov used for the registration of each point", style = "format:0.#####E0")
     double sx,sy;
@@ -141,8 +137,6 @@ public class Elastix2DSparsePointsRegisterCommand extends SourcesForRegistration
                                 "show_image_registration", show_points,
                                 "automatic_transform_initialization", false,
                                 "max_iteration_per_scale", max_iteration_per_scale,
-                                "background_offset_value_moving", background_offset_value_moving,
-                                "background_offset_value_fixed", background_offset_value_fixed,
                                 "min_image_size_pix", 32,
                                 "verbose", verbose
                         ).get().getOutput("at3d");

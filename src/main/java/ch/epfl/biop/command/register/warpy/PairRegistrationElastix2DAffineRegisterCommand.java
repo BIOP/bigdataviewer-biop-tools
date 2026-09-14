@@ -45,8 +45,6 @@ public class PairRegistrationElastix2DAffineRegisterCommand extends AbstractPair
     @Override
     protected void addRegistrationSpecificParametersExceptRoi(Map<String, Object> parameters) {
         parameters.put(Registration.RESAMPLING_PX_SIZE, pixel_size_micrometer/1000.0);
-        parameters.put("background_offset_value_moving", 0);
-        parameters.put("background_offset_value_fixed", 0);
         parameters.put("show_image_registration", show_imageplus_registration_result);
     }
 
