@@ -26,7 +26,7 @@ import java.util.concurrent.Future;
 @Plugin(type = IRegistrationPlugin.class)
 @RegistrationTypeProperties(
         isManual = false,
-        isEditable = false)
+        isEditable = true)
 
 public class Elastix2DAffineRegistration extends AffineTransformSourceRegistration {
 
