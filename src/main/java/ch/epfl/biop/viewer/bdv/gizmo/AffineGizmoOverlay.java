@@ -45,13 +45,18 @@ public class AffineGizmoOverlay extends BdvOverlay {
 
     private final BdvHandle bdvh;
 
-    private final AffineGizmo gizmo;
+    private volatile AffineGizmo gizmo;
 
     private final Runnable onChange;
+
+    private Runnable onDragStart = () -> {};
 
     private final BehaviourMap behaviours = new BehaviourMap();
 
     private volatile Handle hovered;
+
+    /** Gizmo of the drag in progress, null if none */
+    private AffineGizmo dragged;
 
     /**
      * @param bdvh the window the gizmo is shown in, see {@link #install()}
@@ -64,6 +69,23 @@ public class AffineGizmoOverlay extends BdvOverlay {
         this.onChange = onChange;
         behaviours.put(GIZMO, new HandleDrag(false));
         behaviours.put(GIZMO + "_constrained", new HandleDrag(true));
+    }
+
+    /**
+     * @param onDragStart called on the event dispatch thread when a drag starts, after {@link AffineGizmo#startDrag}
+     */
+    public void setOnDragStart(Runnable onDragStart) {
+        this.onDragStart = onDragStart;
+    }
+
+    /**
+     * Shows and edits another gizmo. A drag in progress goes on with the previous one until it ends.
+     * To be called on the event dispatch thread.
+     */
+    public void setGizmo(AffineGizmo gizmo) {
+        this.gizmo = gizmo;
+        if (dragged == null) setHovered(null);
+        bdvh.getViewerPanel().getDisplay().repaint();
     }
 
     /**
@@ -182,8 +204,6 @@ public class AffineGizmoOverlay extends BdvOverlay {
 
         private final boolean constrained;
 
-        private boolean dragging;
-
         HandleDrag(boolean constrained) {
             this.constrained = constrained;
         }
@@ -191,26 +211,27 @@ public class AffineGizmoOverlay extends BdvOverlay {
         @Override
         public void init(int x, int y) {
             Handle handle = hovered;
-            dragging = handle != null;
-            if (!dragging) return;
+            if (handle == null) return;
+            dragged = gizmo;
             double[] p = world(x, y);
-            gizmo.startDrag(handle, p[0], p[1]);
+            dragged.startDrag(handle, p[0], p[1]);
+            onDragStart.run();
         }
 
         @Override
         public void drag(int x, int y) {
-            if (!dragging) return;
+            if (dragged == null) return;
             double[] p = world(x, y);
-            gizmo.drag(p[0], p[1], constrained);
+            dragged.drag(p[0], p[1], constrained);
             onChange.run();
             bdvh.getViewerPanel().getDisplay().repaint();
         }
 
         @Override
         public void end(int x, int y) {
-            if (!dragging) return;
-            gizmo.endDrag();
-            dragging = false;
+            if (dragged == null) return;
+            dragged.endDrag();
+            dragged = null;
             setHovered(handleAt(x, y));
         }
     }

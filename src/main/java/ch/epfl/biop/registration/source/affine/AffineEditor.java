@@ -1,5 +1,7 @@
 package ch.epfl.biop.registration.source.affine;
 
+import bdv.TransformEventHandler2D;
+import bdv.tools.brightness.ConverterSetup;
 import bdv.tools.transformation.TransformedSource;
 import bdv.util.BdvFunctions;
 import bdv.util.BdvHandle;
@@ -14,6 +16,8 @@ import net.imglib2.RealPoint;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.integer.ByteType;
+import org.scijava.ui.behaviour.BehaviourMap;
+import org.scijava.ui.behaviour.ClickBehaviour;
 import sc.fiji.bdvpg.bdv.supplier.BdvSupplierHelper;
 import sc.fiji.bdvpg.bdv.supplier.playground.PlaygroundSerializableBdvOptions;
 import sc.fiji.bdvpg.scijava.service.SourceBdvDisplayService;
@@ -28,14 +32,19 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import java.awt.Component;
 import java.awt.EventQueue;
+import java.awt.FlowLayout;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
@@ -46,8 +55,13 @@ import static bdv.ui.BdvDefaultCards.DEFAULT_SOURCES_CARD;
 import static bdv.ui.BdvDefaultCards.DEFAULT_VIEWERMODES_CARD;
 
 /**
- * Interactive edition of an in-plane affine transform: a 2D BigDataViewer window shows the fixed sources and the
- * moving sources transformed by the edited transform, which the user changes with an {@link AffineGizmo}.
+ * Interactive edition of in-plane affine transforms: a 2D BigDataViewer window shows fixed sources and moving
+ * sources transformed by the edited transform, which the user changes with an {@link AffineGizmo}.
+ * <p>
+ * Several {@link Pair}s can be edited in the same window, one at a time: Previous and Next, or the left and right
+ * arrow keys, page through them and keep the view. A checkbox, on by default, applies each change made to the pair
+ * shown to all pairs, see {@link AffineGizmo#applyChange(double[])}.
+ * <p>
  * The window blocks the caller until the user applies or cancels the edition, closing the window cancels it.
  */
 public class AffineEditor {
@@ -58,8 +72,49 @@ public class AffineEditor {
     /** Distance of the axis handles from the gizmo center, as a fraction of the smallest side of the region */
     private static final double HANDLE_LENGTH = 0.25;
 
+    /** Id of the behaviours which page through the pairs */
+    private static final String PAGING = "affine_editor_paging";
+
+    /** Behaviours of a 2D window rotating the view with the left arrow key, shift or ctrl held or not */
+    private static final String[] ROTATE_LEFT = {TransformEventHandler2D.ROTATE_LEFT,
+            TransformEventHandler2D.ROTATE_LEFT_FAST, TransformEventHandler2D.ROTATE_LEFT_SLOW};
+
+    /** Behaviours of a 2D window rotating the view with the right arrow key, shift or ctrl held or not */
+    private static final String[] ROTATE_RIGHT = {TransformEventHandler2D.ROTATE_RIGHT,
+            TransformEventHandler2D.ROTATE_RIGHT_FAST, TransformEventHandler2D.ROTATE_RIGHT_SLOW};
+
     /**
-     * Opens the editor and blocks until the user applies or cancels. Do not call from the event dispatch thread.
+     * What is edited for one slice: moving sources displayed with the edited transform over fixed sources
+     */
+    public static class Pair {
+
+        final SourceAndConverter<?>[] fixed;
+        final SourceAndConverter<?>[] moving;
+        final AffineTransform3D initial;
+        final double[] roi;
+        final String name;
+
+        /**
+         * @param fixed sources displayed as they are
+         * @param moving sources displayed with the edited transform applied
+         * @param initial transform to start from, not modified
+         * @param roi region of interest {x, y, width, height} in world coordinates: the gizmo sits at its center.
+         *            If null, the bounding box of the first moving source is used
+         * @param name shown when several pairs are edited, can be null
+         */
+        public Pair(SourceAndConverter<?>[] fixed, SourceAndConverter<?>[] moving, AffineTransform3D initial,
+                    double[] roi, String name) {
+            this.fixed = fixed;
+            this.moving = moving;
+            this.initial = initial;
+            this.roi = roi;
+            this.name = name;
+        }
+    }
+
+    /**
+     * Opens the editor on a single pair and blocks until the user applies or cancels.
+     * Do not call from the event dispatch thread.
      * @param fixed sources displayed as they are
      * @param moving sources displayed with the edited transform applied
      * @param initial transform to start from, not modified
@@ -71,11 +126,31 @@ public class AffineEditor {
      */
     public static AffineTransform3D edit(SourceAndConverter<?>[] fixed, SourceAndConverter<?>[] moving,
                                          AffineTransform3D initial, double[] roi, int timePoint, String title) {
-        if (roi == null) roi = boundingBox(moving[0], timePoint);
-        final AffineGizmo gizmo = new AffineGizmo(initial, roi[0] + roi[2] / 2.0, roi[1] + roi[3] / 2.0,
-                HANDLE_LENGTH * Math.min(roi[2], roi[3]));
+        List<AffineTransform3D> result = edit(Collections.singletonList(new Pair(fixed, moving, initial, roi, null)),
+                timePoint, title);
+        return result == null ? null : result.get(0);
+    }
 
-        final SourceAndConverter<?>[] movingDisplayed = new SourceAndConverter[moving.length];
+    /**
+     * Opens the editor on several pairs, showing the first one, and blocks until the user applies or cancels.
+     * With a single pair, the paging controls are hidden. Do not call from the event dispatch thread.
+     * @param pairs what to edit. The view is set on the first pair and kept while paging: all pairs should lie
+     *              around the same region
+     * @param timePoint time point displayed
+     * @param title title of the window
+     * @return the edited transforms, one per pair in the same order, or null if the edition was cancelled
+     */
+    public static List<AffineTransform3D> edit(List<Pair> pairs, int timePoint, String title) {
+        final int n = pairs.size();
+        final AffineGizmo[] gizmos = new AffineGizmo[n];
+        for (int i = 0; i < n; i++) {
+            Pair pair = pairs.get(i);
+            double[] roi = (pair.roi == null) ? boundingBox(pair.moving[0], timePoint) : pair.roi;
+            gizmos[i] = new AffineGizmo(pair.initial, roi[0] + roi[2] / 2.0, roi[1] + roi[3] / 2.0,
+                    HANDLE_LENGTH * Math.min(roi[2], roi[3]));
+        }
+
+        final SourceAndConverter<?>[][] movingDisplayed = new SourceAndConverter[n][];
         final BdvHandle[] bdvhHolder = new BdvHandle[1];
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicBoolean applied = new AtomicBoolean(false);
@@ -87,66 +162,28 @@ public class AffineEditor {
 
                 final SourceBdvDisplayService displayService = SourceServices.getBdvDisplayService();
                 displayService.registerBdvHandle(bdvh);
-                for (int i = 0; i < moving.length; i++) {
-                    movingDisplayed[i] = SourceTransformHelper.createNewTransformedSourceAndConverter(
-                            initial.copy(), new SourceAndTimeRange<>(moving[i], timePoint));
+                // Created for all pairs at once: they read the original sources and share their caches
+                for (int i = 0; i < n; i++) {
+                    SourceAndConverter<?>[] moving = pairs.get(i).moving;
+                    movingDisplayed[i] = new SourceAndConverter[moving.length];
+                    for (int c = 0; c < moving.length; c++) {
+                        movingDisplayed[i][c] = SourceTransformHelper.createNewTransformedSourceAndConverter(
+                                pairs.get(i).initial.copy(), new SourceAndTimeRange<>(moving[c], timePoint));
+                    }
                 }
+                final SourceAndConverter<?>[] fixed = pairs.get(0).fixed;
                 displayService.show(bdvh, fixed);
-                displayService.show(bdvh, movingDisplayed);
-                new ViewerTransformAdjuster(bdvh, Stream.concat(Stream.of(fixed), Stream.of(movingDisplayed))
+                displayService.show(bdvh, movingDisplayed[0]);
+                new ViewerTransformAdjuster(bdvh, Stream.concat(Stream.of(fixed), Stream.of(movingDisplayed[0]))
                         .toArray(SourceAndConverter[]::new)).run();
                 setZToZero(bdvh);
 
-                final Runnable update = () -> {
-                    AffineTransform3D transform = gizmo.getTransform();
-                    for (SourceAndConverter<?> source : movingDisplayed) {
-                        ((TransformedSource<?>) source.getSpimSource()).setFixedTransform(transform);
-                    }
-                    bdvh.getViewerPanel().requestRepaint();
-                };
-                final AffineGizmoOverlay overlay = new AffineGizmoOverlay(bdvh, gizmo, update);
-                BdvFunctions.showOverlay(overlay, "Affine gizmo", BdvOptions.options().addTo(bdvh));
-                overlay.install();
-
-                final JButton resetButton = new JButton("Reset");
-                resetButton.addActionListener(e -> {
-                    gizmo.reset();
-                    update.run();
-                });
-
-                // Everything runs on the event dispatch thread: the first way the user ends the edition wins
-                final Consumer<Boolean> finish = apply -> {
+                new Session(bdvh, pairs, gizmos, movingDisplayed).build(apply -> {
+                    // Everything runs on the event dispatch thread: the first way the user ends the edition wins
                     if (latch.getCount() == 0) return;
                     applied.set(apply);
                     latch.countDown();
-                };
-                final JButton applyButton = new JButton("Apply transformation");
-                applyButton.addActionListener(e -> finish.accept(true));
-                final JButton cancelButton = new JButton("Cancel");
-                cancelButton.addActionListener(e -> finish.accept(false));
-                BdvHandleHelper.getJFrame(bdvh).addWindowListener(new WindowAdapter() {
-                    @Override
-                    public void windowClosing(WindowEvent e) {
-                        finish.accept(false);
-                    }
                 });
-
-                BdvHandleHelper.addCard(bdvh, "Affine transformation",
-                        box(new JLabel("<html><div style='width:" + (CARD_PANEL_WIDTH - 60) + "px'>" +
-                                        "<b>Drag the handles to move the moving sources onto the fixed ones.</b><br><br>" +
-                                        "<b>White</b>: translate.<br>" +
-                                        "<b>Red</b> and <b>green</b>: set the x and y axes, which scales and shears.<br>" +
-                                        "<b>Yellow</b>: rotate and scale both axes.<br><br>" +
-                                        "Hold shift to constrain a drag: translate along x or y only, " +
-                                        "keep the direction of an axis, rotate without scaling.<br><br>" +
-                                        "<b>Reset</b> goes back to the transformation the edition started from.<br><br>" +
-                                        NavigationHelp.html(bdvh) +
-                                        "</div></html>"),
-                                resetButton,
-                                applyButton,
-                                cancelButton),
-                        true);
-                CardHelper.expandCardPanel(bdvh, CARD_PANEL_WIDTH);
             });
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -164,7 +201,214 @@ public class AffineEditor {
             close(bdvhHolder[0], movingDisplayed);
         }
 
-        return applied.get() ? gizmo.getTransform() : null;
+        if (!applied.get()) return null;
+        List<AffineTransform3D> result = new ArrayList<>();
+        for (AffineGizmo gizmo : gizmos) result.add(gizmo.getTransform());
+        return result;
+    }
+
+    /**
+     * An open editor: its gizmos, the pair shown and the card. Used on the event dispatch thread only.
+     */
+    private static class Session {
+
+        final BdvHandle bdvh;
+        final List<Pair> pairs;
+        final AffineGizmo[] gizmos;
+        final SourceAndConverter<?>[][] movingDisplayed;
+        final int n;
+
+        AffineGizmoOverlay overlay;
+        final JLabel pairLabel = new JLabel();
+        final JLabel linkedLabel = new JLabel("<html><b>Changes apply to all slices</b></html>");
+        final JButton previousButton = new JButton("Previous");
+        final JButton nextButton = new JButton("Next");
+        final JCheckBox linkBox;
+
+        /** Index of the pair shown */
+        int current = 0;
+
+        /** Index of the pair whose gizmo is dragged */
+        int dragged = 0;
+
+        Session(BdvHandle bdvh, List<Pair> pairs, AffineGizmo[] gizmos, SourceAndConverter<?>[][] movingDisplayed) {
+            this.bdvh = bdvh;
+            this.pairs = pairs;
+            this.gizmos = gizmos;
+            this.movingDisplayed = movingDisplayed;
+            this.n = pairs.size();
+            linkBox = new JCheckBox("Apply each change to all " + n + " slices", true);
+        }
+
+        /**
+         * Adds the gizmo, the paging keys and the card to the window
+         * @param finish called with true to apply the edition, with false to cancel it
+         */
+        void build(Consumer<Boolean> finish) {
+            overlay = new AffineGizmoOverlay(bdvh, gizmos[0], this::dragChanged);
+            overlay.setOnDragStart(this::dragStarted);
+            if (n > 1) installPagingKeys();
+            BdvFunctions.showOverlay(overlay, "Affine gizmo", BdvOptions.options().addTo(bdvh));
+            overlay.install();
+
+            final JButton resetButton = new JButton("Reset");
+            resetButton.addActionListener(e -> reset());
+            final JButton applyButton = new JButton("Apply transformation");
+            applyButton.addActionListener(e -> finish.accept(true));
+            final JButton cancelButton = new JButton("Cancel");
+            cancelButton.addActionListener(e -> finish.accept(false));
+            BdvHandleHelper.getJFrame(bdvh).addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosing(WindowEvent e) {
+                    finish.accept(false);
+                }
+            });
+
+            List<Component> components = new ArrayList<>();
+            components.add(new JLabel(html(
+                    "<b>Drag the handles to move the moving sources onto the fixed ones.</b><br><br>" +
+                    "<b>White</b>: translate.<br>" +
+                    "<b>Red</b> and <b>green</b>: set the x and y axes, which scales and shears.<br>" +
+                    "<b>Yellow</b>: rotate and scale both axes.<br><br>" +
+                    "Hold shift to constrain a drag: translate along x or y only, " +
+                    "keep the direction of an axis, rotate without scaling.<br><br>" +
+                    ((n > 1) ?
+                        "<b>Previous</b> and <b>Next</b>, or the <b>left</b> and <b>right arrow keys</b>, " +
+                        "show the other slices without moving the view.<br><br>" +
+                        "While <b>Apply each change to all " + n + " slices</b> is checked, a drag changes all " +
+                        "slices the same way, and <b>Reset</b> resets them all. Unchecked, both only change the " +
+                        "slice shown.<br><br>" :
+                        "") +
+                    "<b>Reset</b> goes back to the transformation the edition started from.<br><br>" +
+                    NavigationHelp.html(bdvh))));
+            if (n > 1) {
+                previousButton.addActionListener(e -> show(current - 1));
+                nextButton.addActionListener(e -> show(current + 1));
+                linkBox.addActionListener(e -> updateCard());
+                // Keeps the focus in the viewer, where the arrow keys are handled
+                previousButton.setFocusable(false);
+                nextButton.setFocusable(false);
+                linkBox.setFocusable(false);
+                JPanel paging = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+                paging.add(previousButton);
+                paging.add(Box.createHorizontalStrut(3));
+                paging.add(nextButton);
+                paging.add(Box.createHorizontalStrut(10));
+                paging.add(linkedLabel);
+                components.add(pairLabel);
+                components.add(paging);
+                components.add(linkBox);
+                updateCard();
+            }
+            components.add(resetButton);
+            components.add(applyButton);
+            components.add(cancelButton);
+
+            BdvHandleHelper.addCard(bdvh, "Affine transformation", box(components.toArray(new Component[0])), true);
+            CardHelper.expandCardPanel(bdvh, CARD_PANEL_WIDTH);
+        }
+
+        void dragStarted() {
+            dragged = current;
+            for (int i = 0; i < n; i++) {
+                if (i != dragged) gizmos[i].startChange();
+            }
+        }
+
+        void dragChanged() {
+            if (linkBox.isSelected()) {
+                double[] change = gizmos[dragged].getDragChange();
+                if (change != null) {
+                    for (int i = 0; i < n; i++) {
+                        if (i == dragged) continue;
+                        gizmos[i].applyChange(change);
+                        updateMoving(i);
+                    }
+                }
+            }
+            updateMoving(dragged);
+            if (n > 1) updateCard();
+            bdvh.getViewerPanel().requestRepaint();
+        }
+
+        void reset() {
+            for (int i = 0; i < n; i++) {
+                if ((i == current) || linkBox.isSelected()) {
+                    gizmos[i].reset();
+                    updateMoving(i);
+                }
+            }
+            if (n > 1) updateCard();
+            bdvh.getViewerPanel().getDisplay().repaint();
+            bdvh.getViewerPanel().requestRepaint();
+        }
+
+        /**
+         * Shows another pair, keeping the view, and the color and display range of the sources channel by channel
+         */
+        void show(int index) {
+            if ((index < 0) || (index >= n) || (index == current)) return;
+            final SourceBdvDisplayService displayService = SourceServices.getBdvDisplayService();
+            copyDisplaySettings(pairs.get(current).fixed, pairs.get(index).fixed);
+            copyDisplaySettings(movingDisplayed[current], movingDisplayed[index]);
+            displayService.remove(bdvh, movingDisplayed[current]);
+            displayService.remove(bdvh, pairs.get(current).fixed);
+            displayService.show(bdvh, pairs.get(index).fixed);
+            displayService.show(bdvh, movingDisplayed[index]);
+            current = index;
+            overlay.setGizmo(gizmos[current]);
+            updateCard();
+            bdvh.getViewerPanel().requestRepaint();
+        }
+
+        void updateMoving(int index) {
+            AffineTransform3D transform = gizmos[index].getTransform();
+            for (SourceAndConverter<?> source : movingDisplayed[index]) {
+                ((TransformedSource<?>) source.getSpimSource()).setFixedTransform(transform);
+            }
+        }
+
+        void updateCard() {
+            String name = pairs.get(current).name;
+            pairLabel.setText(html("Slice " + (current + 1) + " / " + n + ((name == null) ? "" : ": " + name) +
+                    (gizmos[current].isChanged() ? " <b>(changed)</b>" : "")));
+            previousButton.setEnabled(current > 0);
+            nextButton.setEnabled(current < n - 1);
+            linkedLabel.setVisible(linkBox.isSelected());
+        }
+
+        /**
+         * Takes over the left and right arrow keys, which rotate the view of a 2D window, to page through the pairs.
+         * The rotation behaviours are overridden by name rather than their keys rebound: a new input trigger map would
+         * have to copy the navigation bindings and block the original ones, and that copy would still pan the view
+         * while {@link AffineGizmoOverlay} holds the left button.
+         */
+        void installPagingKeys() {
+            final ClickBehaviour previous = (x, y) -> show(current - 1), next = (x, y) -> show(current + 1);
+            final BehaviourMap behaviours = new BehaviourMap();
+            for (String rotation : ROTATE_LEFT) behaviours.put(rotation, previous);
+            for (String rotation : ROTATE_RIGHT) behaviours.put(rotation, next);
+            // Added last, so it overrides the behaviours of BigDataViewer with the same names
+            bdvh.getTriggerbindings().addBehaviourMap(PAGING, behaviours);
+        }
+    }
+
+    private static String html(String text) {
+        return "<html><div style='width:" + (CARD_PANEL_WIDTH - 60) + "px'>" + text + "</div></html>";
+    }
+
+    /**
+     * Copies the color and the display range of each source to the source of the same index
+     */
+    private static void copyDisplaySettings(SourceAndConverter<?>[] from, SourceAndConverter<?>[] to) {
+        for (int i = 0; i < Math.min(from.length, to.length); i++) {
+            if (from[i] == to[i]) continue;
+            ConverterSetup source = SourceServices.getSourceService().getConverterSetup(from[i]);
+            ConverterSetup target = SourceServices.getSourceService().getConverterSetup(to[i]);
+            if ((source == null) || (target == null)) continue;
+            target.setDisplayRange(source.getDisplayRangeMin(), source.getDisplayRangeMax());
+            if (source.supportsColor() && target.supportsColor()) target.setColor(source.getColor());
+        }
     }
 
     /**
@@ -183,12 +427,15 @@ public class AffineEditor {
     /**
      * Closes the window and unregisters the sources which were created for it
      */
-    private static void close(BdvHandle bdvh, SourceAndConverter<?>[] movingDisplayed) {
+    private static void close(BdvHandle bdvh, SourceAndConverter<?>[][] movingDisplayed) {
         if (bdvh == null) return;
         SourceServices.getBdvDisplayService().closeBdv(bdvh);
         bdvh.close();
-        for (SourceAndConverter<?> source : movingDisplayed) {
-            if (source != null) SourceServices.getSourceService().remove(source);
+        for (SourceAndConverter<?>[] sources : movingDisplayed) {
+            if (sources == null) continue;
+            for (SourceAndConverter<?> source : sources) {
+                if (source != null) SourceServices.getSourceService().remove(source);
+            }
         }
     }
 
