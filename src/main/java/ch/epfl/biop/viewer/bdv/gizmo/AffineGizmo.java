@@ -2,6 +2,8 @@ package ch.epfl.biop.viewer.bdv.gizmo;
 
 import net.imglib2.realtransform.AffineTransform3D;
 
+import java.util.Arrays;
+
 /**
  * Model of a gizmo editing the in-plane part of an affine transform with four handles.
  * <p>
@@ -54,12 +56,22 @@ public class AffineGizmo {
      */
     public void reset() {
         dragged = null;
-        state[0] = transform.get(0, 0) * cx + transform.get(0, 1) * cy + transform.get(0, 3);
-        state[1] = transform.get(1, 0) * cx + transform.get(1, 1) * cy + transform.get(1, 3);
-        state[2] = transform.get(0, 0);
-        state[3] = transform.get(1, 0);
-        state[4] = transform.get(0, 1);
-        state[5] = transform.get(1, 1);
+        System.arraycopy(initialState(), 0, state, 0, 6);
+    }
+
+    /**
+     * @return true if the transform is not the initial one
+     */
+    public boolean isChanged() {
+        return !Arrays.equals(state, initialState());
+    }
+
+    private double[] initialState() {
+        return new double[]{
+                transform.get(0, 0) * cx + transform.get(0, 1) * cy + transform.get(0, 3),
+                transform.get(1, 0) * cx + transform.get(1, 1) * cy + transform.get(1, 3),
+                transform.get(0, 0), transform.get(1, 0),
+                transform.get(0, 1), transform.get(1, 1)};
     }
 
     /**
@@ -154,6 +166,61 @@ public class AffineGizmo {
      */
     public void endDrag() {
         dragged = null;
+    }
+
+    /**
+     * @return true between {@link #startDrag} and {@link #endDrag} or {@link #reset}
+     */
+    public boolean isDragging() {
+        return dragged != null;
+    }
+
+    /**
+     * The change made by the current drag, from its start to now, written at the gizmo origin: the axes were
+     * multiplied by a 2×2 matrix A and the origin was moved by a vector t. See {@link #applyChange(double[])}.
+     * @return {a00, a01, a10, a11, tx, ty}, or null if no drag is in progress, or if the axes were collinear when the
+     * drag started and have changed since
+     */
+    public double[] getDragChange() {
+        if (dragged == null) return null;
+        double tx = state[0] - start[0], ty = state[1] - start[1];
+        // A = [U V] · [U0 V0]^-1
+        double ux = start[2], uy = start[3], vx = start[4], vy = start[5];
+        double det = ux * vy - vx * uy;
+        if (det == 0) {
+            for (int i = 2; i < 6; i++) {
+                if (state[i] != start[i]) return null;
+            }
+            return new double[]{1, 0, 0, 1, tx, ty};
+        }
+        double i00 = vy / det, i01 = -vx / det, i10 = -uy / det, i11 = ux / det;
+        return new double[]{
+                state[2] * i00 + state[4] * i10, state[2] * i01 + state[4] * i11,
+                state[3] * i00 + state[5] * i10, state[3] * i01 + state[5] * i11,
+                tx, ty};
+    }
+
+    /**
+     * Remembers the current transform as the one {@link #applyChange(double[])} starts from.
+     * {@link #startDrag} does the same.
+     */
+    public void startChange() {
+        System.arraycopy(state, 0, start, 0, 6);
+    }
+
+    /**
+     * Sets the transform to the one remembered by {@link #startChange()}, changed at its own origin O by a change
+     * read from {@link #getDragChange()}: O ← O + t, U ← A·U, V ← A·V. The same change applied to several gizmos
+     * translates them by the same vector, and rotates, scales and shears them the same way along the image axes.
+     * @param change {a00, a01, a10, a11, tx, ty}
+     */
+    public void applyChange(double[] change) {
+        state[0] = start[0] + change[4];
+        state[1] = start[1] + change[5];
+        for (int i = 2; i < 6; i += 2) {
+            state[i] = change[0] * start[i] + change[1] * start[i + 1];
+            state[i + 1] = change[2] * start[i] + change[3] * start[i + 1];
+        }
     }
 
     /**
