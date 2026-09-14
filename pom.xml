@@ -11,7 +11,7 @@
 
 	<groupId>ch.epfl.biop</groupId>
 	<artifactId>bigdataviewer-biop-tools</artifactId>
-	<version>0.23.2-SNAPSHOT</version>
+	<version>0.24.1-SNAPSHOT</version>
 
 	<name>Biop Bigdataviewer Tools and Plugins </name>
 	<description>BigDataViewer tools and plugins for Fiji: fusion, deconvolution, registration and data processing.</description>
