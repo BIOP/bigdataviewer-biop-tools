@@ -1,8 +1,8 @@
 /*-
  * #%L
- * BigDataViewer-Playground
+ * BigDataViewer tools and plugins for Fiji: fusion, deconvolution, registration and data processing.
  * %%
- * Copyright (C) 2019 - 2026 Nicolas Chiaruttini, EPFL - Robert Haase, MPI CBG - Christian Tischer, EMBL
+ * Copyright (C) 2018 - 2026 EPFL BIOP and University of Geneva
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
