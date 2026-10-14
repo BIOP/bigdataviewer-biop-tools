@@ -29,6 +29,7 @@
 package ch.epfl.biop.registration.source.affine;
 
 import bdv.viewer.SourceAndConverter;
+import ch.epfl.biop.registration.Registration;
 import ch.epfl.biop.registration.plugin.IRegistrationPlugin;
 import ch.epfl.biop.registration.plugin.RegistrationTypeProperties;
 import ch.epfl.biop.command.register.SourcesSift2DAffineRegisterCommand;
@@ -157,7 +158,7 @@ public class Sift2DAffineRegistration extends AffineTransformSourceRegistration 
             if (e instanceof CancellationException) {
                 errorMessage = "Registration canceled."; // otherwise error message is just "null"
             } else {
-                errorMessage = e.getMessage();
+                errorMessage = Registration.rootMessage(e);
             }
             e.printStackTrace();
             return false;

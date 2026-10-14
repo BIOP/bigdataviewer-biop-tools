@@ -150,7 +150,7 @@ public class Elastix2DAffineRegistration extends AffineTransformSourceRegistrati
             if (e instanceof CancellationException) {
                 errorMessage = "Registration canceled."; // otherwise error message is just "null"
             } else {
-                errorMessage = e.getMessage();
+                errorMessage = Registration.rootMessage(e);
             }
             e.printStackTrace();
             return false;

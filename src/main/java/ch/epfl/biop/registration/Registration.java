@@ -123,6 +123,16 @@ public interface Registration<T> {
     }
 
     /**
+     * @param e an exception caught while registering
+     * @return the message of its deepest cause: the ones above, such as ExecutionException, only wrap it
+     */
+    static String rootMessage(Throwable e) {
+        Throwable cause = e;
+        while (cause.getCause() != null && cause.getCause() != cause) cause = cause.getCause();
+        return cause.getMessage() != null ? cause.getMessage() : cause.toString();
+    }
+
+    /**
      * Blocking function which is called when the user wants
      * to manually edit the result of the registration
      * @return true is the transform is been edited successfully. If not,

@@ -40,7 +40,7 @@ import org.scijava.plugin.Plugin;
  * Scijava postprocessor that looks for a boolean output named {@code success}.
  * If present and {@code true}, the output is resolved so the standard display
  * postprocessors do not render it. If {@code false}, an error is logged with
- * the module name (no further detail is available at this layer).
+ * the module name, and the text of its {@code error} output if it has a non-empty one.
  * <p>
  * Runs before the default display postprocessor (priority {@code 0.1} &gt; default {@code 0}).
  */
@@ -48,6 +48,7 @@ import org.scijava.plugin.Plugin;
 public class SuccessResolverProcessor extends AbstractPostprocessorPlugin {
 
     private static final String SUCCESS_OUTPUT_NAME = "success";
+    private static final String ERROR_OUTPUT_NAME = "error";
 
     @Parameter
     LogService logger;
@@ -73,8 +74,20 @@ public class SuccessResolverProcessor extends AbstractPostprocessorPlugin {
         if (success) {
             module.resolveOutput(SUCCESS_OUTPUT_NAME);
         } else {
-            logger.error("Module " + module.getInfo().getTitle() + " did not complete successfully.");
+            logger.error("Module " + module.getInfo().getTitle() + " did not complete successfully." + errorText(module));
             module.resolveOutput(SUCCESS_OUTPUT_NAME);
         }
+    }
+
+    /**
+     * @return the text of the module {@code error} output, prefixed by a space, or an empty string
+     * if the module has no such output or if it is empty
+     */
+    private static String errorText(Module module) {
+        if (module.getInfo().getOutput(ERROR_OUTPUT_NAME) == null) return "";
+        Object error = module.getOutput(ERROR_OUTPUT_NAME);
+        if (error == null) return "";
+        String text = error instanceof Throwable ? ((Throwable) error).getMessage() : error.toString();
+        return (text == null || text.trim().isEmpty()) ? "" : " " + text;
     }
 }
